@@ -1,13 +1,41 @@
 <resources>
-
-    <string name="version">Версія: 1.00</string>
-
     <string name="app_name">TaxiEasyUaBack4App</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
     <string name="back4app_app_id">01YGF894m3NJRXT1BlH6qPo9pUfDlG9sqi9K9mIL</string>
     <string name="back4app_client_key">T5f5GuT1UCmaiJn8Dek3sVmayGuJa2jfelQR6V6f</string>
 
+    <string name="version">Версія: 2.00</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Таксі Лайт Юа</string>
+    <string name="nav_header_subtitle">Швидкі поїздки по Києву та області</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Налаштування</string>
+
+    <string name="menu_maps">Мапа</string>
+    <string name="menu_home">Замовити</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_about">Про додаток</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="action_exit">Вихід</string>
+    <string name="delete_record">видалити?</string>
     <string name="make_rout">Створити маршрут</string>
-    <string name="open_maps">Замовити по мапе</string>
     <string name="call_admin">Дзвонок оператору</string>
+    <string name="email_friend">Розповісти другові</string>
+    <!--    <string name="default_web_client_id">356539267738-5bs72asrar11ud7ckcis68ophlnm3gfj.apps.googleusercontent.com</string>-->
+    <string name="default_web_client_id">356539267738-0v3d1nsci9g7fij8cemnlid7cfalvdo2.apps.googleusercontent.com</string>
+    <string name="my_phone">Мій телефон</string>
+    <string name="open_maps">Замовити по мапе</string>
+    <string name="driver">Робота водієм</string>
+
 </resources>

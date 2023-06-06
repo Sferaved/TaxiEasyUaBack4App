@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.taxieasyua.back4app.OpenStreetMapActivity">
+    tools:context=".ui.home.HomeFragment">
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
