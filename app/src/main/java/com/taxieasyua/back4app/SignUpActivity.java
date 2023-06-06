@@ -15,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.parse.ParseUser;
 
+import org.osmdroid.util.GeoPoint;
+
 public class SignUpActivity extends AppCompatActivity {
 
     private ImageView back;

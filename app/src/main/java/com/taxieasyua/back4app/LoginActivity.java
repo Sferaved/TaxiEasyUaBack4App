@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.parse.ParseUser;
 
+import org.osmdroid.util.GeoPoint;
+
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -21,7 +23,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button login;
     private Button navigatesignup;
     private ProgressDialog progressDialog;
-
+    public static GeoPoint initialGeoPoint = new GeoPoint(50.4501, 30.5234); // Координаты Киева
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -39,4 +39,8 @@ dependencies {
     implementation "com.github.parse-community.Parse-SDK-Android:parse:4.2.0"
     // for Google login/signup support (optional)
     implementation "com.github.parse-community.Parse-SDK-Android:google:4.2.0"
+
+    implementation 'org.osmdroid:osmdroid-android:6.1.16'
+
+    implementation 'com.github.MKergall:osmbonuspack:6.9.0'
 }
