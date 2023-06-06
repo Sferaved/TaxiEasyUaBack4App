@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.parse.ParseUser;
+import com.taxieasyua.back4app.ui.start.StartActivity;
 
 public class LogoutActivity extends AppCompatActivity {
     Button start, logout;
@@ -25,7 +26,7 @@ public class LogoutActivity extends AppCompatActivity {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LogoutActivity.this, OpenStreetMapActivity.class);
+                Intent intent = new Intent(LogoutActivity.this, StartActivity.class);
                 startActivity(intent);
 
             }

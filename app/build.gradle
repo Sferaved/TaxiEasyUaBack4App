@@ -10,8 +10,8 @@ android {
         applicationId "com.taxieasyua.back4app"
         minSdk 24
         targetSdk 33
-        versionCode 2
-        versionName 'test'
+        versionCode 201
+        versionName 'add login and register'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
