@@ -196,7 +196,7 @@ public class MapsFragment extends Fragment {
                                                                     @Override
                                                                     public void onClick(DialogInterface dialog, int which) {
                                                                         Intent intent = new Intent(Intent.ACTION_CALL);
-                                                                        intent.setData(Uri.parse("tel:0934066749"));
+                                                                        intent.setData(Uri.parse("tel:0674443804"));
                                                                         if (ActivityCompat.checkSelfPermission(getActivity(),
                                                                                 Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                                                                             checkPermission(Manifest.permission.CALL_PHONE, StartActivity.READ_CALL_PHONE);
@@ -246,7 +246,7 @@ public class MapsFragment extends Fragment {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 Intent intent = new Intent(Intent.ACTION_CALL);
-                                                intent.setData(Uri.parse("tel:0934066749"));
+                                                intent.setData(Uri.parse("tel:0674443804"));
                                                 if (ActivityCompat.checkSelfPermission(getActivity(),
                                                         Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                                                     checkPermission(Manifest.permission.CALL_PHONE, StartActivity.READ_CALL_PHONE);

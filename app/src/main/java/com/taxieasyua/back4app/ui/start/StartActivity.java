@@ -43,6 +43,8 @@ import com.taxieasyua.back4app.ui.maps.Kyiv6;
 import com.taxieasyua.back4app.ui.maps.Kyiv7;
 import com.taxieasyua.back4app.ui.maps.Kyiv8;
 import com.taxieasyua.back4app.ui.maps.Kyiv9;
+import com.taxieasyua.back4app.ui.maps.Odessa;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 
 import org.json.JSONException;
@@ -76,24 +78,24 @@ public class StartActivity extends Activity {
 
     Intent intent;
     public static String userEmail, displayName;
-//    public static String[] arrayStreet = Odessa.street();
-//    public static String api = "apiTest";
-//    public static GeoPoint initialGeoPoint = new GeoPoint(46.4825, 30.7233); // Координаты Одесса
-    public static String api = "api";
-
-    public static GeoPoint initialGeoPoint = new GeoPoint(50.4501, 30.5234); // Координаты Киева
-
-    public static String[] arrayStreet = join(Kyiv1.street(),
-            Kyiv2.street(),
-            Kyiv3.street(),
-            Kyiv4.street(),
-            Kyiv5.street(),
-            Kyiv6.street(),
-            Kyiv7.street(),
-            Kyiv8.street(),
-            Kyiv9.street(),
-            Kyiv10.street(),
-            Kyiv11.street());
+    public static String[] arrayStreet = Odessa.street();
+    public static String api = "apiTest";
+    public static GeoPoint initialGeoPoint = new GeoPoint(46.4825, 30.7233); // Координаты Одесса
+//    public static String api = "api";
+//
+//    public static GeoPoint initialGeoPoint = new GeoPoint(50.4501, 30.5234); // Координаты Киева
+//
+//    public static String[] arrayStreet = join(Kyiv1.street(),
+//            Kyiv2.street(),
+//            Kyiv3.street(),
+//            Kyiv4.street(),
+//            Kyiv5.street(),
+//            Kyiv6.street(),
+//            Kyiv7.street(),
+//            Kyiv8.street(),
+//            Kyiv9.street(),
+//            Kyiv10.street(),
+//            Kyiv11.street());
 
 
     public static String[] join(String[] a1,
@@ -211,7 +213,7 @@ public class StartActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(Intent.ACTION_CALL);
-                    intent.setData(Uri.parse("tel:0934066749"));
+                    intent.setData(Uri.parse("tel:0674443804"));
                     if (ActivityCompat.checkSelfPermission(StartActivity.this,
                             Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                         checkPermission(Manifest.permission.CALL_PHONE, StartActivity.READ_CALL_PHONE);
@@ -235,8 +237,18 @@ public class StartActivity extends Activity {
            Toast.makeText(StartActivity.this, "Перевірте інтернет-підключення або зателефонуйте оператору.", Toast.LENGTH_LONG).show();
        } else {
 //           intent = new Intent(this, OpenStreetMapActivity.class);
-           intent = new Intent(this, MainActivity.class);
-           startActivity(intent);
+
+           Log.d("TAG", "onResume Manifest.permission.ACCESS_FINE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION));
+           Log.d("TAG", "onResume Manifest.permission.ACCESS_COARSE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION));
+           if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+               Intent intent = new Intent(this, MainActivity.class);
+               startActivity(intent);
+           } else {
+               Intent intent = new Intent(this, OpenStreetMapActivity.class);
+               startActivity(intent);
+           }
+
+
 
          Log.d("TAG", "onResume: "  + hasConnection());
 
@@ -328,7 +340,7 @@ public class StartActivity extends Activity {
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
             settings.add("usually");
-            settings.add("Базовый онлайн");
+            settings.add("Базовий онлайн");
             insertFirstSettings(settings);
             if (cursorDb != null && !cursorDb.isClosed())
                 cursorDb.close();
