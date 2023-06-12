@@ -200,16 +200,12 @@ public class StartActivity extends Activity {
 
         try {
             initDB();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (MalformedURLException | JSONException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
 
-       fab.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(Intent.ACTION_CALL);
@@ -217,8 +213,13 @@ public class StartActivity extends Activity {
                     if (ActivityCompat.checkSelfPermission(StartActivity.this,
                             Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                         checkPermission(Manifest.permission.CALL_PHONE, StartActivity.READ_CALL_PHONE);
-                    } else
-                    startActivity(intent);
+                        startActivity(intent);
+                    }
+                    if (ActivityCompat.checkSelfPermission(StartActivity.this,
+                            Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+                        startActivity(intent);
+                    }
+
                 }
             });
 
@@ -234,21 +235,22 @@ public class StartActivity extends Activity {
 
        if(!hasConnection()) {
            btn_again.setVisibility(View.VISIBLE);
-           Toast.makeText(StartActivity.this, "Перевірте інтернет-підключення або зателефонуйте оператору.", Toast.LENGTH_LONG).show();
+           Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
 //           intent = new Intent(this, OpenStreetMapActivity.class);
 
-           Log.d("TAG", "onResume Manifest.permission.ACCESS_FINE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION));
-           Log.d("TAG", "onResume Manifest.permission.ACCESS_COARSE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION));
-           if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-               Intent intent = new Intent(this, MainActivity.class);
-               startActivity(intent);
-           } else {
-               Intent intent = new Intent(this, OpenStreetMapActivity.class);
-               startActivity(intent);
-           }
+//           Log.d("TAG", "onResume Manifest.permission.ACCESS_FINE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION));
+//           Log.d("TAG", "onResume Manifest.permission.ACCESS_COARSE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION));
+//           if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//               Intent intent = new Intent(this, FirebaseSignIn.class);
+//               startActivity(intent);
+//           } else {
+//               Intent intent = new Intent(this, OpenStreetMapActivity.class);
+//               startActivity(intent);
+//           }
 
-
+           intent = new Intent(this, GoogleSignInActivity.class);
+           startActivity(intent);
 
          Log.d("TAG", "onResume: "  + hasConnection());
 
@@ -562,8 +564,8 @@ public class StartActivity extends Activity {
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         EditText code = view.findViewById(R.id.code);
 
-        builder.setTitle("Код перевіркі зі смс-повідомлення")
-                .setPositiveButton("Відправити", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.sms_code))
+                .setPositiveButton(getString(R.string.sent_button), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String urlCost = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/approvedPhones/" + phoneNumber + "/" + code.getText();

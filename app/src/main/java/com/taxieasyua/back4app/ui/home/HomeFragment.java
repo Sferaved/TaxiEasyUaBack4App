@@ -11,11 +11,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -27,8 +29,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -69,9 +73,9 @@ public class HomeFragment extends Fragment {
     Button button;
     private String[] array;
     public String[] arrayStreet = StartActivity.arrayStreet;
-    static FloatingActionButton fab, fab_call, fab_open_map;
+    static FloatingActionButton fab, fab_call, fab_open_map, fab_gps;
     private final String TAG = "TAG";
-
+    static Switch gpsSwitch;
     private static final int CM_DELETE_ID = 1;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -86,6 +90,11 @@ public class HomeFragment extends Fragment {
         fab = binding.fab;
         fab_call = binding.fabCall;
         fab_open_map = binding.fabOpenMap;
+
+        gpsSwitch = binding.gpsSwitch;
+        gpsSwitch.setChecked(switchState());
+
+
         button = binding.btnRouts;
 
         if(connected()) {
@@ -116,7 +125,6 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -150,6 +158,15 @@ public class HomeFragment extends Fragment {
 
                 }
             }
+        });
+        gpsSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                gpsSwitch.setChecked(switchState());
+            }
+
+
         });
 
         if(array != null)  {
@@ -188,6 +205,31 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        gpsSwitch.setChecked(switchState());
+    }
+
+    private boolean  switchState() {
+        LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled || !network_enabled) {
+            return false;
+        } else
+
+            return true;
+    };
     public static String[] join(String[] a, String [] b)
     {
         String [] c = new String[a.length + b.length];
@@ -209,8 +251,8 @@ public class HomeFragment extends Fragment {
         if(routMaps.size() != 0) {
             arrayRouts = new String[routMaps.size()];
             for (int i = 0; i < routMaps.size(); i++) {
-                arrayRouts[i] = "Звідки: " + routMaps.get(i).get("from_street").toString() + " " +
-                        routMaps.get(i).get("from_number").toString() + "\nКуди: " +
+                arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
+                        routMaps.get(i).get("from_number").toString() + " -> " +
                         routMaps.get(i).get("to_street").toString() + " " +
                         routMaps.get(i).get("to_number").toString();
 
@@ -264,7 +306,7 @@ public class HomeFragment extends Fragment {
         }
 
         if (!hasConnect) {
-            Toast.makeText(getActivity(), "Перевірте інтернет-підключення або зателефонуйте оператору.", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
         }
         Log.d(TAG, "connected: " + hasConnect);
         return hasConnect;
@@ -296,12 +338,12 @@ public class HomeFragment extends Fragment {
 
                     if(!MainActivity.verifyOrder) {
                         Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
-                        Toast.makeText(getActivity(), "Вартість поїздки: " + orderCost + "грн. Вибачте, без перевірки Google-акаунту замовлення не можливе. Спробуйте знову.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), getString(R.string.cost_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                     } else {
 
                         new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                .setMessage("Вартість поїздки: " + orderCost + "грн")
-                                .setPositiveButton("Замовити", new DialogInterface.OnClickListener() {
+                                .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
+                                .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         if (connected()) {
@@ -319,15 +361,15 @@ public class HomeFragment extends Fragment {
                                                     String from_name = (String) sendUrlMap.get("from_name");
                                                     String to_name = (String) sendUrlMap.get("to_name");
                                                     if (from_name.equals(to_name)) {
-                                                        messageResult = "Дякуемо за замовлення зі " +
-                                                                from_name + " " + from_number.getText() + " " + " по місту." +
-                                                                " Очикуйте дзвонка оператора. Вартість поїздки: " + orderWeb + "грн";
+                                                        messageResult = getString(R.string.thanks_message) +
+                                                                from_name + " " + from_number.getText() + " " + getString(R.string.on_city) +
+                                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
                                                     } else {
-                                                        messageResult = "Дякуемо за замовлення зі " +
-                                                                from_name + " " + from_number_rout + " " + " до " +
+                                                        messageResult = getString(R.string.thanks_message) +
+                                                                from_name + " " + from_number_rout + " " + getString(R.string.on_city) +
                                                                 to_name + " " + to_number_rout + "." +
-                                                                " Очикуйте дзвонка оператора. Вартість поїздки: " + orderWeb + "грн";
+                                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
                                                     }
                                                     button.setVisibility(View.INVISIBLE);
 
@@ -336,7 +378,7 @@ public class HomeFragment extends Fragment {
 
                                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
                                                             .setMessage(messageResult)
-                                                            .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                                                            .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                     if (connected()) {
@@ -357,9 +399,8 @@ public class HomeFragment extends Fragment {
                                                 } else {
                                                     String message = (String) sendUrlMap.get("message");
                                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                            .setMessage(message +
-                                                                    " Спробуйте ще або зателефонуйте оператору.")
-                                                            .setPositiveButton("Підтримка", new DialogInterface.OnClickListener() {
+                                                            .setMessage(message + getString(R.string.next_try))
+                                                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                     Intent intent = new Intent(Intent.ACTION_CALL);
@@ -378,7 +419,7 @@ public class HomeFragment extends Fragment {
 
                                                                 }
                                                             })
-                                                            .setNegativeButton("Спробуйте ще", new DialogInterface.OnClickListener() {
+                                                            .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                     if (connected()) {
@@ -397,18 +438,15 @@ public class HomeFragment extends Fragment {
                                                 }
 
 
-                                            } catch (MalformedURLException e) {
-                                                throw new RuntimeException(e);
-                                            } catch (InterruptedException e) {
-                                                throw new RuntimeException(e);
-                                            } catch (JSONException e) {
+                                            } catch (MalformedURLException | InterruptedException |
+                                                     JSONException e) {
                                                 throw new RuntimeException(e);
                                             }
                                         }
                                     }
 
                                 })
-                                .setNegativeButton("Відміна", new DialogInterface.OnClickListener() {
+                                .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         if (connected()) {
@@ -431,9 +469,8 @@ public class HomeFragment extends Fragment {
                     sentPhone();
                     String message = (String) sendUrlMapCost.get("message");
                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                            .setMessage(message +
-                                    " Спробуйте ще або зателефонуйте оператору.")
-                            .setPositiveButton("Підтримка", new DialogInterface.OnClickListener() {
+                            .setMessage(message + getString(R.string.next_try))
+                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     Intent intent = new Intent(Intent.ACTION_CALL);
@@ -445,7 +482,7 @@ public class HomeFragment extends Fragment {
                                     } else   startActivity(intent);
                                 }
                             })
-                            .setNegativeButton("Спробуйте ще", new DialogInterface.OnClickListener() {
+                            .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     if (connected()) {
@@ -463,11 +500,7 @@ public class HomeFragment extends Fragment {
                             .show();
                 }
 
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (JSONException e) {
+            } catch (MalformedURLException | InterruptedException | JSONException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -509,11 +542,7 @@ public class HomeFragment extends Fragment {
                         Map sendUrlMapCost = null;
                         try {
                             sendUrlMapCost = ResultSONParser.sendURL(url);
-                        } catch (MalformedURLException e) {
-                            throw new RuntimeException(e);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        } catch (JSONException e) {
+                        } catch (MalformedURLException | InterruptedException | JSONException e) {
                             throw new RuntimeException(e);
                         }
 
@@ -550,11 +579,7 @@ public class HomeFragment extends Fragment {
                         Map sendUrlMapCost = null;
                         try {
                             sendUrlMapCost = ResultSONParser.sendURL(url);
-                        } catch (MalformedURLException e) {
-                            throw new RuntimeException(e);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        } catch (JSONException e) {
+                        } catch (MalformedURLException | InterruptedException | JSONException e) {
                             throw new RuntimeException(e);
                         }
 
@@ -575,8 +600,8 @@ public class HomeFragment extends Fragment {
             });
 
 
-            builder.setMessage("Сформуйте маршрут")
-                    .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+            builder.setMessage(getString(R.string.make_rout))
+                    .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             if(connected()) {
@@ -597,19 +622,19 @@ public class HomeFragment extends Fragment {
 
                                         if (orderCost.equals("0")) {
 
-                                            Toast.makeText(getActivity(), "Помілка: " + message, Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getActivity(), getString(R.string.error_message) + message, Toast.LENGTH_SHORT).show();
                                             Intent intent = new Intent(getActivity(), MainActivity.class);
                                             startActivity(intent);
                                         }
                                         if (!orderCost.equals("0")) {
                                             if(!MainActivity.verifyOrder) {
                                                 Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
-                                                Toast.makeText(getActivity(), "Вартість поїздки: " + orderCost + "грн. Вибачте, без перевірки Google-акаунту замовлення не можливе. Спробуйте знову.", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getActivity(), getString(R.string.cost_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                             } else {
 
                                             new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                    .setMessage("Вартість поїздки: " + orderCost + "грн")
-                                                    .setPositiveButton("Замовити", new DialogInterface.OnClickListener() {
+                                                    .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
+                                                    .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
 
@@ -633,16 +658,16 @@ public class HomeFragment extends Fragment {
                                                                         String from_name = (String) sendUrlMap.get("from_name");
                                                                         String to_name = (String) sendUrlMap.get("to_name");
                                                                         if (from_name.equals(to_name)) {
-                                                                            messageResult = "Дякуемо за замовлення зі " +
-                                                                                    from_name + " " + from_number.getText() + " " + " по місту." +
-                                                                                    " Очикуйте дзвонка оператора. Вартість поїздки: " + orderWeb + "грн";
+                                                                            messageResult = getString(R.string.thanks_message) +
+                                                                                    from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
+                                                                                    getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
 
 
                                                                         } else {
-                                                                            messageResult = "Дякуемо за замовлення зі " +
-                                                                                    from_name + " " + from_number.getText() + " " + " до " +
+                                                                            messageResult =  getString(R.string.thanks_message) +
+                                                                                    from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
                                                                                     to_name + " " + to_number.getText() + "." +
-                                                                                    " Очикуйте дзвонка оператора. Вартість поїздки: " + orderWeb + "грн";
+                                                                                    getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                                                                         }
 
                                                                         StartActivity.insertRecordsOrders(from_name, to_name,
@@ -650,7 +675,7 @@ public class HomeFragment extends Fragment {
 
                                                                         new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
                                                                                 .setMessage(messageResult)
-                                                                                .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                                                                                .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                                                                                     @Override
                                                                                     public void onClick(DialogInterface dialog, int which) {
 //                                                                                        if(connected()) {
@@ -664,9 +689,8 @@ public class HomeFragment extends Fragment {
                                                                     } else {
                                                                         String message = (String) sendUrlMap.get("message");
                                                                         new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                                                .setMessage(message +
-                                                                                        " Спробуйте ще або зателефонуйте оператору.")
-                                                                                .setPositiveButton("Підтримка", new DialogInterface.OnClickListener() {
+                                                                                .setMessage(message + getString(R.string.try_again))
+                                                                                .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                                                     @Override
                                                                                     public void onClick(DialogInterface dialog, int which) {
                                                                                         Intent intent = new Intent(Intent.ACTION_CALL);
@@ -682,7 +706,7 @@ public class HomeFragment extends Fragment {
 
                                                                                     }
                                                                                 })
-                                                                                .setNegativeButton("Спробуйте ще", new DialogInterface.OnClickListener() {
+                                                                                .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
                                                                                     @Override
                                                                                     public void onClick(DialogInterface dialog, int which) {
                                                                                         if(connected()) {
@@ -697,17 +721,15 @@ public class HomeFragment extends Fragment {
                                                                     }
 
 
-                                                                } catch (MalformedURLException e) {
-                                                                    throw new RuntimeException(e);
-                                                                } catch (InterruptedException e) {
-                                                                    throw new RuntimeException(e);
-                                                                } catch (JSONException e) {
+                                                                } catch (MalformedURLException |
+                                                                         InterruptedException |
+                                                                         JSONException e) {
                                                                     throw new RuntimeException(e);
                                                                 }
                                                             }
                                                             cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
                                                             if (cursor.getCount() == 0) {
-                                                                Toast.makeText(getActivity(), "Формат вводу номера телефону: +380936665544", Toast.LENGTH_SHORT).show();
+                                                                Toast.makeText(getActivity(), getString(R.string.format_phone), Toast.LENGTH_SHORT).show();
                                                                 phoneNumber();
                                                                 cursor.close();
                                                             }
@@ -715,7 +737,7 @@ public class HomeFragment extends Fragment {
 
                                                         }
                                                     }})
-                                                    .setNegativeButton("Відміна", new DialogInterface.OnClickListener() {
+                                                    .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
 //                                                            if(connected()) {
@@ -729,15 +751,12 @@ public class HomeFragment extends Fragment {
                                             }
                                         }
 
-                                    } catch (MalformedURLException e) {
-                                        throw new RuntimeException(e);
-                                    } catch (InterruptedException e) {
-                                        throw new RuntimeException(e);
-                                    } catch (JSONException e) {
+                                    } catch (MalformedURLException | InterruptedException |
+                                             JSONException e) {
                                         throw new RuntimeException(e);
                                     }
                                 } else {
-                                    Toast.makeText(getActivity(), "Вкажить місце відправлення", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), getString(R.string.rout_from_message), Toast.LENGTH_SHORT).show();
                                     getActivity().finish();
 //                                    Intent intent = new Intent(getActivity(), MainActivity.class);
 //                                    startActivity(intent);
@@ -745,7 +764,7 @@ public class HomeFragment extends Fragment {
                             }
                         }
                     })
-                    .setNegativeButton("Маршрути", new DialogInterface.OnClickListener() {
+                    .setNegativeButton( getString(R.string.routs_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             if(connected()) {
@@ -753,7 +772,7 @@ public class HomeFragment extends Fragment {
                                     Log.d("TAG", "onClick: btnRouts " + array.length);
                                     listView.setItemChecked(0, true);
                                     button.setVisibility(View.VISIBLE);
-                                    Toast.makeText(getActivity(), "Обирайте зі списку попередніх поїздок", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), getString(R.string.old_routs_message), Toast.LENGTH_SHORT).show();
                                 } else {
                                     getActivity().finish();
 //                                    Intent intent = new Intent(getActivity(), MainActivity.class);
@@ -827,7 +846,7 @@ public class HomeFragment extends Fragment {
             boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
             Log.d("TAG", "onClick No validate: " + val);
             if (val == false) {
-                Toast.makeText(getActivity(), "Формат вводу номера телефону: +380936665544" , Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
 //                getActivity().finish();
 
@@ -860,8 +879,8 @@ public class HomeFragment extends Fragment {
 
 
 //        String result = phoneNumber.getText().toString();
-        builder.setTitle("Перевірка телефону")
-                .setPositiveButton("Відправити", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.verify_phone))
+                .setPositiveButton(getString(R.string.sent_button), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(connected()) {
@@ -870,7 +889,7 @@ public class HomeFragment extends Fragment {
                         boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
                         Log.d("TAG", "onClick No validate: " + val);
                         if (val == false) {
-                            Toast.makeText(getActivity(), "Формат вводу номера телефону: +380936665544" , Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                             Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
                             getActivity().finish();
 
@@ -887,15 +906,15 @@ public class HomeFragment extends Fragment {
                                     String from_name = (String) sendUrlMap.get("from_name");
                                     String to_name = (String) sendUrlMap.get("to_name");
                                     if (from_name.equals(to_name)) {
-                                        messageResult = "Дякуемо за замовлення зі " +
+                                        messageResult = getString(R.string.thanks_message) +
                                                 from_name + " " + from_number.getText() + " " + " по місту." +
-                                                " Очикуйте дзвонка оператора. Вартість поїздки: " + orderWeb + "грн";
+                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
                                     } else {
-                                        messageResult = "Дякуемо за замовлення зі " +
-                                                from_name + " " + from_number.getText() + " " + " до " +
+                                        messageResult = getString(R.string.thanks_message) +
+                                                from_name + " " + from_number.getText() + " " + getString(R.string.on_city) +
                                                 to_name + " " + to_number.getText() + "." +
-                                                " Очикуйте дзвонка оператора. Вартість поїздки: " + orderWeb + "грн";
+                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
                                     }
 
                                     StartActivity.insertRecordsOrders(from_name, to_name,
@@ -903,7 +922,7 @@ public class HomeFragment extends Fragment {
 
                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
                                             .setMessage(messageResult)
-                                            .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                                            .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
 //                                                    if(connected()) {
@@ -918,9 +937,8 @@ public class HomeFragment extends Fragment {
                                 } else {
                                     String message = (String) sendUrlMap.get("message");
                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                            .setMessage(message +
-                                                    " Спробуйте ще або зателефонуйте оператору.")
-                                            .setPositiveButton("Підтримка", new DialogInterface.OnClickListener() {
+                                            .setMessage(message + getString(R.string.next_try))
+                                            .setPositiveButton(getString(R.string.help_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     Intent intent = new Intent(Intent.ACTION_CALL);
@@ -935,7 +953,7 @@ public class HomeFragment extends Fragment {
 
                                                 }
                                             })
-                                            .setNegativeButton("Спробуйте ще", new DialogInterface.OnClickListener() {
+                                            .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     if(connected()) {
@@ -954,11 +972,7 @@ public class HomeFragment extends Fragment {
                                 }
 
 
-                            } catch (MalformedURLException e) {
-                                throw new RuntimeException(e);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            } catch (JSONException e) {
+                            } catch (MalformedURLException | InterruptedException | JSONException e) {
                                 throw new RuntimeException(e);
                             }
                         }
@@ -973,6 +987,7 @@ public class HomeFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
         }
+        Log.d(TAG, "checkPermission: +++ " +  ContextCompat.checkSelfPermission(getActivity(), permission));
     }
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {

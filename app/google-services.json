@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "860118496946",
+    "project_id": "taxieasyuaback4app",
+    "storage_bucket": "taxieasyuaback4app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860118496946:android:7475ba9e88559e2f56bbab",
+        "android_client_info": {
+          "package_name": "com.taxieasyua.back4app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860118496946-d2os3vg6qqb87sgs94pf819qm7jrap97.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.taxieasyua.back4app",
+            "certificate_hash": "e0a1ce0e16aaf4f40bb7a169303d2bdee230366e"
+          }
+        },
+        {
+          "client_id": "860118496946-eg65d2kur8cfuem5lo4sh1k9kf4jr9ke.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcDWrhqlfOAEQ6Rr9tr_MhwBT9e4ndtN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860118496946-eg65d2kur8cfuem5lo4sh1k9kf4jr9ke.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

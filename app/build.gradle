@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -10,10 +11,12 @@ android {
         applicationId "com.taxieasyua.back4app"
         minSdk 24
         targetSdk 33
-        versionCode 201
-        versionName 'add login and register'
+        versionCode 206
+        versionName '2.06'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        resConfigs "en", "ru", "uk", "fr"  // порядок элементов списка не имеет значения
     }
 
     buildTypes {
