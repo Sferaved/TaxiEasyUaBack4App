@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,12 +33,22 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapFusedActivity;
 
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 public class FirebaseSignIn extends AppCompatActivity {
@@ -109,11 +120,15 @@ public class FirebaseSignIn extends AppCompatActivity {
             new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
                 @Override
                 public void onActivityResult(FirebaseAuthUIAuthenticationResult result) {
-                    onSignInResult(result);
+                    try {
+                        onSignInResult(result);
+                    } catch (MalformedURLException | JSONException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
     );
-    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) {
+    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
 //        Configuration config = getResources().getConfiguration();
 //        Locale locale = new Locale("en"); // Код языка локализации
 //        config.setLocale(locale);
@@ -127,16 +142,24 @@ public class FirebaseSignIn extends AppCompatActivity {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             StartActivity.userEmail = user.getEmail();
             StartActivity.displayName = user.getDisplayName();
-            Log.d("TAG", "onSignInResult: " + user.getEmail() + " " + user.getDisplayName());
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(FirebaseSignIn.this, OpenStreetMapActivity.class);
-                startActivity(intent);
-            }
-            MainActivity.verifyOrder = true;
+
+            addUser();
+            if(blackList()) {
+                Log.d("TAG", "onSignInResult: " + user.getEmail() + " " + user.getDisplayName());
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(FirebaseSignIn.this, OpenStreetMapActivity.class);
+                    startActivity(intent);
+                }
+                MainActivity.verifyOrder = true;
                 finish();
+            } else {
+                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+
+                MainActivity.verifyOrder = false;
+            }
         } else {
             // Sign in failed. If response is null the user canceled the
             // sign-in flow using the back button. Otherwise check
@@ -165,5 +188,45 @@ public class FirebaseSignIn extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
     }
+    private void addUser() throws MalformedURLException, JSONException, InterruptedException {
+        String urlString = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
 
+        URL url = new URL(urlString);
+        Log.d("TAG", "sendURL: " + urlString);
+
+        AsyncTask.execute(() -> {
+            HttpsURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection.setDoInput(true);
+                urlConnection.getResponseCode();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            urlConnection.disconnect();
+        });
+
+
+
+    }
+
+    private boolean blackList() throws MalformedURLException, JSONException, InterruptedException {
+        String urlString = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/verifyBlackListUser/" +  StartActivity.userEmail;
+
+        Log.d("TAG", "onClick urlCost: " + urlString);
+
+        boolean result = false;
+        Map sendUrlMap = CostJSONParser.sendURL(urlString);
+
+        String message = (String) sendUrlMap.get("message");
+        Log.d("TAG", "onClick orderCost : " + message);
+
+        if (message.equals("Не черном списке")) {
+            result = true;
+        }
+        if (message.equals("В черном списке")) {
+            result = false;
+        }
+        return result;
+    }
 }
