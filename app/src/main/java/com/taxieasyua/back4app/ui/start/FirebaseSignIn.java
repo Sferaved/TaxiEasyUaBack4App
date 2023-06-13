@@ -2,10 +2,12 @@ package com.taxieasyua.back4app.ui.start;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -146,15 +148,21 @@ public class FirebaseSignIn extends AppCompatActivity {
             addUser();
             if(blackList()) {
                 Log.d("TAG", "onSignInResult: " + user.getEmail() + " " + user.getDisplayName());
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-                    startActivity(intent);
+                if(switchState()) {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
+                        startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(FirebaseSignIn.this, OpenStreetMapActivity.class);
+                        startActivity(intent);
+                    }
                 } else {
-                    Intent intent = new Intent(FirebaseSignIn.this, OpenStreetMapActivity.class);
+                    Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
                     startActivity(intent);
                 }
                 MainActivity.verifyOrder = true;
                 finish();
+
             } else {
                 Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
 
@@ -171,7 +179,25 @@ public class FirebaseSignIn extends AppCompatActivity {
             MainActivity.verifyOrder = false;
         }
     }
+    private boolean  switchState() {
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
 
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled || !network_enabled) {
+            return false;
+        } else
+
+            return true;
+    };
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {

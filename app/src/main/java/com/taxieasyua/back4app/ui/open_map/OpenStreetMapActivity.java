@@ -131,11 +131,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         try {
                             dialogFromToGeo();
-                        } catch (MalformedURLException e) {
-                            throw new RuntimeException(e);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        } catch (JSONException e) {
+                        } catch (MalformedURLException | InterruptedException | JSONException e) {
                             throw new RuntimeException(e);
                         }
                     } else {
@@ -230,6 +226,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             return;
         }
 
+//        Log.d(TAG, "onResume PASSIVE_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER));
 
         if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
@@ -286,13 +283,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         @SuppressLint("SetTextI18n")
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                Log.d("TAG", "onStatusChanged GPS_PROVIDER: Status: " + status);
-
-            } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-                Log.d("TAG", "onStatusChanged NETWORK_PROVIDER: Status: " + status);
-
-            }
+//            if (provider.equals(LocationManager.GPS_PROVIDER)) {
+//                Log.d("TAG", "onStatusChanged GPS_PROVIDER: Status: " + status);
+//
+//            } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
+//                Log.d("TAG", "onStatusChanged NETWORK_PROVIDER: Status: " + status);
+//
+//            }
         }
     };
 
@@ -309,16 +306,16 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             progressDialog.dismiss();
             dialogFromToGeo();
         }
-//        else
-//            if (location.getProvider().equals(
-//                LocationManager.NETWORK_PROVIDER)) {
-//            progressDialog.dismiss();
-//            startLat = location.getLatitude();
-//            startLan = location.getLongitude();
-//            dialogFromToGeo();
-//        }
+        else
+            if (location.getProvider().equals(
+                LocationManager.NETWORK_PROVIDER)) {
+            progressDialog.dismiss();
+            startLat = location.getLatitude();
+            startLan = location.getLongitude();
+            dialogFromToGeo();
+        }
 
-        Toast.makeText(this, location.getProvider() + startLat + " - " + startLan, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, location.getProvider() + startLat + " - " + startLan, Toast.LENGTH_SHORT).show();
     }
 
     private void setMarker(double Lat, double Lan, String title) {
@@ -360,8 +357,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
-        Log.d("TAG", "checkEnabled: Enabled GPS_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
-        Log.d("TAG", "checkEnabled: Enabled NETWORK_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
+//        Log.d("TAG", "checkEnabled: Enabled GPS_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
+//        Log.d("TAG", "checkEnabled: Enabled NETWORK_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
 
     }
 
@@ -373,7 +370,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
-            Log.d("TAG", "checkPermission: " + new String[]{permission});
+//            Log.d("TAG", "checkPermission: " + new String[]{permission});
         }
     }
     // This function is called when user accept or decline the permission.

@@ -148,7 +148,7 @@ public class HomeFragment extends Fragment {
                         checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     }
                     if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        Intent intent = new Intent(getActivity(), OpenStreetMapFusedActivity.class);
+                        Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
                         startActivity(intent);
                     } else {
                         Intent intent = new Intent(getActivity(), MainActivity.class);
