@@ -249,7 +249,7 @@ public class StartActivity extends Activity {
 //               startActivity(intent);
 //           }
 
-           intent = new Intent(this, GoogleSignInActivity.class);
+           intent = new Intent(this, FirebaseSignIn.class);
            startActivity(intent);
 
          Log.d("TAG", "onResume: "  + hasConnection());

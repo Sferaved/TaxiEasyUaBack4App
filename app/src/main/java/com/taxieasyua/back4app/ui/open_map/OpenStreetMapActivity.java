@@ -193,7 +193,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
     }
     private boolean  switchState() {
-        LocationManager lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         boolean gps_enabled = false;
         boolean network_enabled = false;
 
@@ -213,6 +213,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     };
     public void onResume() {
         super.onResume();
+        gpsSwitch.setChecked(switchState());
+
 //        Toast.makeText(this, "Позначте на карті місця посадки та призначення", Toast.LENGTH_SHORT).show();
 //
         //this will refresh the osmdroid configuration on resuming.
@@ -229,14 +231,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         }
 
 
-
-
         if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1500 * 10, 10, locationListener);
+                    1000*10, 10, locationListener);
         } else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                1500 * 10, 10, locationListener);
+                1000*10, 10, locationListener);
         }
         checkEnabled();
         map.onResume();
@@ -261,6 +261,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
             locationStart = location;
+            // Отключение слушателя после получения первых координат
+            locationManager.removeUpdates(this);
             GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
             mapController.setCenter(startPoint);
         }
@@ -306,15 +308,17 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             startLan = location.getLongitude();
             progressDialog.dismiss();
             dialogFromToGeo();
-        } else if (location.getProvider().equals(
-                LocationManager.NETWORK_PROVIDER)) {
-            progressDialog.dismiss();
-            startLat = location.getLatitude();
-            startLan = location.getLongitude();
-            dialogFromToGeo();
         }
+//        else
+//            if (location.getProvider().equals(
+//                LocationManager.NETWORK_PROVIDER)) {
+//            progressDialog.dismiss();
+//            startLat = location.getLatitude();
+//            startLan = location.getLongitude();
+//            dialogFromToGeo();
+//        }
 
-
+        Toast.makeText(this, location.getProvider() + startLat + " - " + startLan, Toast.LENGTH_SHORT).show();
     }
 
     private void setMarker(double Lat, double Lan, String title) {

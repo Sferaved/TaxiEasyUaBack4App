@@ -117,9 +117,7 @@ public class HomeFragment extends Fragment {
                     try {
                         dialogFromTo();
 
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
+                    } catch (MalformedURLException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -399,7 +397,7 @@ public class HomeFragment extends Fragment {
                                                 } else {
                                                     String message = (String) sendUrlMap.get("message");
                                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                            .setMessage(message + getString(R.string.next_try))
+                                                            .setMessage(message)
                                                             .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
