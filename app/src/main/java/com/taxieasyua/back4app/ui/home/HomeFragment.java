@@ -29,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -258,7 +259,7 @@ public class HomeFragment extends Fragment {
                 } else {
                     arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
                             routMaps.get(i).get("from_number").toString() + " -> " +
-                            getString(R.string.on_city);
+                            getString(R.string.on_city_tv);
                 }
 
             }
@@ -521,6 +522,21 @@ public class HomeFragment extends Fragment {
 
             from_number = view.findViewById(R.id.from_number);
             to_number = view.findViewById(R.id.to_number);
+
+            AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
+
+            CheckBox checkBox = view.findViewById(R.id.on_city);
+            checkBox.setChecked(false);
+            checkBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(checkBox.isChecked()) {
+                        text_to.setVisibility(View.INVISIBLE);
+                    } else {
+                        text_to.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
             if(array != null)  {
                 button.setVisibility(View.VISIBLE);
 

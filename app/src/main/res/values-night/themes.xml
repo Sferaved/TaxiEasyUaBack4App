@@ -12,13 +12,13 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+
     </style>
 
 
     <style name="Theme.TaxiEasyUaBack4App.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-
 <!--                <item name="android:windowTranslucentNavigation">true</item>-->
 <!--                <item name="android:fitsSystemWindows">true</item>-->
 <!--                <item name="android:clipToPadding">false</item>-->
@@ -26,13 +26,16 @@
 
     <style name="Theme.TaxiEasyUa.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" >
         <item name="android:textColor">@android:color/white</item>
+        
     </style>
 
-    <style name="Theme.TaxiEasyUa.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.TaxiEasyUa.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"  >
+    </style>
 
     <style name="AlertDialogTheme">
         <item name="buttonBarPositiveButtonStyle">@style/Alert.Button.Positive</item>
         <item name="buttonBarNeutralButtonStyle">@style/Alert.Button.Neutral</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Alert.Button.Negative</item>
     </style>
 
     <style name="Alert.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton">
@@ -49,8 +52,15 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">14sp</item>
     </style>
-
-    <style name="MenuTheme" parent="Theme.MaterialComponents">
+    <style name="Alert.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="rippleColor">@color/colorAccent</item>
         <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="LeftNavigation">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="itemTextColor">@color/colorAccent</item>
     </style>
 </resources>

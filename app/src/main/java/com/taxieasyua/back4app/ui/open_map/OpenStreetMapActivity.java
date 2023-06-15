@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
@@ -82,6 +83,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     MapView map = null;
     GeoPoint startPoint;
     static Switch gpsSwitch;
+    int on_city = 0;
     AlertDialog progressDialog;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -441,44 +443,62 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
 
             Log.d(TAG, "dialogFromToGeo: " + from_geo);
+            AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
 
-
-            to_number = view.findViewById(R.id.to_number);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_dropdown_item_1line, arrayStreet);
-
-            AutoCompleteTextView textViewTo = view.findViewById(R.id.text_to);
-            textViewTo.setAdapter(adapter);
-            textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            CheckBox checkBox = view.findViewById(R.id.on_city);
+            checkBox.setChecked(false);
+            checkBox.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if(connected()) {
-                        to = String.valueOf(adapter.getItem(position));
-                        if (to.indexOf("/") != -1) {
-                            to = to.substring(0,  to.indexOf("/"));
-                        };
-                        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + to;
-
-
-                        Log.d("TAG", "onClick urlCost: " + url);
-                        Map sendUrlMapCost = null;
-                        try {
-                            sendUrlMapCost = ResultSONParser.sendURL(url);
-                        } catch (MalformedURLException | InterruptedException | JSONException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        String orderCost = (String) sendUrlMapCost.get("message");
-                        Log.d("TAG", "onClick Hid : " + orderCost);
-
-                        if (orderCost.equals("1")) {
-                            to_number.setVisibility(View.VISIBLE);
-                            to_number.requestFocus();
-                        }
+                public void onClick(View v) {
+                    if(checkBox.isChecked()) {
+                        text_to.setVisibility(View.INVISIBLE);
+                        on_city = 0;
+                        to =  Double.toString(locationStart.getLatitude());
+                    } else {
+                        text_to.setVisibility(View.VISIBLE);
+                        on_city = 1;
                     }
-
                 }
             });
+
+            to_number = view.findViewById(R.id.to_number);
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_dropdown_item_1line, arrayStreet);
+
+                AutoCompleteTextView textViewTo = view.findViewById(R.id.text_to);
+                textViewTo.setAdapter(adapter);
+
+                textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        if(connected()) {
+                            to = String.valueOf(adapter.getItem(position));
+                            if (to.indexOf("/") != -1) {
+                                to = to.substring(0,  to.indexOf("/"));
+                            };
+                            String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + to;
+
+
+                            Log.d("TAG", "onClick urlCost: " + url);
+                            Map sendUrlMapCost = null;
+                            try {
+                                sendUrlMapCost = ResultSONParser.sendURL(url);
+                            } catch (MalformedURLException | InterruptedException | JSONException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                            String orderCost = (String) sendUrlMapCost.get("message");
+                            Log.d("TAG", "onClick Hid : " + orderCost);
+
+                            if (orderCost.equals("1")) {
+                                to_number.setVisibility(View.VISIBLE);
+                                to_number.requestFocus();
+                            }
+                        }
+
+                    }
+                });
 
 
             builder.setMessage( getString(R.string.make_rout_message))
@@ -488,7 +508,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                             if(connected()) {
                                    try {
-                                       if (to != null) {
+                                       if (on_city == 0) {
 
                                            String urlCost = getTaxiUrlSearchGeo(locationStart.getLatitude(), locationStart.getLongitude(), to, to_number.getText().toString(), "costSearchGeo");
 

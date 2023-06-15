@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версія: 2.13</string>
+    <string name="version">Версія: 2.14</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -65,6 +65,7 @@
     <string name="show_to_point">Вкажіть місце призначення</string>
     <string name="change">ЗМІНИТИ</string>
     <string name="on_city">" по місту."</string>
+    <string name="on_city_tv">" по місту"</string>
     <string name="help_button">Підтримка</string>
     <string name="try_again">Спробуйте ще</string>
     <string name="ok_button">Ок</string>
