@@ -27,7 +27,7 @@ public class ResultSONParser {
 
     public static Map<String, String> sendURL(String urlString) throws MalformedURLException, InterruptedException, JSONException {
         URL url = new URL(urlString);
-        Log.d("TAG", "sendURL: " + urlString);
+        Log.d("TAG", "sendURL ResultSONParser: " + urlString);
         Map<String, String> costMap = new HashMap<>();
         Exchanger<String> exchanger = new Exchanger<>();
 

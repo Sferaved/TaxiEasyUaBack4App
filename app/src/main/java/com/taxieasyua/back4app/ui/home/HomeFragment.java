@@ -368,12 +368,12 @@ public class HomeFragment extends Fragment {
                                                     String to_name = (String) sendUrlMap.get("to_name");
                                                     if (from_name.equals(to_name)) {
                                                         messageResult = getString(R.string.thanks_message) +
-                                                                from_name + " " + from_number.getText() + " " + getString(R.string.on_city) +
+                                                                from_name + " " + from_number_rout + " " + getString(R.string.on_city) +
                                                                 getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
                                                     } else {
                                                         messageResult = getString(R.string.thanks_message) +
-                                                                from_name + " " + from_number_rout + " " + getString(R.string.on_city) +
+                                                                from_name + " " + from_number_rout + " " + getString(R.string.to_message) +
                                                                 to_name + " " + to_number_rout + "." +
                                                                 getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
                                                     }
