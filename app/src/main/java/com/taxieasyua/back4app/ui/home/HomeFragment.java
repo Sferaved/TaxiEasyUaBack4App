@@ -104,9 +104,7 @@ public class HomeFragment extends Fragment {
             try {
                 dialogFromTo();
 
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
+            } catch (MalformedURLException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -185,9 +183,7 @@ public class HomeFragment extends Fragment {
 
                     try {
                         dialogFromToOneRout(StartActivity.routChoice(listView.getCheckedItemPosition() + 1));
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
+                    } catch (MalformedURLException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
 
