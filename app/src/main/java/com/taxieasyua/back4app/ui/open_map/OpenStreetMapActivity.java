@@ -727,31 +727,39 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //
 //                        }
 //                    })
-            .setNegativeButton(getString(R.string.change), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            coastDialog.dismiss();
-                            Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
-                            startActivity(intent);
-                        }
-                    })
-                    .setNeutralButton(R.string.my_adresses, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            coastDialog.dismiss();
-                            try {
-
-                                if(array == null) {
-                                    Toast.makeText(OpenStreetMapActivity.this, R.string.make_order_message, Toast.LENGTH_SHORT).show();
-                                } else {
-                                    dialogFromToGeoAdress(array);
+                    .setNegativeButton(getString(R.string.change), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    coastDialog.dismiss();
+                                    Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
+                                    startActivity(intent);
                                 }
-                            } catch (MalformedURLException | InterruptedException | JSONException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    }).show();
-        }
+                            })
+                    .setNeutralButton(R.string.my_adresses, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    coastDialog.dismiss();
+                                    if(array.length == 0) {
+                                        Toast.makeText(OpenStreetMapActivity.this, R.string.make_order_message, Toast.LENGTH_SHORT).show();
+                                        try {
+                                            dialogFromToGeo();
+                                        } catch (MalformedURLException | InterruptedException |
+                                                 JSONException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    } else {
+
+                                        try {
+                                            dialogFromToGeoAdress(array);
+                                        } catch (MalformedURLException | InterruptedException |
+                                                 JSONException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+
+                                }
+                            }).show();
+                }
     }
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
 
