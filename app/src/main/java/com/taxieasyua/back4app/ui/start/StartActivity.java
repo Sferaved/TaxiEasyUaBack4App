@@ -63,7 +63,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_266668_89999";
+    private static final String DB_NAME = "data_266668_8999965";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -208,18 +208,9 @@ public class StartActivity extends Activity {
         fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_CALL);
+                    Intent intent = new Intent(Intent.ACTION_DIAL);
                     intent.setData(Uri.parse("tel:0674443804"));
-                    if (ActivityCompat.checkSelfPermission(StartActivity.this,
-                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                        checkPermission(Manifest.permission.CALL_PHONE, StartActivity.READ_CALL_PHONE);
-                        startActivity(intent);
-                    }
-                    if (ActivityCompat.checkSelfPermission(StartActivity.this,
-                            Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                        startActivity(intent);
-                    }
-
+                    startActivity(intent);
                 }
             });
 

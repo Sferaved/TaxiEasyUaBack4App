@@ -126,16 +126,9 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
+                Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse("tel:0674443804"));
-                if (ActivityCompat.checkSelfPermission(getActivity(),
-                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-                }
-                if (ActivityCompat.checkSelfPermission(getActivity(),
-                        Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(intent);
-                }
+                startActivity(intent);
             }
         });
         fab_open_map.setOnClickListener(new View.OnClickListener() {
@@ -405,20 +398,9 @@ public class HomeFragment extends Fragment {
                                                             .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
-                                                                    Intent intent = new Intent(Intent.ACTION_CALL);
+                                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                     intent.setData(Uri.parse("tel:0674443804"));
-                                                                    if (ActivityCompat.checkSelfPermission(getActivity(),
-                                                                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                                        checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                                    } else startActivity(intent);
-//                                                                    if (array.length != 0) {
-//                                                                        button.setVisibility(View.VISIBLE);
-//
-//                                                                    } else
-//                                                                        button.setVisibility(View.INVISIBLE);
-
-
+                                                                    startActivity(intent);
                                                                 }
                                                             })
                                                             .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
@@ -475,13 +457,9 @@ public class HomeFragment extends Fragment {
                             .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent(Intent.ACTION_CALL);
+                                    Intent intent = new Intent(Intent.ACTION_DIAL);
                                     intent.setData(Uri.parse("tel:0674443804"));
-                                    if (ActivityCompat.checkSelfPermission(getActivity(),
-                                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                        checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                    } else   startActivity(intent);
+                                    startActivity(intent);
                                 }
                             })
                             .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
@@ -710,16 +688,9 @@ public class HomeFragment extends Fragment {
                                                                                 .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                                                     @Override
                                                                                     public void onClick(DialogInterface dialog, int which) {
-                                                                                        Intent intent = new Intent(Intent.ACTION_CALL);
+                                                                                        Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                                         intent.setData(Uri.parse("tel:0674443804"));
-                                                                                        if (ActivityCompat.checkSelfPermission(getActivity(),
-                                                                                                Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                                                            checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                                                        } else
-                                                                                            startActivity(intent);
-//                                                                                        button.setVisibility(View.VISIBLE);
-
+                                                                                        startActivity(intent);
 
                                                                                     }
                                                                                 })
@@ -958,14 +929,9 @@ public class HomeFragment extends Fragment {
                                             .setPositiveButton(getString(R.string.help_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
-                                                    Intent intent = new Intent(Intent.ACTION_CALL);
+                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
                                                     intent.setData(Uri.parse("tel:0674443804"));
-                                                    if (ActivityCompat.checkSelfPermission(getActivity(),
-                                                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                        checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                    } else   startActivity(intent);
-//                                                    button.setVisibility(View.VISIBLE);
+                                                    startActivity(intent);
 
 
                                                 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версия: 2.17</string>
+    <string name="version">Версия: 2.18</string>
 
     <string name="app_name">Такси Киев</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>

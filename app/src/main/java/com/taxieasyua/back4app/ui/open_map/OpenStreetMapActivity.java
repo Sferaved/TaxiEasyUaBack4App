@@ -121,17 +121,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             fab_call.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_CALL);
+                    Intent intent = new Intent(Intent.ACTION_DIAL);
                     intent.setData(Uri.parse("tel:0674443804"));
-                    if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this,
-                            Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                        checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-                    }
-                    if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this,
-                            Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                        startActivity(intent);
-                    }
-
+                    startActivity(intent);
                 }
             });
             fab_open_map.setOnClickListener(new View.OnClickListener() {
@@ -670,14 +662,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                         @SuppressLint("SuspiciousIndentation")
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
-                                                                                            Intent intent = new Intent(Intent.ACTION_CALL);
+                                                                                            Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                                             intent.setData(Uri.parse("tel:0674443804"));
-                                                                                            if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this,
-                                                                                                    Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                                                                checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                                                            } else
-                                                                                                startActivity(intent);
+                                                                                            startActivity(intent);
                                                                                         }
                                                                                     })
                                                                                     .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
@@ -896,14 +883,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                         @SuppressLint("SuspiciousIndentation")
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
-                                                                                            Intent intent = new Intent(Intent.ACTION_CALL);
+                                                                                            Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                                             intent.setData(Uri.parse("tel:0674443804"));
-                                                                                            if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this,
-                                                                                                    Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                                                                checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                                                            } else
-                                                                                                startActivity(intent);
+                                                                                            startActivity(intent);
                                                                                         }
                                                                                     })
                                                                                     .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
@@ -1191,13 +1173,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                     @SuppressLint("SuspiciousIndentation")
                                                     @Override
                                                     public void onClick(DialogInterface dialog, int which) {
-                                                        Intent intent = new Intent(Intent.ACTION_CALL);
+                                                        Intent intent = new Intent(Intent.ACTION_DIAL);
                                                         intent.setData(Uri.parse("tel:0674443804"));
-                                                        if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this,
-                                                                Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                            checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                        } else
                                                         startActivity(intent);
                                                     }
                                                 })
@@ -1288,14 +1265,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                     .setPositiveButton(getString(R.string.help_button), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
-                                                            Intent intent = new Intent(Intent.ACTION_CALL);
+                                                            Intent intent = new Intent(Intent.ACTION_DIAL);
                                                             intent.setData(Uri.parse("tel:0674443804"));
-                                                            if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this,
-                                                                    Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                                                                checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-
-                                                            } else
-                                                                startActivity(intent);
+                                                            startActivity(intent);
                                                         }
                                                     })
                                                     .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
