@@ -13,7 +13,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -62,12 +65,11 @@ public class FirebaseSignIn extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
+        ImageView mImageView = findViewById(R.id.imageView2);
+        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
+        // Подключаем анимацию к нужному View
+        mImageView.startAnimation(sunRiseAnimation);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            return;
-        }
         btn_again = findViewById(R.id.btn_again);
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
