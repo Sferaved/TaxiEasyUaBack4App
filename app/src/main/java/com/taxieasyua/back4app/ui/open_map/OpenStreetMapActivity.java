@@ -262,10 +262,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000*10, 10, locationListener);
+                    1000*5, 10, locationListener);
         } else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                1000*10, 10, locationListener);
+                1000*5, 10, locationListener);
         }
         checkEnabled();
         map.onResume();
