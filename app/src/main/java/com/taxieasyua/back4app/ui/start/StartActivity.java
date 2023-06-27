@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -31,25 +30,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.maps.Kyiv1;
-import com.taxieasyua.back4app.ui.maps.Kyiv10;
-import com.taxieasyua.back4app.ui.maps.Kyiv11;
-import com.taxieasyua.back4app.ui.maps.Kyiv2;
-import com.taxieasyua.back4app.ui.maps.Kyiv3;
-import com.taxieasyua.back4app.ui.maps.Kyiv4;
-import com.taxieasyua.back4app.ui.maps.Kyiv5;
-import com.taxieasyua.back4app.ui.maps.Kyiv6;
-import com.taxieasyua.back4app.ui.maps.Kyiv7;
-import com.taxieasyua.back4app.ui.maps.Kyiv8;
-import com.taxieasyua.back4app.ui.maps.Kyiv9;
 import com.taxieasyua.back4app.ui.maps.Odessa;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 
 import org.json.JSONException;
@@ -68,7 +54,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_266668_8999965";
+    private static final String DB_NAME = "data_266668_89999656596899667";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -195,11 +181,7 @@ public class StartActivity extends Activity {
         Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
         // Подключаем анимацию к нужному View
         mImageView.startAnimation(sunRiseAnimation);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            return;
-        }
+
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -242,17 +224,11 @@ public class StartActivity extends Activity {
            btn_again.setVisibility(View.VISIBLE);
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
-//           intent = new Intent(this, OpenStreetMapActivity.class);
-
-//           Log.d("TAG", "onResume Manifest.permission.ACCESS_FINE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION));
-//           Log.d("TAG", "onResume Manifest.permission.ACCESS_COARSE_LOCATION " + ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION));
-//           if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//               Intent intent = new Intent(this, FirebaseSignIn.class);
-//               startActivity(intent);
-//           } else {
-//               Intent intent = new Intent(this, OpenStreetMapActivity.class);
-//               startActivity(intent);
-//           }
+           try {
+               startIp();
+           } catch (MalformedURLException e) {
+               throw new RuntimeException(e);
+           }
 
            intent = new Intent(this, FirebaseSignIn.class);
            startActivity(intent);
@@ -282,6 +258,24 @@ public class StartActivity extends Activity {
         return false;
     }
 
+    public void startIp() throws MalformedURLException {
+        String urlString = "https://m.easy-order-taxi.site/" +  StartActivity.api + "/android/startIP";
+        Log.d("TAG", "startIp: " + urlString);
+        URL url = new URL(urlString);
+
+        AsyncTask.execute(() -> {
+            HttpsURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection.setDoInput(true);
+                urlConnection.getResponseCode();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            urlConnection.disconnect();
+        });
+
+    }
     public static String verifyConnection(String urlString) throws MalformedURLException, InterruptedException {
 
         URL url = new URL(urlString);
@@ -347,7 +341,7 @@ public class StartActivity extends Activity {
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
             settings.add("usually");
-            settings.add("Базовий онлайн");
+            settings.add("Базовый");
             insertFirstSettings(settings);
             if (cursorDb != null && !cursorDb.isClosed())
                 cursorDb.close();

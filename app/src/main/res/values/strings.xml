@@ -1,7 +1,8 @@
 <resources>
-    <string name="version">Версия: 2.19</string>
+    <string name="version">Версия: 2.23</string>
 
     <string name="app_name">Такси Киев</string>
+
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
     <string name="back4app_app_id">01YGF894m3NJRXT1BlH6qPo9pUfDlG9sqi9K9mIL</string>
     <string name="back4app_client_key">T5f5GuT1UCmaiJn8Dek3sVmayGuJa2jfelQR6V6f</string>
@@ -86,5 +87,7 @@
     <string name="my_adresses">Избранные</string>
     <string name="make_order_message">Совершите хотя бы одну поездку</string>
     <string name="to_adress_message">Куда едем?</string>
+    <string name="coastMarkersMessage">"Стоимость поездки до "</string>
+    <string name="please_phone_message">Без информации о номере телефона заказ невозможен</string>
 
 </resources>

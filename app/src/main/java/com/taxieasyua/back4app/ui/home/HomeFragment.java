@@ -79,6 +79,8 @@ public class HomeFragment extends Fragment {
     private final String TAG = "TAG";
     static Switch gpsSwitch;
     private static final int CM_DELETE_ID = 1;
+    String from_street_rout, to_street_rout;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -182,14 +184,6 @@ public class HomeFragment extends Fragment {
 
             }
         });
-
-//        try {
-//            dialogFromTo();
-//        } catch (MalformedURLException e) {
-//            throw new RuntimeException(e);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
 
         return root;
     }
@@ -314,10 +308,28 @@ public class HomeFragment extends Fragment {
             View view = inflater.inflate(R.layout.from_to_layout, null);
             builder.setView(view);
 
-            String from_street_rout = rout.get("from_street");
+//            String from_street_rout = rout.get("from_street");
+//            String from_number_rout = rout.get("from_number");
+//            String to_street_rout = rout.get("to_street");
+//            String to_number_rout = rout.get("to_number");
+
+            from_street_rout = rout.get("from_street");
+            if (from_street_rout.indexOf("/") != -1) {
+                from_street_rout = from_street_rout.substring(0,  from_street_rout.indexOf("/"));
+            };
             String from_number_rout = rout.get("from_number");
-            String to_street_rout = rout.get("to_street");
+
+            to_street_rout = rout.get("to_street");
+
+            if (to_street_rout.indexOf("/") != -1) {
+                to_street_rout = to_street_rout.substring(0,  to_street_rout.indexOf("/"));
+            };
+
             String to_number_rout = rout.get("to_number");
+
+
+
+
             Log.d("TAG", "dialogFromToOneRout: " + from_street_rout + to_street_rout);
 
             try {
