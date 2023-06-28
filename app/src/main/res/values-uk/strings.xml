@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версія: 2.25</string>
+    <string name="version">Версія: 2.28</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -58,7 +58,7 @@
     <string name="firebase_false_message">грн. Вибачте, без перевірки Google-акаунту замовлення не можливе. Спробуйте знову.</string>
     <string name="UAH">грн</string>
     <string name="order">Замовити</string>
-    <string name="thanks_message">"Дякуемо за замовлення зі "</string>
+    <string name="thanks_message">"Дякуемо за замовлення "</string>
     <string name="call_of_order">" Очикуйте дзвонка оператора. Вартість поїздки: "</string>
     <string name="next_try">" Спробуйте ще або зателефонуйте оператору."</string>
     <string name="help">Підтримка</string>
@@ -69,7 +69,7 @@
     <string name="help_button">Підтримка</string>
     <string name="try_again">Спробуйте ще</string>
     <string name="ok_button">Ок</string>
-    <string name="to_message">" до "</string>
+    <string name="to_message">" -> "</string>
     <string name="rout_from_message">Вкажить місце відправлення</string>
     <string name="routs_button">Маршрути</string>
     <string name="old_routs_message">Обирайте зі списку попередніх поїздок</string>

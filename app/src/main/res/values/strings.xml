@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версия: 2.25</string>
+    <string name="version">Версия: 2.28</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -59,7 +59,7 @@
     <string name="firebase_false_message">грн. Извините, без проверки Google-аккаунта заказ невозможен. Попробуйте снова.</string>
     <string name="UAH">грн</string>
     <string name="order">Заказать</string>
-    <string name="thanks_message">"Спасибо за заказ с "</string>
+    <string name="thanks_message">"Спасибо за заказ "</string>
     <string name="call_of_order">" Ожидайте звонка оператора. Стоимость поездки: "</string>
     <string name="next_try">" Попробуйте еще или позвоните оператору."</string>
     <string name="help">Поддержка</string>
@@ -70,7 +70,7 @@
     <string name="help_button">Поддержка</string>
     <string name="try_again">Попробуйте еще</string>
     <string name="ok_button">Ок</string>
-    <string name="to_message">" к "</string>
+    <string name="to_message">" -> "</string>
     <string name="rout_from_message">Укажите место отправки</string>
     <string name="routs_button">Маршруты</string>
     <string name="old_routs_message">Выбирайте из списка предыдущих поездок</string>
