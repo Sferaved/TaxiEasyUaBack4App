@@ -467,14 +467,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             Log.d("TAG", "onClick orderCost : " + orderCost);
 
             if (orderCost.equals("0")) {
-
-                Toast.makeText(map.getContext(), em + message, Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-                map.getContext().startActivity(intent);
+                coastOfRoad(startPoint, message);
+//                Toast.makeText(map.getContext(), em + message, Toast.LENGTH_LONG).show();
+//                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
+//                map.getContext().startActivity(intent);
             }
             if (!orderCost.equals("0")) {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
-                AlertDialog coastMarkersDialog = builder.create();
                 String message_coats_markers = cm + sendUrlMapCost.get("routeto") +  " "  + orderCost + UAH;
                 builder.setMessage(message_coats_markers)
                         .setPositiveButton(ord, new DialogInterface.OnClickListener() {
@@ -582,6 +581,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                 }
                             }
                         })
+                        .setNegativeButton(R.string.try_again, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
+                                map.getContext().startActivity(intent);
+                            }
+                        })
                         .show();
             }
 
@@ -589,12 +595,129 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             OpenStreetMapActivity.setMarker(startPoint.getLatitude(), startPoint.getLongitude(), target);
 
-            target = (String) sendUrlMapCost.get("routeto");
+            target = sendUrlMapCost.get("routeto");
             OpenStreetMapActivity.setMarker(endPoint.getLatitude(), endPoint.getLongitude(), target);
 
             OpenStreetMapActivity.showRout(startPoint, endPoint);
         };
     }
+
+    private static void coastOfRoad(GeoPoint startPoint, String messageResult) {
+
+        //                Toast.makeText(map.getContext(), em + message, Toast.LENGTH_LONG).show();
+//                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
+//                map.getContext().startActivity(intent);
+        new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
+                .setMessage(messageResult)
+                .setPositiveButton( onc, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(connected()) {
+                            Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+                            if (cursor.getCount() == 0) {
+                                Toast.makeText(map.getContext(),  R.string.please_phone_message, Toast.LENGTH_SHORT).show();
+                                getPhoneNumber();
+                                cursor.close();
+                                cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+                                if (cursor.getCount() == 0) {
+                                    phoneNumberMarkers();
+                                    cursor.close();
+                                }
+                            } else {
+                                try {
+
+                                    String urlCost = getTaxiUrlSearchGeo(startPoint.getLatitude(), startPoint.getLongitude(),
+                                           Double.toString(startLat),
+                                    " ", "costSearchGeo");
+
+                                    Log.d("TAG", "onClick urlCost 1111: " + urlCost);
+
+                                    Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+
+                                    String message = (String) sendUrlMapCost.get("message");
+                                    String orderCost = (String) sendUrlMapCost.get("order_cost");
+                                    Log.d("TAG", "onClick orderCost : " + orderCost);
+
+                                    if (orderCost.equals("0")) {
+
+                                        Toast.makeText(map.getContext(), em + message, Toast.LENGTH_LONG).show();
+                                        Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
+                                        map.getContext().startActivity(intent);
+                                    }
+                                    if (!orderCost.equals("0")) {
+
+                                        if (!MainActivity.verifyOrder) {
+                                            Toast.makeText(map.getContext(), co + orderCost + fb, Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            String orderWeb = (String) sendUrlMapCost.get("order_cost");
+
+                                            if (!orderWeb.equals("0")) {
+                                                String from_name = FromAdressString;
+                                                String to_name = onc;
+                                                    StartActivity.insertRecordsOrders((String) sendUrlMapCost.get("routefrom"), (String) sendUrlMapCost.get("routefrom"),
+                                                            (String) sendUrlMapCost.get("routefromnumber"), (String) sendUrlMapCost.get("routefromnumber"));
+
+                                                String messageResult = tm +
+                                                        from_name + " " + tom +
+                                                        to_name + "." +
+                                                        co + orderWeb + UAH;
+                                                Log.d("TAG", "onClick messageResult: " + messageResult);
+
+                                                new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
+                                                        .setMessage(messageResult)
+                                                        .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                map.getContext().startActivity(intent);
+                                                            }
+                                                        })
+                                                        .show();
+                                            } else {
+                                                message = (String) sendUrlMapCost.get("message");
+                                                new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
+                                                        .setMessage(message + ntr)
+                                                        .setPositiveButton(hlp, new DialogInterface.OnClickListener() {
+                                                            @SuppressLint("SuspiciousIndentation")
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                Intent intent = new Intent(Intent.ACTION_DIAL);
+                                                                intent.setData(Uri.parse("tel:0674443804"));
+                                                                map.getContext().startActivity(intent);
+                                                            }
+                                                        })
+                                                        .setNegativeButton(tra, new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                map.getContext().startActivity(intent);
+                                                            }
+                                                        })
+                                                        .show();
+                                            }
+                                        }
+
+                                    }
+
+                                } catch (MalformedURLException | InterruptedException |
+                                         JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.try_again, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
+                        map.getContext().startActivity(intent);
+                    }
+                })
+                .show();
+    }
+
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
 
         if(connected()) {
@@ -755,7 +878,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                     Log.d("TAG", "onClick urlCost: " + urlCost);
 
-                                    Map sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+                                    Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
                                     String message = (String) sendUrlMapCost.get("message");
                                     String orderCost = (String) sendUrlMapCost.get("order_cost");
