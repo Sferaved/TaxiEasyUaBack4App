@@ -29,6 +29,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,6 +98,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp, tra, plm;
     LayoutInflater inflater;
     static View view;
+    static ProgressBar progressBar;
+    @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,6 +131,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             if(StartActivity.routMaps().size() != 0) {
                 adressArr = new ArrayList<>(StartActivity.routMaps().size());
             };
+
+            progressBar = findViewById(R.id.progressBar);
 
             fab = findViewById(R.id.fab);
             fab_call = findViewById(R.id.fab_call);
@@ -389,6 +394,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             map.getOverlays().add(roadOverlay);
             map.invalidate();
         });
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     @SuppressLint("SetTextI18n")
@@ -857,14 +863,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 to = Double.toString(startLat);
                 to_number.setText(" ");
             }
-            Log.d(TAG, "onClick: startLat " +
-                    startLat);
-            Log.d(TAG, "onClick: startLan " +
-                    startLan);
-            Log.d(TAG, "onClick:  to " +
-                    to);
-            Log.d(TAG, "onClick: to_number.getText().toString() " +
-                    "." + to_number.getText().toString() + ".");
+
             progressDialog.dismiss();
             builder.setMessage( R.string.make_rout_message)
                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
@@ -1048,7 +1047,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                 }
                             }).show();
-                }
+            Toast.makeText(this, R.string.find_of_map, Toast.LENGTH_SHORT).show();
+        }
     }
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
 

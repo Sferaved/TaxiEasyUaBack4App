@@ -56,7 +56,7 @@
     <string name="error_message">"Ошибка: "</string>
     <string name="to_point">"Место назначения: "</string>
     <string name="cost_of_order">"Стоимость поездки: "</string>
-    <string name="firebase_false_message">грн. Извините, без проверки Google-аккаунта заказ невозможен. Попробуйте снова.</string>
+    <string name="firebase_false_message">грн. Извините, без проверки Google-аккаунта заказ невозможен.</string>
     <string name="UAH">грн</string>
     <string name="order">Заказать</string>
     <string name="thanks_message">"Спасибо за заказ "</string>
@@ -74,7 +74,7 @@
     <string name="rout_from_message">Укажите место отправки</string>
     <string name="routs_button">Маршруты</string>
     <string name="old_routs_message">Выбирайте из списка предыдущих поездок</string>
-    <string name="firebase_error">Извините. Вход в приложение заблокирован. Обратитесь к оператору.</string>
+    <string name="firebase_error">Извините. Вход заблокирован. Обратитесь к оператору.</string>
     <string name="choice_button">подтвердить</string>
     <string name="to_edit">Куда</string>
     <string name="from_edit">Откуда</string>
@@ -90,5 +90,6 @@
     <string name="coastMarkersMessage">"Стоимость поездки до "</string>
     <string name="please_phone_message">Без информации о номере телефона заказ невозможен</string>
     <string name="check_message">Ожидайте, идет подключение...</string>
+    <string name="find_of_map">Попробуйте найти на карте</string>
 
 </resources>

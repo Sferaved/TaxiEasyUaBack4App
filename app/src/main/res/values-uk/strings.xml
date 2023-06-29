@@ -55,7 +55,7 @@
     <string name="error_message">"Помілка: "</string>
     <string name="to_point">"Місце призначення: "</string>
     <string name="cost_of_order">"Вартість поїздки: "</string>
-    <string name="firebase_false_message">грн. Вибачте, без перевірки Google-акаунту замовлення не можливе. Спробуйте знову.</string>
+    <string name="firebase_false_message">грн. Вибачте, без перевірки Google-акаунту замовлення не можливе.</string>
     <string name="UAH">грн</string>
     <string name="order">Замовити</string>
     <string name="thanks_message">"Дякуемо за замовлення "</string>
@@ -73,7 +73,7 @@
     <string name="rout_from_message">Вкажить місце відправлення</string>
     <string name="routs_button">Маршрути</string>
     <string name="old_routs_message">Обирайте зі списку попередніх поїздок</string>
-    <string name="firebase_error">Вибачте. Вхід до додатку заблоковано. Зверніться до оператора.</string>
+    <string name="firebase_error">Вибачте. Вхід заблоковано. Зверніться до оператора.</string>
     <string name="choice_button">підтвердити</string>
     <string name="to_edit">Куди</string>
     <string name="from_edit">Звідки</string>
@@ -89,4 +89,5 @@
     <string name="coastMarkersMessage">"Вартість подорожі до "</string>
     <string name="please_phone_message">Без інформації про номер телефону замовлення неможливе</string>
     <string name="check_message">Чекайте, йде підключення.</string>
+    <string name="find_of_map">Спробуйте знайти на карті</string>
 </resources>
