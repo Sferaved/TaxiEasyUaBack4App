@@ -54,7 +54,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_28062023_20";
+    private static final String DB_NAME = "data_30062023_2";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -334,8 +334,12 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ORDERS_INFO + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
+                " from_lat text," +
+                " from_lng text," +
                 " to_street text," +
-                " to_number text);");
+                " to_number text," +
+                " to_lat text," +
+                " to_lng text);");
 
         cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -385,7 +389,10 @@ public class StartActivity extends Activity {
         fab.setVisibility(View.VISIBLE);
     }
 
-    public static void insertRecordsOrders( String from, String to, String from_number, String to_number) {
+    public static void insertRecordsOrders( String from, String to,
+                                            String from_number, String to_number,
+                                            String from_lat, String from_lng,
+                                            String to_lat, String to_lng) {
         Log.d("TAG", "insertRecordsOrders: from, to, from_number,  to_number " + from + " - " + to + " - " + from_number + " - " + to_number);
         String selection = "from_street = ?";
         String[] selectionArgs = new String[] {from};
@@ -400,17 +407,32 @@ public class StartActivity extends Activity {
                 null, selection, selectionArgs, null, null, null);
         Log.d("TAG", "insertRecordsOrders: cursor_to.getCount()"  + cursor_to.getCount());
 
+//        " from_street text," +
+//                " from_number text," +
+//        String from_lat = "46.482525";
+//
+//        String from_lng = "30.723308333333332";
+//        String to_street text," +
+//                " to_number text," +
+//        String to_lat = "46.40424965602867";
+//        String to_lng = "30.71605682373047";
+
+
         if (cursor_from.getCount() == 0 || cursor_to.getCount() == 0) {
 
-            String sql = "INSERT INTO " + TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?);";
+            String sql = "INSERT INTO " + TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?,?,?,?,?);";
             SQLiteStatement statement = database.compileStatement(sql);
             database.beginTransaction();
             try {
                 statement.clearBindings();
                 statement.bindString(2, from);
                 statement.bindString(3, from_number);
-                statement.bindString(4, to);
-                statement.bindString(5, to_number);
+                statement.bindString(4, from_lat);
+                statement.bindString(5, from_lng);
+                statement.bindString(6, to);
+                statement.bindString(7, to_number);
+                statement.bindString(8, to_lat);
+                statement.bindString(9, to_lng);
 
                 statement.execute();
                 database.setTransactionSuccessful();
@@ -418,7 +440,7 @@ public class StartActivity extends Activity {
             } finally {
                 database.endTransaction();
             }
-            Log.d("TAG", "insertRecordsOrders: " + logCursor(TABLE_ORDERS_INFO));
+            Log.d("TAG", "insertRecordsOrders 654654654: " + logCursor(TABLE_ORDERS_INFO));
         }
 
         cursor_from.close();
@@ -466,6 +488,10 @@ public class StartActivity extends Activity {
         Cursor c = database.query(TABLE_ORDERS_INFO, null, null, null, null, null, null);
         c.move(i);
         rout.put("id", c.getString(c.getColumnIndexOrThrow ("id")));
+        rout.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
+        rout.put("from_lng", c.getString(c.getColumnIndexOrThrow ("from_lng")));
+        rout.put("to_lat", c.getString(c.getColumnIndexOrThrow ("to_lat")));
+        rout.put("to_lng", c.getString(c.getColumnIndexOrThrow ("to_lng")));
         rout.put("from_street", c.getString(c.getColumnIndexOrThrow ("from_street")));
         rout.put("from_number", c.getString(c.getColumnIndexOrThrow ("from_number")));
         rout.put("to_street", c.getString(c.getColumnIndexOrThrow ("to_street")));
@@ -501,8 +527,12 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE  temp_table" + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
+                " from_lat text," +
+                " from_lng text," +
                 " to_street text," +
-                " to_number text);");
+                " to_number text," +
+                " to_lat text," +
+                " to_lng text);");
         // Копирование данных из старой таблицы во временную
         database.execSQL("INSERT INTO temp_table SELECT * FROM " + TABLE_ORDERS_INFO);
 
@@ -513,11 +543,15 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE " + TABLE_ORDERS_INFO + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
+                " from_lat text," +
+                " from_lng text," +
                 " to_street text," +
-                " to_number text);");
+                " to_number text," +
+                " to_lat text," +
+                " to_lng text);");
 
-        String query = "INSERT INTO " + TABLE_ORDERS_INFO + " (from_street, from_number, to_street, to_number) " +
-                "SELECT from_street, from_number, to_street,  to_number FROM temp_table";
+        String query = "INSERT INTO " + TABLE_ORDERS_INFO + " (from_street, from_number, from_lat, from_lng, to_street, to_number, to_lat, to_lng) " +
+                "SELECT from_street, from_number, from_lat, from_lng, to_street, to_number, to_lat, to_lng FROM temp_table";
 
         // Копирование данных из временной таблицы в новую
         database.execSQL(query);

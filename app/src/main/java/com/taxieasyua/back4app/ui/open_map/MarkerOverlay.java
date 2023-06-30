@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import com.taxieasyua.back4app.R;
+
 import org.json.JSONException;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
@@ -35,9 +37,10 @@ public class MarkerOverlay extends Overlay {
             mapView.getOverlays().remove(marker);
         }
 
-        GeoPoint point = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
 
         OpenStreetMapActivity.endPoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
+        String target = OpenStreetMapActivity.epm;
+        OpenStreetMapActivity.setMarker(OpenStreetMapActivity.endPoint.getLatitude(), OpenStreetMapActivity.endPoint.getLongitude(), target);
         try {
             OpenStreetMapActivity.dialogMarkers();
         } catch (MalformedURLException | JSONException | InterruptedException e) {

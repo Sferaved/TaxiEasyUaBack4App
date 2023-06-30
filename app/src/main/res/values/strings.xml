@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версия: 2.28</string>
+    <string name="version">Версия: 2.30</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -87,9 +87,10 @@
     <string name="my_adresses">Избранные</string>
     <string name="make_order_message">Совершите хотя бы одну поездку</string>
     <string name="to_adress_message">Куда едем?</string>
-    <string name="coastMarkersMessage">"Стоимость поездки до "</string>
+    <string name="coastMarkersMessage">"Стоимость поездки по маршруту "</string>
     <string name="please_phone_message">Без информации о номере телефона заказ невозможен</string>
     <string name="check_message">Ожидайте, идет подключение...</string>
     <string name="find_of_map">Попробуйте найти на карте</string>
+    <string name="end_point_marker">Место назначения</string>
 
 </resources>

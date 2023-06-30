@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версія: 2.28</string>
+    <string name="version">Версія: 2.30</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -86,8 +86,9 @@
     <string name="my_adresses">Обрані</string>
     <string name="make_order_message">Здійсніть хоча б одну поїздку</string>
     <string name="to_adress_message">Куди їдемо?</string>
-    <string name="coastMarkersMessage">"Вартість подорожі до "</string>
+    <string name="coastMarkersMessage">"Вартість подорожі по маршруту "</string>
     <string name="please_phone_message">Без інформації про номер телефону замовлення неможливе</string>
     <string name="check_message">Чекайте, йде підключення.</string>
     <string name="find_of_map">Спробуйте знайти на карті</string>
+    <string name="end_point_marker">Місце призначення</string>
 </resources>
