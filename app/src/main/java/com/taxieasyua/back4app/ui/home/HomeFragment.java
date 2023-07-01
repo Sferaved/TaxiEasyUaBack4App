@@ -79,6 +79,7 @@ public class HomeFragment extends Fragment {
     static Switch gpsSwitch;
     private static final int CM_DELETE_ID = 1;
     String from_street_rout, to_street_rout;
+    private int selectedPosition = -1;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -162,7 +163,7 @@ public class HomeFragment extends Fragment {
         });
 
         if(array != null)  {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_single_choice, array);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),  R.layout.custom_list_item, array);
             listView.setAdapter(adapter);
             listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
             listView.setItemChecked(0, true);
@@ -496,6 +497,8 @@ public class HomeFragment extends Fragment {
             textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    selectedPosition = position; // Обновляем выбранную позицию
+                    adapter.notifyDataSetChanged(); // Обновляем вид списка
                     if(connected()) {
                         from = String.valueOf(adapter.getItem(position));
                         if (from.indexOf("/") != -1) {
