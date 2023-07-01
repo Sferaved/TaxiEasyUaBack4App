@@ -249,7 +249,7 @@ public class HomeFragment extends Fragment {
                 if(!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("to_street").toString())) {
                    if (!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("from_number").toString())) {
                        arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
-                               routMaps.get(i).get("from_number").toString() + OpenStreetMapActivity.tom +
+                               routMaps.get(i).get("from_number").toString() + " -> " +
                                routMaps.get(i).get("to_street").toString() + " " +
                                routMaps.get(i).get("to_number").toString();
                    } else if(!routMaps.get(i).get("to_street").toString().equals(routMaps.get(i).get("to_number").toString())) {
@@ -359,7 +359,7 @@ public class HomeFragment extends Fragment {
                 }
                 if (!orderCost.equals("0")) {
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                    String message_coats_markers = OpenStreetMapActivity.cm + FromAddressString + OpenStreetMapActivity.tom + ToAddressString + " " + orderCost + OpenStreetMapActivity.UAH;
+                    String message_coats_markers = OpenStreetMapActivity.cm + FromAddressString + " -> " + ToAddressString + " " + orderCost + OpenStreetMapActivity.UAH;
                     builder.setMessage(message_coats_markers)
                             .setPositiveButton(OpenStreetMapActivity.ord, new DialogInterface.OnClickListener() {
                                 @Override
@@ -873,39 +873,44 @@ public class HomeFragment extends Fragment {
                         if (val == false) {
                             Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                             Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
-                            getActivity().finish();
+
 
                         } else {
                             StartActivity.insertRecordsUser(phoneNumber.getText().toString());
                             String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch");
 
                             try {
-                                Map sendUrlMap = OrderJSONParser.sendURL(urlOrder);
+                                Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
                                 String orderWeb = (String) sendUrlMap.get("order_cost");
                                 if (!orderWeb.equals("0")) {
 
-                                    String from_name = (String) sendUrlMap.get("from_name");
-                                    String to_name = (String) sendUrlMap.get("to_name");
+                                    String from_name = (String) sendUrlMap.get("routefrom");
+                                    String to_name = (String) sendUrlMap.get("routeto");
                                     if (from_name.equals(to_name)) {
                                         messageResult = getString(R.string.thanks_message) +
-                                                from_name + " " + from_number.getText() + " " + " по місту." +
-                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
+                                                from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
+                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+
 
                                     } else {
-                                        messageResult = getString(R.string.thanks_message) +
-                                                from_name + " " + from_number.getText() + " " + getString(R.string.on_city) +
+                                        messageResult =  getString(R.string.thanks_message) +
+                                                from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
                                                 to_name + " " + to_number.getText() + "." +
-                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
+                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                                     }
+                                    Log.d(TAG, "onClick sendUrlMap: " + from_name +" " + to_name +
+                                            from_number.getText().toString()  + " " + to_number.getText().toString()  +" " +
+                                            (String) sendUrlMap.get("from_lat") +" " + (String) sendUrlMap.get("from_lng")  +" " +
+                                            (String) sendUrlMap.get("lat")  +" " + (String) sendUrlMap.get("lng"));
 
                                     if(from_name.equals(to_name)) {
                                         if(!sendUrlMap.get("lat").equals("0")) {
                                             StartActivity.insertRecordsOrders(
                                                     from_name, from_name,
                                                     from_number.getText().toString(), from_number.getText().toString(),
-                                                    (String) sendUrlMap.get("from_lan"), (String) sendUrlMap.get("from_lng"),
-                                                    (String) sendUrlMap.get("from_lan"), (String) sendUrlMap.get("from_lng")
+                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng")
                                             );
                                         }
                                     } else {
@@ -914,39 +919,34 @@ public class HomeFragment extends Fragment {
                                             StartActivity.insertRecordsOrders(
                                                     from_name, to_name,
                                                     from_number.getText().toString(), to_number.getText().toString(),
-                                                    (String) sendUrlMap.get("from_lan"), (String) sendUrlMap.get("from_lng"),
-                                                    (String) sendUrlMap.get("lan"), (String) sendUrlMap.get("lng")
+                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                                    (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng")
                                             );
                                         }
                                     }
-//                                    StartActivity.insertRecordsOrders(from_name, to_name,
-//                                            from_number.getText().toString(), to_number.getText().toString());
+//                                                                        StartActivity.insertRecordsOrders(from_name, to_name,
+//                                                                                from_number.getText().toString(), to_number.getText().toString());
 
                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
                                             .setMessage(messageResult)
                                             .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
-//                                                    if(connected()) {
-                                                        getActivity().finish();
-////                                                        Intent intent = new Intent(getActivity(), MainActivity.class);
-////                                                        startActivity(intent);
-//                                                    }
-
+                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                    startActivity(intent);
                                                 }
                                             })
                                             .show();
                                 } else {
                                     String message = (String) sendUrlMap.get("message");
                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                            .setMessage(message + getString(R.string.next_try))
-                                            .setPositiveButton(getString(R.string.help_button), new DialogInterface.OnClickListener() {
+                                            .setMessage(message + getString(R.string.try_again))
+                                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     Intent intent = new Intent(Intent.ACTION_DIAL);
                                                     intent.setData(Uri.parse("tel:0674443804"));
                                                     startActivity(intent);
-
 
                                                 }
                                             })
@@ -954,22 +954,20 @@ public class HomeFragment extends Fragment {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     if(connected()) {
-                                                        if(array != null)  {
-                                                            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_single_choice, array);
-                                                            listView.setAdapter(adapter);
-                                                            listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-                                                            listView.setItemChecked(0, true);
-
-                                                        } else  button.setVisibility(View.INVISIBLE);
+                                                        button.setVisibility(View.VISIBLE);
+                                                        getActivity().finish();
+//                                                                                            Intent intent = new Intent(getActivity(), MainActivity.class);
+//                                                                                            startActivity(intent);
                                                     }
-
                                                 }
                                             })
                                             .show();
                                 }
 
 
-                            } catch (MalformedURLException | InterruptedException | JSONException e) {
+                            } catch (MalformedURLException |
+                                     InterruptedException |
+                                     JSONException e) {
                                 throw new RuntimeException(e);
                             }
                         }
