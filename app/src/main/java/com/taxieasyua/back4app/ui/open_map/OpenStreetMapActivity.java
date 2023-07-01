@@ -824,7 +824,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
-
+            Toast.makeText(this, R.string.find_of_map, Toast.LENGTH_SHORT).show();
             Log.d(TAG, "dialogFromToGeo: " + from_geo);
             AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
 
@@ -1124,7 +1124,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                 }
                             }).show();
-            Toast.makeText(this, R.string.find_of_map, Toast.LENGTH_SHORT).show();
+
         }
     }
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {

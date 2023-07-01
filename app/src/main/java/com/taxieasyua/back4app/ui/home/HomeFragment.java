@@ -575,7 +575,17 @@ public class HomeFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int which) {
                             progressBarDialog.setVisibility(View.VISIBLE);
                             if(connected()) {
-                                if (from != null) {
+                                if (from == null) {
+                                    Toast.makeText(getActivity(), getString(R.string.rout_from_message), Toast.LENGTH_SHORT).show();
+                                    try {
+                                        dialogFromTo();
+                                    } catch (MalformedURLException e) {
+                                        throw new RuntimeException(e);
+                                    } catch (InterruptedException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                                else {
                                     if (to == null) {
                                         to = from;
                                         to_number.setText(from_number.getText());
@@ -740,11 +750,6 @@ public class HomeFragment extends Fragment {
                                              JSONException e) {
                                         throw new RuntimeException(e);
                                     }
-                                } else {
-                                    Toast.makeText(getActivity(), getString(R.string.rout_from_message), Toast.LENGTH_SHORT).show();
-                                    getActivity().finish();
-//                                    Intent intent = new Intent(getActivity(), MainActivity.class);
-//                                    startActivity(intent);
                                 }
                             }
                         }
@@ -758,15 +763,7 @@ public class HomeFragment extends Fragment {
                                     listView.setItemChecked(0, true);
                                     button.setVisibility(View.VISIBLE);
                                     Toast.makeText(getActivity(), getString(R.string.old_routs_message), Toast.LENGTH_SHORT).show();
-                                } else {
-                                    getActivity().finish();
-//                                    Intent intent = new Intent(getActivity(), MainActivity.class);
-//                                    startActivity(intent);
                                 }
-                            } else {
-                                getActivity().finish();
-//                                Intent intent = new Intent(getActivity(), MainActivity.class);
-//                                startActivity(intent);
                             }
                         }
                     })

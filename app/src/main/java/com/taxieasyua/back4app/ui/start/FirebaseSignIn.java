@@ -143,7 +143,7 @@ public class FirebaseSignIn extends AppCompatActivity {
 //        config.setLocale(locale);
 //        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
 //        Log.d("TAG", "onSignInResult: config = " + config.getLocales().get(0) );
-
+        MainActivity.verifyOrder = false;
         IdpResponse response = result.getIdpResponse();
         Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
         if (result.getResultCode() == RESULT_OK) {
@@ -180,10 +180,10 @@ public class FirebaseSignIn extends AppCompatActivity {
             // sign-in flow using the back button. Otherwise check
             // response.getError().getErrorCode() and handle the error.
             // ...
-
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+            finish();
 
-            MainActivity.verifyOrder = false;
+
         }
     }
     private boolean  switchState() {
