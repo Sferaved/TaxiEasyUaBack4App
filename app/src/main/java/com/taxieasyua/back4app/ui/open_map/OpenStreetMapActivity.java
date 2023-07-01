@@ -1,5 +1,7 @@
 package com.taxieasyua.back4app.ui.open_map;
 
+import static com.taxieasyua.back4app.R.id.progressBar;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -578,7 +580,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                 .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                                     @Override
                                                                     public void onClick(DialogInterface dialog, int which) {
-                                                                        Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                        Intent intent = new Intent(map.getContext(), MainActivity.class);
                                                                         map.getContext().startActivity(intent);
                                                                     }
                                                                 })
@@ -599,7 +601,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                 .setNegativeButton(tra, new DialogInterface.OnClickListener() {
                                                                     @Override
                                                                     public void onClick(DialogInterface dialog, int which) {
-                                                                        Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                        Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
                                                                         map.getContext().startActivity(intent);
                                                                     }
                                                                 })
@@ -733,7 +735,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                Intent intent = new Intent(map.getContext(), MainActivity.class);
                                                                 map.getContext().startActivity(intent);
                                                             }
                                                         })
@@ -754,7 +756,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         .setNegativeButton(tra, new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
                                                                 map.getContext().startActivity(intent);
                                                             }
                                                         })
@@ -798,6 +800,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             textViewFrom = view.findViewById(R.id.text_from);
             to_number = view.findViewById(R.id.to_number);
+            @SuppressLint({"MissingInflatedId", "LocalSuppress"})
+            ProgressBar progressBarGeo = view.findViewById(R.id.progressBar);
 
             from_geo = startLat + " - " + startLan;
 
@@ -928,7 +932,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-
+                            progressBarGeo.setVisibility(View.VISIBLE);
                             if(connected()) {
                                 try {
 
@@ -965,12 +969,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                             Toast.makeText(OpenStreetMapActivity.this, getString(R.string.call_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                         } else {
+                                            progressBarGeo.setVisibility(View.INVISIBLE);
                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                     .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
-
+                                                            progressBarGeo.setVisibility(View.VISIBLE);
                                                             if (connected()) {
 
                                                                 Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -1021,18 +1026,19 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     to_name + "." +
                                                                                     getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
-
+                                                                            progressBarGeo.setVisibility(View.INVISIBLE);
                                                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                                                     .setMessage(messageResult)
                                                                                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
-                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, StartActivity.class);
+                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
                                                                                             startActivity(intent);
                                                                                         }
                                                                                     })
                                                                                     .show();
                                                                         } else {
+                                                                            progressBarGeo.setVisibility(View.INVISIBLE);
                                                                             String message = (String) sendUrlMap.get("message");
                                                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                                                     .setMessage(message + getString(R.string.next_try))
@@ -1254,7 +1260,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
-                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, StartActivity.class);
+                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
                                                                                             startActivity(intent);
                                                                                         }
                                                                                     })
@@ -1275,7 +1281,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
-                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, StartActivity.class);
+                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class);
                                                                                             startActivity(intent);
                                                                                         }
                                                                                     })
@@ -1605,7 +1611,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                 .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialog, int which) {
-                                                        Intent intent = new Intent(OpenStreetMapActivity.this, StartActivity.class);
+                                                        Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
                                                         startActivity(intent);
                                                     }
                                                 })
@@ -1734,7 +1740,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                Intent intent = new Intent(map.getContext(), MainActivity.class);
                                                                 map.getContext().startActivity(intent);
                                                             }
                                                         })
@@ -1755,7 +1761,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         .setNegativeButton(tra, new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
                                                                 map.getContext().startActivity(intent);
                                                             }
                                                         })
@@ -1864,7 +1870,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                Intent intent = new Intent(map.getContext(), MainActivity.class);
                                                                 map.getContext().startActivity(intent);
                                                             }
                                                         })
@@ -1885,7 +1891,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         .setNegativeButton(tra, new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
-                                                                Intent intent = new Intent(map.getContext(), StartActivity.class);
+                                                                Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
                                                                 map.getContext().startActivity(intent);
                                                             }
                                                         })

@@ -30,6 +30,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -211,15 +212,6 @@ public class HomeFragment extends Fragment {
 
             return true;
     };
-    public static String[] join(String[] a, String [] b)
-    {
-        String [] c = new String[a.length + b.length];
-
-        System.arraycopy(a, 0, c, 0, a.length);
-        System.arraycopy(b, 0, c, a.length, b.length);
-
-        return c;
-    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -473,6 +465,8 @@ public class HomeFragment extends Fragment {
 
             from_number = view.findViewById(R.id.from_number);
             to_number = view.findViewById(R.id.to_number);
+            @SuppressLint({"MissingInflatedId", "LocalSuppress"})
+            ProgressBar progressBarDialog = view.findViewById(R.id.progressBar);
 
             AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
 
@@ -576,6 +570,7 @@ public class HomeFragment extends Fragment {
                     .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            progressBarDialog.setVisibility(View.VISIBLE);
                             if(connected()) {
                                 if (from != null) {
                                     if (to == null) {
@@ -600,16 +595,17 @@ public class HomeFragment extends Fragment {
                                         }
                                         if (!orderCost.equals("0")) {
                                             if(!MainActivity.verifyOrder) {
+                                                progressBarDialog.setVisibility(View.INVISIBLE);
                                                 Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                                 Toast.makeText(getActivity(), getString(R.string.cost_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                             } else {
-
+                                                progressBarDialog.setVisibility(View.INVISIBLE);
                                             new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
                                                     .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
-
+                                                            progressBarDialog.setVisibility(View.VISIBLE);
                                                             if(connected()) {
 
                                                             Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -622,13 +618,13 @@ public class HomeFragment extends Fragment {
                                                                 if (cursor != null && !cursor.isClosed())
                                                                     cursor.close();
                                                                 try {
-                                                                    Map<String, String> sendUrlMap = OrderJSONParser.sendURL(urlOrder);
+                                                                    Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
                                                                     String orderWeb = (String) sendUrlMap.get("order_cost");
                                                                     if (!orderWeb.equals("0")) {
 
-                                                                        String from_name = (String) sendUrlMap.get("from_name");
-                                                                        String to_name = (String) sendUrlMap.get("to_name");
+                                                                        String from_name = (String) sendUrlMap.get("routefrom");
+                                                                        String to_name = (String) sendUrlMap.get("routeto");
                                                                         if (from_name.equals(to_name)) {
                                                                             messageResult = getString(R.string.thanks_message) +
                                                                                     from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
