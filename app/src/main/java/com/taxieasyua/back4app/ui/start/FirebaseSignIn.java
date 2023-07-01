@@ -146,7 +146,8 @@ public class FirebaseSignIn extends AppCompatActivity {
         MainActivity.verifyOrder = false;
         IdpResponse response = result.getIdpResponse();
         Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
-        if (result.getResultCode() == RESULT_OK) {
+
+        if (result.getResultCode() == RESULT_OK && response != null) {
             // Successfully signed in
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             StartActivity.userEmail = user.getEmail();
