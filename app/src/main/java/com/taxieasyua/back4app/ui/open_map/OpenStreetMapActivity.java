@@ -66,6 +66,7 @@ import org.osmdroid.views.overlay.Polyline;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -243,6 +244,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     routs.put("from_number", c.getString(c.getColumnIndexOrThrow ("from_number")));
                     routs.put("to_street", c.getString(c.getColumnIndexOrThrow ("to_street")));
                     routs.put("to_number", c.getString(c.getColumnIndexOrThrow ("to_number")));
+
+                    routs.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
+                    routs.put("from_lng", c.getString(c.getColumnIndexOrThrow ("from_lng")));
+
+                    routs.put("to_lat", c.getString(c.getColumnIndexOrThrow ("to_lat")));
+                    routs.put("to_lng", c.getString(c.getColumnIndexOrThrow ("to_lng")));
                     routsArr.add(i++, routs);
                 } while (c.moveToNext());
             }
@@ -1150,8 +1157,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     startLan);
             Log.d(TAG, "onClick:  to adress" +
                     to);
-            Log.d(TAG, "onClick: to_number.getText().toString() adress " +
-                    "." + to_number.getText().toString() + ".");
+            Log.d(TAG, "onClick: Arrays.toString(array)" +
+                    adressArr.toString());
 
 
             builder.setMessage( getString(R.string.to_adress_message))
@@ -1159,21 +1166,21 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Log.d(TAG, "onClick: " + adressArr.get(listView.getCheckedItemPosition()));
-                            to_str = (String) adressArr.get(listView.getCheckedItemPosition()).get("street");
-                            to_numb_str = (String) adressArr.get(listView.getCheckedItemPosition()).get("number");
-
+                            Double to_lat =   Double.valueOf ((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
+                            Double to_lng = Double.valueOf ((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
+                            Log.d(TAG, "onClick  to_lat, to_lng: " +  to_lat + " " + to_lng);
                             if(connected()) {
                                 try {
 
-                                    String urlCost = getTaxiUrlSearchGeo(locationStart.getLatitude(), locationStart.getLongitude(), to_str, to_numb_str, "costSearchGeo");
+                                    String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(startPoint.getLatitude(), startPoint.getLongitude(),
+                                            to_lat, to_lng, "orderSearchMarkers");
+
+                                    Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+
+                                    String message = sendUrlMapCost.get("message");
+                                    String orderCost = sendUrlMapCost.get("order_cost");
 
                                     Log.d("TAG", "onClick urlCost: " + urlCost);
-
-                                    Map sendUrlMapCost = ToJSONParser.sendURL(urlCost);
-
-                                    String message = (String) sendUrlMapCost.get("message");
-                                    String orderCost = (String) sendUrlMapCost.get("order_cost");
-                                    Log.d("TAG", "onClick orderCost : " + orderCost);
 
                                     if (orderCost.equals("0")) {
 
@@ -1217,12 +1224,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                         cursor.close();
                                                                     }
                                                                 } else {
-                                                                    String urlOrder = getTaxiUrlSearchGeo(locationStart.getLatitude(), locationStart.getLongitude(), to_str, to_numb_str, "orderSearchGeo");
-
 
                                                                     try {
-                                                                        Map sendUrlMap = ToJSONParser.sendURL(urlOrder);
-                                                                        Log.d(TAG, "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
+                                                                        String urlOrder = OpenStreetMapActivity.getTaxiUrlSearchMarkers(locationStart.getLatitude(), locationStart.getLongitude(),
+                                                                                to_lat, to_lng, "orderSearchMarkers");
+
+                                                                        Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
+                                                                        Log.d(TAG, "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + urlOrder);
 
                                                                         String orderWeb = (String) sendUrlMap.get("order_cost");
 
@@ -1351,11 +1359,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         adressMap = new HashMap<>();
                         adressMap.put("street", routMaps.get(j).get("from_street").toString());
                         adressMap.put("number",  routMaps.get(j).get("from_number").toString());
+                        adressMap.put("to_lat", routMaps.get(j).get("from_lat").toString());
+                        adressMap.put("to_lng",  routMaps.get(j).get("from_lng").toString());
                         adressArrLoc.add(k++, adressMap);
 
                         adressMap = new HashMap<>();
                         adressMap.put("street", routMaps.get(j).get("to_street").toString());
                         adressMap.put("number",  routMaps.get(j).get("to_number").toString());
+                        adressMap.put("to_lat", routMaps.get(j).get("to_lat").toString());
+                        adressMap.put("to_lng",  routMaps.get(j).get("to_lng").toString());
                         adressArrLoc.add(k++, adressMap);
 
 
@@ -1384,6 +1396,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 adressMap = new HashMap<>();
                 adressMap.put("street", (String) adressArrLoc.get(j).get("street"));
                 adressMap.put("number", (String) adressArrLoc.get(j).get("number"));
+
+                adressMap.put("to_lat", (String) adressArrLoc.get(j).get("to_lat"));
+                adressMap.put("to_lng", (String) adressArrLoc.get(j).get("to_lng"));
                 adressArr.add(i++, adressMap);
             };
 
