@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версия: 2.36</string>
+    <string name="version">Версия: 2.37</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -92,5 +92,7 @@
     <string name="check_message">Ожидайте, идет подключение...</string>
     <string name="find_of_map">Попробуйте найти на карте</string>
     <string name="end_point_marker">Место назначения</string>
+    <string name="error_firebase_start">Ошибка проверки. Наберите оператора.</string>
+    <string name="address_error_message">Ошибка ввода адреса</string>
 
 </resources>

@@ -917,9 +917,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             String orderCost = (String) sendUrlMapCost.get("message");
                             Log.d("TAG", "onClick Hid : " + orderCost);
 
-                            if (orderCost.equals("1")) {
+                            if (orderCost.equals("200")) {
+                                Toast.makeText(OpenStreetMapActivity.this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                            } else if (orderCost.equals("400")) {
+                                textViewTo.setTextColor(Color.RED);
+                                Toast.makeText(OpenStreetMapActivity.this, R.string.address_error_message, Toast.LENGTH_SHORT).show();
+                            } else if (orderCost.equals("1")) {
                                 to_number.setVisibility(View.VISIBLE);
                                 to_number.requestFocus();
+
                             }
                         }
 

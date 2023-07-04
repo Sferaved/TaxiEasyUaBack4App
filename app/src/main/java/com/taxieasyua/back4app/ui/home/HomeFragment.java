@@ -1,13 +1,19 @@
 package com.taxieasyua.back4app.ui.home;
 
 
+import static android.graphics.Color.RED;
+
+import static com.taxieasyua.back4app.R.string.address_error_message;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -60,6 +66,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -465,10 +472,12 @@ public class HomeFragment extends Fragment {
             builder.setView(view);
 
             from_number = view.findViewById(R.id.from_number);
+
             to_number = view.findViewById(R.id.to_number);
             @SuppressLint({"MissingInflatedId", "LocalSuppress"})
             ProgressBar progressBarDialog = view.findViewById(R.id.progressBar);
 
+            AutoCompleteTextView text_from = view.findViewById(R.id.text_from);
             AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
 
             CheckBox checkBox = view.findViewById(R.id.on_city);
@@ -495,6 +504,7 @@ public class HomeFragment extends Fragment {
             textViewFrom.setAdapter(adapter);
 
             textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @SuppressLint("ResourceAsColor")
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     selectedPosition = position; // Обновляем выбранную позицию
@@ -504,30 +514,28 @@ public class HomeFragment extends Fragment {
                         if (from.indexOf("/") != -1) {
                             from = from.substring(0,  from.indexOf("/"));
                         };
+
                         String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + from;
 
-
-                        Log.d("TAG", "onClick urlCost: " + url);
                         Map sendUrlMapCost = null;
                         try {
                             sendUrlMapCost = ResultSONParser.sendURL(url);
                         } catch (MalformedURLException | InterruptedException | JSONException e) {
-                            throw new RuntimeException(e);
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
                         }
 
                         String orderCost = (String) sendUrlMapCost.get("message");
-                        Log.d("TAG", "onClick orderCost : " + orderCost);
-
-                        if (orderCost.equals("1")) {
+                        if (orderCost.equals("200")) {
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("400")) {
+                            text_from.setTextColor(RED);
+                            Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("1")) {
                             from_number.setVisibility(View.VISIBLE);
                             from_number.requestFocus();
                         }
                     }
-//                    else {
-//                        getActivity().finish();
-//                        Intent intent = new Intent(getActivity(), MainActivity.class);
-//                        startActivity(intent);
-//                    }
+
                 }
             });
 
@@ -543,28 +551,26 @@ public class HomeFragment extends Fragment {
                         };
                         String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + to;
 
-
-                        Log.d("TAG", "onClick urlCost: " + url);
                         Map sendUrlMapCost = null;
                         try {
                             sendUrlMapCost = ResultSONParser.sendURL(url);
                         } catch (MalformedURLException | InterruptedException | JSONException e) {
-                            throw new RuntimeException(e);
+                        Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
                         }
 
                         String orderCost = (String) sendUrlMapCost.get("message");
-                        Log.d("TAG", "onClick orderCost : " + orderCost);
 
-                        if (orderCost.equals("1")) {
+                        if (orderCost.equals("200")) {
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("400")) {
+                            text_to.setTextColor(RED);
+                            Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("1")) {
                             to_number.setVisibility(View.VISIBLE);
                             to_number.requestFocus();
+                            }
                         }
-                    }
-//                    else {
-//                        getActivity().finish();
-//                        Intent intent = new Intent(getActivity(), MainActivity.class);
-//                        startActivity(intent);
-//                    }
+
                 }
             });
 

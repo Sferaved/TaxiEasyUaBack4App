@@ -226,14 +226,12 @@ public class StartActivity extends Activity {
        } else {
            try {
                startIp();
+               intent = new Intent(this, FirebaseSignIn.class);
+               startActivity(intent);
            } catch (MalformedURLException e) {
-               throw new RuntimeException(e);
+               btn_again.setVisibility(View.VISIBLE);
+               Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
            }
-
-           intent = new Intent(this, FirebaseSignIn.class);
-           startActivity(intent);
-
-         Log.d("TAG", "onResume: "  + hasConnection());
 
        }
 
