@@ -1171,7 +1171,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                     String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(startPoint.getLatitude(), startPoint.getLongitude(),
                                             to_lat, to_lng, "orderSearchMarkers");
-
+                                    Log.d("TAG", "onClick 2222222222222: " + urlCost);
                                     Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
                                     String message = sendUrlMapCost.get("message");
