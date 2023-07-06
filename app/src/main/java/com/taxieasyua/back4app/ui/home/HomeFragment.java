@@ -361,6 +361,7 @@ public class HomeFragment extends Fragment {
                 String orderCost = (String) sendUrlMapCost.get("order_cost");
 
                 GeoPoint startPoint = new GeoPoint(from_lat, to_lat);
+            Log.d("TAG", "dialogFromToOneRout orderCost: " + orderCost);
                 if (orderCost.equals("0")) {
                     OpenStreetMapActivity.coastOfRoad(startPoint, message);
                 }
