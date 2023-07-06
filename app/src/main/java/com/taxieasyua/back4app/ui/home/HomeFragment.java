@@ -110,6 +110,7 @@ public class HomeFragment extends Fragment {
 
         if(connected()) {
             array = arrayToRoutsAdapter();
+
             try {
                 dialogFromTo();
 
@@ -469,6 +470,7 @@ public class HomeFragment extends Fragment {
 
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
             LayoutInflater inflater = getActivity().getLayoutInflater();
+
             View view = inflater.inflate(R.layout.from_to_layout, null);
             builder.setView(view);
 
@@ -764,14 +766,8 @@ public class HomeFragment extends Fragment {
                     .setNegativeButton( getString(R.string.routs_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            if(connected()) {
-                                if (array != null) {
-                                    Log.d("TAG", "onClick: btnRouts " + array.length);
-                                    listView.setItemChecked(0, true);
-                                    button.setVisibility(View.VISIBLE);
-                                    Toast.makeText(getActivity(), getString(R.string.old_routs_message), Toast.LENGTH_SHORT).show();
-                                }
-                            }
+
+//                            ItemListDialogFragment.newInstance(10).show(requireActivity().getSupportFragmentManager(), "dialog");
                         }
                     })
                     .show();

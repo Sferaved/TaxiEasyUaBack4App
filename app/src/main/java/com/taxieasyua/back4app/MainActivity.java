@@ -44,6 +44,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.util.List;
@@ -80,8 +81,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         networkChangeReceiver = new NetworkChangeReceiver();
-
-        Toast.makeText(this, getString(R.string.wellcome), Toast.LENGTH_LONG).show();
+        MyBottomSheetDialogFragment bottomSheetDialogFragment = new MyBottomSheetDialogFragment();
+        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+//        Toast.makeText(this, getString(R.string.wellcome), Toast.LENGTH_LONG).show();
     }
 
     @Override

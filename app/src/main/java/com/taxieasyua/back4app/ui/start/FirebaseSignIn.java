@@ -38,6 +38,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapFusedActivity;
@@ -157,6 +158,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             if(blackList()) {
                 Log.d("TAG", "onSignInResult: " + user.getEmail() + " " + user.getDisplayName());
                 if(switchState()) {
+
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
                         startActivity(intent);

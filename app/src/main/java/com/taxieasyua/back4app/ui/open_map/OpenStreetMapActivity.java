@@ -46,6 +46,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.OrderJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -786,6 +787,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
 
         if(connected()) {
+            MyBottomSheetDialogFragment bottomSheetDialogFragment = new MyBottomSheetDialogFragment();
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+
             map.getOverlays().remove(m);
             map.getOverlays().removeAll(Collections.singleton(roadOverlay));
             MarkerOverlay markerOverlay = new MarkerOverlay(this);
