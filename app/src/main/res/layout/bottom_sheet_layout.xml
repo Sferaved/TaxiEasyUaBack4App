@@ -22,8 +22,8 @@
 
     <ListView
         android:id="@+id/list"
-        android:layout_width="402dp"
-        android:layout_height="627dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:minHeight="33sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -1445,7 +1445,35 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         // Building the url to the web service
 
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters;
+        List<String> services = StartActivity.logCursor(StartActivity.TABLE_SERVICE_INFO);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i <= 15 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
+                }
+            }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
+                }
+            }
+            result = String.join("*", servicesChecked);
+            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_extra_charge_codes";
+        }
+
+        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+
         Log.d("TAG", "getTaxiUrlSearch: " + url);
 
 
@@ -1508,7 +1536,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             result = String.join("*", servicesChecked);
             Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
-            result = "no_servise";
+            result = "no_extra_charge_codes";
         }
 
         String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
@@ -1552,9 +1580,36 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         }
 
         // Building the url to the web service
+        List<String> services = StartActivity.logCursor(StartActivity.TABLE_SERVICE_INFO);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i <= 15 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
+                }
+            }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
+                }
+            }
+            result = String.join("*", servicesChecked);
+            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_extra_charge_codes";
+        }
 
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters;
-        Log.d("TAG", "getTaxiUrlSearch: " + url);
+        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+
+       Log.d("TAG", "getTaxiUrlSearch: " + url);
 
 
 
