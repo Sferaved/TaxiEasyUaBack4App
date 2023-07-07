@@ -70,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -1483,9 +1484,35 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         }
 
         // Building the url to the web service
+        List<String> services = StartActivity.logCursor(StartActivity.TABLE_SERVICE_INFO);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i <= 15 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
+                }
+            }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
+                }
+            }
+            result = String.join("*", servicesChecked);
+            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_servise";
+        }
 
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters;
-        Log.d("TAG", "getTaxiUrlSearch: " + url);
+        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        Log.d("TAG", "getTaxiUrlSearch services: " + url);
 
 
 
