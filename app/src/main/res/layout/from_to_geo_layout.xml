@@ -7,39 +7,50 @@
     tools:layout_editor_absoluteX="6dp"
     tools:layout_editor_absoluteY="8dp">
 
+
     <TextView
         android:id="@+id/text_from"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="20sp"
         android:layout_marginHorizontal="10sp"
-        android:dropDownSelector="@color/teal_200"
+        android:autoSizeMinTextSize="20sp"
+
+        android:gravity="center_horizontal"
         android:textSize="15sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/list_tariff_arr" />
 
     <CheckBox
         android:id="@+id/on_city"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
-        app:layout_constraintBottom_toTopOf="@+id/text_to"
+        android:layout_width="20sp"
+        android:layout_height="20sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_from"
-        app:layout_constraintVertical_bias="0.0" />
-
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
     <TextView
+        android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginBottom="20dp"
+
         android:text="@string/on_city_tv"
-        app:layout_constraintBottom_toTopOf="@+id/text_to"
-        app:layout_constraintStart_toStartOf="@+id/on_city"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_from"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:text="Тариф:"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
     <AutoCompleteTextView
@@ -47,27 +58,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="10sp"
-        android:layout_marginTop="52dp"
+
         android:backgroundTint="@color/colorAccent"
         android:dropDownSelector="@color/teal_200"
         android:gravity="top|left"
         android:hint="@string/to_edit"
+
         android:inputType="textMultiLine"
         android:lines="3"
         android:maxLines="3"
-
         android:minLines="1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.842"
+        app:layout_constraintHorizontal_bias="0.526"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_from"
+        app:layout_constraintTop_toBottomOf="@+id/on_city"
         tools:ignore="MissingConstraints" />
 
     <EditText
         android:id="@+id/to_number"
         android:layout_width="50sp"
         android:layout_height="50sp"
-        android:layout_marginTop="8dp"
         android:gravity="center"
         android:text=" "
         android:visibility="invisible"
@@ -75,17 +85,18 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_to" />
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="409dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+
+    <Spinner
+        android:id="@+id/list_tariff_arr"
+        android:layout_width="wrap_content"
+        android:layout_height="28dp"
+        android:gravity="center_vertical"
+        android:minHeight="50sp"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        android:visibility="invisible"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintTop_toBottomOf="@+id/textView4"
         tools:ignore="MissingConstraints" />
 
     <androidx.constraintlayout.widget.Guideline

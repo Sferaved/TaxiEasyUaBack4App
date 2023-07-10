@@ -4,6 +4,8 @@ import static com.taxieasyua.back4app.R.id.progressBar;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +34,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +50,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
+import com.taxieasyua.back4app.ui.home.MyServicesDialogFragment;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.OrderJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -100,10 +104,30 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     static Polyline roadOverlay;
     static Marker m;
     private static String FromAdressString;
-    public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp, tra, plm, epm;
+    public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp, tra, plm, epm, tlm;
     LayoutInflater inflater;
     static View view;
     static ProgressBar progressBar;
+
+    public static String[] arrayServiceCode() {
+        return new String[]{
+            "BAGGAGE",
+            "ANIMAL",
+            "CONDIT",
+            "MEET",
+            "COURIER",
+            "TERMINAL",
+            "CHECK_OUT",
+            "BABY_SEAT",
+            "DRIVER",
+            "NO_SMOKE",
+            "ENGLISH",
+            "CABLE",
+            "FUEL",
+            "WIRES",
+            "SMOKE",
+        };
+    }
     @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -130,6 +154,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         tra =  getString(R.string.try_again);
         plm = getString(R.string.please_phone_message);
         epm = getString(R.string.end_point_marker);
+        tlm = getString(R.string.time_limit);
 
         inflater = getLayoutInflater();
         view = inflater.inflate(R.layout.phone_verify_layout, null);
@@ -507,6 +532,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 
             if (orderCost.equals("0")) {
+
                 coastOfRoad(startPoint, message);
             }
             if (!orderCost.equals("0")) {
@@ -689,14 +715,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     if (orderCost.equals("0")) {
 
                                         Toast.makeText(map.getContext(), em + message, Toast.LENGTH_LONG).show();
-//                                        Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-//                                        map.getContext().startActivity(intent);
+
                                     }
                                     if (!orderCost.equals("0")) {
 
                                         if (!MainActivity.verifyOrder) {
                                             Toast.makeText(map.getContext(), co + orderCost + fb, Toast.LENGTH_SHORT).show();
                                         } else {
+
                                             String orderWeb = (String) sendUrlMapCost.get("order_cost");
 
                                             if (!orderWeb.equals("0")) {
@@ -788,8 +814,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
 
         if(connected()) {
-            MyBottomSheetDialogFragment bottomSheetDialogFragment = new MyBottomSheetDialogFragment();
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
 
 
             map.getOverlays().remove(m);
@@ -801,11 +826,54 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             View view = inflater.inflate(R.layout.from_to_geo_layout, null);
             builder.setView(view);
             coastDialog = builder.create();
+/**
+ * Тариф
+ */
+            String[] tariffArr = new String[]{
+                    "Базовий онлайн",
+                    "Базовый",
+                    "Универсал",
+                    "Бизнес-класс",
+                    "Премиум-класс",
+                    "Эконом-класс",
+                    "Микроавтобус",
+            };
+            ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_spinner_item, tariffArr);
+            @SuppressLint({"MissingInflatedId", "LocalSuppress"})
+            Spinner spinner = view.findViewById(R.id.list_tariff_arr);
+            spinner.setAdapter(adapterTariff);
+            spinner.setPrompt("Title");
+            spinner.setBackgroundResource(R.drawable.spinner_border);
+            StartActivity.cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
+            String tariffOld =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
+            if (StartActivity.cursorDb != null && !StartActivity.cursorDb.isClosed())
+                StartActivity.cursorDb.close();
+            for (int i = 0; i < tariffArr.length; i++) {
+                if(tariffArr[i].equals(tariffOld)) {
+                    spinner.setSelection(i);
+                }
+            }
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                    ContentValues cv = new ContentValues();
+                    cv.put("tarif", tariffArr[position]);
+
+                    // обновляем по id
+                    StartActivity.database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             textViewFrom = view.findViewById(R.id.text_from);
             to_number = view.findViewById(R.id.to_number);
-            @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-            ProgressBar progressBarGeo = view.findViewById(R.id.progressBar);
+
 
             from_geo = startLat + " - " + startLan;
 
@@ -942,7 +1010,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            progressBarGeo.setVisibility(View.VISIBLE);
+
                             if(connected()) {
                                 try {
 
@@ -979,13 +1047,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                             Toast.makeText(OpenStreetMapActivity.this, getString(R.string.call_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                         } else {
-                                            progressBarGeo.setVisibility(View.INVISIBLE);
+                                            MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
+                                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                     .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
-                                                            progressBarGeo.setVisibility(View.VISIBLE);
+
                                                             if (connected()) {
 
                                                                 Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -1036,7 +1105,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     to_name + "." +
                                                                                     getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
-                                                                            progressBarGeo.setVisibility(View.INVISIBLE);
+
                                                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                                                     .setMessage(messageResult)
                                                                                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
@@ -1048,7 +1117,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     })
                                                                                     .show();
                                                                         } else {
-                                                                            progressBarGeo.setVisibility(View.INVISIBLE);
+
                                                                             String message = (String) sendUrlMap.get("message");
                                                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                                                     .setMessage(message + getString(R.string.next_try))
@@ -1085,6 +1154,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                             }
                                                         }
                                                     })
+
                                                     .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
@@ -1208,6 +1278,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                             Toast.makeText(OpenStreetMapActivity.this, getString(R.string.call_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                         } else {
+                                            MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
+                                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                                             new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
                                                     .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
@@ -1523,9 +1595,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
         }
         if(servicesVer) {
-            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
+            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
                 if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
+                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
                 }
             }
             for (int i = 0; i < servicesChecked.size(); i++) {
@@ -1591,9 +1663,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
         }
         if(servicesVer) {
-            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
+            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
                 if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
+                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
                 }
             }
             for (int i = 0; i < servicesChecked.size(); i++) {

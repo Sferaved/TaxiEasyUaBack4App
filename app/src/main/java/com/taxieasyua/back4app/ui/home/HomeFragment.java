@@ -4,9 +4,11 @@ package com.taxieasyua.back4app.ui.home;
 import static android.graphics.Color.RED;
 
 import static com.taxieasyua.back4app.R.string.address_error_message;
+import static com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity.coastOfRoad;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,6 +39,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -88,7 +91,25 @@ public class HomeFragment extends Fragment {
     private static final int CM_DELETE_ID = 1;
     String from_street_rout, to_street_rout;
     private int selectedPosition = -1;
-
+    public static String[] arrayServiceCode() {
+        return new String[]{
+                "BAGGAGE",
+                "ANIMAL",
+                "CONDIT",
+                "MEET",
+                "COURIER",
+                "TERMINAL",
+                "CHECK_OUT",
+                "BABY_SEAT",
+                "DRIVER",
+                "NO_SMOKE",
+                "ENGLISH",
+                "CABLE",
+                "FUEL",
+                "WIRES",
+                "SMOKE",
+        };
+    }
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -365,11 +386,14 @@ public class HomeFragment extends Fragment {
                 GeoPoint startPoint = new GeoPoint(from_lat, to_lat);
             Log.d("TAG", "dialogFromToOneRout orderCost: " + orderCost);
                 if (orderCost.equals("0")) {
-                    OpenStreetMapActivity.coastOfRoad(startPoint, message);
+                    MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    coastOfRoad(startPoint, message);
                 }
                 if (!orderCost.equals("0")) {
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
                     String message_coats_markers = OpenStreetMapActivity.cm + FromAddressString + " -> " + ToAddressString + " " + orderCost + OpenStreetMapActivity.UAH;
+
                     builder.setMessage(message_coats_markers)
                             .setPositiveButton(OpenStreetMapActivity.ord, new DialogInterface.OnClickListener() {
                                 @Override
@@ -474,12 +498,55 @@ public class HomeFragment extends Fragment {
 
             View view = inflater.inflate(R.layout.from_to_layout, null);
             builder.setView(view);
+/**
+ * Тариф
+ */
+            String[] tariffArr = new String[]{
+                    "Базовий онлайн",
+                    "Базовый",
+                    "Универсал",
+                    "Бизнес-класс",
+                    "Премиум-класс",
+                    "Эконом-класс",
+                    "Микроавтобус",
+            };
+            ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_spinner_item, tariffArr);
+            @SuppressLint({"MissingInflatedId", "LocalSuppress"})
+            Spinner spinner = view.findViewById(R.id.list_tariff_arr);
+            spinner.setAdapter(adapterTariff);
+            spinner.setPrompt("Title");
+            spinner.setBackgroundResource(R.drawable.spinner_border);
+            StartActivity.cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
+            String tariffOld =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
+            if (StartActivity.cursorDb != null && !StartActivity.cursorDb.isClosed())
+                StartActivity.cursorDb.close();
+            for (int i = 0; i < tariffArr.length; i++) {
+                if(tariffArr[i].equals(tariffOld)) {
+                    spinner.setSelection(i);
+                }
+            }
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                    ContentValues cv = new ContentValues();
+                    cv.put("tarif", tariffArr[position]);
+
+                    // обновляем по id
+                    StartActivity.database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             from_number = view.findViewById(R.id.from_number);
 
             to_number = view.findViewById(R.id.to_number);
             @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-            ProgressBar progressBarDialog = view.findViewById(R.id.progressBar);
 
             AutoCompleteTextView text_from = view.findViewById(R.id.text_from);
             AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
@@ -583,7 +650,7 @@ public class HomeFragment extends Fragment {
                     .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            progressBarDialog.setVisibility(View.VISIBLE);
+
                             if(connected()) {
                                 if (from == null) {
                                     Toast.makeText(getActivity(), getString(R.string.rout_from_message), Toast.LENGTH_SHORT).show();
@@ -618,17 +685,18 @@ public class HomeFragment extends Fragment {
                                         }
                                         if (!orderCost.equals("0")) {
                                             if(!MainActivity.verifyOrder) {
-                                                progressBarDialog.setVisibility(View.INVISIBLE);
+
                                                 Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                                 Toast.makeText(getActivity(), getString(R.string.cost_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                             } else {
-                                                progressBarDialog.setVisibility(View.INVISIBLE);
+                                                MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
+                                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                             new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
                                                     .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
-                                                            progressBarDialog.setVisibility(View.VISIBLE);
+
                                                             if(connected()) {
 
                                                             Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -767,8 +835,8 @@ public class HomeFragment extends Fragment {
                     .setNegativeButton( getString(R.string.routs_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-
-//                            ItemListDialogFragment.newInstance(10).show(requireActivity().getSupportFragmentManager(), "dialog");
+                            MyBottomSheetDialogFragment bottomSheetDialogFragment = new MyBottomSheetDialogFragment();
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         }
                     })
                     .show();
@@ -819,9 +887,9 @@ public class HomeFragment extends Fragment {
             }
         }
         if(servicesVer) {
-            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
+            for (int i = 0; i < arrayServiceCode().length; i++) {
                 if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
+                    servicesChecked.add(arrayServiceCode()[i]);
                 }
             }
             for (int i = 0; i < servicesChecked.size(); i++) {

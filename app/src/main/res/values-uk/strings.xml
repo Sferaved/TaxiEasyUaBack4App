@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версія: 2.40</string>
+    <string name="version">Версія: 2.41</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -106,7 +106,10 @@
     <string name="NO_SMOKE">Некурячий водій</string>
     <string name="ENGLISH">Англомовний водій</string>
     <string name="CABLE">Трос</string>
-    <string name="FUEL">Підвезення бензину</string>
+    <string name="FUEL">Підвезення палива</string>
     <string name="WIRES">Провід</string>
     <string name="SMOKE">Я куритиму</string>
+
+    <string name="add_services">Додатково</string>
+    <string name="time_limit">Превышение времени выполнения</string>
 </resources>

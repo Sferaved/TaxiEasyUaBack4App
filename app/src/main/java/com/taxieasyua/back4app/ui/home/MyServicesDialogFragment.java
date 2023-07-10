@@ -20,11 +20,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
-public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
+public class MyServicesDialogFragment extends BottomSheetDialogFragment {
     private String tariff;
     ListView listView;
     public String[] arrayService;
@@ -34,7 +33,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.bottom_sheet_layout, container, false);
+        View view = inflater.inflate(R.layout.bottom_services_layout, container, false);
         listView = view.findViewById(R.id.list);
 
         arrayService = new String[]{
@@ -82,48 +81,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             }
         }
 
-        String[] tariffArr = new String[]{
-                "Базовий онлайн",
-                "Базовый",
-                "Универсал",
-                "Бизнес-класс",
-                "Премиум-класс",
-                "Эконом-класс",
-                "Микроавтобус",
-        };
-        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_spinner_item, tariffArr);
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        Spinner spinner = view.findViewById(R.id.list_tariff);
-        spinner.setAdapter(adapterTariff);
-        spinner.setPrompt("Title");
-        spinner.setBackgroundResource(R.drawable.spinner_border);
-        StartActivity.cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        String tariffOld =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
-        if (StartActivity.cursorDb != null && !StartActivity.cursorDb.isClosed())
-            StartActivity.cursorDb.close();
-        for (int i = 0; i < tariffArr.length; i++) {
-            if(tariffArr[i].equals(tariffOld)) {
-                spinner.setSelection(i);
-            }
-        }
-
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                tariff = tariffArr[position];
-                ContentValues cv = new ContentValues();
-                cv.put("tarif", tariff);
-
-                // обновляем по id
-                StartActivity.database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                        new String[] { "1" });
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-        return view;
+                return view;
     }
 
     @Override

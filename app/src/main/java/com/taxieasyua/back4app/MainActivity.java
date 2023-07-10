@@ -83,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         networkChangeReceiver = new NetworkChangeReceiver();
-        MyBottomSheetDialogFragment bottomSheetDialogFragment = new MyBottomSheetDialogFragment();
-        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
 //        Toast.makeText(this, getString(R.string.wellcome), Toast.LENGTH_LONG).show();
     }
 
@@ -348,6 +347,7 @@ public class MainActivity extends AppCompatActivity {
         Spinner spinner = view.findViewById(R.id.list_tariff);
         spinner.setAdapter(adapterTariff);
         spinner.setPrompt("Title");
+        spinner.setBackgroundResource(R.drawable.spinner_border);
         StartActivity.cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         String tariffOld =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
         if (StartActivity.cursorDb != null && !StartActivity.cursorDb.isClosed())

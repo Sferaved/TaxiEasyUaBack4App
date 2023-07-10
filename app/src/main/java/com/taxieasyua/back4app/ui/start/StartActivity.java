@@ -35,6 +35,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.home.TimeOutTask;
 import com.taxieasyua.back4app.ui.maps.Odessa;
 
 
@@ -43,12 +44,14 @@ import org.osmdroid.util.GeoPoint;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 import java.util.concurrent.Exchanger;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -174,6 +177,27 @@ public class StartActivity extends Activity {
 
         return c;
     }
+
+
+    public String[]    arrayServiceCode() {
+            return new String[]{
+                "BAGGAGE",
+                "ANIMAL",
+                "CONDIT",
+                "MEET",
+                "COURIER",
+                "TERMINAL",
+                "CHECK_OUT",
+                "BABY_SEAT",
+                "DRIVER",
+                "NO_SMOKE",
+                "ENGLISH",
+                "CABLE",
+                "FUEL",
+                "WIRES",
+                "SMOKE",
+        };
+    }
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -182,7 +206,7 @@ public class StartActivity extends Activity {
         Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
         // Подключаем анимацию к нужному View
         mImageView.startAnimation(sunRiseAnimation);
-
+        isConnectedToGoogle();
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -225,6 +249,7 @@ public class StartActivity extends Activity {
            btn_again.setVisibility(View.VISIBLE);
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
+
            try {
                startIp();
                intent = new Intent(this, FirebaseSignIn.class);
@@ -251,13 +276,62 @@ public class StartActivity extends Activity {
         }
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnected()) {
+
             return true;
         }
 
         return false;
     }
+    public boolean isConnectedToGoogle() {
 
-    public void startIp() throws MalformedURLException {
+
+            AsyncTask.execute(() -> {
+
+                try {
+                    String googleEndpoint = "https://www.google.com";
+                    long startTime = System.currentTimeMillis();
+
+                    URL url = new URL(googleEndpoint);
+                    HttpsURLConnection connection = null;
+                    connection = (HttpsURLConnection) url.openConnection();
+                    connection.setDoInput(true);
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(2000); // Установите тайм-аут подключения в миллисекундах
+                    connection.connect();
+
+                    long endTime = System.currentTimeMillis();
+                    long responseTime = endTime - startTime;
+
+                        // Проверка успешности ответа и времени подключения
+                        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                            Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime + " мс");
+                            if (responseTime >= 2000) {
+                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
+                                StartActivity.this.finish();
+                                startActivity(intent);
+
+                            }
+                        } else {
+                            Log.d("TAG", "Не удалось подключиться к Google. Код ответа: " + connection.getResponseCode());
+                            Intent intent = new Intent(StartActivity.this, StopActivity.class);
+                            StartActivity.this.finish();
+                            startActivity(intent);
+                        }
+                    connection.disconnect();
+                } catch (IOException e) {
+                    Log.d("TAG","Не удалось подключиться к Google. Код ответа: " );
+                    Intent intent = new Intent(StartActivity.this, StopActivity.class);
+                    StartActivity.this.finish();
+                    startActivity(intent);
+                }
+
+            });
+
+
+
+        return false;
+    }
+    public static void startIp() throws MalformedURLException {
         String urlString = "https://m.easy-order-taxi.site/" +  StartActivity.api + "/android/startIP";
         Log.d("TAG", "startIp: " + urlString);
         URL url = new URL(urlString);

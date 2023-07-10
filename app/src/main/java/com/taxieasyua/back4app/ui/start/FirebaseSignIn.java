@@ -39,6 +39,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
+import com.taxieasyua.back4app.ui.home.TimeOutTask;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapFusedActivity;
@@ -53,6 +54,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -102,16 +106,7 @@ public class FirebaseSignIn extends AppCompatActivity {
         });
 
 
-        Configuration config = getResources().getConfiguration();
-
-        Log.d("TAG", "onCreate: config = " + config.getLocales().get(0) );
-
-
-
-        // Установка языка локализации для Firebase
-
-
-        FirebaseApp.initializeApp(this);
+        FirebaseApp.initializeApp(FirebaseSignIn.this);
 
 // Choose authentication providers
         List<AuthUI.IdpConfig> providers = Arrays.asList(
@@ -123,8 +118,8 @@ public class FirebaseSignIn extends AppCompatActivity {
                 .setAvailableProviders(providers)
                 .build();
         signInLauncher.launch(signInIntent);
+
     }
-    //   See: https://developer.android.com/training/basics/intents/result
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
             new FirebaseAuthUIActivityResultContract(),
             new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
@@ -138,17 +133,13 @@ public class FirebaseSignIn extends AppCompatActivity {
                 }
             }
     );
-    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
-//        Configuration config = getResources().getConfiguration();
-//        Locale locale = new Locale("en"); // Код языка локализации
-//        config.setLocale(locale);
-//        getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-//        Log.d("TAG", "onSignInResult: config = " + config.getLocales().get(0) );
-        MainActivity.verifyOrder = false;
-        IdpResponse response = result.getIdpResponse();
-        Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
 
-        if (result.getResultCode() == RESULT_OK && response != null) {
+    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
+        MainActivity.verifyOrder = false;
+//        IdpResponse response = result.getIdpResponse();
+//        Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
+
+        if (result.getResultCode() == RESULT_OK) {
             // Successfully signed in
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             StartActivity.userEmail = user.getEmail();
@@ -171,12 +162,9 @@ public class FirebaseSignIn extends AppCompatActivity {
                     startActivity(intent);
                 }
                 MainActivity.verifyOrder = true;
-                finish();
 
             } else {
                 Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-
-                MainActivity.verifyOrder = false;
             }
         } else {
             // Sign in failed. If response is null the user canceled the
@@ -184,7 +172,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             // response.getError().getErrorCode() and handle the error.
             // ...
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-            finish();
+            btn_again.setVisibility(View.VISIBLE);
 
 
         }

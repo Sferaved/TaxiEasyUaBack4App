@@ -1,5 +1,5 @@
 <resources>
-    <string name="version">Версия: 2.40</string>
+    <string name="version">Версия: 2.41</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -110,9 +110,11 @@
     <string name="NO_SMOKE">Некурящий водитель</string>
     <string name="ENGLISH">Англоговорящий водитель</string>
     <string name="CABLE">Трос</string>
-    <string name="FUEL">Подвоз бензина</string>
+    <string name="FUEL">Подвоз топлива</string>
     <string name="WIRES">Провода</string>
     <string name="SMOKE">Я буду курить</string>
+    <string name="add_services">Дополнительно</string>
+    <string name="time_limit">Превышение времени выполнения</string>
 
 
 </resources>
