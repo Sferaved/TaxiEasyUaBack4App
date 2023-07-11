@@ -972,9 +972,7 @@ public class HomeFragment extends Fragment {
                         Log.d("TAG", "onClick No validate: " + val);
                         if (val == false) {
                             Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
-                            Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
-
-
+                            phoneNumber();
                         } else {
                             StartActivity.insertRecordsUser(phoneNumber.getText().toString());
                             String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch");
@@ -1072,6 +1070,13 @@ public class HomeFragment extends Fragment {
                             }
                         }
                         }
+                    }
+                })
+                .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getActivity(), getString(R.string.please_phone_message), Toast.LENGTH_SHORT).show();
+                        getActivity().finish();
                     }
                 })
                 .show();

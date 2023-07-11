@@ -56,6 +56,7 @@ import com.taxieasyua.back4app.ui.maps.OrderJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import com.taxieasyua.back4app.ui.start.StartActivity;
+import com.taxieasyua.back4app.ui.start.StopActivity;
 
 import org.json.JSONException;
 import org.osmdroid.api.IMapController;
@@ -104,7 +105,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     static Polyline roadOverlay;
     static Marker m;
     private static String FromAdressString;
-    public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp, tra, plm, epm, tlm;
+    public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp,
+            tra, plm, epm, tlm, sbt, cbt, vph;
     LayoutInflater inflater;
     static View view;
     static ProgressBar progressBar;
@@ -155,6 +157,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         plm = getString(R.string.please_phone_message);
         epm = getString(R.string.end_point_marker);
         tlm = getString(R.string.time_limit);
+        sbt = getString(R.string.sent_button);
+        cbt = getString(R.string.cancel_button);
+        vph = getString(R.string.verify_phone);
 
         inflater = getLayoutInflater();
         view = inflater.inflate(R.layout.phone_verify_layout, null);
@@ -1844,8 +1849,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         EditText phoneNumber = view.findViewById(R.id.phoneNumber);
 
 //        String result = phoneNumber.getText().toString();
-        builder.setTitle("Перевірка телефону")
-                .setPositiveButton("Відправити", new DialogInterface.OnClickListener() {
+        builder.setTitle(vph)
+                .setPositiveButton(sbt, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(connected()) {
@@ -1855,9 +1860,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             Log.d("TAG", "onClick No validate: " + val);
                             if (val == false) {
                                 Toast.makeText(OpenStreetMapActivity.this, getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
-                                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
-                                OpenStreetMapActivity.this.finish();
-
+                                phoneNumberGeo();
                             } else {
                                 StartActivity.insertRecordsUser(phoneNumber.getText().toString());
 
@@ -1962,7 +1965,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         }
                     }
                 })
-                .show();
+                .setNegativeButton(cbt, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(OpenStreetMapActivity.this, getString(R.string.please_phone_message), Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent (OpenStreetMapActivity.this, OpenStreetMapActivity.class);
+                        startActivity(intent);
+                    }
+                })
+               .show();
 
     }
     public static void phoneNumberMarkers() {
@@ -1975,18 +1986,17 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         Log.d("TAG", "phoneNumber " + phoneNumber.getText());
 
 //        String result = phoneNumber.getText().toString();
-        builder.setTitle("Перевірка телефону")
-                .setPositiveButton("Відправити", new DialogInterface.OnClickListener() {
+        builder.setTitle(vph)
+                .setPositiveButton(sbt, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(connected()) {
                             Log.d("TAG", "onClick befor validate: ");
                             String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
                             boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
-                            Log.d("TAG", "onClick No validate: " + val);
-                            if (val == false) {
+                             if (val == false) {
                                 Toast.makeText(map.getContext(), fp , Toast.LENGTH_SHORT).show();
-                                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
+                                phoneNumberMarkers();
                             } else {
                                 StartActivity.insertRecordsUser(phoneNumber.getText().toString());
                                 try {
@@ -2090,6 +2100,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         }
                     }
                 })
+                .setNegativeButton(OpenStreetMapActivity.co, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(map.getContext(), plm, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent (map.getContext(), OpenStreetMapActivity.class);
+                        map.getContext().startActivity(intent);
+                    }
+                })
                 .show();
 
     }
@@ -2103,8 +2121,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         Log.d("TAG", "phoneNumber " + phoneNumber.getText());
 
 //        String result = phoneNumber.getText().toString();
-        builder.setTitle("Перевірка телефону")
-                .setPositiveButton("Відправити", new DialogInterface.OnClickListener() {
+        builder.setTitle(vph)
+                .setPositiveButton(sbt, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(connected()) {
@@ -2114,7 +2132,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             Log.d("TAG", "onClick No validate: " + val);
                             if (val == false) {
                                 Toast.makeText(map.getContext(), fp , Toast.LENGTH_SHORT).show();
-                                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
+                                phoneNumberMarkersOfRoads();
                             } else {
                                 StartActivity.insertRecordsUser(phoneNumber.getText().toString());
 
@@ -2186,6 +2204,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                 }
                             }
                         }
+                    }
+                })
+                .setNegativeButton(cbt, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(map.getContext(), plm, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent (map.getContext(), StopActivity.class);
+                        map.getContext().startActivity(intent);
                     }
                 })
                 .show();

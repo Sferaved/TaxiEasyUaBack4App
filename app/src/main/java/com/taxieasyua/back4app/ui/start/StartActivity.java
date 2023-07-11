@@ -57,7 +57,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_01072023_8";
+    private static final String DB_NAME = "data_01072023_11";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
