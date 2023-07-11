@@ -19,20 +19,16 @@ import androidx.annotation.Nullable;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.R;
 
-public class StopActivity extends Activity {
+public class UpdateActivity extends Activity {
     static FloatingActionButton fab;
-
     Button btn_again;
-
-
-
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-        Toast.makeText(this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.update_message, Toast.LENGTH_SHORT).show();
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -43,6 +39,7 @@ public class StopActivity extends Activity {
         fab = findViewById(R.id.fab);
         btn_again = findViewById(R.id.btn_again);
         btn_again.setVisibility(View.VISIBLE);
+        btn_again.setText("GOOGLE PLAY MARKET");
 
         fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -58,10 +55,10 @@ public class StopActivity extends Activity {
            @Override
            public void onClick(View v) {
                if(!hasConnection()) {
-
-                   Toast.makeText(StopActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                   Toast.makeText(UpdateActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                } else {
-                   Intent intent = new Intent(StopActivity.this, StartActivity.class);
+                   Intent intent = new Intent(Intent.ACTION_VIEW);
+                   intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.taxi.easy.ua&pli=1"));
                    startActivity(intent);
                }
            }
@@ -72,7 +69,7 @@ public class StopActivity extends Activity {
 
     }
     public boolean hasConnection() {
-        ConnectivityManager cm = (ConnectivityManager) StopActivity.this.getSystemService(
+        ConnectivityManager cm = (ConnectivityManager) UpdateActivity.this.getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {

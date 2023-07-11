@@ -41,6 +41,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -91,6 +92,8 @@ public class HomeFragment extends Fragment {
     private static final int CM_DELETE_ID = 1;
     String from_street_rout, to_street_rout;
     private int selectedPosition = -1;
+
+
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -691,8 +694,42 @@ public class HomeFragment extends Fragment {
                                             } else {
                                                 MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
                                                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                            new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                    .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
+
+                                                MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                                                LayoutInflater inflater = getActivity().getLayoutInflater();
+
+                                                View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                                                builderAddCost.setView(view_cost);
+                                                TextView costView = view_cost.findViewById(R.id.cost);
+                                                costView.setText(orderCost);
+                                                StartActivity.cost = Long.parseLong(orderCost);
+                                                Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                                                Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                                btn_minus.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+
+                                                        if(StartActivity.addCost != 0) {
+                                                            StartActivity.addCost -= 5;
+                                                            StartActivity.cost -= 5;
+                                                            costView.setText(String.valueOf(StartActivity.cost));
+                                                        }
+                                                    }
+                                                });
+                                                btn_plus.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        StartActivity.addCost += 5;
+                                                        StartActivity.cost += 5;
+                                                        Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
+                                                        costView.setText(String.valueOf(StartActivity.cost));
+                                                    }
+                                                });
+
+
+                                                builderAddCost
+                                                    .setMessage(getString(R.string.cost_of_order))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
@@ -866,12 +903,14 @@ public class HomeFragment extends Fragment {
                 phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
                 c.close();
             }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName + "(" + StartActivity.userEmail + ")";
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
         }
 
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + StartActivity.displayName + "(" + StartActivity.userEmail + ")" + "/" + StartActivity.addCost;
+
         }
 
         // Building the url to the web service

@@ -96,6 +96,7 @@
             android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar"
             android:exported="true"/>
         <activity android:name="com.taxieasyua.back4app.ui.start.StopActivity" />
+        <activity android:name="com.taxieasyua.back4app.ui.start.UpdateActivity" />
 
         <receiver android:name=".NetworkChangeReceiver" />
 

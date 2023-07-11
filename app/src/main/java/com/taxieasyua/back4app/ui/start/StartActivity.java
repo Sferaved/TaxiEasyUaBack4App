@@ -57,7 +57,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_01072023_11";
+    private static final String DB_NAME = "data_11072023_2";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -198,10 +198,14 @@ public class StartActivity extends Activity {
                 "SMOKE",
         };
     }
+    public static long addCost, cost;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
+
+
+
         ImageView mImageView = findViewById(R.id.imageView2);
         Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
         // Подключаем анимацию к нужному View
@@ -249,11 +253,9 @@ public class StartActivity extends Activity {
            btn_again.setVisibility(View.VISIBLE);
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
-
            try {
-               startIp();
-               intent = new Intent(this, FirebaseSignIn.class);
-               startActivity(intent);
+               version();
+
            } catch (MalformedURLException e) {
                btn_again.setVisibility(View.VISIBLE);
                Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
@@ -753,5 +755,27 @@ public class StartActivity extends Activity {
 
     }
 
+        private void version() throws MalformedURLException {
+            String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" +"versionAPI";
 
+
+            Log.d("TAG", "onClick urlCost: " + url);
+            Map sendUrlMapCost = null;
+            try {
+                sendUrlMapCost = ResultSONParser.sendURL(url);
+            } catch (MalformedURLException | InterruptedException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+            String message = (String) sendUrlMapCost.get("message");
+            if(!message.equals(getString(R.string.version_code))) {
+                intent = new Intent(this, UpdateActivity.class);
+                startActivity(intent);
+            } else {
+                startIp();
+                intent = new Intent(this, FirebaseSignIn.class);
+                startActivity(intent);
+            };
+
+        }
 }
