@@ -1,6 +1,6 @@
 <resources>
-    <string name="version">Версія: 2.44</string>
-    <string name="version_code">2.44</string>
+    <string name="version">Версія: 2.45</string>
+    <string name="version_code">2.45</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -115,4 +115,7 @@
     <string name="time_limit">Превышение времени выполнения</string>
     <string name="slow_internet">Низька швидкість інтернету</string>
     <string name="update_message">Необхідно провести оновлення</string>
+    <string name="update_url">Оновити додаток</string>
+    <string name="new_version">Доступна нова версія</string>
+    <string name="news_of_version">У новій версії покращено продуктивність та додано нові зручні функції</string>
 </resources>

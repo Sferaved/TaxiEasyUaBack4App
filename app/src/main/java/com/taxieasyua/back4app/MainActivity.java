@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
         LayoutInflater inflater = this.getLayoutInflater();
 
-        View view = inflater.inflate(R.layout.phone_verify_layout, null);
+        View view = inflater.inflate(R.layout.phone_settings_layout, null);
 
         builder.setView(view);
 

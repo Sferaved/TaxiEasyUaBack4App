@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
+import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.TimeOutTask;
 import com.taxieasyua.back4app.ui.maps.Odessa;
@@ -57,7 +58,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_11072023_2";
+    private static final String DB_NAME = "data_12072023_8";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -199,11 +200,11 @@ public class StartActivity extends Activity {
         };
     }
     public static long addCost, cost;
+    public static boolean verifyPhone;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-
 
 
         ImageView mImageView = findViewById(R.id.imageView2);
@@ -450,6 +451,8 @@ public class StartActivity extends Activity {
         }
 
 
+        Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        verifyPhone = cursor.getCount() == 1;
     }
 
     private void insertFirstSettings(List<String> settings) {
@@ -756,6 +759,13 @@ public class StartActivity extends Activity {
     }
 
         private void version() throws MalformedURLException {
+
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+                return;
+            }
+
+
             String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" +"versionAPI";
 
 
@@ -769,13 +779,20 @@ public class StartActivity extends Activity {
 
             String message = (String) sendUrlMapCost.get("message");
             if(!message.equals(getString(R.string.version_code))) {
-                intent = new Intent(this, UpdateActivity.class);
-                startActivity(intent);
-            } else {
+//                intent = new Intent(this, UpdateActivity.class);
+//                startActivity(intent);
+                NotificationHelper notificationHelper = new NotificationHelper();
+
+                String title = getString(R.string.new_version);
+                String messageNotif = getString(R.string.news_of_version);
+                String urlStr = "https://play.google.com/store/apps/details?id=com.taxi.easy.ua&pli=1";
+
+                notificationHelper.showNotification(this, title, messageNotif, urlStr);
+            }
                 startIp();
                 intent = new Intent(this, FirebaseSignIn.class);
                 startActivity(intent);
-            };
+
 
         }
 }

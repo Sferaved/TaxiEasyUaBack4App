@@ -53,7 +53,7 @@ public class MarkerOverlay extends Overlay {
 //        });
         try {
 
-            OpenStreetMapActivity.dialogMarkers();
+            OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
         } catch (MalformedURLException | JSONException | InterruptedException e) {
             throw new RuntimeException(e);
         }

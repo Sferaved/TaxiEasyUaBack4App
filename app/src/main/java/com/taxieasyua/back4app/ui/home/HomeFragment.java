@@ -401,11 +401,46 @@ public class HomeFragment extends Fragment {
                     coastOfRoad(startPoint, message);
                 }
                 if (!orderCost.equals("0")) {
-                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                    String message_coats_markers = OpenStreetMapActivity.cm + FromAddressString + " -> " + ToAddressString + " " + orderCost + OpenStreetMapActivity.UAH;
+//                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                    MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
 
-                    builder.setMessage(message_coats_markers)
-                            .setPositiveButton(OpenStreetMapActivity.ord, new DialogInterface.OnClickListener() {
+                    View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                    builderAddCost.setView(view_cost);
+                    TextView costView = view_cost.findViewById(R.id.cost);
+                    costView.setText(orderCost);
+                    StartActivity.cost = Long.parseLong(orderCost);
+                    StartActivity.addCost = 0;
+                    Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                    Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                    btn_minus.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            if(StartActivity.addCost != 0) {
+                                StartActivity.addCost -= 5;
+                                StartActivity.cost -= 5;
+                                costView.setText(String.valueOf(StartActivity.cost));
+                            }
+                        }
+                    });
+                    btn_plus.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            StartActivity.addCost += 5;
+                            StartActivity.cost += 5;
+                            Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
+                            costView.setText(String.valueOf(StartActivity.cost));
+                        }
+                    });
+
+
+
+                    String message_coats_markers = OpenStreetMapActivity.cm + FromAddressString + " -> " + ToAddressString;
+                    builderAddCost
+                            .setMessage(getString(R.string.cost_of_order) + message_coats_markers)
+                                                .setPositiveButton(OpenStreetMapActivity.ord, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
 
@@ -740,127 +775,120 @@ public class HomeFragment extends Fragment {
                                                         costView.setText(String.valueOf(StartActivity.cost));
                                                     }
                                                 });
-
+                                                if (!StartActivity.verifyPhone) {
+                                                    getPhoneNumber();
+                                                }
+                                                if (!StartActivity.verifyPhone) {
+                                                    MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
+                                                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                                                }
 
                                                 builderAddCost
                                                     .setMessage(getString(R.string.cost_of_order))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
-
                                                             if(connected()) {
+                                                                if (StartActivity.verifyPhone) {
+                                                                    try {
+                                                                        String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch");
+                                                                        Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
-                                                            Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-                                                            if (cursor.getCount() == 0) {
+                                                                        String orderWeb = (String) sendUrlMap.get("order_cost");
+                                                                        if (!orderWeb.equals("0")) {
 
-                                                                getPhoneNumber();
-                                                                cursor.close();
-                                                            } else {
-                                                                String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch");
-                                                                if (cursor != null && !cursor.isClosed())
-                                                                    cursor.close();
-                                                                try {
-                                                                    Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
-
-                                                                    String orderWeb = (String) sendUrlMap.get("order_cost");
-                                                                    if (!orderWeb.equals("0")) {
-
-                                                                        String from_name = (String) sendUrlMap.get("routefrom");
-                                                                        String to_name = (String) sendUrlMap.get("routeto");
-                                                                        if (from_name.equals(to_name)) {
-                                                                            messageResult = getString(R.string.thanks_message) +
-                                                                                    from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
-                                                                                    getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                                                                            String from_name = (String) sendUrlMap.get("routefrom");
+                                                                            String to_name = (String) sendUrlMap.get("routeto");
+                                                                            if (from_name.equals(to_name)) {
+                                                                                messageResult = getString(R.string.thanks_message) +
+                                                                                        from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
+                                                                                        getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
 
 
-                                                                        } else {
-                                                                            messageResult =  getString(R.string.thanks_message) +
-                                                                                    from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
-                                                                                    to_name + " " + to_number.getText() + "." +
-                                                                                    getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-                                                                        }
-                                                                        Log.d(TAG, "onClick sendUrlMap: " + from_name +" " + to_name +
-                                                                                from_number.getText().toString()  + " " + to_number.getText().toString()  +" " +
-                                                                                (String) sendUrlMap.get("from_lat") +" " + (String) sendUrlMap.get("from_lng")  +" " +
-                                                                                (String) sendUrlMap.get("lat")  +" " + (String) sendUrlMap.get("lng"));
-
-                                                                        if(from_name.equals(to_name)) {
-                                                                            if(!sendUrlMap.get("lat").equals("0")) {
-                                                                                StartActivity.insertRecordsOrders(
-                                                                                        from_name, from_name,
-                                                                                        from_number.getText().toString(), from_number.getText().toString(),
-                                                                                        (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                                                                        (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng")
-                                                                                );
+                                                                            } else {
+                                                                                messageResult =  getString(R.string.thanks_message) +
+                                                                                        from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
+                                                                                        to_name + " " + to_number.getText() + "." +
+                                                                                        getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                                                                             }
-                                                                        } else {
+                                                                            Log.d(TAG, "onClick sendUrlMap: " + from_name +" " + to_name +
+                                                                                    from_number.getText().toString()  + " " + to_number.getText().toString()  +" " +
+                                                                                    (String) sendUrlMap.get("from_lat") +" " + (String) sendUrlMap.get("from_lng")  +" " +
+                                                                                    (String) sendUrlMap.get("lat")  +" " + (String) sendUrlMap.get("lng"));
 
-                                                                            if(!sendUrlMap.get("lat").equals("0")) {
-                                                                                StartActivity.insertRecordsOrders(
-                                                                                        from_name, to_name,
-                                                                                        from_number.getText().toString(), to_number.getText().toString(),
-                                                                                        (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                                                                        (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng")
-                                                                                );
+                                                                            if(from_name.equals(to_name)) {
+                                                                                if(!sendUrlMap.get("lat").equals("0")) {
+                                                                                    StartActivity.insertRecordsOrders(
+                                                                                            from_name, from_name,
+                                                                                            from_number.getText().toString(), from_number.getText().toString(),
+                                                                                            (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                                                                            (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng")
+                                                                                    );
+                                                                                }
+                                                                            } else {
+
+                                                                                if(!sendUrlMap.get("lat").equals("0")) {
+                                                                                    StartActivity.insertRecordsOrders(
+                                                                                            from_name, to_name,
+                                                                                            from_number.getText().toString(), to_number.getText().toString(),
+                                                                                            (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                                                                            (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng")
+                                                                                    );
+                                                                                }
                                                                             }
-                                                                        }
 //                                                                        StartActivity.insertRecordsOrders(from_name, to_name,
 //                                                                                from_number.getText().toString(), to_number.getText().toString());
 
-                                                                        new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                                                .setMessage(messageResult)
-                                                                                .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
-                                                                                    @Override
-                                                                                    public void onClick(DialogInterface dialog, int which) {
-                                                                                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                                                                                        startActivity(intent);
-                                                                                    }
-                                                                                })
-                                                                                .show();
-                                                                    } else {
-                                                                        String message = (String) sendUrlMap.get("message");
-                                                                        new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                                                .setMessage(message + getString(R.string.try_again))
-                                                                                .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
-                                                                                    @Override
-                                                                                    public void onClick(DialogInterface dialog, int which) {
-                                                                                        Intent intent = new Intent(Intent.ACTION_DIAL);
-                                                                                        intent.setData(Uri.parse("tel:0674443804"));
-                                                                                        startActivity(intent);
+                                                                            new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
+                                                                                    .setMessage(messageResult)
+                                                                                    .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
+                                                                                        @Override
+                                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                                            Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                                                            startActivity(intent);
+                                                                                        }
+                                                                                    })
+                                                                                    .show();
+                                                                        } else {
+                                                                            String message = (String) sendUrlMap.get("message");
+                                                                            new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
+                                                                                    .setMessage(message + getString(R.string.try_again))
+                                                                                    .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
+                                                                                        @Override
+                                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                                            Intent intent = new Intent(Intent.ACTION_DIAL);
+                                                                                            intent.setData(Uri.parse("tel:0674443804"));
+                                                                                            startActivity(intent);
 
-                                                                                    }
-                                                                                })
-                                                                                .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
-                                                                                    @Override
-                                                                                    public void onClick(DialogInterface dialog, int which) {
-                                                                                        if(connected()) {
-                                                                                            button.setVisibility(View.VISIBLE);
-                                                                                            getActivity().finish();
+                                                                                        }
+                                                                                    })
+                                                                                    .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
+                                                                                        @Override
+                                                                                        public void onClick(DialogInterface dialog, int which) {
+                                                                                            if(connected()) {
+                                                                                                button.setVisibility(View.VISIBLE);
+                                                                                                getActivity().finish();
 //                                                                                            Intent intent = new Intent(getActivity(), MainActivity.class);
 //                                                                                            startActivity(intent);
+                                                                                            }
                                                                                         }
-                                                                                    }
-                                                                                })
-                                                                                .show();
+                                                                                    })
+                                                                                    .show();
+                                                                        }
+
+
+                                                                    } catch (MalformedURLException |
+                                                                             InterruptedException |
+                                                                             JSONException e) {
+                                                                        throw new RuntimeException(e);
                                                                     }
-
-
-                                                                } catch (MalformedURLException |
-                                                                         InterruptedException |
-                                                                         JSONException e) {
-                                                                    throw new RuntimeException(e);
-                                                                }
+                                                                } else {
+                                                                    Toast.makeText(getActivity(), getString(R.string.please_phone_message), Toast.LENGTH_SHORT).show();
+                                                                    Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
+                                                                    startActivity(intent);
+                                                               }
                                                             }
-                                                            cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-                                                            if (cursor.getCount() == 0) {
-                                                                Toast.makeText(getActivity(), getString(R.string.format_phone), Toast.LENGTH_SHORT).show();
-                                                                phoneNumber();
-                                                                cursor.close();
-                                                            }
-
-
-                                                        }
-                                                    }})
+                                                        }})
                                                     .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
@@ -1035,85 +1063,130 @@ public class HomeFragment extends Fragment {
                                 String orderWeb = (String) sendUrlMap.get("order_cost");
                                 if (!orderWeb.equals("0")) {
 
-                                    String from_name = (String) sendUrlMap.get("routefrom");
-                                    String to_name = (String) sendUrlMap.get("routeto");
-                                    if (from_name.equals(to_name)) {
-                                        messageResult = getString(R.string.thanks_message) +
-                                                from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
-                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                                    MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                                    LayoutInflater inflater = getActivity().getLayoutInflater();
 
+                                    View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                                    builderAddCost.setView(view_cost);
+                                    TextView costView = view_cost.findViewById(R.id.cost);
+                                    costView.setText(orderWeb);
+                                    StartActivity.cost = Long.parseLong(orderWeb);
+                                    StartActivity.addCost = 0;
+                                    Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                                    Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                                    } else {
-                                        messageResult =  getString(R.string.thanks_message) +
-                                                from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
-                                                to_name + " " + to_number.getText() + "." +
-                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-                                    }
-                                    Log.d(TAG, "onClick sendUrlMap: " + from_name +" " + to_name +
-                                            from_number.getText().toString()  + " " + to_number.getText().toString()  +" " +
-                                            (String) sendUrlMap.get("from_lat") +" " + (String) sendUrlMap.get("from_lng")  +" " +
-                                            (String) sendUrlMap.get("lat")  +" " + (String) sendUrlMap.get("lng"));
+                                    btn_minus.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
 
-                                    if(from_name.equals(to_name)) {
-                                        if(!sendUrlMap.get("lat").equals("0")) {
-                                            StartActivity.insertRecordsOrders(
-                                                    from_name, from_name,
-                                                    from_number.getText().toString(), from_number.getText().toString(),
-                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng")
-                                            );
+                                            if (StartActivity.addCost != 0) {
+                                                StartActivity.addCost -= 5;
+                                                StartActivity.cost -= 5;
+                                                costView.setText(String.valueOf(StartActivity.cost));
+                                            }
                                         }
-                                    } else {
-
-                                        if(!sendUrlMap.get("lat").equals("0")) {
-                                            StartActivity.insertRecordsOrders(
-                                                    from_name, to_name,
-                                                    from_number.getText().toString(), to_number.getText().toString(),
-                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                                    (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng")
-                                            );
+                                    });
+                                    btn_plus.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            StartActivity.addCost += 5;
+                                            StartActivity.cost += 5;
+                                            Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
+                                            costView.setText(String.valueOf(StartActivity.cost));
                                         }
-                                    }
-//                                                                        StartActivity.insertRecordsOrders(from_name, to_name,
-//                                                                                from_number.getText().toString(), to_number.getText().toString());
+                                    });
 
-                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                            .setMessage(messageResult)
-                                            .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                                                    startActivity(intent);
-                                                }
-                                            })
-                                            .show();
-                                } else {
-                                    String message = (String) sendUrlMap.get("message");
-                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                            .setMessage(message + getString(R.string.try_again))
-                                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                                                    intent.setData(Uri.parse("tel:0674443804"));
-                                                    startActivity(intent);
 
-                                                }
-                                            })
-                                            .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
+                                    builderAddCost
+                                            .setMessage(getString(R.string.cost_of_order))
+                                            .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
-                                                    if(connected()) {
-                                                        button.setVisibility(View.VISIBLE);
-                                                        getActivity().finish();
-//                                                                                            Intent intent = new Intent(getActivity(), MainActivity.class);
-//                                                                                            startActivity(intent);
+
+                                                    String from_name = (String) sendUrlMap.get("routefrom");
+                                                    String to_name = (String) sendUrlMap.get("routeto");
+                                                    if (from_name.equals(to_name)) {
+                                                        messageResult = getString(R.string.thanks_message) +
+                                                                from_name + " " + from_number.getText() + " " + getString(R.string.on_city) +
+                                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+
+
+                                                    } else {
+                                                        messageResult = getString(R.string.thanks_message) +
+                                                                from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
+                                                                to_name + " " + to_number.getText() + "." +
+                                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                                                     }
+                                                    Log.d(TAG, "onClick sendUrlMap: " + from_name + " " + to_name +
+                                                            from_number.getText().toString() + " " + to_number.getText().toString() + " " +
+                                                            (String) sendUrlMap.get("from_lat") + " " + (String) sendUrlMap.get("from_lng") + " " +
+                                                            (String) sendUrlMap.get("lat") + " " + (String) sendUrlMap.get("lng"));
+
+                                                    if (from_name.equals(to_name)) {
+                                                        if (!sendUrlMap.get("lat").equals("0")) {
+                                                            StartActivity.insertRecordsOrders(
+                                                                    from_name, from_name,
+                                                                    from_number.getText().toString(), from_number.getText().toString(),
+                                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng")
+                                                            );
+                                                        }
+                                                    } else {
+
+                                                        if (!sendUrlMap.get("lat").equals("0")) {
+                                                            StartActivity.insertRecordsOrders(
+                                                                    from_name, to_name,
+                                                                    from_number.getText().toString(), to_number.getText().toString(),
+                                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                                                    (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng")
+                                                            );
+                                                        }
+                                                    }
+                                                    //                                                                        StartActivity.insertRecordsOrders(from_name, to_name,
+                                                    //                                                                                from_number.getText().toString(), to_number.getText().toString());
+
+                                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
+                                                            .setMessage(messageResult)
+                                                            .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                                    startActivity(intent);
+                                                                }
+                                                            })
+                                                            .show();
                                                 }
                                             })
+                                            .setNegativeButton(OpenStreetMapActivity.cbt, null)
                                             .show();
-                                }
+                                                } else
+                                    {
+                                                    String message = (String) sendUrlMap.get("message");
+                                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
+                                                            .setMessage(message + getString(R.string.try_again))
+                                                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
+                                                                    intent.setData(Uri.parse("tel:0674443804"));
+                                                                    startActivity(intent);
 
+                                                                }
+                                                            })
+                                                            .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
+                                                                @Override
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    if (connected()) {
+                                                                        button.setVisibility(View.VISIBLE);
+                                                                        getActivity().finish();
+                                                                        //                                                                                            Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                                        //                                                                                            startActivity(intent);
+                                                                    }
+                                                                }
+                                                            })
+                                                            .show();
+
+                                     }
 
                             } catch (MalformedURLException |
                                      InterruptedException |
