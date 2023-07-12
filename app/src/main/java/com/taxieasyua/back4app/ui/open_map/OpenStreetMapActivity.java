@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -89,7 +90,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private String from, to, messageResult, from_geo;
     public String[] arrayStreet = StartActivity.arrayStreet;
 
-    static FloatingActionButton fab, fab_call, fab_open_map;
+    static FloatingActionButton fab, fab_call, fab_open_map, fab_add;
+
     private TextView textViewFrom;
     private static double startLat, startLan, finishLat, finishLan;
     static MapView map = null;
@@ -106,7 +108,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     static Marker m;
     private static String FromAdressString;
     public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp,
-            tra, plm, epm, tlm, sbt, cbt, vph;
+            tra, plm, epm, tlm, sbt, cbt, vph, coo;
     LayoutInflater inflater;
     static View view;
     static ProgressBar progressBar;
@@ -160,6 +162,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         sbt = getString(R.string.sent_button);
         cbt = getString(R.string.cancel_button);
         vph = getString(R.string.verify_phone);
+        coo = getString(R.string.cost_of_order);
 
         inflater = getLayoutInflater();
         view = inflater.inflate(R.layout.phone_verify_layout, null);
@@ -174,6 +177,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         fab_call = findViewById(R.id.fab_call);
         fab_open_map = findViewById(R.id.fab_open_map);
+        fab_add = findViewById(R.id.fab_add);
         gpsSwitch = findViewById(R.id.gpsSwitch);
 
         gpsSwitch.setChecked(switchState());
@@ -224,6 +228,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 
         });
+
+        fab_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
 
@@ -523,6 +536,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
     public static void dialogMarkers() throws MalformedURLException, JSONException, InterruptedException {
         if(endPoint != null) {
+
             Log.d("TAG", "onResume: endPoint" +  endPoint.getLatitude());
             map.getOverlays().remove(OpenStreetMapActivity.m);
             map.getOverlays().removeAll(Collections.singleton(roadOverlay));
@@ -541,9 +555,43 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 coastOfRoad(startPoint, message);
             }
             if (!orderCost.equals("0")) {
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
-                String message_coats_markers = cm + sendUrlMapCost.get("routeto") +  " "  + orderCost + UAH;
-                builder.setMessage(message_coats_markers)
+//                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
+                MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
+                LayoutInflater inflater =  LayoutInflater.from(map.getContext());
+
+                View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                builderAddCost.setView(view_cost);
+                TextView costView = view_cost.findViewById(R.id.cost);
+                costView.setText(orderCost);
+                StartActivity.cost = Long.parseLong(orderCost);
+                StartActivity.addCost = 0;
+                Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                btn_minus.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        if(StartActivity.addCost != 0) {
+                            StartActivity.addCost -= 5;
+                            StartActivity.cost -= 5;
+                            costView.setText(String.valueOf(StartActivity.cost));
+                        }
+                    }
+                });
+                btn_plus.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        StartActivity.addCost += 5;
+                        StartActivity.cost += 5;
+
+                        costView.setText(String.valueOf(StartActivity.cost));
+                    }
+                });
+
+
+                builderAddCost
+                        .setMessage(coo)
                         .setPositiveButton(ord, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -1011,6 +1059,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
 
             progressDialog.dismiss();
+
+            Button buttonAddServicesView =  view.findViewById(R.id.btn_add);
+            buttonAddServicesView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            });
             builder.setMessage( R.string.make_rout_message)
                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                         @Override
@@ -1052,10 +1109,44 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                             Toast.makeText(OpenStreetMapActivity.this, getString(R.string.call_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                         } else {
-                                            MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
-                                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                                            new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
-                                                    .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
+
+
+                                            MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
+                                            LayoutInflater inflater = OpenStreetMapActivity.this.getLayoutInflater();
+
+                                            View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                                            builderAddCost.setView(view_cost);
+                                            TextView costView = view_cost.findViewById(R.id.cost);
+                                            costView.setText(orderCost);
+                                            StartActivity.cost = Long.parseLong(orderCost);
+                                            StartActivity.addCost = 0;
+                                            Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                                            Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                            btn_minus.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+
+                                                    if(StartActivity.addCost != 0) {
+                                                        StartActivity.addCost -= 5;
+                                                        StartActivity.cost -= 5;
+                                                        costView.setText(String.valueOf(StartActivity.cost));
+                                                    }
+                                                }
+                                            });
+                                            btn_plus.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    StartActivity.addCost += 5;
+                                                    StartActivity.cost += 5;
+                                                    Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
+                                                    costView.setText(String.valueOf(StartActivity.cost));
+                                                }
+                                            });
+
+
+                                            builderAddCost
+                                                    .setMessage(getString(R.string.cost_of_order))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
@@ -1283,10 +1374,43 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
                                             Toast.makeText(OpenStreetMapActivity.this, getString(R.string.call_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
                                         } else {
-                                            MyServicesDialogFragment bottomSheetDialogFragment = new MyServicesDialogFragment();
-                                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                                            new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
-                                                    .setMessage(getString(R.string.cost_of_order) + orderCost + getString(R.string.UAH))
+
+                                            MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
+                                            LayoutInflater inflater = OpenStreetMapActivity.this.getLayoutInflater();
+
+                                            View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                                            builderAddCost.setView(view_cost);
+                                            TextView costView = view_cost.findViewById(R.id.cost);
+                                            costView.setText(orderCost);
+                                            StartActivity.cost = Long.parseLong(orderCost);
+                                            StartActivity.addCost = 0;
+                                            Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                                            Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                            btn_minus.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+
+                                                    if(StartActivity.addCost != 0) {
+                                                        StartActivity.addCost -= 5;
+                                                        StartActivity.cost -= 5;
+                                                        costView.setText(String.valueOf(StartActivity.cost));
+                                                    }
+                                                }
+                                            });
+                                            btn_plus.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    StartActivity.addCost += 5;
+                                                    StartActivity.cost += 5;
+                                                    Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
+                                                    costView.setText(String.valueOf(StartActivity.cost));
+                                                }
+                                            });
+
+
+                                            builderAddCost
+                                                    .setMessage(getString(R.string.cost_of_order))
                                                     .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
                                                         @Override
                                                         public void onClick(DialogInterface dialog, int which) {
@@ -1585,7 +1709,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+//            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + StartActivity.displayName  + "/" + StartActivity.addCost;
         }
 
         // Building the url to the web service
@@ -1653,7 +1779,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+//            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + StartActivity.displayName  + "/" + StartActivity.addCost;
         }
 
         // Building the url to the web service
@@ -1890,9 +2018,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                             if (!orderWeb.equals("0")) {
 
-                                                String to_name;
                                                 if(Objects.equals(sendUrlMapCost.get("routefrom"), sendUrlMapCost.get("routeto"))) {
-                                                    to_name = onc;
+
                                                     if(!sendUrlMapCost.get("lat").equals("0")) {
                                                         StartActivity.insertRecordsOrders(
                                                                 (String) sendUrlMapCost.get("routefrom"), (String) sendUrlMapCost.get("routefrom"),
@@ -1902,7 +2029,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         );
                                                     }
                                                 } else {
-                                                    to_name = (String) sendUrlMapCost.get("routeto") + " " + (String) sendUrlMapCost.get("to_number");
+
                                                     if(!sendUrlMapCost.get("lat").equals("0")) {
                                                         StartActivity.insertRecordsOrders(
                                                                 (String) sendUrlMapCost.get("routefrom"), (String) sendUrlMapCost.get("routeto"),
@@ -1912,14 +2039,42 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         );
                                                     }
                                                 }
-                                                String messageResult = tm +
-                                                        FromAdressString  + tom +
-                                                        to_name + "." +
-                                                        co + orderWeb + UAH;
-                                                Log.d("TAG", "onClick messageResult: " + messageResult);
+                                                MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
+                                                LayoutInflater inflater = OpenStreetMapActivity.this.getLayoutInflater();
 
-                                                new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
-                                                        .setMessage(messageResult)
+                                                View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                                                builderAddCost.setView(view_cost);
+                                                TextView costView = view_cost.findViewById(R.id.cost);
+                                                costView.setText(orderCost);
+                                                StartActivity.cost = Long.parseLong(orderCost);
+                                                StartActivity.addCost = 0;
+                                                Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                                                Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                                btn_minus.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+
+                                                        if(StartActivity.addCost != 0) {
+                                                            StartActivity.addCost -= 5;
+                                                            StartActivity.cost -= 5;
+                                                            costView.setText(String.valueOf(StartActivity.cost));
+                                                        }
+                                                    }
+                                                });
+                                                btn_plus.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        StartActivity.addCost += 5;
+                                                        StartActivity.cost += 5;
+                                                        Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
+                                                        costView.setText(String.valueOf(StartActivity.cost));
+                                                    }
+                                                });
+
+
+                                                builderAddCost
+                                                        .setMessage(getString(R.string.cost_of_order))
                                                         .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
@@ -2055,8 +2210,40 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         co + orderWeb + UAH;
                                                 Log.d("TAG", "onClick messageResult: " + messageResult);
 
-                                                new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
-                                                        .setMessage(messageResult)
+                                                MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
+                                                LayoutInflater inflater =  LayoutInflater.from(map.getContext());
+
+                                                View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
+                                                builderAddCost.setView(view_cost);
+                                                TextView costView = view_cost.findViewById(R.id.cost);
+                                                costView.setText(orderCost);
+                                                StartActivity.cost = Long.parseLong(orderCost);
+                                                StartActivity.addCost = 0;
+                                                Button btn_minus = view_cost.findViewById(R.id.btn_minus);
+                                                Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                                btn_minus.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+
+                                                        if(StartActivity.addCost != 0) {
+                                                            StartActivity.addCost -= 5;
+                                                            StartActivity.cost -= 5;
+                                                            costView.setText(String.valueOf(StartActivity.cost));
+                                                        }
+                                                    }
+                                                });
+                                                btn_plus.setOnClickListener(new View.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(View v) {
+                                                        StartActivity.addCost += 5;
+                                                        StartActivity.cost += 5;
+
+                                                        costView.setText(String.valueOf(StartActivity.cost));
+                                                    }
+                                                });
+                                                builderAddCost
+                                                        .setMessage(coo)
                                                         .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {

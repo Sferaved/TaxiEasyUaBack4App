@@ -122,6 +122,16 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_to" />
+    <Button
+        android:id="@+id/btn_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:gravity="center"
+        android:text="@string/add_services"
+        app:layout_constraintTop_toBottomOf="@+id/to_number"
+        tools:layout_editor_absoluteX="1dp"
+        tools:ignore="MissingConstraints" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
