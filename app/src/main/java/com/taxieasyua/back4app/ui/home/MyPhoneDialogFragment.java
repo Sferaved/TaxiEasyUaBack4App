@@ -47,6 +47,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 if (val) {
                     StartActivity.verifyPhone = true;
                     StartActivity.insertRecordsUser(phoneNumber.getText().toString());
+                    dismiss();
                 }
             }
         });
