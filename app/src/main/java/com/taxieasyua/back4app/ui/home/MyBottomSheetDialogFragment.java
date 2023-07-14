@@ -34,7 +34,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.bottom_sheet_layout, container, false);
+        View view = inflater.inflate(R.layout.settings_layout, container, false);
         listView = view.findViewById(R.id.list);
 
         arrayService = new String[]{
@@ -91,7 +91,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 "Эконом-класс",
                 "Микроавтобус",
         };
-        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_spinner_item, tariffArr);
+        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), R.layout.my_simple_spinner_item, tariffArr);
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         Spinner spinner = view.findViewById(R.id.list_tariff);
         spinner.setAdapter(adapterTariff);

@@ -6,7 +6,9 @@
     android:layout_height="match_parent"
     android:background="#434C5E"
     tools:context=".MainActivity">
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
     <TextView
         android:id="@+id/num1"
         android:layout_width="wrap_content"
@@ -325,5 +327,5 @@
         android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="@+id/orderbut"
         app:layout_constraintStart_toEndOf="@+id/plusbut" />
-
+</ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

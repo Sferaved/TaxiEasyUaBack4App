@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        String result = phoneNumber.getText().toString();
-        builder.setTitle(verify_phone)
+        builder
                 .setPositiveButton("Змінити", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -212,13 +212,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                     }
-                }).setNegativeButton(cancel_button, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                        startActivity(intent);
-                    }
-                })
+                }).setNegativeButton(cancel_button, null)
                 .show();
         } else {
             getPhoneNumber ();
@@ -342,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
         View view = inflater.inflate(R.layout.settings_layout, null);
 
 
-        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_spinner_item, tariffArr);
+        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), R.layout.my_simple_spinner_item, tariffArr);
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         Spinner spinner = view.findViewById(R.id.list_tariff);
         spinner.setAdapter(adapterTariff);

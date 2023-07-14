@@ -136,8 +136,8 @@ public class FirebaseSignIn extends AppCompatActivity {
 
     private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
         MainActivity.verifyOrder = false;
-//        IdpResponse response = result.getIdpResponse();
-//        Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
+        IdpResponse response = result.getIdpResponse();
+        Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
 
         if (result.getResultCode() == RESULT_OK) {
             // Successfully signed in

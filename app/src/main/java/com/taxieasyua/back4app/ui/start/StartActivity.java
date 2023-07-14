@@ -206,12 +206,12 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
 
-//
+
 //        ImageView mImageView = findViewById(R.id.imageView2);
 //        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
 //        // Подключаем анимацию к нужному View
 //        mImageView.startAnimation(sunRiseAnimation);
-//        isConnectedToGoogle();
+        isConnectedToGoogle();
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -254,15 +254,13 @@ public class StartActivity extends Activity {
            btn_again.setVisibility(View.VISIBLE);
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
-//           try {
-//               version();
-//
-//           } catch (MalformedURLException e) {
-//               btn_again.setVisibility(View.VISIBLE);
-//               Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-//           }
-           Intent intent = new Intent(this, MainActivity.class);
-           startActivity(intent);
+           try {
+               version();
+
+           } catch (MalformedURLException e) {
+               btn_again.setVisibility(View.VISIBLE);
+               Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+           }
        }
 
 
@@ -417,6 +415,7 @@ public class StartActivity extends Activity {
                 " to_number text," +
                 " to_lat text," +
                 " to_lng text);");
+//        Log.d("TAG", "initDB TABLE_ORDERS_INFO:" + logCursor(TABLE_ORDERS_INFO));
         cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
@@ -766,7 +765,6 @@ public class StartActivity extends Activity {
                 return;
             }
 
-
             String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" +"versionAPI";
 
 
@@ -780,8 +778,6 @@ public class StartActivity extends Activity {
 
             String message = (String) sendUrlMapCost.get("message");
             if(!message.equals(getString(R.string.version_code))) {
-//                intent = new Intent(this, UpdateActivity.class);
-//                startActivity(intent);
                 NotificationHelper notificationHelper = new NotificationHelper();
 
                 String title = getString(R.string.new_version);
