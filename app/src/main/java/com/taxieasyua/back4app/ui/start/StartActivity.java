@@ -58,7 +58,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_12072023_11";
+    private static final String DB_NAME = "data_12072023_12";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -206,12 +206,12 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
 
-
-        ImageView mImageView = findViewById(R.id.imageView2);
-        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
-        // Подключаем анимацию к нужному View
-        mImageView.startAnimation(sunRiseAnimation);
-        isConnectedToGoogle();
+//
+//        ImageView mImageView = findViewById(R.id.imageView2);
+//        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
+//        // Подключаем анимацию к нужному View
+//        mImageView.startAnimation(sunRiseAnimation);
+//        isConnectedToGoogle();
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -254,14 +254,15 @@ public class StartActivity extends Activity {
            btn_again.setVisibility(View.VISIBLE);
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
-           try {
-               version();
-
-           } catch (MalformedURLException e) {
-               btn_again.setVisibility(View.VISIBLE);
-               Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-           }
-
+//           try {
+//               version();
+//
+//           } catch (MalformedURLException e) {
+//               btn_again.setVisibility(View.VISIBLE);
+//               Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+//           }
+           Intent intent = new Intent(this, MainActivity.class);
+           startActivity(intent);
        }
 
 

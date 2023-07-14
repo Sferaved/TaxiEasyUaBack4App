@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(browserIntent);
         }
         if (item.getItemId() == R.id.action_exit) {
-                this.finish();
+            finishAffinity();
         }
         if (item.getItemId() == R.id.gps) {
             eventGps(this);

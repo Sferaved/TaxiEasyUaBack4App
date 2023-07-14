@@ -1,6 +1,6 @@
 <resources>
-    <string name="version">Версия: 2.45</string>
-    <string name="version_code">2.45</string>
+    <string name="version_code">2.46</string>
+    <string name="version">Версия: 2.46</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -121,6 +121,12 @@
     <string name="update_url">Обновить приложение</string>
     <string name="new_version">Доступна новая версия</string>
     <string name="news_of_version">В новой версии улучшена производительность и добавлены новые удобные функции</string>
+    <string name="Street_hint">Улица</string>
+    <string name="gps">GPS</string>
+    <string name="btn_cost">Подтвердить</string>
+    <string name="texthist">Предыдущие адреса</string>
+    <string name="routs">Быстрый заказ</string>
+    <string name="on_map">По карте</string>
 
 
 </resources>
