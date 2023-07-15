@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
         View view = inflater.inflate(R.layout.settings_layout, null);
 
 
-        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), R.layout.my_simple_spinner_item, tariffArr);
+        ArrayAdapter<String> adapterTariff = new ArrayAdapter<String>(view.getContext(), android.R.layout.simple_spinner_item, tariffArr);
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         Spinner spinner = view.findViewById(R.id.list_tariff);
         spinner.setAdapter(adapterTariff);
@@ -401,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-               tariff = tariffArr[position];
+                tariff = tariffArr[position];
             }
 
             @Override
@@ -416,51 +416,51 @@ public class MainActivity extends AppCompatActivity {
 
 
         builder.setView(view)
-                        .setPositiveButton(getString(R.string.save_button), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                ContentValues cv = new ContentValues();
-                                cv.put("tarif", tariff);
+                .setPositiveButton(getString(R.string.save_button), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ContentValues cv = new ContentValues();
+                        cv.put("tarif", tariff);
 
-                                // обновляем по id
-                                StartActivity.database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                        // обновляем по id
+                        StartActivity.database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        Log.d("TAG", "onClick: " + StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO));
+
+                        for (int i = 0; i < 15; i++) {
+                            Log.d("TAG", "onPause: " + arrayServiceCode[i]);
+                            cv = new ContentValues();
+                            cv.put(arrayServiceCode[i], "0");
+                            StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
+                                    new String[] { "1" });
+                        }
+
+                        SparseBooleanArray booleanArray = listView.getCheckedItemPositions();
+                        booleanArray = listView.getCheckedItemPositions();
+                        for (int i = 0; i < booleanArray.size(); i++) {
+                            if(booleanArray.get(booleanArray.keyAt(i))) {
+                                cv = new ContentValues();
+                                cv.put(arrayServiceCode[booleanArray.keyAt(i)], "1");
+                                StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
                                         new String[] { "1" });
-                                Log.d("TAG", "onClick: " + StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO));
 
-                                for (int i = 0; i < 15; i++) {
-                                    Log.d("TAG", "onPause: " + arrayServiceCode[i]);
-                                    cv = new ContentValues();
-                                    cv.put(arrayServiceCode[i], "0");
-                                    StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
-                                            new String[] { "1" });
-                                }
-
-                                SparseBooleanArray booleanArray = listView.getCheckedItemPositions();
-                                booleanArray = listView.getCheckedItemPositions();
-                                for (int i = 0; i < booleanArray.size(); i++) {
-                                    if(booleanArray.get(booleanArray.keyAt(i))) {
-                                        cv = new ContentValues();
-                                        cv.put(arrayServiceCode[booleanArray.keyAt(i)], "1");
-                                        StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
-                                                new String[] { "1" });
-
-                                    }
-                                }
+                            }
+                        }
 
 
-                                Intent intent =  new Intent(MainActivity.this, MainActivity.class);
-                                startActivity(intent);
+                        Intent intent =  new Intent(MainActivity.this, MainActivity.class);
+                        startActivity(intent);
 
-                           }
-                        }).setNegativeButton(getString(cancel_button), new DialogInterface.OnClickListener() {
-                                 @Override
-                                 public void onClick(DialogInterface dialog, int which) {
-                                     Intent intent =  new Intent(MainActivity.this, MainActivity.class);
-                                     startActivity(intent);
-                                 }
-                             })
+                    }
+                }).setNegativeButton(getString(cancel_button), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent =  new Intent(MainActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                })
 
-                        .show();
+                .show();
     }
     
     private String[] tariffs () {

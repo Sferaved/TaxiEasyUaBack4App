@@ -127,6 +127,7 @@
     <string name="texthist">Предыдущие адреса</string>
     <string name="routs">Быстрый заказ</string>
     <string name="on_map">По карте</string>
+    <string name="add_cost_message">Увеличьте стоимость поездки для более быстрого поиска машины</string>
 
 
 </resources>

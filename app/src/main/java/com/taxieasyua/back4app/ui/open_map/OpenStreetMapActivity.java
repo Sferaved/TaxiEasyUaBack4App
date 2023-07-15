@@ -666,9 +666,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                                     } else {
                                                         message = (String) sendUrlMapCost.get("message");
-                                                        new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
-                                                                .setMessage(message + ntr)
-                                                                .setPositiveButton(hlp, new DialogInterface.OnClickListener() {
+                                                        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
+                                                        LayoutInflater inflater = LayoutInflater.from(map.getContext());
+                                                        View view = inflater.inflate(R.layout.free_message_layout, null);
+                                                        TextView alertMessage = view.findViewById(R.id.text_message);
+                                                        alertMessage.setText(message + ntr);
+                                                        alertDialogBuilder.setView(view);
+
+                                                        alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
                                                                     @SuppressLint("SuspiciousIndentation")
                                                                     @Override
                                                                     public void onClick(DialogInterface dialog, int which) {
@@ -677,13 +682,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                         map.getContext().startActivity(intent);
                                                                     }
                                                                 })
-                                                                .setNegativeButton(tra, new DialogInterface.OnClickListener() {
-                                                                    @Override
-                                                                    public void onClick(DialogInterface dialog, int which) {
-                                                                        Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-                                                                        map.getContext().startActivity(intent);
-                                                                    }
-                                                                })
+                                                                .setNegativeButton(tra, null)
                                                                 .show();
                                                     }
                                                 }
@@ -813,9 +812,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                             .show();
                                                 } else {
                                                     message = (String) sendUrlMapCost.get("message");
-                                                    new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
-                                                            .setMessage(message + ntr)
-                                                            .setPositiveButton(hlp, new DialogInterface.OnClickListener() {
+                                                    MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
+                                                    LayoutInflater inflater = LayoutInflater.from(map.getContext());
+                                                    View view = inflater.inflate(R.layout.free_message_layout, null);
+                                                    TextView alertMessage = view.findViewById(R.id.text_message);
+                                                    alertMessage.setText(message + ntr);
+                                                    alertDialogBuilder.setView(view);
+
+                                                    alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
                                                                 @SuppressLint("SuspiciousIndentation")
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
@@ -824,13 +828,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                     map.getContext().startActivity(intent);
                                                                 }
                                                             })
-                                                            .setNegativeButton(tra, new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-                                                                    map.getContext().startActivity(intent);
-                                                                }
-                                                            })
+                                                            .setNegativeButton(tra, null)
                                                             .show();
                                                 }
                                             }
@@ -904,7 +902,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                 startPoint = new GeoPoint(startLat, startLan);
                 setMarker(startLat,startLan, from_geo);
-
+                to = Double.toString(startLat);
+                to_number.setText(" ");
             } else {
                 Toast.makeText(this, (String) sendUrlMap.get("message"), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(this, MainActivity.class);
@@ -918,13 +917,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     android.R.layout.simple_dropdown_item_1line, arrayStreet);
 
             AutoCompleteTextView textViewTo = view.findViewById(R.id.text_to);
-            Log.d("TAG", "dialogFromToGeo textViewTo: " + textViewTo.getText());
-            textViewTo.setAdapter(adapter);
 
+            textViewTo.setAdapter(adapter);
+            Log.d("TAG", "dialogFromToGeo textViewTo: " + textViewTo.getText());
             textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     if(connected()) {
+
                         to = String.valueOf(adapter.getItem(position));
                         if (to.indexOf("/") != -1) {
                             to = to.substring(0,  to.indexOf("/"));
@@ -951,28 +951,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                 }
             });
-            on_city = 0;
-            if(on_city == 0) {
-
-
-
-            } else {
-                to = Double.toString(startLat);
-                to_number.setText(" ");
-            }
-            if(to == null) {
-                to = Double.toString(startLat);
-                to_number.setText(" ");
-            }
-
             progressDialog.dismiss();
-
-
-            builder
-                    .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            coastDialog.dismiss();
 
+                            Log.d(TAG, "onClick: textViewTo.getText()1111111" + "/" + to + "/");
                             if(connected()) {
                                 try {
 
@@ -1098,9 +1083,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                         } else {
 
                                                                             String message = (String) sendUrlMap.get("message");
-                                                                            new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
-                                                                                    .setMessage(message + getString(R.string.next_try))
-                                                                                    .setPositiveButton(hlp, new DialogInterface.OnClickListener() {
+                                                                            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
+                                                                            LayoutInflater inflater = getLayoutInflater();
+                                                                            View view = inflater.inflate(R.layout.free_message_layout, null);
+                                                                            TextView alertMessage = view.findViewById(R.id.text_message);
+                                                                            alertMessage.setText(message + getString(R.string.next_try));
+                                                                            alertDialogBuilder.setView(view);
+
+                                                                            alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
                                                                                         @SuppressLint("SuspiciousIndentation")
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
@@ -1109,13 +1099,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                             startActivity(intent);
                                                                                         }
                                                                                     })
-                                                                                    .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
-                                                                                        @Override
-                                                                                        public void onClick(DialogInterface dialog, int which) {
-//                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class);
-//                                                                                            startActivity(intent);
-                                                                                        }
-                                                                                    })
+                                                                                    .setNegativeButton(getString(R.string.try_again), null)
                                                                                     .show();
                                                                         }
 
@@ -1353,9 +1337,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                                                         } else {
                                                                             String message = (String) sendUrlMap.get("message");
-                                                                            new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme)
-                                                                                    .setMessage(message + getString(R.string.next_try))
-                                                                                    .setPositiveButton(hlp, new DialogInterface.OnClickListener() {
+                                                                            MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
+                                                                            LayoutInflater inflater = getLayoutInflater();
+                                                                            View view = inflater.inflate(R.layout.free_message_layout, null);
+                                                                            TextView alertMessage = view.findViewById(R.id.text_message);
+                                                                            alertMessage.setText(message + getString(R.string.next_try));
+                                                                            alertDialogBuilder.setView(view);
+
+                                                                            alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
                                                                                         @SuppressLint("SuspiciousIndentation")
                                                                                         @Override
                                                                                         public void onClick(DialogInterface dialog, int which) {
@@ -1364,13 +1353,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                             startActivity(intent);
                                                                                         }
                                                                                     })
-                                                                                    .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
-                                                                                        @Override
-                                                                                        public void onClick(DialogInterface dialog, int which) {
-                                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class);
-                                                                                            startActivity(intent);
-                                                                                        }
-                                                                                    })
+                                                                                    .setNegativeButton(getString(R.string.try_again),null)
                                                                                     .show();
                                                                         }
 

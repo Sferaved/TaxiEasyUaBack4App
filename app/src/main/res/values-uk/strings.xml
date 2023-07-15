@@ -124,4 +124,5 @@
     <string name="texthist">Попередні адреси</string>
     <string name="routs">Швидке замовлення</string>
     <string name="on_map">По мапі</string>
+    <string name="add_cost_message">Збільшіть вартість поїздки для швидкого пошуку машини</string>
 </resources>
