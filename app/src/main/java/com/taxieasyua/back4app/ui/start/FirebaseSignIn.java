@@ -63,44 +63,31 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class FirebaseSignIn extends AppCompatActivity {
 
-    static FloatingActionButton fab;
-    Button btn_again;
+    static FloatingActionButton fab, btn_again;
     public static final int READ_CALL_PHONE = 0;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-        Toast.makeText(this, R.string.check_message, Toast.LENGTH_LONG).show();
-        ImageView mImageView = findViewById(R.id.imageView2);
-        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
-        // Подключаем анимацию к нужному View
-        mImageView.startAnimation(sunRiseAnimation);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            return;
-        }
-        btn_again = findViewById(R.id.btn_again);
-        btn_again.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//               finish();
-                Intent intent = new Intent(FirebaseSignIn.this, StartActivity.class);
-                startActivity(intent);
-            }
-        });
+//        Toast.makeText(this, R.string.check_message, Toast.LENGTH_LONG).show();
+//        ImageView mImageView = findViewById(R.id.imageView2);
+//        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
+//        // Подключаем анимацию к нужному View
+//        mImageView.startAnimation(sunRiseAnimation);
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+//            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+////            return;
+//        }
+
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SuspiciousIndentation")
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
+                Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse("tel:0674443804"));
-                if (ActivityCompat.checkSelfPermission(FirebaseSignIn.this,
-                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    checkPermission(Manifest.permission.CALL_PHONE, READ_CALL_PHONE);
-                } else
                 startActivity(intent);
             }
         });
@@ -120,6 +107,19 @@ public class FirebaseSignIn extends AppCompatActivity {
         signInLauncher.launch(signInIntent);
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        btn_again = findViewById(R.id.btn_again);
+        btn_again.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(FirebaseSignIn.this, StartActivity.class));
+            }
+        });
+    }
+
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
             new FirebaseAuthUIActivityResultContract(),
             new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {

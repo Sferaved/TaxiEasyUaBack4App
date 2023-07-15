@@ -66,9 +66,7 @@ public class StartActivity extends Activity {
 
     public static SQLiteDatabase database;
     public static Cursor cursorDb;
-    static FloatingActionButton fab;
-
-    Button btn_again;
+    static FloatingActionButton fab, btn_again;
 
     public static final int READ_CALL_PHONE = 0;
 
@@ -206,11 +204,6 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
 
-
-//        ImageView mImageView = findViewById(R.id.imageView2);
-//        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
-//        // Подключаем анимацию к нужному View
-//        mImageView.startAnimation(sunRiseAnimation);
         isConnectedToGoogle();
     }
 
@@ -286,6 +279,16 @@ public class StartActivity extends Activity {
     }
     public boolean isConnectedToGoogle() {
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+        }
+
+        Toast.makeText(this, R.string.check_message, Toast.LENGTH_LONG).show();
+        ImageView mImageView = findViewById(R.id.imageView2);
+        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
+        // Подключаем анимацию к нужному View
+        mImageView.startAnimation(sunRiseAnimation);
 
             AsyncTask.execute(() -> {
 
