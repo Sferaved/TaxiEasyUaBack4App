@@ -27,7 +27,7 @@ public class ToJSONParser {
 
     public static Map<String, String> sendURL(String urlString) throws MalformedURLException, InterruptedException, JSONException {
 
-        Log.d("TAG", "sendURL ToJson: " + urlString);
+        Log.d("TAG", "sendURL ToJson111111111: " + urlString);
         Map<String, String> costMap = new HashMap<>();
 
         URL url = new URL(urlString);
@@ -39,6 +39,7 @@ public class ToJSONParser {
             try {
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setDoInput(true);
+                Log.d("TAG", "sendURL: + ++++" + urlConnection.getResponseCode());
                 if (urlConnection.getResponseCode() == 200) {
                     InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                     exchanger.exchange(convertStreamToString(in));

@@ -37,6 +37,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.MainActivity;
+import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.TimeOutTask;
@@ -74,11 +75,7 @@ public class FirebaseSignIn extends AppCompatActivity {
 //        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
 //        // Подключаем анимацию к нужному View
 //        mImageView.startAnimation(sunRiseAnimation);
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-////            return;
-//        }
+
 
 
         fab = findViewById(R.id.fab);
@@ -138,7 +135,7 @@ public class FirebaseSignIn extends AppCompatActivity {
         MainActivity.verifyOrder = false;
         IdpResponse response = result.getIdpResponse();
         Log.d("TAG", "onSignInResult: response.toString() " + response.toString());
-
+    try {
         if (result.getResultCode() == RESULT_OK) {
             // Successfully signed in
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -149,7 +146,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             if(blackList()) {
                 Log.d("TAG", "onSignInResult: " + user.getEmail() + " " + user.getDisplayName());
                 if(switchState()) {
-
+                    version();
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
                         startActivity(intent);
@@ -176,6 +173,9 @@ public class FirebaseSignIn extends AppCompatActivity {
 
 
         }
+    } catch (NullPointerException e) {
+        Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+    }
     }
     private boolean  switchState() {
         LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -252,5 +252,38 @@ public class FirebaseSignIn extends AppCompatActivity {
             result = false;
         }
         return result;
+    }
+
+    private void version() throws MalformedURLException {
+
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+
+        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" +"versionAPI";
+
+
+        Log.d("TAG", "onClick urlCost: " + url);
+        Map sendUrlMapCost = null;
+        try {
+            sendUrlMapCost = ResultSONParser.sendURL(url);
+        } catch (MalformedURLException | InterruptedException | JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        String message = (String) sendUrlMapCost.get("message");
+        if(!message.equals(getString(R.string.version_code))) {
+            NotificationHelper notificationHelper = new NotificationHelper();
+
+            String title = getString(R.string.new_version);
+            String messageNotif = getString(R.string.news_of_version);
+            String urlStr = "https://play.google.com/store/apps/details?id=com.taxi.easy.ua&pli=1";
+
+            notificationHelper.showNotification(this, title, messageNotif, urlStr);
+        }
+
+
+
     }
 }

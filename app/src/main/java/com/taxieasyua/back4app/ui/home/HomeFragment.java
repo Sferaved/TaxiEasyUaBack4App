@@ -325,9 +325,14 @@ public class HomeFragment extends Fragment {
 
                                                                 } else {
                                                                     String message = (String) sendUrlMap.get("message");
-                                                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                                            .setMessage(message + getString(R.string.try_again))
-                                                                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
+                                                                    MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogTheme);
+                                                                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                                                                    View view = inflater.inflate(R.layout.free_message_layout, null);
+                                                                    TextView alertMessage = view.findViewById(R.id.text_message);
+                                                                    alertMessage.setText(message + getString(R.string.try_again));
+                                                                    alertDialogBuilder.setView(view);
+
+                                                                    alertDialogBuilder.setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
                                                                                 @Override
                                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                                     Intent intent = new Intent(Intent.ACTION_DIAL);

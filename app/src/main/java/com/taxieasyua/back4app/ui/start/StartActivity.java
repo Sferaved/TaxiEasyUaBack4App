@@ -203,7 +203,10 @@ public class StartActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+        }
         isConnectedToGoogle();
     }
 
@@ -248,8 +251,10 @@ public class StartActivity extends Activity {
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
            try {
-               version();
+               startIp();
 
+               intent = new Intent(this, FirebaseSignIn.class);
+               startActivity(intent);
            } catch (MalformedURLException e) {
                btn_again.setVisibility(View.VISIBLE);
                Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
@@ -761,38 +766,5 @@ public class StartActivity extends Activity {
 
     }
 
-        private void version() throws MalformedURLException {
 
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-                return;
-            }
-
-            String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" +"versionAPI";
-
-
-            Log.d("TAG", "onClick urlCost: " + url);
-            Map sendUrlMapCost = null;
-            try {
-                sendUrlMapCost = ResultSONParser.sendURL(url);
-            } catch (MalformedURLException | InterruptedException | JSONException e) {
-                throw new RuntimeException(e);
-            }
-
-            String message = (String) sendUrlMapCost.get("message");
-            if(!message.equals(getString(R.string.version_code))) {
-                NotificationHelper notificationHelper = new NotificationHelper();
-
-                String title = getString(R.string.new_version);
-                String messageNotif = getString(R.string.news_of_version);
-                String urlStr = "https://play.google.com/store/apps/details?id=com.taxi.easy.ua&pli=1";
-
-                notificationHelper.showNotification(this, title, messageNotif, urlStr);
-            }
-                startIp();
-                intent = new Intent(this, FirebaseSignIn.class);
-                startActivity(intent);
-
-
-        }
 }

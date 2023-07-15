@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.48</string>
-    <string name="version">Версія: 2.48</string>
+    <string name="version_code">2.49</string>
+    <string name="version">Версія: 2.49</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -120,9 +120,11 @@
     <string name="news_of_version">У новій версії покращено продуктивність та додано нові зручні функції</string>
     <string name="Street_hint">Вулиця</string>
     <string name="gps">GPS</string>
-    <string name="btn_cost">Подтвердить</string>
+    <string name="btn_cost">Підтвердити</string>
     <string name="texthist">Попередні адреси</string>
     <string name="routs">Швидке замовлення</string>
     <string name="on_map">По мапі</string>
     <string name="add_cost_message">Збільшіть вартість поїздки для швидкого пошуку машини</string>
+    <string name="from_text">Звідки</string>
+    <string name="to_text">Куди</string>
 </resources>
