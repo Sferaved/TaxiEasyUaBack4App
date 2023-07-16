@@ -653,7 +653,7 @@ public class HomeFragment extends Fragment {
 
                                                     Toast.makeText(getActivity(), messageResult, Toast.LENGTH_SHORT).show();
                                                     Log.d("TAG", "onClick9889768465465465464: " );
-                                                    startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
+                                                    startActivity(new Intent(getActivity(), MainActivity.class));
                                                 } else {
                                                     message = (String) sendUrlMapCost.get("message");
                                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)

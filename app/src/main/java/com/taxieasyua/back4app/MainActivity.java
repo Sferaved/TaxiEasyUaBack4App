@@ -47,6 +47,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
+import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.util.List;
@@ -215,12 +216,12 @@ public class MainActivity extends AppCompatActivity {
                 }).setNegativeButton(cancel_button, null)
                 .show();
         } else {
-            getPhoneNumber ();
-            Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-            if (cursor.getCount() == 0) {
-                Toast.makeText(MainActivity.this, format_phone, Toast.LENGTH_SHORT).show();
-                phoneNumber();
-                cursor.close();
+            if (!StartActivity.verifyPhone) {
+                getPhoneNumber();
+            }
+            if (!StartActivity.verifyPhone) {
+                MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         }
     }
@@ -251,54 +252,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    private void phoneNumber() {
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
-
-        LayoutInflater inflater = this.getLayoutInflater();
-
-        View view = inflater.inflate(R.layout.phone_verify_layout, null);
-
-        builder.setView(view);
-
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        EditText phoneNumber = view.findViewById(R.id.phoneNumber);
-        phoneNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                phoneNumber.setHint("");
-
-
-            }
-        });
-
-
-//        String result = phoneNumber.getText().toString();
-        builder.setTitle(verify_phone)
-                .setPositiveButton(getString(R.string.sent_button), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(connected()) {
-                            Log.d("TAG", "onClick befor validate: ");
-                            String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
-                            boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
-                            Log.d("TAG", "onClick No validate: " + val);
-                            if (val == false) {
-                                Toast.makeText(MainActivity.this, format_phone , Toast.LENGTH_SHORT).show();
-                                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
-                                MainActivity.this.finish();
-
-                            } else {
-                                StartActivity.insertRecordsUser(phoneNumber.getText().toString());
-                            }
-                        }
-                    }
-                })
-                .show();
-
-    }
-
-
 
     private boolean connected() {
 

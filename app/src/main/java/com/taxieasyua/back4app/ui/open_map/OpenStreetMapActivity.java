@@ -52,6 +52,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
+import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyServicesDialogFragment;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
@@ -906,7 +907,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                 from_geo = getString(R.string.you_this) + (String) sendUrlMap.get("route_address_from");
 //                textViewFrom.setText(from_geo);
-                Toast.makeText(this, from_geo, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(this, from_geo, Toast.LENGTH_SHORT).show();
+                MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(from_geo);
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 startPoint = new GeoPoint(startLat, startLan);
                 setMarker(startLat,startLan, from_geo);
                 to = Double.toString(startLat);
