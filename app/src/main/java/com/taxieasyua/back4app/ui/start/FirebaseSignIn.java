@@ -71,10 +71,10 @@ public class FirebaseSignIn extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
 //        Toast.makeText(this, R.string.check_message, Toast.LENGTH_LONG).show();
-//        ImageView mImageView = findViewById(R.id.imageView2);
-//        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
-//        // Подключаем анимацию к нужному View
-//        mImageView.startAnimation(sunRiseAnimation);
+        ImageView mImageView = findViewById(R.id.imageView2);
+        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
+        // Подключаем анимацию к нужному View
+        mImageView.startAnimation(sunRiseAnimation);
 
 
 
@@ -101,8 +101,11 @@ public class FirebaseSignIn extends AppCompatActivity {
                 .createSignInIntentBuilder()
                 .setAvailableProviders(providers)
                 .build();
-        signInLauncher.launch(signInIntent);
-
+        try {
+            signInLauncher.launch(signInIntent);
+            } catch (NullPointerException e) {
+            Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

@@ -16,7 +16,7 @@
     </style>
 
     <style name="Theme.TaxiEasyUaBack4App.NoActionBar">
-        <item name="windowActionBar">false</item>
+        <item name="windowActionBar">true</item>
         <item name="windowNoTitle">true</item>
         <item name="android:textColor">@color/black</item> <!-- Replace #FF0000 with your desired color code -->
         <!--        <item name="android:windowTranslucentNavigation">true</item>-->

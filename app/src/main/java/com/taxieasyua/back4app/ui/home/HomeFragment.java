@@ -159,8 +159,14 @@ public class HomeFragment extends Fragment {
                         Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
                     } else if (orderCost.equals("1")) {
                         from_number.setVisibility(View.VISIBLE);
+                        from_number.setText(" ");
                         from_number.requestFocus();
+                    } else if (orderCost.equals("0")) {
+                        from_number.setText(" ");
+                        from_number.setVisibility(View.INVISIBLE);
                     }
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                 }
 
             }
@@ -196,7 +202,11 @@ public class HomeFragment extends Fragment {
                                                           Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
                                                       } else if (orderCost.equals("1")) {
                                                           to_number.setVisibility(View.VISIBLE);
+                                                          to_number.setText(" ");
                                                           to_number.requestFocus();
+                                                      }  else if (orderCost.equals("0")) {
+                                                          to_number.setText(" ");
+                                                          to_number.setVisibility(View.INVISIBLE);
                                                       }
                                                   }
                                               }
@@ -226,6 +236,11 @@ public class HomeFragment extends Fragment {
 
 
                             if (orderCost.equals("0")) {
+                                Log.d("TAG", "onClick 9998465465465: ");
+                                if (to.equals(from)) {
+                                    textViewTo.setText("");
+                                    to = null;
+                                }
                                 Toast.makeText(getActivity(), getString(R.string.error_message) + message, Toast.LENGTH_SHORT).show();
                             }
                             if (!orderCost.equals("0")) {
@@ -322,7 +337,8 @@ public class HomeFragment extends Fragment {
                                                                             );
                                                                         }
                                                                     }
-
+//                                                                    OpenStreetMapActivity.endPoint = new GeoPoint();
+                                                                    startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
                                                                 } else {
                                                                     String message = (String) sendUrlMap.get("message");
                                                                     MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogTheme);
@@ -349,24 +365,33 @@ public class HomeFragment extends Fragment {
                                                             } catch (MalformedURLException |
                                                                      InterruptedException |
                                                                      JSONException e) {
-                                                                throw new RuntimeException(e);
+                                                                Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                                             }
                                                         } else {
                                                             Toast.makeText(getActivity(), getString(R.string.please_phone_message), Toast.LENGTH_SHORT).show();
 
                                                         }
+                                                    }  else {
+                                                        Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                                     }
                                                 }})
-                                            .setNegativeButton(getString(R.string.cancel_button), null)
+                                            .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    startActivity(new Intent(getActivity(), MainActivity.class));
+                                                }
+                                            })
                                             .show();
                                 }
                             }
 
                         } catch (MalformedURLException | InterruptedException |
                                  JSONException e) {
-                            throw new RuntimeException(e);
+                            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                         }
                     }
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -439,7 +464,7 @@ public class HomeFragment extends Fragment {
 
                         dialogFromToOneRout(StartActivity.routChoice(selectedItem + 1));
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
-                        throw new RuntimeException(e);
+                        Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                     }
 
             }
@@ -628,6 +653,8 @@ public class HomeFragment extends Fragment {
                                                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
                                                     Toast.makeText(getActivity(), messageResult, Toast.LENGTH_SHORT).show();
+                                                    Log.d("TAG", "onClick9889768465465465464: " );
+                                                    startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
                                                 } else {
                                                     message = (String) sendUrlMapCost.get("message");
                                                     new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
@@ -654,8 +681,10 @@ public class HomeFragment extends Fragment {
 
                                         } catch (MalformedURLException | InterruptedException |
                                                  JSONException e) {
-                                            throw new RuntimeException(e);
+                                            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                         }
+                                    } else {
+                                        Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                     }
                                 }})
                             .setNegativeButton(getString(R.string.cancel_button), null)
@@ -663,7 +692,9 @@ public class HomeFragment extends Fragment {
 
                 }
 
-            };
+            } else {
+            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+        }
     }
 
     private String getTaxiUrlSearch(String from, String from_number, String to, String to_number, String urlAPI) {
@@ -936,9 +967,11 @@ public class HomeFragment extends Fragment {
                             } catch (MalformedURLException |
                                      InterruptedException |
                                      JSONException e) {
-                                throw new RuntimeException(e);
+                                Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                             }
                         }
+                        } else {
+                            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                         }
                     }
                 })
