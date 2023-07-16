@@ -210,7 +210,12 @@ public class StartActivity extends Activity {
             checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
             checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
         }
-        isConnectedToGoogle();
+        if(hasConnection()) {
+            isConnectedToGoogle();
+            }
+        else  {
+            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @SuppressLint("SuspiciousIndentation")
