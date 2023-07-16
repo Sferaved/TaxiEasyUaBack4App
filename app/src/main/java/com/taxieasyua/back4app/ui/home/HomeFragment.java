@@ -337,8 +337,7 @@ public class HomeFragment extends Fragment {
                                                                             );
                                                                         }
                                                                     }
-//                                                                    OpenStreetMapActivity.endPoint = new GeoPoint();
-                                                                    startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
+                                                                    startActivity(new Intent(getActivity(), MainActivity.class));
                                                                 } else {
                                                                     String message = (String) sendUrlMap.get("message");
                                                                     MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogTheme);
