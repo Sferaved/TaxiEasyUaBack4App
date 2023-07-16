@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
+import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.TimeOutTask;
@@ -199,10 +200,12 @@ public class StartActivity extends Activity {
     }
     public static long addCost, cost;
     public static boolean verifyPhone;
+    NetworkChangeReceiver networkChangeReceiver;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
+        networkChangeReceiver = new NetworkChangeReceiver();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
             checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
