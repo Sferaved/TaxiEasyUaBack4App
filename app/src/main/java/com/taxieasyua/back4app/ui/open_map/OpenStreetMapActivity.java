@@ -906,7 +906,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                 from_geo = getString(R.string.you_this) + (String) sendUrlMap.get("route_address_from");
 //                textViewFrom.setText(from_geo);
-
+                Toast.makeText(this, from_geo, Toast.LENGTH_SHORT).show();
                 startPoint = new GeoPoint(startLat, startLan);
                 setMarker(startLat,startLan, from_geo);
                 to = Double.toString(startLat);
