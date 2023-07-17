@@ -315,7 +315,7 @@ public class HomeFragment extends Fragment {
                                                                                 to_name + " " + to_number.getText() + "." +
                                                                                 getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                                                                     }
-                                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_SHORT).show();
+                                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
 
                                                                     if(from_name.equals(to_name)) {
                                                                         if(!sendUrlMap.get("lat").equals("0")) {
@@ -571,9 +571,9 @@ public class HomeFragment extends Fragment {
             Double from_lng = Double.valueOf(rout.get("from_lng"));
             Double to_lat = Double.valueOf(rout.get("to_lat"));
             Double to_lng = Double.valueOf(rout.get("to_lng"));
-            FromAddressString = rout.get("from_street");
+            FromAddressString = rout.get("from_street") + rout.get("from_number") ;
             Log.d("TAG", "dialogFromToOneRout: FromAddressString" + FromAddressString);
-            ToAddressString = rout.get("to_street");
+            ToAddressString = rout.get("to_street") + rout.get("to_number");
             if(rout.get("from_street").equals(rout.get("to_street"))) {
                 ToAddressString =  getString(R.string.on_city_tv);;
             }
@@ -651,7 +651,7 @@ public class HomeFragment extends Fragment {
                                                             FromAddressString + getString(R.string.to_message) + ToAddressString +
                                                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
-                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
                                                     Log.d("TAG", "onClick9889768465465465464: " );
                                                     startActivity(new Intent(getActivity(), MainActivity.class));
                                                 } else {

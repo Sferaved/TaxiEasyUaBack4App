@@ -3,6 +3,8 @@ package com.taxieasyua.back4app.ui.start;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -59,7 +61,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_17072023_1";
+    private static final String DB_NAME = "data_17072023_4";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -215,7 +217,23 @@ public class StartActivity extends Activity {
             }
         else  {
             Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            setRepeatingAlarm();
         }
+    }
+
+    // Создаем метод для установки повторяющегося будильника
+    private void setRepeatingAlarm() {
+        // Получаем системный сервис AlarmManager
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        // Создаем намерение для запуска StartActivity
+        Intent intent = new Intent(this, StartActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        // Устанавливаем повторяющийся будильник с интервалом 60 секунд
+        long intervalMillis = 60 * 1000; // 60 секунд
+        long triggerTimeMillis = System.currentTimeMillis() + intervalMillis;
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTimeMillis, intervalMillis, pendingIntent);
     }
 
     @SuppressLint("SuspiciousIndentation")

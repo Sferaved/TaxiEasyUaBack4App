@@ -1358,7 +1358,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                             LayoutInflater inflater = getLayoutInflater();
                                                                             View view = inflater.inflate(R.layout.free_message_layout, null);
                                                                             TextView alertMessage = view.findViewById(R.id.text_message);
-                                                                            alertMessage.setText(message + getString(R.string.next_try));
+                                                                            alertMessage.setText(getString(R.string.error_message) + message);
                                                                             alertDialogBuilder.setView(view);
 
                                                                             alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
