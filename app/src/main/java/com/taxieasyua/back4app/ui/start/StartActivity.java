@@ -5,10 +5,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -202,12 +204,20 @@ public class StartActivity extends Activity {
     }
     public static long addCost, cost;
     public static boolean verifyPhone;
-    NetworkChangeReceiver networkChangeReceiver;
+    Button try_again_button;
+    private BroadcastReceiver connectivityReceiver;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-        networkChangeReceiver = new NetworkChangeReceiver();
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               startActivity(new Intent(StartActivity.this, StartActivity.class));
+            }
+        });
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
             checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
@@ -217,6 +227,7 @@ public class StartActivity extends Activity {
             }
         else  {
             Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            try_again_button.setVisibility(View.VISIBLE);
             setRepeatingAlarm();
         }
     }
@@ -228,14 +239,39 @@ public class StartActivity extends Activity {
 
         // Создаем намерение для запуска StartActivity
         Intent intent = new Intent(this, StartActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         // Устанавливаем повторяющийся будильник с интервалом 60 секунд
         long intervalMillis = 60 * 1000; // 60 секунд
         long triggerTimeMillis = System.currentTimeMillis() + intervalMillis;
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTimeMillis, intervalMillis, pendingIntent);
-    }
 
+        // Проверяем наличие интернет-соединения
+        connectivityReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (hasConnectionAlarm()) {
+                    // Если есть подключение к интернету, отменяем повторяющийся будильник
+                    alarmManager.cancel(pendingIntent);
+                    try_again_button.setVisibility(View.INVISIBLE);
+                    startActivity(new Intent(StartActivity.this, StartActivity.class));
+                }
+            }
+        };
+
+        // Регистрируем BroadcastReceiver для изменений состояния сети
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(connectivityReceiver, intentFilter);
+
+    }
+    private boolean hasConnectionAlarm() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+    }
     @SuppressLint("SuspiciousIndentation")
     @Override
     protected void onResume() {
@@ -747,6 +783,7 @@ public class StartActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         database.close();
+        unregisterReceiver(connectivityReceiver);
     }
 
 
