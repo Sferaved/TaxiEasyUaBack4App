@@ -68,8 +68,8 @@ public class ToJSONParser {
             JSONObject jsonarray = new JSONObject(first.message);
             Log.d("TAG", "sendURL jsonarray: " + jsonarray);
             if (!jsonarray.getString("order_cost").equals("0")) {
-                costMap.put("from_lat", jsonarray.getString("lat"));
-                costMap.put("from_lng", jsonarray.getString("lng"));
+                costMap.put("from_lat", jsonarray.getString("from_lat"));
+                costMap.put("from_lng", jsonarray.getString("from_lng"));
 
                 costMap.put("lat", jsonarray.getString("lat"));
                 costMap.put("lng", jsonarray.getString("lng"));
