@@ -129,7 +129,17 @@ public class HomeFragment extends Fragment {
 
         AutoCompleteTextView textViewFrom =binding.textFrom;
         textViewFrom.setAdapter(adapter);
+        Log.d("TAG", "onCreateView startPoint: " + OpenStreetMapActivity.from_name + OpenStreetMapActivity.from_house);
+        if(!OpenStreetMapActivity.from_name.equals("name")) {
+            textViewFrom.setText(OpenStreetMapActivity.from_name);
+            from = OpenStreetMapActivity.from_name;
+        }
         from_number = binding.fromNumber;
+        if(!OpenStreetMapActivity.from_house.equals("house")) {
+            from_number.setVisibility(View.VISIBLE);
+            from_number.setText(OpenStreetMapActivity.from_house);
+
+        }
         textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @SuppressLint("ResourceAsColor")
             @Override
@@ -440,10 +450,9 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     // Обработка выбора элемента
-                        selectedItem = position;
+                    selectedItem = position;
                     // Дополнительный код по обработке выбора элемента
                 }
-
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
                     // Код, если ни один элемент не выбран
@@ -458,9 +467,7 @@ public class HomeFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                     try {
-
                         dialogFromToOneRout(StartActivity.routChoice(selectedItem + 1));
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();

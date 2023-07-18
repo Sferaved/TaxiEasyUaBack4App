@@ -1,5 +1,6 @@
 package com.taxieasyua.back4app.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
@@ -21,12 +23,13 @@ import java.util.regex.Pattern;
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-
+    Button button;
     public static MyGeoDialogFragment newInstance(String fromGeo) {
         MyGeoDialogFragment fragment = new MyGeoDialogFragment();
         Bundle args = new Bundle();
         args.putString("from_geo", fromGeo);
         fragment.setArguments(args);
+
         return fragment;
     }
 
@@ -45,6 +48,13 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         }
 
+        button = view.findViewById(R.id.change);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), MainActivity.class));
+            }
+        });
         return view;
     }
 

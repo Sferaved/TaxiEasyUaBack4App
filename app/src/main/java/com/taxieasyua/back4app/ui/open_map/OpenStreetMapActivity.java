@@ -50,6 +50,7 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
+import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
@@ -98,7 +99,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private TextView textViewFrom;
     private static double startLat, startLan, finishLat, finishLan;
     static MapView map = null;
-    static GeoPoint startPoint;
+    public static GeoPoint startPoint;
     public static GeoPoint endPoint;
     public GeoPoint endPointHome;
     static Switch gpsSwitch;
@@ -138,11 +139,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             "SMOKE",
         };
     }
+    NetworkChangeReceiver networkChangeReceiver;
+    public static String  from_name, from_house;
     @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        networkChangeReceiver = new NetworkChangeReceiver();
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
@@ -209,20 +212,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         fab_open_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        dialogFromToGeo();
-                    } catch (MalformedURLException | InterruptedException | JSONException e) {
-                        throw new RuntimeException(e);
-                    }
+                    startActivity(new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class));
                 } else {
                     Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
                     startActivity(intent);
                 }
-
-
-
             }
         });
 
@@ -445,6 +440,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         Map sendUrlFrom = FromJSONParser.sendURL(urlFrom);
 
         FromAdressString =  (String) sendUrlFrom.get("route_address_from");
+        MarkerOverlay markerOverlay = new MarkerOverlay(this);
+        map.getOverlays().add(markerOverlay);
+
         dialogFromToGeo();
 
 //        Toast.makeText(this, location.getProvider() + startLat + " - " + startLan, Toast.LENGTH_SHORT).show();
@@ -667,7 +665,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                 to_name + "." +
                                                                 co + orderWeb + UAH;
                                                         Log.d("TAG", "onClick messageResult: " + messageResult);
+                                                        finishLat = Double.parseDouble(sendUrlMapCost.get("lat").toString());
+                                                        finishLan = Double.parseDouble(sendUrlMapCost.get("lng").toString());
+                                                        if(finishLan != 0) {
 
+                                                            setMarker(finishLat, finishLan, to_name);
+                                                            GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
+                                                            showRout(startPoint, endPoint);
+                                                        }
                                                         Toast.makeText(map.getContext(), messageResult, Toast.LENGTH_SHORT).show();
 
                                                     } else {
@@ -875,10 +880,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(connected()) {
 
-            map.getOverlays().remove(m);
-            map.getOverlays().removeAll(Collections.singleton(roadOverlay));
-            MarkerOverlay markerOverlay = new MarkerOverlay(this);
-            map.getOverlays().add(markerOverlay);
+//            if (map.getOverlays().contains(m)) {
+//                map.getOverlays().remove(m);
+//            }
+//            Log.d("TAG", "dialogFromToGeo: m.toString() " + m.toString());
+//            map.getOverlays().removeAll(Collections.singleton(roadOverlay));
+//            MarkerOverlay markerOverlay = new MarkerOverlay(this);
+//            map.getOverlays().add(markerOverlay);
+
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
             LayoutInflater inflater = this.getLayoutInflater();
             View view = inflater.inflate(R.layout.from_to_geo_layout, null);
@@ -908,6 +917,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 from_geo = getString(R.string.you_this) + (String) sendUrlMap.get("route_address_from");
 //                textViewFrom.setText(from_geo);
 //                Toast.makeText(this, from_geo, Toast.LENGTH_SHORT).show();
+                from_name = (String) sendUrlMap.get("name");
+                from_house = (String) sendUrlMap.get("house");
+
                 MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(from_geo);
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 startPoint = new GeoPoint(startLat, startLan);
@@ -1002,7 +1014,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                         finishLat = Double.parseDouble(sendUrlMapCost.get("lat").toString());
                                         finishLan = Double.parseDouble(sendUrlMapCost.get("lng").toString());
                                         if(finishLan != 0) {
-                                            String target = getString(R.string.to_point) + to + " " + to_number.getText().toString();
+                                            String target = to + " " + to_number.getText().toString();
                                             setMarker(finishLat, finishLan, target);
                                             GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
                                             showRout(startPoint, endPoint);
@@ -1096,6 +1108,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     to_name + "." +
                                                                                     getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
+                                                                            finishLat = Double.parseDouble((String) sendUrlMap.get("lat"));
+                                                                            finishLan = Double.parseDouble((String) sendUrlMap.get("lng"));
+                                                                            if(finishLan != 0) {
+
+                                                                                setMarker(finishLat, finishLan, to_name);
+                                                                                GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
+                                                                                showRout(startPoint, endPoint);
+                                                                            }
                                                                             Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_SHORT).show();
 
                                                                         } else {
@@ -1155,28 +1175,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             }
                         }
                     })
-                    .setNegativeButton(getString(R.string.change), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            coastDialog.dismiss();
-                            Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
-                            startActivity(intent);
-                        }
-                    })
                     .setNeutralButton(R.string.my_adresses, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             coastDialog.dismiss();
                             if(array.length == 0) {
                                 Toast.makeText(OpenStreetMapActivity.this, R.string.make_order_message, Toast.LENGTH_SHORT).show();
-                                try {
-                                    dialogFromToGeo();
-                                } catch (MalformedURLException | InterruptedException |
-                                         JSONException e) {
-                                    Toast.makeText(OpenStreetMapActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                                }
                             } else {
-
                                 try {
                                     dialogFromToGeoAdress(array);
                                 } catch (MalformedURLException | InterruptedException |
@@ -1251,14 +1256,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     if (!orderCost.equals("0")) {
                                         Log.d(TAG, "onClick 3333: " + sendUrlMapCost.get("lat") + " " + sendUrlMapCost.get("lng"));
 
-                                        finishLat = Double.parseDouble(sendUrlMapCost.get("lat"));
-                                        finishLan = Double.parseDouble(sendUrlMapCost.get("lng"));
-                                        if(finishLan != 0) {
-                                            String target = getString(R.string.to_point) + to + " " + to_number.getText().toString();
-                                            setMarker(finishLat, finishLan, target);
-                                            GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
-                                            showRout(startPoint, endPoint);
-                                        }
+
 
                                         if (!MainActivity.verifyOrder) {
                                             Log.d(TAG, "dialogFromToOneRout FirebaseSignIn.verifyOrder: " + MainActivity.verifyOrder);
@@ -1349,7 +1347,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                     FromAdressString + getString(R.string.to_message) +
                                                                                     to_name + "." +
                                                                                     getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
+                                                                            finishLat = Double.parseDouble(sendUrlMapCost.get("lat"));
+                                                                            finishLan = Double.parseDouble(sendUrlMapCost.get("lng"));
+                                                                            if(finishLan != 0) {
 
+                                                                                setMarker(finishLat, finishLan, to_name);
+                                                                                GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
+                                                                                showRout(startPoint, endPoint);
+                                                                            }
                                                                             Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_LONG).show();
 
                                                                         } else {

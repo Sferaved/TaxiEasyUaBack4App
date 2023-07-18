@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.58</string>
-    <string name="version">Версия: 2.58</string>
+    <string name="version_code">2.59</string>
+    <string name="version">Версия: 2.59</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -69,7 +69,7 @@
     <string name="on_city">" по городу."</string>
     <string name="on_city_tv">" по городу"</string>
     <string name="help_button">Поддержка</string>
-    <string name="try_again">Попробуйте еще</string>
+    <string name="try_again">Заново</string>
     <string name="ok_button">Ок</string>
     <string name="to_message">" -> "</string>
     <string name="rout_from_message">Укажите место отправки</string>
