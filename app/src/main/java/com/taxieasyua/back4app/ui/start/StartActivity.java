@@ -783,7 +783,9 @@ public class StartActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         database.close();
-        unregisterReceiver(connectivityReceiver);
+        if (connectivityReceiver != null) {
+            unregisterReceiver(connectivityReceiver);
+        }
     }
 
 

@@ -11,8 +11,8 @@ android {
         applicationId "com.taxieasyua.back4app"
         minSdk 24
         targetSdk 33
-        versionCode 258
-        versionName '2.58'
+        versionCode 260
+        versionName '2.60'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
