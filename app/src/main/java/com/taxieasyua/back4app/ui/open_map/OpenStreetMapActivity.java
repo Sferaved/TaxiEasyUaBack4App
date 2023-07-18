@@ -344,13 +344,26 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 //        Log.d(TAG, "onResume PASSIVE_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER));
 
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    1000*5, 10, locationListener);
-        } else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                    1000*5, 10, locationListener);
+//        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
+//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+//                    1000*5, 10, locationListener);
+//        } else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) {
+//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+//                    1000*5, 10, locationListener);
+//        }
+
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 5, 10, locationListener);
+        } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000 * 5, 10, locationListener);
+        } else if (locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 1000 * 5, 10, locationListener);
+        } else {
+            // Провайдеры местоположения недоступны, обработайте соответствующий случай
+            startActivity(new Intent(OpenStreetMapActivity.this, MainActivity.class));
         }
+
+
         checkEnabled();
         map.onResume();
 
