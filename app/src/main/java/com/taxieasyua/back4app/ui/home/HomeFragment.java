@@ -130,12 +130,12 @@ public class HomeFragment extends Fragment {
         AutoCompleteTextView textViewFrom =binding.textFrom;
         textViewFrom.setAdapter(adapter);
         Log.d("TAG", "onCreateView startPoint: " + OpenStreetMapActivity.from_name + OpenStreetMapActivity.from_house);
-        if(!OpenStreetMapActivity.from_name.equals("name")) {
+        if(OpenStreetMapActivity.from_name != null && !OpenStreetMapActivity.from_name.equals("name")) {
             textViewFrom.setText(OpenStreetMapActivity.from_name);
             from = OpenStreetMapActivity.from_name;
         }
         from_number = binding.fromNumber;
-        if(!OpenStreetMapActivity.from_house.equals("house")) {
+        if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
             from_number.setVisibility(View.VISIBLE);
             from_number.setText(OpenStreetMapActivity.from_house);
 

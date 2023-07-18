@@ -210,26 +210,25 @@ public class StartActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.start_layout);
-        try_again_button = findViewById(R.id.try_again_button);
-        try_again_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               startActivity(new Intent(StartActivity.this, StartActivity.class));
-            }
-        });
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
             checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+        } else {
+            setContentView(R.layout.start_layout);
+            try_again_button = findViewById(R.id.try_again_button);
+            try_again_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(StartActivity.this, StartActivity.class));
+                }
+            });
         }
-        if(hasConnection()) {
-            isConnectedToGoogle();
-            }
-        else  {
-            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-            try_again_button.setVisibility(View.VISIBLE);
-            setRepeatingAlarm();
-        }
+
+
+
+
+
     }
 
     // Создаем метод для установки повторяющегося будильника
@@ -277,6 +276,15 @@ public class StartActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
+        if(hasConnection()) {
+
+            isConnectedToGoogle();
+        }
+        else  {
+            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            try_again_button.setVisibility(View.VISIBLE);
+            setRepeatingAlarm();
+        }
             fab = findViewById(R.id.fab);
             btn_again = findViewById(R.id.btn_again);
 
