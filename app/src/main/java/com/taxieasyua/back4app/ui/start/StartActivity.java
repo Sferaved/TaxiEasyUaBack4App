@@ -63,7 +63,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    private static final String DB_NAME = "data_17072023_4";
+    public static final String DB_NAME = "data_17072023_6";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -254,6 +254,9 @@ public class StartActivity extends Activity {
                     alarmManager.cancel(pendingIntent);
                     try_again_button.setVisibility(View.INVISIBLE);
                     startActivity(new Intent(StartActivity.this, StartActivity.class));
+                    if (connectivityReceiver != null) {
+                        unregisterReceiver(connectivityReceiver);
+                    }
                 }
             }
         };
@@ -387,21 +390,18 @@ public class StartActivity extends Activity {
                             Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime + " мс");
                             if (responseTime >= 2000) {
                                 Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                                StartActivity.this.finish();
                                 startActivity(intent);
 
                             }
                         } else {
                             Log.d("TAG", "Не удалось подключиться к Google. Код ответа: " + connection.getResponseCode());
                             Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                            StartActivity.this.finish();
                             startActivity(intent);
                         }
                     connection.disconnect();
                 } catch (IOException e) {
                     Log.d("TAG","Не удалось подключиться к Google. Код ответа: " );
                     Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                    StartActivity.this.finish();
                     startActivity(intent);
                 }
 

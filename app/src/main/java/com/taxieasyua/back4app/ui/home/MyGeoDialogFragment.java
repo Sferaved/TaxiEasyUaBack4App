@@ -48,6 +48,12 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         }
 
+        geoText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
         button = view.findViewById(R.id.change);
         button.setOnClickListener(new View.OnClickListener() {
             @Override

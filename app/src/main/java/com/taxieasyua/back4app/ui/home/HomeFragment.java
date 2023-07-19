@@ -1,26 +1,21 @@
 package com.taxieasyua.back4app.ui.home;
 
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.graphics.Color.RED;
-
 import static com.taxieasyua.back4app.R.string.address_error_message;
-import static com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity.coastOfRoad;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.location.LocationManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -34,13 +29,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,7 +46,6 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.maps.OrderJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
@@ -65,17 +54,12 @@ import com.taxieasyua.back4app.ui.start.StartActivity;
 import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class HomeFragment extends Fragment {
 
@@ -354,7 +338,7 @@ public class HomeFragment extends Fragment {
                                                                     LayoutInflater inflater = getActivity().getLayoutInflater();
                                                                     View view = inflater.inflate(R.layout.free_message_layout, null);
                                                                     TextView alertMessage = view.findViewById(R.id.text_message);
-                                                                    alertMessage.setText(message + getString(R.string.try_again));
+                                                                    alertMessage.setText(message);
                                                                     alertDialogBuilder.setView(view);
 
                                                                     alertDialogBuilder.setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
@@ -488,10 +472,11 @@ public class HomeFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-    public static ArrayList<Map> routMaps() {
+    public static ArrayList<Map> routMaps(Context context) {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
-        Cursor c = StartActivity.database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         int i = 0;
         if (c != null) {
             if (c.moveToFirst()) {
@@ -506,12 +491,12 @@ public class HomeFragment extends Fragment {
                 } while (c.moveToNext());
             }
         }
-
+        database.close();
         Log.d("TAG", "routMaps: " + routsArr);
         return routsArr;
     }
     private String[] arrayToRoutsAdapter () {
-        ArrayList<Map>  routMaps = routMaps();
+        ArrayList<Map>  routMaps = routMaps(getContext());
         String[] arrayRouts;
         if(routMaps.size() != 0) {
             arrayRouts = new String[routMaps.size()];
@@ -587,7 +572,7 @@ public class HomeFragment extends Fragment {
             Log.d("TAG", "dialogFromToOneRout: ToAddressString" + ToAddressString);
 
                 String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(from_lat, from_lng,
-                        to_lat, to_lng, "costSearchMarkers");
+                        to_lat, to_lng, "costSearchMarkers", getContext());
 
                 Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
@@ -597,7 +582,8 @@ public class HomeFragment extends Fragment {
                 GeoPoint startPoint = new GeoPoint(from_lat, to_lat);
 
                 if (orderCost.equals("0")) {
-                    coastOfRoad(startPoint, message);
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+//                    coastOfRoad(startPoint, message);
                 }
                 if (!orderCost.equals("0")) {
 
@@ -640,7 +626,7 @@ public class HomeFragment extends Fragment {
                                     if(connected()) {
                                         try {
                                             String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(from_lat, from_lng,
-                                                    to_lat, to_lng, "orderSearchMarkers");
+                                                    to_lat, to_lng, "orderSearchMarkers", getContext());
 
                                             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 

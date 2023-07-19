@@ -20,9 +20,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.R;
 
 public class StopActivity extends Activity {
-    static FloatingActionButton fab;
+    static FloatingActionButton fab, btn_again;
 
-    Button btn_again;
+    Button try_again_button;
 
 
 
@@ -32,6 +32,51 @@ public class StopActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
+        fab = findViewById(R.id.fab);
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setVisibility(View.VISIBLE);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!hasConnection()) {
+
+                    Toast.makeText(StopActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                } else {
+                    Intent intent = new Intent(StopActivity.this, StartActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+
+
+        btn_again = findViewById(R.id.btn_again);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:0674443804"));
+                startActivity(intent);
+            }
+        });
+
+
+        btn_again.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!hasConnection()) {
+
+                    Toast.makeText(StopActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                } else {
+                    Intent intent = new Intent(StopActivity.this, StartActivity.class);
+                    startActivity(intent);
+                }
+            }
+        });
+
+
+
+
         Toast.makeText(this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
     }
 
@@ -40,32 +85,8 @@ public class StopActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        fab = findViewById(R.id.fab);
-        btn_again = findViewById(R.id.btn_again);
-        btn_again.setVisibility(View.VISIBLE);
-
-        fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                    intent.setData(Uri.parse("tel:0674443804"));
-                    startActivity(intent);
-                }
-            });
 
 
-       btn_again.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-               if(!hasConnection()) {
-
-                   Toast.makeText(StopActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-               } else {
-                   Intent intent = new Intent(StopActivity.this, StartActivity.class);
-                   startActivity(intent);
-               }
-           }
-       });
 
 
 
