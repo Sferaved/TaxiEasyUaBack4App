@@ -62,7 +62,7 @@ public class ToJSONParser {
             if (first.message.equals("400")) {
 
                 costMap.put("order_cost", "0");
-                costMap.put("message", "Спробуйте ще, або зателефонуйте оператору");
+                costMap.put("message", "Спробуйте ще або зателефонуйте оператору");
                return costMap;
             } else {
             JSONObject jsonarray = new JSONObject(first.message);

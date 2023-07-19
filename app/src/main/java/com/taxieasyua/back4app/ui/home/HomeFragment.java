@@ -649,9 +649,15 @@ public class HomeFragment extends Fragment {
                                                     startActivity(new Intent(getActivity(), MainActivity.class));
                                                 } else {
                                                     message = (String) sendUrlMapCost.get("message");
-                                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                            .setMessage(message + OpenStreetMapActivity.ntr)
-                                                            .setPositiveButton(OpenStreetMapActivity.hlp, new DialogInterface.OnClickListener() {
+
+                                                    MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                                                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                                                    View view = inflater.inflate(R.layout.free_message_layout, null);
+                                                    TextView alertMessage = view.findViewById(R.id.text_message);
+                                                    alertMessage.setText(message);
+                                                    alertDialogBuilder.setView(view);
+
+                                                    alertDialogBuilder.setPositiveButton(OpenStreetMapActivity.hlp, new DialogInterface.OnClickListener() {
                                                                 @SuppressLint("SuspiciousIndentation")
                                                                 @Override
                                                                 public void onClick(DialogInterface dialog, int which) {
