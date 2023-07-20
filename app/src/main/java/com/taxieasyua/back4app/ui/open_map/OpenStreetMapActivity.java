@@ -63,7 +63,6 @@ import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import org.json.JSONException;
-import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
@@ -421,8 +420,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         super.onResume();
         gpsSwitch.setChecked(switchState());
 
-//        Toast.makeText(this, "Позначте на карті місця посадки та призначення", Toast.LENGTH_SHORT).show();
-//
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -430,32 +427,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            Toast.makeText(this, "Дозвольте доступ до розташування та спробуйте ще раз", Toast.LENGTH_SHORT).show();
             checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
             checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             return;
         }
-
-//        Log.d(TAG, "onResume PASSIVE_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER));
-
-//        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-//                    1000*5, 10, locationListener);
-//        } else if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) {
-//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-//                    1000*5, 10, locationListener);
-//        }
-
-//        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 5, 10, locationListener);
-//        } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000 * 5, 10, locationListener);
-//        } else if (locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)) {
-//            locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 1000 * 5, 10, locationListener);
-//        } else {
-//            // Провайдеры местоположения недоступны, обработайте соответствующий случай
-//            startActivity(new Intent(OpenStreetMapActivity.this, MainActivity.class));
-//        }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -463,70 +438,16 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         } else {
             requestLocationPermission();
         }
-//        checkEnabled();
         map.onResume();
-
-
-
     }
 
 
     @Override
     protected void onPause() {
         super.onPause();
-//        locationManager.removeUpdates(locationListener);
-//        stopLocationUpdates();
         map.onPause();
     }
 
-    private final LocationListener locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location location) {
-//            try {
-//                showLocation(location);
-//            } catch (MalformedURLException | InterruptedException | JSONException e) {
-//                throw new RuntimeException(e);
-//            }
-//            locationStart = location;
-//            // Отключение слушателя после получения первых координат
-//            locationManager.removeUpdates(this);
-//            GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-//            mapController.setCenter(startPoint);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-//            checkEnabled();
-        }
-
-        @SuppressLint("MissingPermission")
-        @Override
-        public void onProviderEnabled(String provider) {
-//            checkEnabled();
-            try {
-                if(endPoint != null) {
-                    showRout(startPoint, endPoint);
-                } else {
-                showLocation(locationManager.getLastKnownLocation(provider));
-                }
-            } catch (MalformedURLException | InterruptedException | JSONException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @SuppressLint("SetTextI18n")
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-//            if (provider.equals(LocationManager.GPS_PROVIDER)) {
-//                Log.d("TAG", "onStatusChanged GPS_PROVIDER: Status: " + status);
-//
-//            } else if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-//                Log.d("TAG", "onStatusChanged NETWORK_PROVIDER: Status: " + status);
-//
-//            }
-        }
-    };
 
     private void showLocation(Location location) throws MalformedURLException, InterruptedException, JSONException {
         if (location == null)
@@ -535,22 +456,17 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
             startLat = location.getLatitude();
             startLan = location.getLongitude();
-
         }
-
         else {
             if (location.getProvider().equals(
                     LocationManager.NETWORK_PROVIDER)) {
                 startLat = location.getLatitude();
                 startLan = location.getLongitude();
-
-
-
             }
         }
 
         String urlFrom =  "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-        Map sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+        Map<String, String> sendUrlFrom = FromJSONParser.sendURL(urlFrom);
 
         FromAdressString =  (String) sendUrlFrom.get("route_address_from");
         MarkerOverlay markerOverlay = new MarkerOverlay(this);
@@ -558,7 +474,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         dialogFromToGeo();
 
-//        Toast.makeText(this, location.getProvider() + startLat + " - " + startLan, Toast.LENGTH_SHORT).show();
     }
 
     public static void setMarker(double Lat, double Lan, String title) {
@@ -595,27 +510,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
     }
 
-    @SuppressLint("SetTextI18n")
-    private void checkEnabled() {
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)  != true && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) != true) {
-            finish();
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-        }
-//        Log.d("TAG", "checkEnabled: Enabled GPS_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
-//        Log.d("TAG", "checkEnabled: Enabled NETWORK_PROVIDER: " + locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
-
-    }
-
-    public void onClickLocationSettings(View view) {
-        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-    };
-
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
-//            Log.d("TAG", "checkPermission: " + new String[]{permission});
+
         }
     }
     // This function is called when user accept or decline the permission.
