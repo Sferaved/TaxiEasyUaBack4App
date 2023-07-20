@@ -7,11 +7,6 @@
     <!-- Определение элементов меню -->
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/phone_settings"
         android:orderInCategory="100"
         android:title="@string/my_phone"

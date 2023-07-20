@@ -3,6 +3,7 @@ package com.taxieasyua.back4app.ui.open_map;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -394,7 +395,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
         }
         database.close();
-        Log.d("TAG", "routMaps:11111111 " + routsArr);
+
         return routsArr;
     }
     private boolean  switchState() {
@@ -848,145 +849,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             OpenStreetMapActivity.showRout(startPoint, endPoint);
         };
     }
-
-//    public static void coastOfRoad(GeoPoint startPoint, String messageResult) {
-//
-//        if (!StartActivity.verifyPhone) {
-//            getPhoneNumber();
-//        }
-//        if (!StartActivity.verifyPhone) {
-//           MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
-//            bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//        }
-//        if (StartActivity.verifyPhone) {
-//
-//            new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
-//                    .setMessage(messageResult)
-//                    .setPositiveButton(onc, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            if (connected()) {
-//                                if (StartActivity.verifyPhone) {
-//                                    try {
-//
-//                                        String urlCost = getTaxiUrlSearchGeo(startPoint.getLatitude(), startPoint.getLongitude(),
-//                                                Double.toString(startLat),
-//                                                " ", "costSearchGeo");
-//
-//                                        Log.d("TAG", "onClick urlCost 1111: " + urlCost);
-//
-//                                        Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
-//
-//                                        String message = (String) sendUrlMapCost.get("message");
-//                                        String orderCost = (String) sendUrlMapCost.get("order_cost");
-//                                        Log.d("TAG", "onClick orderCost : " + orderCost);
-//
-//                                        if (orderCost.equals("0")) {
-//
-//                                            Toast.makeText(map.getContext(), em + message, Toast.LENGTH_LONG).show();
-//
-//                                        }
-//                                        if (!orderCost.equals("0")) {
-//
-//                                            if (!MainActivity.verifyOrder) {
-//                                                Toast.makeText(map.getContext(), co + orderCost + fb, Toast.LENGTH_SHORT).show();
-//                                            } else {
-//
-//                                                String orderWeb = (String) sendUrlMapCost.get("order_cost");
-//
-//                                                if (!orderWeb.equals("0")) {
-//
-//                                                    String to_name = onc;
-//                                                    if (Objects.equals(sendUrlMapCost.get("routefrom"), sendUrlMapCost.get("routeto"))) {
-//                                                        to_name = onc;
-//                                                        if (!sendUrlMapCost.get("lat").equals("0")) {
-//                                                            StartActivity.insertRecordsOrders(
-//                                                                    (String) sendUrlMapCost.get("routefrom"), (String) sendUrlMapCost.get("routefrom"),
-//                                                                    (String) sendUrlMapCost.get("routefromnumber"), (String) sendUrlMapCost.get("routefromnumber"),
-//                                                                    Double.toString(startPoint.getLatitude()), Double.toString(startPoint.getLongitude()),
-//                                                                    Double.toString(startPoint.getLatitude()), Double.toString(startPoint.getLongitude())
-//                                                            );
-//                                                        }
-//                                                    } else {
-//                                                        to_name = (String) sendUrlMapCost.get("routeto") + " " + (String) sendUrlMapCost.get("to_number");
-//                                                        if (!sendUrlMapCost.get("lat").equals("0")) {
-//                                                            StartActivity.insertRecordsOrders(
-//                                                                    (String) sendUrlMapCost.get("routefrom"), (String) sendUrlMapCost.get("routeto"),
-//                                                                    (String) sendUrlMapCost.get("routefromnumber"), (String) sendUrlMapCost.get("to_number"),
-//                                                                    Double.toString(startPoint.getLatitude()), Double.toString(startPoint.getLongitude()),
-//                                                                    (String) sendUrlMapCost.get("lat"), (String) sendUrlMapCost.get("lng")
-//                                                            );
-//                                                        }
-//                                                    }
-//
-//                                                    String messageResult = tm +
-//                                                            FromAdressString + tom +
-//                                                            to_name + "." +
-//                                                            co + orderWeb + UAH;
-//                                                    Log.d("TAG", "onClick messageResult: " + messageResult);
-//
-//                                                    new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme)
-//                                                            .setMessage(messageResult)
-//                                                            .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
-//                                                                @Override
-//                                                                public void onClick(DialogInterface dialog, int which) {
-//                                                                    Intent intent = new Intent(map.getContext(), MainActivity.class);
-//                                                                    map.getContext().startActivity(intent);
-//                                                                }
-//                                                            })
-//                                                            .show();
-//                                                } else {
-//                                                    message = (String) sendUrlMapCost.get("message");
-//                                                    MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
-//                                                    LayoutInflater inflater = LayoutInflater.from(map.getContext());
-//                                                    View view = inflater.inflate(R.layout.free_message_layout, null);
-//                                                    TextView alertMessage = view.findViewById(R.id.text_message);
-//                                                    alertMessage.setText(message + ntr);
-//                                                    alertDialogBuilder.setView(view);
-//
-//                                                    alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
-//                                                                @SuppressLint("SuspiciousIndentation")
-//                                                                @Override
-//                                                                public void onClick(DialogInterface dialog, int which) {
-//                                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
-//                                                                    intent.setData(Uri.parse("tel:0674443804"));
-//                                                                    map.getContext().startActivity(intent);
-//                                                                }
-//                                                            })
-//                                                            .setNegativeButton(tra, null)
-//                                                            .show();
-//                                                }
-//                                            }
-//
-//                                        }
-//
-//                                    } catch (MalformedURLException | InterruptedException |
-//                                             JSONException e) {
-//                                        throw new RuntimeException(e);
-//                                    }
-//                                }
-//                                else {
-//                                    Toast.makeText(map.getContext(), plm, Toast.LENGTH_SHORT).show();
-//                                    Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-//                                    map.getContext().startActivity(intent);
-//                                }
-//                            }
-//                        }
-//                    })
-//                    .setNegativeButton(R.string.try_again, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-//                            map.getContext().startActivity(intent);
-//                        }
-//                    })
-//                    .show();
-//        } else {
-//            Toast.makeText(map.getContext(), plm, Toast.LENGTH_SHORT).show();
-//            Intent intent = new Intent(map.getContext(), OpenStreetMapActivity.class);
-//            map.getContext().startActivity(intent);
-//        }
-//    }
 
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
 
@@ -1619,64 +1481,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         return arrayRouts;
     }
-    private String getTaxiUrlSearch(String from, String from_number, String to, String to_number, String urlAPI) {
-
-        // Origin of route
-        String str_origin = from + "/" + from_number;
-
-        // Destination of route
-        String str_dest = to + "/" + to_number;
-
-        StartActivity.cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        String tarif =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
-
-
-        // Building the parameters to the web service
-
-        String parameters = str_origin + "/" + str_dest + "/" + tarif;
-
-        if(urlAPI.equals("orderSearch")) {
-            String phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName + " (" + StartActivity.userEmail + ")";
-        }
-
-        // Building the url to the web service
-
-        List<String> services = StartActivity.logCursor(StartActivity.TABLE_SERVICE_INFO);
-        List<String> servicesChecked = new ArrayList<>();
-        String result;
-        boolean servicesVer = false;
-        for (int i = 1; i <= 15 ; i++) {
-            if(services.get(i).equals("1")) {
-                servicesVer = true;
-                break;
-            }
-        }
-        if(servicesVer) {
-            for (int i = 0; i < MyBottomSheetDialogFragment.arrayServiceCode.length; i++) {
-                if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(MyBottomSheetDialogFragment.arrayServiceCode[i]);
-                }
-            }
-            for (int i = 0; i < servicesChecked.size(); i++) {
-                if(servicesChecked.get(i).equals("CHECK_OUT")) {
-                    servicesChecked.set(i, "CHECK");
-                }
-            }
-            result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
-        } else {
-            result = "no_extra_charge_codes";
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-
-        Log.d("TAG", "getTaxiUrlSearch: " + url);
-
-
-
-        return url;
-    }
     private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude, String to, String to_number, String urlAPI, Context context) {
 
         // Origin of route
@@ -1686,7 +1490,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         String str_dest = to + "/" + to_number;
 
         SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
+//////////////////////////////
+
+///////////////////////////////////
+
+        String tarif = logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
 
 
         // Building the parameters to the web service
@@ -1705,9 +1513,22 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
-//            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+
+            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+            String time = stringList.get(1);
+            String comment = stringList.get(2);
+
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost;
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment;
+
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("comment", "no_comment");
+
+            // обновляем по id
+            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
         }
 
         // Building the url to the web service
@@ -1740,6 +1561,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
         Log.d("TAG", "getTaxiUrlSearch services: " + url);
+
 
 
 
@@ -1776,9 +1598,22 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
-//            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+            String time = stringList.get(1);
+            String comment = stringList.get(2);
+
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost;
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment;
+
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("comment", "no_comment");
+
+            // обновляем по id
+            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
+
         }
 
         // Building the url to the web service

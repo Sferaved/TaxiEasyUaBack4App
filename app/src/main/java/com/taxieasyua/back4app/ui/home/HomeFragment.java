@@ -7,6 +7,7 @@ import static com.taxieasyua.back4app.R.string.address_error_message;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -220,7 +221,7 @@ public class HomeFragment extends Fragment {
                             to_number.setText(from_number.getText());
                         }
                         try {
-                            String urlCost = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "costSearch");
+                            String urlCost = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "costSearch", getActivity());
 
                             Log.d("TAG", "onClick urlCost: " + urlCost);
 
@@ -289,7 +290,7 @@ public class HomeFragment extends Fragment {
                                                     if(connected()) {
                                                         if (StartActivity.verifyPhone) {
                                                             try {
-                                                                String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch");
+                                                                String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch", getActivity());
                                                                 Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
                                                                 String orderWeb = (String) sendUrlMap.get("order_cost");
@@ -695,7 +696,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private String getTaxiUrlSearch(String from, String from_number, String to, String to_number, String urlAPI) {
+    private String getTaxiUrlSearch(String from, String from_number, String to, String to_number, String urlAPI, Context context) {
 
         // Origin of route
         String str_origin = from + "/" + from_number;
@@ -703,9 +704,9 @@ public class HomeFragment extends Fragment {
         // Destination of route
         String str_dest = to + "/" + to_number;
 
-        StartActivity.cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        String tarif =  StartActivity.logCursor(StartActivity.TABLE_SETTINGS_INFO).get(2);
+        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
 
+        String tarif =  logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
 
         // Building the parameters to the web service
 
@@ -713,24 +714,38 @@ public class HomeFragment extends Fragment {
         String phoneNumber = "no phone";
 
         if(urlAPI.equals("costSearch")) {
-            Cursor c = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+            Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
             if (c.getCount() == 1) {
-                phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
+                phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
         }
 
         if(urlAPI.equals("orderSearch")) {
-            phoneNumber = StartActivity.logCursor(StartActivity.TABLE_USER_INFO).get(1);
+            phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
+
+            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+            String time = stringList.get(1);
+            String comment = stringList.get(2);
+
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName + "/" + StartActivity.addCost;
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment;
+
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("comment", "no_comment");
+
+            // обновляем по id
+            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
 
         }
 
         // Building the url to the web service
 // Building the url to the web service
-        List<String> services = StartActivity.logCursor(StartActivity.TABLE_SERVICE_INFO);
+        List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, context);
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
@@ -766,6 +781,28 @@ public class HomeFragment extends Fragment {
         return url;
     }
 
+    @SuppressLint("Range")
+    public static List<String> logCursor(String table, Context context) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(table, null, null, null, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                String str;
+                do {
+                    str = "";
+                    for (String cn : c.getColumnNames()) {
+                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
+                        list.add(c.getString(c.getColumnIndex(cn)));
+
+                    }
+
+                } while (c.moveToNext());
+            }
+        }
+        database.close();
+        return list;
+    }
     private void getPhoneNumber () {
         String mPhoneNumber;
         TelephonyManager tMgr = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
@@ -791,204 +828,6 @@ public class HomeFragment extends Fragment {
             }
         }
 
-    }
-    private void phoneNumber() {
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-
-        LayoutInflater inflater = this.getLayoutInflater();
-
-        View view = inflater.inflate(R.layout.phone_verify_layout, null);
-
-        builder.setView(view);
-
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        EditText phoneNumber = view.findViewById(R.id.phoneNumber);
-        phoneNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                phoneNumber.setHint("");
-
-
-            }
-        });
-
-
-//        String result = phoneNumber.getText().toString();
-        builder.setTitle(getString(R.string.verify_phone))
-                .setPositiveButton(getString(R.string.sent_button), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if(connected()) {
-                        Log.d("TAG", "onClick befor validate: ");
-                        String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
-                        boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
-                        Log.d("TAG", "onClick No validate: " + val);
-                        if (val == false) {
-                            Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
-                            phoneNumber();
-                        } else {
-                            StartActivity.insertRecordsUser(phoneNumber.getText().toString());
-                            String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch");
-
-                            try {
-                                Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
-
-                                String orderWeb = (String) sendUrlMap.get("order_cost");
-                                if (!orderWeb.equals("0")) {
-
-                                    MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                                    LayoutInflater inflater = getActivity().getLayoutInflater();
-
-                                    View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
-                                    builderAddCost.setView(view_cost);
-                                    TextView costView = view_cost.findViewById(R.id.cost);
-                                    costView.setText(orderWeb);
-                                    StartActivity.cost = Long.parseLong(orderWeb);
-                                    StartActivity.addCost = 0;
-                                    Button btn_minus = view_cost.findViewById(R.id.btn_minus);
-                                    Button btn_plus = view_cost.findViewById(R.id.btn_plus);
-
-                                    btn_minus.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-
-                                            if (StartActivity.addCost != 0) {
-                                                StartActivity.addCost -= 5;
-                                                StartActivity.cost -= 5;
-                                                costView.setText(String.valueOf(StartActivity.cost));
-                                            }
-                                        }
-                                    });
-                                    btn_plus.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            StartActivity.addCost += 5;
-                                            StartActivity.cost += 5;
-                                            Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
-                                            costView.setText(String.valueOf(StartActivity.cost));
-                                        }
-                                    });
-
-
-                                    builderAddCost
-                                            .setMessage(getString(R.string.cost_of_order))
-                                            .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-
-                                                    String from_name = (String) sendUrlMap.get("routefrom");
-                                                    String to_name = (String) sendUrlMap.get("routeto");
-                                                    if (from_name.equals(to_name)) {
-                                                        messageResult = getString(R.string.thanks_message) +
-                                                                from_name + " " + from_number.getText() + " " + getString(R.string.on_city) +
-                                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-
-
-                                                    } else {
-                                                        messageResult = getString(R.string.thanks_message) +
-                                                                from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
-                                                                to_name + " " + to_number.getText() + "." +
-                                                                getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-                                                    }
-                                                    Log.d(TAG, "onClick sendUrlMap: " + from_name + " " + to_name +
-                                                            from_number.getText().toString() + " " + to_number.getText().toString() + " " +
-                                                            (String) sendUrlMap.get("from_lat") + " " + (String) sendUrlMap.get("from_lng") + " " +
-                                                            (String) sendUrlMap.get("lat") + " " + (String) sendUrlMap.get("lng"));
-
-                                                    if (from_name.equals(to_name)) {
-                                                        if (!sendUrlMap.get("lat").equals("0")) {
-                                                            StartActivity.insertRecordsOrders(
-                                                                    from_name, from_name,
-                                                                    from_number.getText().toString(), from_number.getText().toString(),
-                                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng")
-                                                            );
-                                                        }
-                                                    } else {
-
-                                                        if (!sendUrlMap.get("lat").equals("0")) {
-                                                            StartActivity.insertRecordsOrders(
-                                                                    from_name, to_name,
-                                                                    from_number.getText().toString(), to_number.getText().toString(),
-                                                                    (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                                                    (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng")
-                                                            );
-                                                        }
-                                                    }
-                                                    //                                                                        StartActivity.insertRecordsOrders(from_name, to_name,
-                                                    //                                                                                from_number.getText().toString(), to_number.getText().toString());
-
-                                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                            .setMessage(messageResult)
-                                                            .setPositiveButton(getString(R.string.ok_button), new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                                                                    startActivity(intent);
-                                                                }
-                                                            })
-                                                            .show();
-                                                }
-                                            })
-                                            .setNegativeButton(OpenStreetMapActivity.cbt, null)
-                                            .show();
-                                                } else
-                                    {
-                                                    String message = (String) sendUrlMap.get("message");
-                                                    new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme)
-                                                            .setMessage(message + getString(R.string.try_again))
-                                                            .setPositiveButton(getString(R.string.help), new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                                                                    intent.setData(Uri.parse("tel:0674443804"));
-                                                                    startActivity(intent);
-
-                                                                }
-                                                            })
-                                                            .setNegativeButton(getString(R.string.try_again), new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    if (connected()) {
-                                                                        button.setVisibility(View.VISIBLE);
-                                                                        getActivity().finish();
-                                                                        //                                                                                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                                                                        //                                                                                            startActivity(intent);
-                                                                    }
-                                                                }
-                                                            })
-                                                            .show();
-
-                                     }
-
-                            } catch (MalformedURLException |
-                                     InterruptedException |
-                                     JSONException e) {
-                                Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                        } else {
-                            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                })
-                .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(getActivity(), getString(R.string.please_phone_message), Toast.LENGTH_SHORT).show();
-                        getActivity().finish();
-                    }
-                })
-                .show();
-
-    }
-    public void checkPermission(String permission, int requestCode) {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
-        }
-        Log.d(TAG, "checkPermission: +++ " +  ContextCompat.checkSelfPermission(getActivity(), permission));
     }
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {

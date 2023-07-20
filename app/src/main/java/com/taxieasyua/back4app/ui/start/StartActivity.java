@@ -63,11 +63,12 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_17072023_6";
+    public static final String DB_NAME = "data_20072023_0";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
     public static final String TABLE_SERVICE_INFO = "serviceInfo";
+    public static final String TABLE_ADD_SERVICE_INFO = "serviceAddInfo";
 
     public static SQLiteDatabase database;
     public static Cursor cursorDb;
@@ -524,8 +525,16 @@ public class StartActivity extends Activity {
         cursorDb = database.query(TABLE_SERVICE_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertServices();
+        }
+
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ADD_SERVICE_INFO + "(id integer primary key autoincrement," +
+                " time text," +
+                " comment text);");
+        cursorDb = database.query(TABLE_ADD_SERVICE_INFO, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            insertAddServices();
         } else {
-            Log.d("TAG", "initDB:" + logCursor(TABLE_SERVICE_INFO));
+            resetRecordsAddServices();
         }
 
 
@@ -577,6 +586,32 @@ public class StartActivity extends Activity {
         } finally {
             database.endTransaction();
         }
+    }
+    private void insertAddServices() {
+        String sql = "INSERT INTO " + TABLE_ADD_SERVICE_INFO + " VALUES(?,?,?);";
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindString(2, "no_time");
+            statement.bindString(3, "no_comment");
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+    }
+    public static void resetRecordsAddServices() {
+        ContentValues cv = new ContentValues();
+
+        cv.put("time", "no_time");
+        cv.put("comment", "no_comment");
+
+        // обновляем по id
+        database.update(TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                new String[] { "1" });
     }
 
     public static void insertRecordsUser(String phoneNumber) {
@@ -667,6 +702,7 @@ public class StartActivity extends Activity {
 
 
     }
+
     public static ArrayList<Map> routMaps() {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
@@ -795,49 +831,5 @@ public class StartActivity extends Activity {
             unregisterReceiver(connectivityReceiver);
         }
     }
-
-
-
-    public void codeVerify(String phoneNumber) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
-        LayoutInflater inflater = this.getLayoutInflater();
-        View view = inflater.inflate(R.layout.phone_verify_code_layout, null);
-        builder.setView(view);
-
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        EditText code = view.findViewById(R.id.code);
-
-        builder.setTitle(getString(R.string.sms_code))
-                .setPositiveButton(getString(R.string.sent_button), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String urlCost = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/approvedPhones/" + phoneNumber + "/" + code.getText();
-                        Log.d("TAG", "onClick urlCost: " + urlCost);
-                        try {
-                            Map sendUrlMapCost = ResultSONParser.sendURL(urlCost);
-                            Log.d("TAG", "onClick sendUrlMapCost: " + sendUrlMapCost);
-                            if(sendUrlMapCost.get("resp_result").equals("200")) {
-                                insertRecordsUser(phoneNumber);
-                                Intent intent = new Intent(StartActivity.this, MainActivity.class);
-                                startActivity(intent);
-//                                finish();
-                            } else {
-                                String message = (String) sendUrlMapCost.get("message");
-                                Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
-                            }
-
-                        } catch (MalformedURLException e) {
-                            throw new RuntimeException(e);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        } catch (JSONException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                })
-               .show();
-
-    }
-
 
 }

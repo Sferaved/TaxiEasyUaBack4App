@@ -1,7 +1,11 @@
 package com.taxieasyua.back4app.ui.home;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.annotation.SuppressLint;
+import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -10,8 +14,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +27,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 
 public class MyServicesDialogFragment extends BottomSheetDialogFragment {
@@ -28,7 +38,8 @@ public class MyServicesDialogFragment extends BottomSheetDialogFragment {
     ListView listView;
     public String[] arrayService;
     public static String[] arrayServiceCode;
-
+    private TextView tvSelectedTime;
+    private Calendar calendar;
 
     @Nullable
     @Override
@@ -122,7 +133,20 @@ public class MyServicesDialogFragment extends BottomSheetDialogFragment {
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-                return view;
+
+        tvSelectedTime = view.findViewById(R.id.tv_selected_time);
+        Button btnPickTime = view.findViewById(R.id.btn_pick_time);
+
+        calendar = Calendar.getInstance();
+
+        btnPickTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTimePickerDialog();
+            }
+        });
+
+        return view;
     }
 
     @Override
@@ -130,11 +154,12 @@ public class MyServicesDialogFragment extends BottomSheetDialogFragment {
         super.onPause();
 
         for (int i = 0; i < 15; i++) {
-            Log.d("TAG", "onPause: " + arrayServiceCode[i]);
+            SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
             ContentValues cv = new ContentValues();
             cv.put(arrayServiceCode[i], "0");
-            StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
+            database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
                     new String[] { "1" });
+            database.close();
         }
 
         SparseBooleanArray booleanArray = listView.getCheckedItemPositions();
@@ -143,12 +168,38 @@ public class MyServicesDialogFragment extends BottomSheetDialogFragment {
             if(booleanArray.get(booleanArray.keyAt(i))) {
                 ContentValues cv = new ContentValues();
                 cv.put(arrayServiceCode[booleanArray.keyAt(i)], "1");
-                StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
+                SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
                         new String[] { "1" });
+                database.close();
 
             }
         }
 
     }
+    private void showTimePickerDialog() {
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(),
+                new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        calendar.set(Calendar.MINUTE, minute);
+
+                        updateSelectedTime();
+                    }
+                }, hour, minute, true);
+
+        timePickerDialog.show();
+    }
+
+    private void updateSelectedTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        String formattedTime = sdf.format(calendar.getTime());
+        tvSelectedTime.setText("Выбранное время: " + formattedTime);
+    }
+
 }
 
