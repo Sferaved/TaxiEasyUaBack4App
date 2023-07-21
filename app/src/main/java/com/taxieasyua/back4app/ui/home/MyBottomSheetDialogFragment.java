@@ -36,6 +36,7 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -223,7 +224,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 ContentValues cv = new ContentValues();
                 cv.put(arrayServiceCode[booleanArray.keyAt(i)], "1");
                 SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                StartActivity.database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
+                database.update(StartActivity.TABLE_SERVICE_INFO, cv, "id = ?",
                         new String[] { "1" });
                 database.close();
 
@@ -248,6 +249,27 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         String date = stringList.get(3);
 
         if(!time.equals("no_time")) {
+            if(date.equals("no_date")) {
+                LocalDate currentDate = LocalDate.now();
+
+                // Получение завтрашней даты путем добавления одного дня к текущей дате
+                LocalDate tomorrowDate = currentDate.plusDays(1);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+                // Преобразование завтрашней даты в строку в формате "dd.MM.yyyy"
+                date = tomorrowDate.format(formatter);
+
+                ContentValues cv = new ContentValues();
+                cv.put("date", date);
+
+                // обновляем по id
+                SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
+
+            }
+
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
             // Преобразование времени и даты из строк в LocalDateTime
@@ -269,7 +291,20 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                         new String[] { "1" });
                 database.close();
             }
+
+        } else {
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("date", "no_date");
+
+            // обновляем по id
+            SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
+            database.close();
         }
+
     }
     private void showTimePickerDialog() {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
