@@ -55,6 +55,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     private Calendar calendar;
     private EditText komenterinp;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -165,8 +166,30 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             }
         });
 
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        String formattedTime = sdf.format(calendar.getTime());
+        tvSelectedTime.setText(formattedTime);
+
+        // Установленное время больше или равно текущему времени
+        tvSelectedTime.setText(formattedTime);
+
+        ContentValues cv = new ContentValues();
+        cv.put("time", formattedTime);
+        database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?", new String[] { "1" });
+
         komenterinp = view.findViewById(R.id.komenterinp);
         tvSelectedDate = view.findViewById(R.id.tv_selected_date);
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        tvSelectedDate.setText(currentDate.format(formatter));
+        cv = new ContentValues();
+        cv.put("date", currentDate.format(formatter));
+
+        // обновляем по id
+        database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                new String[] { "1" });
+
         tvSelectedDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
