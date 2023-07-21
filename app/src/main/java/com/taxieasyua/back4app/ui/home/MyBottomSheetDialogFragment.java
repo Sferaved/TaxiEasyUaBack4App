@@ -282,8 +282,17 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 Toast.makeText(getContext(), getContext().getString(R.string.resettimetoorder), Toast.LENGTH_SHORT).show();
                 ContentValues cv = new ContentValues();
 
-                cv.put("time", "no_time");
-                cv.put("date", "no_date");
+                LocalDate currentDate = LocalDate.now();
+
+                // Получение завтрашней даты путем добавления одного дня к текущей дате
+                LocalDate tomorrowDate = currentDate.plusDays(1);
+                formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+                // Преобразование завтрашней даты в строку в формате "dd.MM.yyyy"
+                date = tomorrowDate.format(formatter);
+
+                cv = new ContentValues();
+                cv.put("date", date);
 
                 // обновляем по id
                 SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
