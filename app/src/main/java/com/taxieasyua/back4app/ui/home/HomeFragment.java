@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -36,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -56,6 +58,9 @@ import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 
 import java.net.MalformedURLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -696,7 +701,17 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private String getTaxiUrlSearch(String from, String from_number, String to, String to_number, String urlAPI, Context context) {
+
+            //  Проверка даты и времени
+
+            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+            String time = stringList.get(1);
+            String comment = stringList.get(2);
+            String date = stringList.get(3);
+            Log.d("TAG", "getTaxiUrlSearchMarkers: " + time + date);
+
 
         // Origin of route
         String str_origin = from + "/" + from_number;
@@ -725,17 +740,14 @@ public class HomeFragment extends Fragment {
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
 
-            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
-            String time = stringList.get(1);
-            String comment = stringList.get(2);
-
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment;
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
             cv.put("time", "no_time");
             cv.put("comment", "no_comment");
+            cv.put("date", "no_date");
 
             // обновляем по id
             database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",

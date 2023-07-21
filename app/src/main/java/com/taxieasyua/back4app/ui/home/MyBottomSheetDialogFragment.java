@@ -3,11 +3,13 @@ package com.taxieasyua.back4app.ui.home;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -17,20 +19,26 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -42,7 +50,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     ListView listView;
     public String[] arrayService;
     public static String[] arrayServiceCode;
-    private TextView tvSelectedTime;
+    private TextView tvSelectedTime, tvSelectedDate;
     private Calendar calendar;
     private EditText komenterinp;
 
@@ -157,12 +165,45 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         });
 
         komenterinp = view.findViewById(R.id.komenterinp);
+        tvSelectedDate = view.findViewById(R.id.tv_selected_date);
+        tvSelectedDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Calendar calendar = Calendar.getInstance();
 
+                // Создание диалогового окна DatePicker
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+                        (DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) -> {
+                            // Обработчик выбора даты
+                            calendar.set(year, monthOfYear, dayOfMonth);
+                            updateSelectedDate(calendar);
+                        },
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH));
+
+                // Показать диалоговое окно DatePicker
+                datePickerDialog.show();
+            }
+        });
 
         database.close();
         return view;
     }
+    // Метод для обновления отображаемой даты
+    private void updateSelectedDate(Calendar calendar) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+        String formattedDate = sdf.format(calendar.getTime());
+        tvSelectedDate.setText(formattedDate);
+        ContentValues cv = new ContentValues();
+        cv.put("date", formattedDate);
 
+        // Обновляем по id
+        SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?", new String[] { "1" });
+        database.close();
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onPause() {
         super.onPause();
@@ -201,7 +242,34 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                     new String[]{"1"});
             database.close();
         }
+        //Проверка даты времени
+        List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, getContext());
+        String time = stringList.get(1);
+        String date = stringList.get(3);
 
+        if(!time.equals("no_time")) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+            // Преобразование времени и даты из строк в LocalDateTime
+            LocalDateTime dateTimeFromString = LocalDateTime.parse(date + " " + time, formatter);
+
+            LocalDateTime currentDateTimeInKyiv = LocalDateTime.now(ZoneId.of("Europe/Kiev"));
+
+            // Сравнение дат и времени
+            if (dateTimeFromString.isBefore(currentDateTimeInKyiv)) {
+                Toast.makeText(getContext(), getContext().getString(R.string.resettimetoorder), Toast.LENGTH_SHORT).show();
+                ContentValues cv = new ContentValues();
+
+                cv.put("time", "no_time");
+                cv.put("date", "no_date");
+
+                // обновляем по id
+                SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
+            }
+        }
     }
     private void showTimePickerDialog() {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -217,8 +285,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                         String formattedTime = sdf.format(calendar.getTime());
                         tvSelectedTime.setText(formattedTime);
                         updateSelectedTime();
-                        Calendar currentTime = Calendar.getInstance();
-                        if (calendar.compareTo(currentTime) >= 0) {
+
                             // Установленное время больше или равно текущему времени
                             tvSelectedTime.setText(formattedTime);
                             updateSelectedTime();
@@ -230,7 +297,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                             SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
                             database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?", new String[] { "1" });
                             database.close();
-                        }
+
                     }
                 }, hour, minute, true);
 

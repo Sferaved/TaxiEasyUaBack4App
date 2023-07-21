@@ -18,6 +18,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -38,6 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -75,6 +77,9 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.net.MalformedURLException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -553,6 +558,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         return hasConnect;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public static void dialogMarkers(FragmentManager fragmentManager) throws MalformedURLException, JSONException, InterruptedException {
         if(endPoint != null) {
 
@@ -572,10 +578,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             if (orderCost.equals("0")) {
                 Toast.makeText(map.getContext(), message, Toast.LENGTH_SHORT).show();
                 map.getContext().startActivity(new Intent(map.getContext(), MainActivity.class));
-//                coastOfRoad(startPoint, message);
             }
             if (!orderCost.equals("0")) {
-//                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
                 MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
                 LayoutInflater inflater =  LayoutInflater.from(map.getContext());
 
@@ -852,6 +856,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             });
             progressDialog.dismiss();
         builder.setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             coastDialog.dismiss();
@@ -1102,9 +1107,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             });
             builder
                     .setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Log.d("TAG", "onClick555555555: " + adressArr.get(listView.getCheckedItemPosition()));
+
                             Double to_lat =   Double.valueOf ((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
                             Double to_lng = Double.valueOf ((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
                             Log.d(TAG, "onClick  to_lat, to_lng: " +  to_lat + " " + to_lng);
@@ -1380,7 +1386,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         return arrayRouts;
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude, String to, String to_number, String urlAPI, Context context) {
+
+        //  Проверка даты и времени
+
+        List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
@@ -1389,9 +1403,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         String str_dest = to + "/" + to_number;
 
         SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-//////////////////////////////
-
-///////////////////////////////////
 
         String tarif = logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
 
@@ -1413,17 +1424,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
 
-            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
-            String time = stringList.get(1);
-            String comment = stringList.get(2);
-
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment;
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
             cv.put("time", "no_time");
             cv.put("comment", "no_comment");
+            cv.put("date", "no_date");
 
             // обновляем по id
             database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
@@ -1466,9 +1474,16 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         return url;
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
                                                  double toLatitude, double toLongitude,
                                                  String urlAPI, Context context) {
+        //  Проверка даты и времени
+
+        List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
@@ -1497,17 +1512,16 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
-            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
-            String time = stringList.get(1);
-            String comment = stringList.get(2);
+
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment;
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
             cv.put("time", "no_time");
             cv.put("comment", "no_comment");
+            cv.put("date", "no_date");
 
             // обновляем по id
             database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",

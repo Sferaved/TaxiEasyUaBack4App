@@ -8,7 +8,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -21,12 +20,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -35,15 +32,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
-import com.taxieasyua.back4app.NetworkChangeReceiver;
-import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.home.TimeOutTask;
 import com.taxieasyua.back4app.ui.maps.Odessa;
-
 
 import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
@@ -57,13 +49,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.Exchanger;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_20072023_0";
+    public static final String DB_NAME = "data_21072023_1";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -529,7 +520,8 @@ public class StartActivity extends Activity {
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ADD_SERVICE_INFO + "(id integer primary key autoincrement," +
                 " time text," +
-                " comment text);");
+                " comment text," +
+                " date text);");
         cursorDb = database.query(TABLE_ADD_SERVICE_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertAddServices();
@@ -588,13 +580,14 @@ public class StartActivity extends Activity {
         }
     }
     private void insertAddServices() {
-        String sql = "INSERT INTO " + TABLE_ADD_SERVICE_INFO + " VALUES(?,?,?);";
+        String sql = "INSERT INTO " + TABLE_ADD_SERVICE_INFO + " VALUES(?,?,?,?);";
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
             statement.clearBindings();
             statement.bindString(2, "no_time");
             statement.bindString(3, "no_comment");
+            statement.bindString(4, "no_date");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -608,6 +601,7 @@ public class StartActivity extends Activity {
 
         cv.put("time", "no_time");
         cv.put("comment", "no_comment");
+        cv.put("date", "no_date");
 
         // обновляем по id
         database.update(TABLE_ADD_SERVICE_INFO, cv, "id = ?",

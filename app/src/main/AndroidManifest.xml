@@ -96,9 +96,6 @@
             android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar"
             android:exported="true"/>
         <activity android:name="com.taxieasyua.back4app.ui.start.GoogleSignInActivity" />
-        <activity android:name="com.taxieasyua.back4app.ui.open_map.OpenStreetMapFusedActivity"
-            android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar"
-            android:exported="true"/>
         <activity android:name="com.taxieasyua.back4app.ui.start.StopActivity" />
         <activity android:name="com.taxieasyua.back4app.ui.start.UpdateActivity" />
 
