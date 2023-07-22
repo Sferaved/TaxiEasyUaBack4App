@@ -319,6 +319,7 @@ public class StartActivity extends Activity {
                startIp();
 
                intent = new Intent(this, FirebaseSignIn.class);
+//               intent = new Intent(this, MainActivity.class);
                startActivity(intent);
            } catch (MalformedURLException e) {
                btn_again.setVisibility(View.VISIBLE);

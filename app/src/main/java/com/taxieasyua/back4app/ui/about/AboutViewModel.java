@@ -14,7 +14,7 @@ public class AboutViewModel extends ViewModel {
 
     public AboutViewModel() {
         mText_author.setValue("автор: Андрей Коржов");
-        mText_site.setValue("Сайт: https://m.easy-order-taxi.site");
+        mText_site.setValue("Сайт: https://play.google.com/store/apps/dev?id=8830024160014473355");
         mText_email.setValue("Email: taxi.easy.ua@gmail.com");
         mText_build.setValue("2023");
     }

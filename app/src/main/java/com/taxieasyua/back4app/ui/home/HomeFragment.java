@@ -214,6 +214,7 @@ public class HomeFragment extends Fragment {
 
         btncost = binding.btnCost;
         btncost.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
                 if(connected()) {
@@ -436,6 +437,7 @@ public class HomeFragment extends Fragment {
         if(array != null)  {
             ArrayAdapter<String> adapterRouts = new ArrayAdapter<>(getActivity(),  R.layout.custom_list_item, array);
             listView.setAdapter(adapterRouts);
+
             listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -458,7 +460,9 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                     try {
-                        dialogFromToOneRout(StartActivity.routChoice(selectedItem + 1));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            dialogFromToOneRout(StartActivity.routChoice(selectedItem + 1));
+                        }
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                     }
@@ -562,6 +566,7 @@ public class HomeFragment extends Fragment {
         Log.d(TAG, "connected: " + hasConnect);
         return hasConnect;
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void dialogFromToOneRout(Map <String, String> rout) throws MalformedURLException, InterruptedException, JSONException {
         if(connected()) {
             Log.d("TAG", "dialogFromToOneRout: " + rout.toString());
@@ -577,7 +582,7 @@ public class HomeFragment extends Fragment {
             }
             Log.d("TAG", "dialogFromToOneRout: ToAddressString" + ToAddressString);
 
-                String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(from_lat, from_lng,
+                String urlCost = getTaxiUrlSearchMarkers(from_lat, from_lng,
                         to_lat, to_lng, "costSearchMarkers", getContext());
 
                 Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
@@ -627,11 +632,12 @@ public class HomeFragment extends Fragment {
 
                     builderAddCost
                             .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
+                                @RequiresApi(api = Build.VERSION_CODES.O)
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     if(connected()) {
                                         try {
-                                            String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(from_lat, from_lng,
+                                            String urlCost = getTaxiUrlSearchMarkers(from_lat, from_lng,
                                                     to_lat, to_lng, "orderSearchMarkers", getContext());
 
                                             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
@@ -710,7 +716,7 @@ public class HomeFragment extends Fragment {
             String time = stringList.get(1);
             String comment = stringList.get(2);
             String date = stringList.get(3);
-            Log.d("TAG", "getTaxiUrlSearchMarkers: " + time + date);
+
 
 
         // Origin of route
@@ -841,27 +847,95 @@ public class HomeFragment extends Fragment {
         }
 
     }
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0, CM_DELETE_ID, 0, R.string.delete_record);
-    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
+                                                 double toLatitude, double toLongitude,
+                                                 String urlAPI, Context context) {
+        //  Проверка даты и времени
 
-    public boolean onContextItemSelected(MenuItem item) {
-        if (item.getItemId() == CM_DELETE_ID) {
-            // получаем из пункта контекстного меню данные по пункту списка
-            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item
-                    .getMenuInfo();
-            StartActivity.reIndexOrders();
-            // извлекаем id записи и удаляем соответствующую запись в БД
-            long del_id = acmi.id+1;
-            int i_del =  StartActivity.database.delete(StartActivity.TABLE_ORDERS_INFO, "id = " + del_id, null);
-            StartActivity.reIndexOrders();
-            getActivity().finish();
+        List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
 
-            return true;
+        // Origin of route
+        String str_origin = originLatitude + "/" + originLongitude;
+
+        // Destination of route
+        String str_dest = toLatitude + "/" + toLongitude;
+
+//        Cursor cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        String tarif = logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
+
+
+        // Building the parameters to the web service
+
+        String parameters = null;
+        String phoneNumber = "no phone";
+        if(urlAPI.equals("costSearchMarkers")) {
+            Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+
+            if (c.getCount() == 1) {
+                phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
+                c.close();
+            }
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName + "(" + StartActivity.userEmail + ")";
         }
-        return super.onContextItemSelected(item);
-    }
 
+        if(urlAPI.equals("orderSearchMarkers")) {
+            phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(1);
+
+
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
+
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("comment", "no_comment");
+            cv.put("date", "no_date");
+
+            // обновляем по id
+            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
+
+        }
+
+        // Building the url to the web service
+        List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, context);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i <= 15 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < arrayServiceCode().length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(arrayServiceCode()[i]);
+                }
+            }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
+                }
+            }
+            result = String.join("*", servicesChecked);
+            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_extra_charge_codes";
+        }
+
+        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+
+        Log.d("TAG", "getTaxiUrlSearch: " + url);
+        database.close();
+
+
+        return url;
+    }
 }
