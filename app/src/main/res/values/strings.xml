@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.700</string>
-    <string name="version">Версия: 2.700</string>
+    <string name="version_code">2.701</string>
+    <string name="version">Версия: 2.701</string>
 
     <string name="app_name">Такси Киев</string>
 
@@ -134,8 +134,10 @@
     <string name="coment">Комментарий</string>
     <string name="services">УСЛУГИ</string>
     <string name="resettimetoorder">Измените дату или время для предварительного заказа</string>
-    <string name="my_routs">Отметьте дял удаления</string>
+    <string name="my_routs">Отметьте маршруты для удаления</string>
     <string name="no_routs">Нет маршрутов</string>
+    <string name="cheng">Изменить</string>
+    <string name="delete_routs">удалить выбранные маршруты</string>
 
 
 </resources>

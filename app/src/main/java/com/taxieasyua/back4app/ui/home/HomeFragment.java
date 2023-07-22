@@ -461,7 +461,7 @@ public class HomeFragment extends Fragment {
             public void onClick(View view) {
                     try {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            dialogFromToOneRout(StartActivity.routChoice(selectedItem + 1));
+                            dialogFromToOneRout(routChoice(selectedItem + 1));
                         }
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
@@ -471,6 +471,24 @@ public class HomeFragment extends Fragment {
         });
 
         return root;
+    }
+    private Map <String, String> routChoice(int i) {
+        Map <String, String> rout = new HashMap<>();
+        SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        c.move(i);
+        rout.put("id", c.getString(c.getColumnIndexOrThrow ("id")));
+        rout.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
+        rout.put("from_lng", c.getString(c.getColumnIndexOrThrow ("from_lng")));
+        rout.put("to_lat", c.getString(c.getColumnIndexOrThrow ("to_lat")));
+        rout.put("to_lng", c.getString(c.getColumnIndexOrThrow ("to_lng")));
+        rout.put("from_street", c.getString(c.getColumnIndexOrThrow ("from_street")));
+        rout.put("from_number", c.getString(c.getColumnIndexOrThrow ("from_number")));
+        rout.put("to_street", c.getString(c.getColumnIndexOrThrow ("to_street")));
+        rout.put("to_number", c.getString(c.getColumnIndexOrThrow ("to_number")));
+
+        Log.d("TAG", "routMaps: " + rout);
+        return rout;
     }
 
     @Override

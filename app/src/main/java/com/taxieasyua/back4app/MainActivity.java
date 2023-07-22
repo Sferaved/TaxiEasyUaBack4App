@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        String result = phoneNumber.getText().toString();
         builder
-                .setPositiveButton("Змінити", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.cheng, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(connected()) {
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                             boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
                             Log.d("TAG", "onClick No validate: " + val);
                             if (val == false) {
-                                Toast.makeText(MainActivity.this, getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, getString(format_phone) , Toast.LENGTH_SHORT).show();
                                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
 
                             } else {
