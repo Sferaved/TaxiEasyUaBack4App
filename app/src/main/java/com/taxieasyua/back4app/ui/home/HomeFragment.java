@@ -22,9 +22,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -59,9 +57,6 @@ import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 
 import java.net.MalformedURLException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,13 +115,13 @@ public class HomeFragment extends Fragment {
 
         AutoCompleteTextView textViewFrom =binding.textFrom;
         textViewFrom.setAdapter(adapter);
-
         Log.d("TAG", "onCreateView startPoint: " + OpenStreetMapActivity.from_name + OpenStreetMapActivity.from_house);
         if(OpenStreetMapActivity.from_name != null && !OpenStreetMapActivity.from_name.equals("name")) {
             textViewFrom.setText(OpenStreetMapActivity.from_name);
             from = OpenStreetMapActivity.from_name;
         }
         from_number = binding.fromNumber;
+
         if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
             String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + from;
 
@@ -360,11 +355,11 @@ public class HomeFragment extends Fragment {
                                                                             );
                                                                         }
                                                                     }
-                                                                                                                        HomeFragment newFragment = new HomeFragment();
-                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                                                    transaction.replace(getId(), newFragment);
-                                                    transaction.addToBackStack(null);
-                                                    transaction.commit();
+                                                                    HomeFragment newFragment = new HomeFragment();
+                                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                                                                    transaction.replace(getId(), newFragment);
+                                                                    transaction.addToBackStack(null);
+                                                                    transaction.commit();
                                                                 } else {
                                                                     String message = (String) sendUrlMap.get("message");
                                                                     MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogTheme);
@@ -404,6 +399,7 @@ public class HomeFragment extends Fragment {
                                             .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
+
                                                     HomeFragment newFragment = new HomeFragment();
                                                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                                                     transaction.replace(getId(), newFragment);
@@ -439,7 +435,21 @@ public class HomeFragment extends Fragment {
         mapbut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+
+                }
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
+                } else {
+                    HomeFragment newFragment = new HomeFragment();
+                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                    transaction.replace(getId(), newFragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                }
             }
         });
 
@@ -502,6 +512,13 @@ public class HomeFragment extends Fragment {
 
         return root;
     }
+    private void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
+        }
+    }
+
     private Map <String, String> routChoice(int i) {
         Map <String, String> rout = new HashMap<>();
         SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
@@ -705,7 +722,6 @@ public class HomeFragment extends Fragment {
                                                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
                                                     Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
-
                                                     HomeFragment newFragment = new HomeFragment();
                                                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                                                     transaction.replace(getId(), newFragment);

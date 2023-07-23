@@ -1,6 +1,5 @@
 package com.taxieasyua.back4app.ui.start;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -54,7 +53,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_21072023_1";
+    public static final String DB_NAME = "data_23072023_1";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -72,7 +71,7 @@ public class StartActivity extends Activity {
     public static String[] arrayStreet = Odessa.street();
     public static String api = "apiTest";
     public static GeoPoint initialGeoPoint = new GeoPoint(46.4825, 30.7233); // Координаты Одесса
-//    public static String api = "api";
+//    public static String api = "api160";
 //
 //    public static GeoPoint initialGeoPoint = new GeoPoint(50.4501, 30.5234); // Координаты Киева
 //
@@ -202,12 +201,8 @@ public class StartActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.start_layout);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-        } else {
-            setContentView(R.layout.start_layout);
             try_again_button = findViewById(R.id.try_again_button);
             try_again_button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -215,7 +210,6 @@ public class StartActivity extends Activity {
                     startActivity(new Intent(StartActivity.this, StartActivity.class));
                 }
             });
-        }
 
 
 
@@ -350,10 +344,6 @@ public class StartActivity extends Activity {
     }
     public boolean isConnectedToGoogle() {
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-        }
 
         Toast.makeText(this, R.string.check_message, Toast.LENGTH_LONG).show();
         ImageView mImageView = findViewById(R.id.imageView2);
@@ -491,7 +481,7 @@ public class StartActivity extends Activity {
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
             settings.add("usually");
-            settings.add("Базовый");
+            settings.add("Базовий онлайн");
             insertFirstSettings(settings);
             if (cursorDb != null && !cursorDb.isClosed())
                 cursorDb.close();
