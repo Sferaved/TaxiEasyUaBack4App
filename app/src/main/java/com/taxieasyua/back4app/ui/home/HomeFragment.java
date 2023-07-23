@@ -42,6 +42,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -359,7 +360,11 @@ public class HomeFragment extends Fragment {
                                                                             );
                                                                         }
                                                                     }
-                                                                    startActivity(new Intent(getActivity(), MainActivity.class));
+                                                                                                                        HomeFragment newFragment = new HomeFragment();
+                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                                                    transaction.replace(getId(), newFragment);
+                                                    transaction.addToBackStack(null);
+                                                    transaction.commit();
                                                                 } else {
                                                                     String message = (String) sendUrlMap.get("message");
                                                                     MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getContext(), R.style.AlertDialogTheme);
@@ -399,7 +404,11 @@ public class HomeFragment extends Fragment {
                                             .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
-                                                    startActivity(new Intent(getActivity(), MainActivity.class));
+                                                    HomeFragment newFragment = new HomeFragment();
+                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                                                    transaction.replace(getId(), newFragment);
+                                                    transaction.addToBackStack(null);
+                                                    transaction.commit();
                                                 }
                                             })
                                             .show();
@@ -696,8 +705,12 @@ public class HomeFragment extends Fragment {
                                                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
                                                     Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
-                                                    Log.d("TAG", "onClick9889768465465465464: " );
-                                                    startActivity(new Intent(getActivity(), MainActivity.class));
+
+                                                    HomeFragment newFragment = new HomeFragment();
+                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+                                                    transaction.replace(getId(), newFragment);
+                                                    transaction.addToBackStack(null);
+                                                    transaction.commit();
                                                 } else {
                                                     message = (String) sendUrlMapCost.get("message");
 
