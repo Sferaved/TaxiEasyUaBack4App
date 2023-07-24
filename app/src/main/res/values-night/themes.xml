@@ -26,17 +26,21 @@
 
     <style name="Theme.TaxiEasyUa.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="Theme.TaxiEasyUa.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" >
-        <item name="android:background">#434C5E</item> <!-- Replace #FF0000 with your desired color code -->
-        <item name="android:textColor">@color/white</item> <!-- Replace #FF0000 with your desired color code -->
+    <style name="Theme.TaxiEasyUa.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:background">#434C5E
+        </item> <!-- Replace #FF0000 with your desired color code -->
+        <item name="android:textColor">@color/white
+        </item> <!-- Replace #FF0000 with your desired color code -->
     </style>
 
     <style name="AlertDialogTheme">
         <item name="buttonBarPositiveButtonStyle">@style/Alert.Button.Positive</item>
         <item name="buttonBarNeutralButtonStyle">@style/Alert.Button.Neutral</item>
         <item name="buttonBarNegativeButtonStyle">@style/Alert.Button.Negative</item>
-        <item name="android:background">#434C5E</item> <!-- Replace #FF0000 with your desired color code -->
-        <item name="android:textColor">#D9D9D9</item> <!-- Замените @color/custom_text_color на нужный цвет текста -->
+        <item name="android:background">#434C5E
+        </item> <!-- Replace #FF0000 with your desired color code -->
+        <item name="android:textColor">#D9D9D9
+        </item> <!-- Замените @color/custom_text_color на нужный цвет текста -->
     </style>
 
     <style name="Alert.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton">
@@ -44,7 +48,8 @@
         <item name="rippleColor">@color/colorAccent</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:listPreferredItemPaddingLeft">2sp</item> <!-- Измените правый отступ по своему усмотрению -->
+        <item name="android:listPreferredItemPaddingLeft">2sp
+        </item> <!-- Измените правый отступ по своему усмотрению -->
         <item name="android:fontFamily">@font/medium</item>
     </style>
 
@@ -54,7 +59,8 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">16sp</item>
         <item name="android:layout_width">wrap_content</item>
-        <item name="android:paddingRight">8sp</item> <!-- Измените правый отступ по своему усмотрению -->
+        <item name="android:paddingRight">8sp
+        </item> <!-- Измените правый отступ по своему усмотрению -->
         <item name="android:fontFamily">@font/medium</item>
     </style>
 
@@ -71,6 +77,11 @@
     <style name="LeftNavigation">
         <item name="android:background">@android:color/transparent</item>
         <item name="itemTextColor">@color/colorAccent</item>
+    </style>
+
+    <style name="ThemeOverlay.TaxiEasyUaBack4App.FullscreenContainer" parent="">
+        <item name="fullscreenBackgroundColor">@color/light_blue_900</item>
+        <item name="fullscreenTextColor">@color/light_blue_A400</item>
     </style>
 
 

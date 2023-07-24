@@ -47,6 +47,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
+import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -333,8 +334,10 @@ public class HomeFragment extends Fragment {
                                                                                 to_name + " " + to_number.getText() + "." +
                                                                                 getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                                                                     }
-                                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
-
+//                                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
+                                                                    Intent intent = new Intent(getActivity(), FinishActivity.class);
+                                                                    intent.putExtra("messageResult_key", messageResult);
+                                                                    startActivity(intent);
                                                                     if(from_name.equals(to_name)) {
                                                                         if(!sendUrlMap.get("lat").equals("0")) {
                                                                             StartActivity.insertRecordsOrders(
@@ -721,12 +724,10 @@ public class HomeFragment extends Fragment {
                                                             FromAddressString + getString(R.string.to_message) + ToAddressString +
                                                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
-                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
-                                                    HomeFragment newFragment = new HomeFragment();
-                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                                                    transaction.replace(getId(), newFragment);
-                                                    transaction.addToBackStack(null);
-                                                    transaction.commit();
+//                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
+                                                    Intent intent = new Intent(getActivity(), FinishActivity.class);
+                                                    intent.putExtra("messageResult_key", messageResult);
+                                                    startActivity(intent);
                                                 } else {
                                                     message = (String) sendUrlMapCost.get("message");
 

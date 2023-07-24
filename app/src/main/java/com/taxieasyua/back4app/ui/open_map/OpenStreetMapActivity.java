@@ -33,7 +33,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +55,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
@@ -113,7 +113,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     String to_numb_str;
 
     ArrayList<Map> adressArr;
-    AlertDialog progressDialog, coastDialog, adressDialog;
+    AlertDialog  coastDialog;
     static Polyline roadOverlay;
     static Marker m;
     private static String FromAdressString;
@@ -121,7 +121,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             tra, plm, epm, tlm, sbt, cbt, vph, coo;
     LayoutInflater inflater;
     static View view;
-    static ProgressBar progressBar;
+
     int selectedItem;
     public static FragmentManager fragmentManager;
 
@@ -191,9 +191,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         if (!routMaps().isEmpty()) {
             adressArr = new ArrayList<>(routMaps().size());
         }
-
-        progressBar = findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.INVISIBLE);
 
         fab = findViewById(R.id.fab);
         fab_call = findViewById(R.id.fab_call);
@@ -267,17 +264,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         View view = inflater.inflate(R.layout.check_out_layout, null);
         builder.setView(view);
-        builder.setPositiveButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
                 startActivity(intent);
             }
-        });
-        progressDialog = builder.create();
-        progressDialog.show();
+        }).show();
 
-//        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         array = arrayAdressAdapter();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -356,7 +350,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private LocationRequest createLocationRequest() {
         LocationRequest locationRequest = new LocationRequest();
         locationRequest.setInterval(1000); // Интервал обновления местоположения в миллисекундах
-        locationRequest.setFastestInterval(500); // Самый быстрый интервал обновления местоположения в миллисекундах
+        locationRequest.setFastestInterval(100); // Самый быстрый интервал обновления местоположения в миллисекундах
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // Приоритет точного местоположения
         return locationRequest;
     }
@@ -512,7 +506,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             map.getOverlays().add(roadOverlay);
             map.invalidate();
         });
-        progressBar.setVisibility(View.INVISIBLE);
     }
 
     public void checkPermission(String permission, int requestCode) {
@@ -680,7 +673,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                 FromAdressString + tom +
                                                                 to_name + "." +
                                                                 co + orderWeb + UAH;
-                                                        Log.d("TAG", "onClick messageResult: " + messageResult);
+//                                                        Log.d("TAG", "onClick messageResult: " + messageResult);
                                                         finishLat = Double.parseDouble(sendUrlMapCost.get("lat").toString());
                                                         finishLan = Double.parseDouble(sendUrlMapCost.get("lng").toString());
                                                         if(finishLan != 0) {
@@ -689,8 +682,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                             GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
                                                             showRout(startPoint, endPoint);
                                                         }
-                                                        Toast.makeText(map.getContext(), messageResult, Toast.LENGTH_SHORT).show();
-
+//                                                        Toast.makeText(map.getContext(), messageResult, Toast.LENGTH_SHORT).show();
+                                                        Intent intent = new Intent(map.getContext(), FinishActivity.class);
+                                                        intent.putExtra("messageResult_key", messageResult);
+                                                        map.getContext().startActivity(intent);
                                                     } else {
                                                         message = (String) sendUrlMapCost.get("message");
                                                         MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(map.getContext(), R.style.AlertDialogTheme);
@@ -787,7 +782,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             String urlFrom = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
             Map sendUrlMap = FromJSONParser.sendURL(urlFrom);
-            Log.d(TAG, "onClick sendUrlMap: " + sendUrlMap);
+
             String orderWeb = (String) sendUrlMap.get("order_cost");
             if (orderWeb.equals("100")) {
 
@@ -810,7 +805,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 finish();
             }
 //            Toast.makeText(this, R.string.find_of_map, Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "dialogFromToGeo: " + from_geo);
+
             AutoCompleteTextView text_to = view.findViewById(R.id.text_to);
             ArrayAdapter<String> adapter = new ArrayAdapter<>(OpenStreetMapActivity.this,
                     android.R.layout.simple_dropdown_item_1line, arrayStreet);
@@ -854,14 +849,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                 }
             });
-            progressDialog.dismiss();
+
         builder.setPositiveButton("Ок", new DialogInterface.OnClickListener() {
                         @RequiresApi(api = Build.VERSION_CODES.O)
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             coastDialog.dismiss();
 
-                            Log.d(TAG, "onClick: textViewTo.getText()1111111" + "/" + to + "/");
                             if(connected()) {
                                 String urlCost = getTaxiUrlSearchGeo(startPoint.getLatitude(), startPoint.getLongitude(),
                                         to, to_number.getText().toString(), "costSearchGeo", OpenStreetMapActivity.this);
@@ -996,8 +990,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                 GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
                                                                                 showRout(startPoint, endPoint);
                                                                             }
-                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_SHORT).show();
-
+//                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_SHORT).show();
+                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);
+                                                                            intent.putExtra("messageResult_key", messageResult);
+                                                                            startActivity(intent);
                                                                         } else {
 
                                                                             String message = (String) sendUrlMap.get("message");
@@ -1119,7 +1115,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                     String urlCost = OpenStreetMapActivity.getTaxiUrlSearchMarkers(startPoint.getLatitude(), startPoint.getLongitude(),
                                             to_lat, to_lng, "costSearchMarkers", OpenStreetMapActivity.this);
-                                    Log.d("TAG", "onClick 2222222222222: " + urlCost);
+
                                     Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
                                     String message = sendUrlMapCost.get("message");
@@ -1190,7 +1186,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                                             if (connected()) {
 
-                                                                Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+//                                                                Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
                                                                 if (StartActivity.verifyPhone) {
                                                                     try {
                                                                         String urlOrder = OpenStreetMapActivity.getTaxiUrlSearchMarkers(startPoint.getLatitude(), startPoint.getLongitude(),
@@ -1236,8 +1232,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                 GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
                                                                                 showRout(startPoint, endPoint);
                                                                             }
-                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_LONG).show();
-
+//                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_LONG).show();
+                                                                            Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);
+                                                                            intent.putExtra("messageResult_key", messageResult);
+                                                                            startActivity(intent);
                                                                         } else {
                                                                             String message = (String) sendUrlMap.get("message");
                                                                             MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
