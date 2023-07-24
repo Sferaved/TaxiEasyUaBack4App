@@ -4,6 +4,7 @@ package com.taxieasyua.back4app.ui.open_map;
 import android.content.Context;
 import android.graphics.Region;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,6 +38,11 @@ public class MarkerOverlay extends Overlay {
     public boolean onSingleTapConfirmed(final MotionEvent event, final MapView mapView) {
         if (marker != null) {
             mapView.getOverlays().remove(marker);
+            mapView.invalidate();
+        }
+        if (OpenStreetMapActivity.m != null) {
+            mapView.getOverlays().remove(OpenStreetMapActivity.m);
+            mapView.invalidate();
         }
 
 
@@ -53,7 +59,9 @@ public class MarkerOverlay extends Overlay {
 //        });
         try {
 
-            OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
+            }
         } catch (MalformedURLException | JSONException | InterruptedException e) {
             throw new RuntimeException(e);
         }

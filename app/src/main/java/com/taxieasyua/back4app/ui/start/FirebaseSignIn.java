@@ -2,9 +2,11 @@ package com.taxieasyua.back4app.ui.start;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -128,7 +130,7 @@ public class FirebaseSignIn extends AppCompatActivity {
     );
 
     private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
-        MainActivity.verifyOrder = false;
+
 
         try {
             if (result.getResultCode() == RESULT_OK) {
@@ -159,7 +161,16 @@ public class FirebaseSignIn extends AppCompatActivity {
                         }
                     });
 
-                    MainActivity.verifyOrder = true;
+
+
+                    ContentValues cv = new ContentValues();
+
+                    cv.put("verifyOrder", "1");
+                    SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                    // обновляем по id
+                    database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
 
                 } else {
                     Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
@@ -171,11 +182,26 @@ public class FirebaseSignIn extends AppCompatActivity {
                 // ...
                 Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
                 btn_again.setVisibility(View.VISIBLE);
+                ContentValues cv = new ContentValues();
 
+                cv.put("verifyOrder", "0");
+                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                // обновляем по id
+                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
 
             }
         } catch (NullPointerException e) {
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+            ContentValues cv = new ContentValues();
+
+            cv.put("verifyOrder", "0");
+            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+            // обновляем по id
+            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                    new String[] { "1" });
+            database.close();
         }
     }
 

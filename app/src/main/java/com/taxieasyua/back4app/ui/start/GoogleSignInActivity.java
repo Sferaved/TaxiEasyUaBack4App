@@ -159,7 +159,7 @@ public class GoogleSignInActivity extends Activity {
                     Intent intent = new Intent(GoogleSignInActivity.this, OpenStreetMapActivity.class);
                     startActivity(intent);
                 }
-                MainActivity.verifyOrder = true;
+
             }
             if (message.equals("В черном списке")) {
 

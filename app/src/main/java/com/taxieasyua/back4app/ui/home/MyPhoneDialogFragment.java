@@ -1,6 +1,11 @@
 package com.taxieasyua.back4app.ui.home;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.ContentValues;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -46,7 +51,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 }
                 if (val) {
                     StartActivity.verifyPhone = true;
-                    StartActivity.insertRecordsUser(phoneNumber.getText().toString());
+                    updateRecordsUser(phoneNumber.getText().toString(), getContext());
                     dismiss();
                 }
             }
@@ -60,5 +65,19 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         super.onPause();
 
     }
+    public static void updateRecordsUser(String result, Context context) {
+        ContentValues cv = new ContentValues();
+
+        cv.put("phone_number", result);
+
+        // обновляем по id
+        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        int updCount = database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                new String[] { "1" });
+        Log.d("TAG", "updated rows count = " + updCount);
+
+
+    }
+
 }
 

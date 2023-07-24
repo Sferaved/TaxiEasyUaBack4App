@@ -53,7 +53,7 @@ import java.util.concurrent.Exchanger;
 import javax.net.ssl.HttpsURLConnection;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_23072023_1";
+    public static final String DB_NAME = "data_24072023_12";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -172,7 +172,6 @@ public class StartActivity extends Activity {
 
         return c;
     }
-
 
     public String[]    arrayServiceCode() {
             return new String[]{
@@ -462,7 +461,14 @@ public class StartActivity extends Activity {
         Log.d("TAG", "initDB: " + database);
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_USER_INFO + "(id integer primary key autoincrement," +
+                " verifyOrder text," +
                 " phone_number text);");
+
+        cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            insertUserInfo();
+        }
+
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS_INFO + "(id integer primary key autoincrement," +
                 " type_auto text," +
@@ -481,7 +487,7 @@ public class StartActivity extends Activity {
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
             settings.add("usually");
-            settings.add("Базовий онлайн");
+            settings.add("Базовый");
             insertFirstSettings(settings);
             if (cursorDb != null && !cursorDb.isClosed())
                 cursorDb.close();
@@ -587,6 +593,22 @@ public class StartActivity extends Activity {
             database.endTransaction();
         }
     }
+    private void insertUserInfo() {
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?);";
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindString(2, "0");
+            statement.bindString(3, "+380");
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+    }
     public static void resetRecordsAddServices() {
         ContentValues cv = new ContentValues();
 
@@ -600,12 +622,12 @@ public class StartActivity extends Activity {
     }
 
     public static void insertRecordsUser(String phoneNumber) {
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?);";
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?);";
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
             statement.clearBindings();
-            statement.bindString(2, phoneNumber);
+            statement.bindString(3, phoneNumber);
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -667,7 +689,7 @@ public class StartActivity extends Activity {
             } finally {
                 database.endTransaction();
             }
-            Log.d("TAG", "insertRecordsOrders 654654654: " + logCursor(TABLE_ORDERS_INFO));
+
         }
 
         cursor_from.close();
