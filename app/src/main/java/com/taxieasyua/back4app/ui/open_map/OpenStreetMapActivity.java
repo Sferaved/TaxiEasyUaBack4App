@@ -3,6 +3,7 @@ package com.taxieasyua.back4app.ui.open_map;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -153,7 +154,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
-
+    Dialog alertDialog;
     @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -262,17 +263,24 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         progressBar = findViewById(R.id.progressBar);
 
-//        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
-//        LayoutInflater inflater = this.getLayoutInflater();
-//        View view = inflater.inflate(R.layout.check_out_layout, null);
-//        builder.setView(view);
-//        builder.setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
-//                startActivity(intent);
-//            }
-//        }).show();
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View view = inflater.inflate(R.layout.check_out_layout, null);
+        builder.setView(view);
+
+        // Устанавливаем отрицательную кнопку (Отмена)
+        builder.setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                progressBar.setVisibility(View.INVISIBLE);
+                alertDialog.dismiss();
+                 Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Создаем и показываем диалог
+        alertDialog = builder.show();
 
         array = arrayAdressAdapter();
 
@@ -314,7 +322,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     map.getController().setCenter(initialGeoPoint);
 
                     map.invalidate();
-
+                    progressBar.setVisibility(View.INVISIBLE);
                 }
 
 
@@ -778,7 +786,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         return verify;
     }
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
-
+        alertDialog.dismiss();
         if(connected()) {
 
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);

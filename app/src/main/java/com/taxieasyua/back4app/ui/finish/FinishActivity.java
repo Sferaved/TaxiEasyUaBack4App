@@ -26,7 +26,7 @@ import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 
 public class FinishActivity extends AppCompatActivity {
     private TextView text_full_message;
-    private Button btn_again;
+    private Button btn_again, btn_cancel;
     private FloatingActionButton fab_cal;
     @SuppressLint("MissingInflatedId")
     @Override
@@ -58,6 +58,14 @@ public class FinishActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                     }
                 }
+            }
+        });
+
+        btn_cancel = findViewById(R.id.btn_cancel);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finishAffinity();
             }
         });
         fab_cal = findViewById(R.id.fab_call);
