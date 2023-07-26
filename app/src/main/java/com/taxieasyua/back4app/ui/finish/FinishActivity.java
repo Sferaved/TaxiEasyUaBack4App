@@ -22,11 +22,19 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class FinishActivity extends AppCompatActivity {
-    private TextView text_full_message;
-    private Button btn_again, btn_cancel;
+    private TextView text_full_message, text_status;
+    private Button btn_reset_status, btn_cancel_order, btn_again, btn_cancel;
     private FloatingActionButton fab_cal;
     @SuppressLint("MissingInflatedId")
     @Override
@@ -39,7 +47,37 @@ public class FinishActivity extends AppCompatActivity {
         text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(parameterValue);
 
+        String UID_key = getIntent().getStringExtra("UID_key");
 
+        text_status = findViewById(R.id.text_status);
+        statusOrderWithDifferentValue(UID_key);
+
+
+        btn_reset_status = findViewById(R.id.btn_reset_status);
+        btn_reset_status.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(connected()){
+                    statusOrderWithDifferentValue(UID_key);
+                } else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        btn_cancel_order = findViewById(R.id.btn_cancel_order);
+        btn_cancel_order.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(connected()){
+                    cancelOrderWithDifferentValue(UID_key);
+                } else {
+//                    String result = getString(R.string.next_try);
+                    String result = "111111111111";
+                    text_status.setText(result);
+                }
+            }
+        });
 
         btn_again = findViewById(R.id.btn_again);
         btn_again.setOnClickListener(new View.OnClickListener() {
@@ -101,5 +139,132 @@ public class FinishActivity extends AppCompatActivity {
             Toast.makeText(this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
         }
         return hasConnect;
+    }
+
+    private void cancelOrderWithDifferentValue(String value) {
+        ApiService apiService = ApiClient.getApiService();
+        Call<Status> call = apiService.cancelOrder(value);
+
+        call.enqueue(new Callback<Status>() {
+            @Override
+            public void onResponse(Call<Status> call, Response<Status> response) {
+                if (response.isSuccessful()) {
+                    Status status = response.body();
+                    if (status != null) {
+                        String result = status.getResponse();
+                        text_status.setText(result); // Установите текстовое значение в text_status
+                    }
+                } else {
+                    // Обработка неуспешного ответа
+                    text_status.setText("Ошибка запроса к серверу");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Status> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                Log.d("TAG", "onFailure: " + errorMessage);
+                text_status.setText("Ошибка запроса к серверу");
+            }
+        });
+    }
+
+    private void statusOrderWithDifferentValue(String value) {
+        // Создаем экземпляр ApiService через ApiClient
+        ApiService apiService = ApiClient.getApiService();
+
+        // Вызываем метод statusOrder и передаем значение параметра value
+        Call<OrderResponse> call = apiService.statusOrder(value);
+
+        // Выполняем запрос асинхронно
+        call.enqueue(new Callback<OrderResponse>() {
+            @Override
+            public void onResponse(Call<OrderResponse> call, Response<OrderResponse> response) {
+                if (response.isSuccessful()) {
+                    // Получаем объект OrderResponse из успешного ответа
+                    OrderResponse orderResponse = response.body();
+
+                    // Далее вы можете использовать полученные данные из orderResponse
+                    // например:
+                    String executionStatus = orderResponse.getExecutionStatus();
+                    String orderCarInfo = orderResponse.getOrderCarInfo();
+                    String driverPhone = orderResponse.getDriverPhone();
+                    String requiredTime = orderResponse.getRequiredTime();
+                    if (requiredTime != null && !requiredTime.isEmpty()) {
+                        requiredTime = formatDate (orderResponse.getRequiredTime());
+                    }
+
+
+                    String message;
+                    // Обработка различных вариантов executionStatus
+                    switch (executionStatus) {
+                        case "WaitingCarSearch":
+                            message = getString(R.string.ex_st_1);
+                            break;
+                        case "SearchesForCar":
+                            message = getString(R.string.ex_st_0);
+                            break;
+                        case "CarFound":
+                            // Формируем сообщение с учетом возможных пустых значений переменных
+                            StringBuilder messageBuilder = new StringBuilder(getString(R.string.ex_st_2));
+
+                            if (orderCarInfo != null && !orderCarInfo.isEmpty()) {
+                                messageBuilder.append(getString(R.string.ex_st_3)).append(orderCarInfo);
+                            }
+
+                            if (driverPhone != null && !driverPhone.isEmpty()) {
+                                messageBuilder.append(getString(R.string.ex_st_4)).append(driverPhone);
+                            }
+
+                            if (requiredTime != null && !requiredTime.isEmpty()) {
+                                messageBuilder.append(getString(R.string.ex_st_5)).append(requiredTime);
+                            }
+
+                            message = messageBuilder.toString();
+                            break;
+                        default:
+                            message = getString(R.string.ex_st_0);
+                            break;
+                    }
+
+                    text_status.setText(message);
+
+                } else {
+                    // Обработка ошибки, если запрос был выполнен не успешно
+                    // например:
+                    String errorBody = response.errorBody().toString();
+                    // Обрабатываем ошибку в зависимости от вашего случая
+                    text_status.setText(errorBody);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrderResponse> call, Throwable t) {
+                // Обработка ошибки, если запрос не удался
+                // например:
+                String errorMessage = t.getMessage();
+                // Обрабатываем ошибку в зависимости от вашего случая
+                text_status.setText(errorMessage);
+            }
+        });
+    }
+
+    private String formatDate (String requiredTime) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+        // Формат для вывода в украинской локализации
+        SimpleDateFormat outputFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", new Locale("uk", "UA"));
+        // Преобразуем строку в объект Date
+        Date date = null;
+        try {
+            date = inputFormat.parse(requiredTime);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Форматируем дату и время в украинском формате
+        return outputFormat.format(date);
+
     }
 }

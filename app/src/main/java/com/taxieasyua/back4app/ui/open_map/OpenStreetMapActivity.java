@@ -14,7 +14,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -80,9 +79,6 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.net.MalformedURLException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -691,6 +687,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //                                                        Toast.makeText(map.getContext(), messageResult, Toast.LENGTH_SHORT).show();
                                                         Intent intent = new Intent(map.getContext(), FinishActivity.class);
                                                         intent.putExtra("messageResult_key", messageResult);
+                                                        intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMapCost.get("dispatching_order_uid")));
                                                         map.getContext().startActivity(intent);
                                                     } else {
                                                         message = (String) sendUrlMapCost.get("message");
@@ -786,7 +783,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         return verify;
     }
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
-        alertDialog.dismiss();
+//        alertDialog.dismiss();
         if(connected()) {
 
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
@@ -976,7 +973,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                     try {
                                                                         String urlOrder = getTaxiUrlSearchGeo(startPoint.getLatitude(), startPoint.getLongitude(),
                                                                                 to, to_number.getText().toString(), "orderSearchGeo", OpenStreetMapActivity.this);
-                                                                        Map sendUrlMap = ToJSONParser.sendURL(urlOrder);
+                                                                        Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
                                                                         Log.d(TAG, "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
 
                                                                         String orderWeb = (String) sendUrlMap.get("order_cost");
@@ -1021,6 +1018,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_SHORT).show();
                                                                             Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);
                                                                             intent.putExtra("messageResult_key", messageResult);
+                                                                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
                                                                             startActivity(intent);
                                                                         } else {
 
@@ -1258,6 +1256,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_LONG).show();
                                                                             Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);
                                                                             intent.putExtra("messageResult_key", messageResult);
+                                                                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMapCost.get("dispatching_order_uid")));
                                                                             startActivity(intent);
                                                                         } else {
                                                                             String message = (String) sendUrlMap.get("message");

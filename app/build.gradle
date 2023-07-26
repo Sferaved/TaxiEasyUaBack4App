@@ -11,8 +11,8 @@ android {
         applicationId "com.taxieasyua.back4app"
         minSdk 24
         targetSdk 33
-        versionCode 2714
-        versionName '2.714'
+        versionCode 2715
+        versionName '2.715'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -72,5 +72,7 @@ dependencies {
 
     implementation 'com.github.MKergall:osmbonuspack:6.9.0'
 
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
 }
