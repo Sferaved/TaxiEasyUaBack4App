@@ -254,7 +254,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
 
         mapController = map.getController();
-        mapController.setZoom(12);
+        mapController.setZoom(16);
         map.setClickable(true);
 
         progressBar = findViewById(R.id.progressBar);

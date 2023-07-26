@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.715</string>
-    <string name="version">Версія: 2.715</string>
+    <string name="version_code">2.716</string>
+    <string name="version">Версія: 2.716</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -59,7 +59,7 @@
     <string name="firebase_false_message">грн. Вибачте, без перевірки Google-акаунту замовлення не можливе.</string>
     <string name="UAH">грн</string>
     <string name="order">Замовити</string>
-    <string name="thanks_message">"Дякуемо за замовлення "</string>
+    <string name="thanks_message">"Дякуємо за замовлення "</string>
     <string name="call_of_order">" Очикуйте дзвонка оператора. Вартість поїздки: "</string>
     <string name="next_try">" Спробуйте ще або зателефонуйте оператору."</string>
     <string name="help">Підтримка</string>
@@ -143,4 +143,6 @@
     <string name="ex_st_2">Знайдена машина.</string>
     <string name="ex_st_3">" Номер авто: "</string>
     <string name="ex_st_4">" Телефон водія: "</string>
+    <string name="ex_st_5">" Очікуваний час подачі: "</string>
+    <string name="ex_st_0">Здійснюється пошук машини</string>
 </resources>
