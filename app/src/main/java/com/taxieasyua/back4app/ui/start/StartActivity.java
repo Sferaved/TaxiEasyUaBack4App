@@ -69,7 +69,7 @@ public class StartActivity extends Activity {
     Intent intent;
     public static String userEmail, displayName;
     public static String[] arrayStreet = Odessa.street();
-    public static final String api = "apiTest";
+    public static final String api = "apiPas2";
     public static GeoPoint initialGeoPoint = new GeoPoint(46.4825, 30.7233); // Координаты Одесса
 //    public static String api = "api160";
 //
