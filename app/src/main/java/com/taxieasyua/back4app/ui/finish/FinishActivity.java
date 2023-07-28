@@ -8,6 +8,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -22,26 +24,43 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.start.StartActivity;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class FinishActivity extends AppCompatActivity {
     private TextView text_full_message, text_status;
     private Button btn_reset_status, btn_cancel_order, btn_again, btn_cancel;
     private FloatingActionButton fab_cal;
+    String api;
+    String baseUrl = "https://m.easy-order-taxi.site";
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finish);
 
+        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
+        switch (stringListArr.get(1)){
+            case "Kyiv City":
+                api = StartActivity.api160;
+                break;
+            case "Odessa":
+                api = StartActivity.apiPas2;
+                break;
+            default:
+                api = StartActivity.apiPas2;
+                break;
+        }
         String parameterValue = getIntent().getStringExtra("messageResult_key");
 
         text_full_message = findViewById(R.id.text_full_message);
@@ -140,11 +159,33 @@ public class FinishActivity extends AppCompatActivity {
         }
         return hasConnect;
     }
+    @SuppressLint("Range")
+    private List<String> logCursor(String table) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(table, null, null, null, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                String str;
+                do {
+                    str = "";
+                    for (String cn : c.getColumnNames()) {
+                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
+                        list.add(c.getString(c.getColumnIndex(cn)));
 
+                    }
+
+                } while (c.moveToNext());
+            }
+        }
+        database.close();
+        return list;
+    }
     private void cancelOrderWithDifferentValue(String value) {
-        ApiService apiService = ApiClient.getApiService();
-        Call<Status> call = apiService.cancelOrder(value);
 
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
+        Call<Status> call = ApiClient.getApiService().cancelOrder(url);
+        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {
@@ -172,11 +213,10 @@ public class FinishActivity extends AppCompatActivity {
     }
 
     private void statusOrderWithDifferentValue(String value) {
-        // Создаем экземпляр ApiService через ApiClient
-        ApiService apiService = ApiClient.getApiService();
+        String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value;
 
-        // Вызываем метод statusOrder и передаем значение параметра value
-        Call<OrderResponse> call = apiService.statusOrder(value);
+        Call<OrderResponse> call = ApiClient.getApiService().statusOrder(url);
+        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
         // Выполняем запрос асинхронно
         call.enqueue(new Callback<OrderResponse>() {

@@ -50,6 +50,7 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.maps.Odessa;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
@@ -75,7 +76,8 @@ public class HomeFragment extends Fragment {
     private Spinner listView;
     Button button;
     private String[] array;
-    public String[] arrayStreet = StartActivity.arrayStreet;
+    private String api;
+    public String[] arrayStreet;
     static FloatingActionButton fab_call;
     private final String TAG = "TAG";
     private static final int CM_DELETE_ID = 1;
@@ -113,6 +115,24 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+
+        List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
+        switch (stringList.get(1)){
+            case "Kyiv City":
+                arrayStreet = StartActivity.arrayStreetKyiv();
+                api = StartActivity.api160;
+                break;
+            case "Odessa":
+                arrayStreet = Odessa.street();
+                api = StartActivity.apiPas2;
+                break;
+            default:
+                arrayStreet = Odessa.street();
+                api = StartActivity.apiPas2;
+                break;
+        }
+
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, arrayStreet);
 
@@ -126,7 +146,7 @@ public class HomeFragment extends Fragment {
         from_number = binding.fromNumber;
 
         if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
-            String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + from;
+            String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
 
             Map sendUrlMapCost = null;
             try {
@@ -162,7 +182,7 @@ public class HomeFragment extends Fragment {
                         from = from.substring(0,  from.indexOf("/"));
                     };
 
-                    String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + from;
+                    String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
 
                     Map sendUrlMapCost = null;
                     try {
@@ -204,7 +224,7 @@ public class HomeFragment extends Fragment {
                                                           to = to.substring(0, to.indexOf("/"));
                                                       }
                                                       ;
-                                                      String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/autocompleteSearchComboHid/" + to;
+                                                      String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
 
                                                       Map sendUrlMapCost = null;
                                                       try {
@@ -908,7 +928,7 @@ public class HomeFragment extends Fragment {
             result = "no_extra_charge_codes";
         }
 
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
 
@@ -1048,7 +1068,7 @@ public class HomeFragment extends Fragment {
             result = "no_extra_charge_codes";
         }
 
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
         database.close();

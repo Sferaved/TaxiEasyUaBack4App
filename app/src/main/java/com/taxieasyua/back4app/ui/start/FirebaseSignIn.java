@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.net.Uri;
@@ -40,6 +41,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.maps.Odessa;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;
@@ -47,6 +49,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,7 @@ public class FirebaseSignIn extends AppCompatActivity {
 
     static FloatingActionButton fab, btn_again;
     public static final int READ_CALL_PHONE = 0;
+    String api;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,7 +75,18 @@ public class FirebaseSignIn extends AppCompatActivity {
         Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
         // Подключаем анимацию к нужному View
         mImageView.startAnimation(sunRiseAnimation);
-
+        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
+        switch (stringListArr.get(1)){
+            case "Kyiv City":
+                api = StartActivity.api160;
+                break;
+            case "Odessa":
+                api = StartActivity.apiPas2;
+                break;
+            default:
+                api = StartActivity.apiPas2;
+                break;
+        }
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -103,6 +118,28 @@ public class FirebaseSignIn extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("Range")
+    public List<String> logCursor(String table) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(table, null, null, null, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                String str;
+                do {
+                    str = "";
+                    for (String cn : c.getColumnNames()) {
+                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
+                        list.add(c.getString(c.getColumnIndex(cn)));
+
+                    }
+
+                } while (c.moveToNext());
+            }
+        }
+        database.close();
+        return list;
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -255,7 +292,7 @@ public class FirebaseSignIn extends AppCompatActivity {
 
     }
     private void addUser() throws MalformedURLException, JSONException, InterruptedException {
-        String urlString = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
+        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
 
         URL url = new URL(urlString);
         Log.d("TAG", "sendURL: " + urlString);
@@ -277,7 +314,7 @@ public class FirebaseSignIn extends AppCompatActivity {
     }
 
     private boolean blackList() throws MalformedURLException, JSONException, InterruptedException {
-        String urlString = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/verifyBlackListUser/" +  StartActivity.userEmail;
+        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" +  StartActivity.userEmail;
 
         Log.d("TAG", "onClick urlCost: " + urlString);
 
@@ -303,7 +340,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             return;
         }
 
-        String url = "https://m.easy-order-taxi.site/" + StartActivity.api + "/android/" +"versionAPI";
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" +"versionAPI";
 
 
         Log.d("TAG", "onClick urlCost: " + url);
