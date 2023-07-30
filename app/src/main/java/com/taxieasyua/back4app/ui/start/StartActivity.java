@@ -1,5 +1,6 @@
 package com.taxieasyua.back4app.ui.start;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -9,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -27,6 +29,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
@@ -87,6 +91,13 @@ public class StartActivity extends Activity {
                     startActivity(new Intent(StartActivity.this, StartActivity.class));
                 }
             });
+
+    }
+    private void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+        }
     }
 
     // Создаем метод для установки повторяющегося будильника
@@ -149,7 +160,7 @@ public class StartActivity extends Activity {
             fab = findViewById(R.id.fab);
             btn_again = findViewById(R.id.btn_again);
 
-            intent = new Intent(this, MainActivity.class);
+//            intent = new Intent(this, MainActivity.class);
 
         try {
             initDB();
@@ -183,9 +194,7 @@ public class StartActivity extends Activity {
        } else {
            try {
                startIp();
-
-               intent = new Intent(this, FirebaseSignIn.class);
-               startActivity(intent);
+               startActivity(new Intent(this, FirebaseSignIn.class));
            } catch (MalformedURLException e) {
                btn_again.setVisibility(View.VISIBLE);
                Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();

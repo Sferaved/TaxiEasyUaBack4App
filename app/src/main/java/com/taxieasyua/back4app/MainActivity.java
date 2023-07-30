@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,6 +42,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
+import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.util.ArrayList;
@@ -135,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
         return false;
     }
-    public static void eventGps(Context context) {
+    public void eventGps(Context context) {
         LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         boolean gps_enabled = false;
         boolean network_enabled = false;
@@ -152,8 +154,14 @@ public class MainActivity extends AppCompatActivity {
         Log.d("TAG", "onOptionsItemSelected network_enabled: " + network_enabled);
         if(!gps_enabled || !network_enabled) {
             // notify user
-            new MaterialAlertDialogBuilder(context, R.style.AlertDialogTheme)
-                    .setMessage(R.string.gps_info)
+            MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(MainActivity.this, R.style.AlertDialogTheme);
+            LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+
+            View view_cost = inflater.inflate(R.layout.message_layout, null);
+            builder.setView(view_cost);
+            TextView message = view_cost.findViewById(R.id.textMessage);
+            message.setText(R.string.gps_info);
+            builder.setMessage(R.string.gps_info)
                     .setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
@@ -284,22 +292,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("TAG", "connected: " + hasConnect);
         return hasConnect;
     }
-    private String[] tariffArr = tariffs();
-    private String tariff;
-    public String[] arrayService;
-    public static String[] arrayServiceCode;
-    ListView listView;
-    private String[] tariffs () {
-        return new String[]{
-                "Базовий онлайн",
-                "Базовый",
-                "Универсал",
-                "Бизнес-класс",
-                "Премиум-класс",
-                "Эконом-класс",
-                "Микроавтобус",
-            };
-    }
+
 
     @Override
     protected void onStart() {
