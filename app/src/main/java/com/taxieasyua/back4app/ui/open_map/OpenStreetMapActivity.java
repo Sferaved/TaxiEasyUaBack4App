@@ -157,6 +157,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toast.makeText(this, getString(R.string.check_position), Toast.LENGTH_SHORT).show();
         networkChangeReceiver = new NetworkChangeReceiver();
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
@@ -295,7 +296,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //
 //        // Создаем и показываем диалог
 //        alertDialog = builder.show();
-        Toast.makeText(this, getString(R.string.check_position), Toast.LENGTH_SHORT).show();
+
         array = arrayAdressAdapter();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);

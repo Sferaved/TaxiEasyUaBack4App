@@ -34,16 +34,6 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv1;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv10;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv2;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv3;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv4;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv5;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv6;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv7;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv8;
-import com.taxieasyua.back4app.cities.Kyiv.Kyiv9;
 
 import org.json.JSONException;
 
@@ -73,8 +63,6 @@ public class StartActivity extends Activity {
     public static Cursor cursorDb;
     static FloatingActionButton fab, btn_again;
 
-    public static final int READ_CALL_PHONE = 0;
-
     Intent intent;
     public static String userEmail, displayName;
 
@@ -82,25 +70,6 @@ public class StartActivity extends Activity {
     public static final String  api160 = "api160";
 
 
-    public String[]    arrayServiceCode() {
-            return new String[]{
-                "BAGGAGE",
-                "ANIMAL",
-                "CONDIT",
-                "MEET",
-                "COURIER",
-                "TERMINAL",
-                "CHECK_OUT",
-                "BABY_SEAT",
-                "DRIVER",
-                "NO_SMOKE",
-                "ENGLISH",
-                "CABLE",
-                "FUEL",
-                "WIRES",
-                "SMOKE",
-        };
-    }
     public static long addCost, cost;
     public static boolean verifyPhone;
     Button try_again_button;
@@ -118,11 +87,6 @@ public class StartActivity extends Activity {
                     startActivity(new Intent(StartActivity.this, StartActivity.class));
                 }
             });
-
-
-
-
-
     }
 
     // Создаем метод для установки повторяющегося будильника
@@ -221,7 +185,6 @@ public class StartActivity extends Activity {
                startIp();
 
                intent = new Intent(this, FirebaseSignIn.class);
-//               intent = new Intent(this, MainActivity.class);
                startActivity(intent);
            } catch (MalformedURLException e) {
                btn_again.setVisibility(View.VISIBLE);
