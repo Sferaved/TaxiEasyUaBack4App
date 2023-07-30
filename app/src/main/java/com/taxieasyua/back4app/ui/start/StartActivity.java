@@ -9,7 +9,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -28,8 +27,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
@@ -37,33 +34,25 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
-import com.taxieasyua.back4app.ui.finish.OrderResponse;
-import com.taxieasyua.back4app.ui.finish.Status;
-import com.taxieasyua.back4app.ui.maps.Kyiv1;
-import com.taxieasyua.back4app.ui.maps.Kyiv10;
-import com.taxieasyua.back4app.ui.maps.Kyiv2;
-import com.taxieasyua.back4app.ui.maps.Kyiv3;
-import com.taxieasyua.back4app.ui.maps.Kyiv4;
-import com.taxieasyua.back4app.ui.maps.Kyiv5;
-import com.taxieasyua.back4app.ui.maps.Kyiv6;
-import com.taxieasyua.back4app.ui.maps.Kyiv7;
-import com.taxieasyua.back4app.ui.maps.Kyiv8;
-import com.taxieasyua.back4app.ui.maps.Kyiv9;
-import com.taxieasyua.back4app.ui.maps.Odessa;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv1;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv10;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv2;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv3;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv4;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv5;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv6;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv7;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv8;
+import com.taxieasyua.back4app.cities.Kyiv.Kyiv9;
 
 import org.json.JSONException;
-import org.osmdroid.util.GeoPoint;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Exchanger;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -91,92 +80,7 @@ public class StartActivity extends Activity {
 
     public static final String  apiPas2 = "apiPas2";
     public static final String  api160 = "api160";
-    public static String[]  arrayStreetKyiv() {
-        String[] arrayStreetKyiv = join(Kyiv1.street(),
-                    Kyiv2.street(),
-                    Kyiv3.street(),
-                    Kyiv4.street(),
-                    Kyiv5.street(),
-                    Kyiv6.street(),
-                    Kyiv7.street(),
-                    Kyiv8.street(),
-                    Kyiv9.street(),
-                    Kyiv10.street()
-            );
-        return arrayStreetKyiv;
-    }
 
-    public static String[] join(String[] a1,
-                                String [] a2,
-                                String [] a3,
-                                String [] a4,
-                                String [] a5,
-                                String [] a6,
-                                String [] a7,
-                                String [] a8,
-                                String [] a9,
-                                String [] a10
-    )
-    {
-        String [] c = new String[a1.length +
-                a2.length +
-                a3.length +
-                a4.length +
-                a5.length +
-                a6.length +
-                a7.length +
-                a8.length +
-                a9.length +
-                a10.length];
-
-        System.arraycopy(a1, 0, c, 0, a1.length);
-        System.arraycopy(a2, 0, c, a1.length, a2.length);
-        System.arraycopy(a3, 0, c, a1.length
-                + a2.length, a3.length);
-        System.arraycopy(a4, 0, c, a1.length
-                + a2.length
-                + a3.length, a4.length);
-        System.arraycopy(a5, 0, c, a1.length
-                + a2.length
-                + a3.length
-                + a4.length, a5.length);
-        System.arraycopy(a6, 0, c, a1.length
-                + a2.length
-                + a3.length
-                + a4.length
-                + a5.length, a6.length);
-        System.arraycopy(a7, 0, c, a1.length
-                + a2.length
-                + a3.length
-                + a4.length
-                + a5.length
-                + a6.length, a7.length);
-        System.arraycopy(a8, 0, c, a1.length
-                + a2.length
-                + a3.length
-                + a4.length
-                + a5.length
-                + a6.length
-                + a7.length, a8.length);
-        System.arraycopy(a9, 0, c, a1.length
-                + a2.length
-                + a3.length
-                + a4.length
-                + a5.length
-                + a6.length
-                + a7.length
-                + a8.length, a9.length);
-        System.arraycopy(a10, 0, c, a1.length
-                + a2.length
-                + a3.length
-                + a4.length
-                + a5.length
-                + a6.length
-                + a7.length
-                + a8.length
-                + a9.length, a10.length);
-        return c;
-    }
 
     public String[]    arrayServiceCode() {
             return new String[]{

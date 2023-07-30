@@ -41,7 +41,6 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.maps.Odessa;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;

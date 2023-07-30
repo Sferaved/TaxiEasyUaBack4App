@@ -47,10 +47,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.maps.Odessa;
+import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
@@ -119,15 +120,15 @@ public class HomeFragment extends Fragment {
         List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
         switch (stringList.get(1)){
             case "Kyiv City":
-                arrayStreet = StartActivity.arrayStreetKyiv();
+                arrayStreet = KyivCity.arrayStreet();
                 api = StartActivity.api160;
                 break;
             case "Odessa":
-                arrayStreet = Odessa.street();
+                arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiPas2;
                 break;
             default:
-                arrayStreet = Odessa.street();
+                arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiPas2;
                 break;
         }

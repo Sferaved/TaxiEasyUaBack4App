@@ -1,4 +1,4 @@
-package com.taxieasyua.back4app.ui.maps;
+package com.taxieasyua.back4app.cities.Kyiv;
 
 public class Kyiv8 {
     public static String[] street() {

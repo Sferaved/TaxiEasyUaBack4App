@@ -54,7 +54,7 @@
             android:name="visicom.API_KEY"
             android:value="@string/visicom_key_storage" />
 
-        <activity android:name=".LogoutActivity" /> <!-- <activity android:name=".LoginActivity" -->
+        <!-- <activity android:name=".LoginActivity" -->
         <!-- android:exported="true"> -->
         <!-- <intent-filter> -->
         <!-- <action android:name="android.intent.action.MAIN" /> -->

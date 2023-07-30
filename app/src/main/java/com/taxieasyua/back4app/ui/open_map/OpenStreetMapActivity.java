@@ -57,12 +57,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
-import com.taxieasyua.back4app.ui.maps.Odessa;
+import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import com.taxieasyua.back4app.ui.start.StartActivity;
@@ -191,15 +192,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         List<String> stringList = logCursor(StartActivity.CITY_INFO, this);
         switch (stringList.get(1)){
             case "Kyiv City":
-                arrayStreet = StartActivity.arrayStreetKyiv();
+                arrayStreet = KyivCity.arrayStreet();
                 api = StartActivity.api160;
                 break;
             case "Odessa":
-                arrayStreet = Odessa.street();
+                arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiPas2;
                 break;
             default:
-                arrayStreet = Odessa.street();
+                arrayStreet = Odessa.arrayStreet();
                 break;
         }
 
@@ -351,15 +352,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         List<String> stringListArr = logCursor(StartActivity.CITY_INFO, this);
         switch (stringListArr.get(1)){
             case "Kyiv City":
-                    arrayStreet = StartActivity.arrayStreetKyiv();
+                    arrayStreet = KyivCity.arrayStreet();
                     api = StartActivity.api160;
                 break;
             case "Odessa":
-                    arrayStreet = Odessa.street();
+                    arrayStreet = Odessa.arrayStreet();
                     api = StartActivity.apiPas2;
                 break;
             default:
-                arrayStreet = Odessa.street();
+                arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiPas2;
                 break;
         }
