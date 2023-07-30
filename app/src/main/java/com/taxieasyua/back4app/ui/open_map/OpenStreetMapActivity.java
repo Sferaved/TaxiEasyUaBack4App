@@ -1289,7 +1289,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_LONG).show();
                                                                             Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);
                                                                             intent.putExtra("messageResult_key", messageResult);
-                                                                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMapCost.get("dispatching_order_uid")));
+                                                                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
                                                                             startActivity(intent);
                                                                         } else {
                                                                             String message = (String) sendUrlMap.get("message");

@@ -359,7 +359,7 @@ public class HomeFragment extends Fragment {
 //                                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
                                                                     Intent intent = new Intent(getActivity(), FinishActivity.class);
                                                                     intent.putExtra("messageResult_key", messageResult);
-                                                                    intent.putExtra("UID_key", String.valueOf(sendUrlMapCost.get("dispatching_order_uid")));
+                                                                    intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
                                                                     startActivity(intent);
                                                                     if(from_name.equals(to_name)) {
                                                                         if(!sendUrlMap.get("lat").equals("0")) {
