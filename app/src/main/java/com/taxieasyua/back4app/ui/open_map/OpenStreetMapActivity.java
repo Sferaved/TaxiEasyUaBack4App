@@ -353,12 +353,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         List<String> stringListArr = logCursor(StartActivity.CITY_INFO, this);
         switch (stringListArr.get(1)){
             case "Kyiv City":
-                    arrayStreet = KyivCity.arrayStreet();
-                    api = StartActivity.api160;
+                arrayStreet = KyivCity.arrayStreet();
+                api = StartActivity.api160;
                 break;
             case "Odessa":
-                    arrayStreet = Odessa.arrayStreet();
-                    api = StartActivity.apiPas2;
+                arrayStreet = Odessa.arrayStreet();
+                api = StartActivity.apiPas2;
                 break;
             default:
                 arrayStreet = Odessa.arrayStreet();
