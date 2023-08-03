@@ -28,7 +28,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,11 +43,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
-import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.util.ArrayList;
@@ -121,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 phoneNumberChange();
         }
         if (item.getItemId() == R.id.nav_driver) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job&pli=1"));
             startActivity(browserIntent);
         }
         if (item.getItemId() == R.id.action_exit) {

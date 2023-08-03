@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.723</string>
-    <string name="version">Версія: 2.723</string>
+    <string name="version_code">2.724</string>
+    <string name="version">Версія: 2.724</string>
 
     <string name="app_name">Таксі Київ</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -80,7 +80,7 @@
     <string name="from_edit">Звідки</string>
     <string name="sms_code">Код перевіркі зі смс-повідомлення</string>
     <string name="android">Андроїд-додаток для швидких та дешевих поїздок по Києву та області.</string>
-    <string name="good_day">Мої вітання. \n \n Знайшов чудовий додаток для поїздок на таксі. \n \n Раджу спробувати за посиланням в офіційному магазині Google: \n\n https://play.google.com/store/apps/details?id=com.taxi.easy.ua \n\n Гарного дня. \n Ще побачимось.</string>
+    <string name="good_day">Мої вітання. \n \n Знайшов чудовий додаток для поїздок на таксі. \n \n Раджу спробувати за посиланням в офіційному магазині Google: \n\n https://play.google.com/store/apps/details?id=com.taxieasyua.back4app \n\n Гарного дня. \n Ще побачимось.</string>
     <string name="share">Порадити другові додаток...</string>
     <string name="no_email_agent">Поштовий клієнт не встановлено.</string>
     <string name="check_position">Зачекайте, відбувається визначення Вашого розташування...</string>
@@ -151,4 +151,5 @@
     <string name="gps_message">Для використання карти увімкніть GPS</string>
     <string name="city">Місто</string>
     <string name="change_message">"Зміна бази адрес."</string>
+    <string name="server_error_connected">Сервер не прийняв запит, наберіть операторів</string>
 </resources>

@@ -48,14 +48,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ServerConnection;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
+import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 public class HomeFragment extends Fragment {
@@ -123,15 +124,15 @@ public class HomeFragment extends Fragment {
         switch (stringList.get(1)){
             case "Kyiv City":
                 arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.api160;
+                api = StartActivity.apiKyiv;
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiPas2;
+                api = StartActivity.apiTest;
                 break;
             default:
                 arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiPas2;
+                api = StartActivity.apiTest;
                 break;
         }
 
@@ -147,81 +148,89 @@ public class HomeFragment extends Fragment {
             from = OpenStreetMapActivity.from_name;
         }
         from_number = binding.fromNumber;
+        if(hasServer()){
+            if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
+                String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
 
-        if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
+                Map sendUrlMapCost = null;
+                try {
+                    sendUrlMapCost = ResultSONParser.sendURL(url);
+                } catch (MalformedURLException | InterruptedException | JSONException e) {
+                    Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                }
 
-            Map sendUrlMapCost = null;
-            try {
-                sendUrlMapCost = ResultSONParser.sendURL(url);
-            } catch (MalformedURLException | InterruptedException | JSONException e) {
-                Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                String orderCost = (String) sendUrlMapCost.get("message");
+                if (orderCost.equals("200")) {
+                    Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                } else if (orderCost.equals("400")) {
+                    textViewFrom.setTextColor(RED);
+                    Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
+                } else if (orderCost.equals("1")) {
+                    from_number.setVisibility(View.VISIBLE);
+                    from_number.setText(OpenStreetMapActivity.from_house);
+                    from_number.requestFocus();
+                } else if (orderCost.equals("0")) {
+                    from_number.setText(" ");
+                    from_number.setVisibility(View.INVISIBLE);
+                }
             }
-
-            String orderCost = (String) sendUrlMapCost.get("message");
-            if (orderCost.equals("200")) {
-                Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-            } else if (orderCost.equals("400")) {
-                textViewFrom.setTextColor(RED);
-                Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
-            } else if (orderCost.equals("1")) {
-                from_number.setVisibility(View.VISIBLE);
-                from_number.setText(OpenStreetMapActivity.from_house);
-                from_number.requestFocus();
-            } else if (orderCost.equals("0")) {
-                from_number.setText(" ");
-                from_number.setVisibility(View.INVISIBLE);
-            }
+        } else {
+            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
         }
-        textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        if(hasServer()){
+            textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectedPosition = position; // Обновляем выбранную позицию
                 adapter.notifyDataSetChanged(); // Обновляем вид списка
-                if(connected()) {
-                    from = String.valueOf(adapter.getItem(position));
-                    if (from.indexOf("/") != -1) {
-                        from = from.substring(0,  from.indexOf("/"));
-                    };
 
-                    String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
+                    if(connected()) {
+                        from = String.valueOf(adapter.getItem(position));
+                        if (from.indexOf("/") != -1) {
+                            from = from.substring(0,  from.indexOf("/"));
+                        };
 
-                    Map sendUrlMapCost = null;
-                    try {
-                        sendUrlMapCost = ResultSONParser.sendURL(url);
-                    } catch (MalformedURLException | InterruptedException | JSONException e) {
-                        Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
+
+                        Map sendUrlMapCost = null;
+                        try {
+                            sendUrlMapCost = ResultSONParser.sendURL(url);
+                        } catch (MalformedURLException | InterruptedException | JSONException e) {
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        }
+
+                        String orderCost = (String) sendUrlMapCost.get("message");
+                        if (orderCost.equals("200")) {
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("400")) {
+                            textViewFrom.setTextColor(RED);
+                            Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("1")) {
+                            from_number.setVisibility(View.VISIBLE);
+                            from_number.setText(" ");
+                            from_number.requestFocus();
+                        } else if (orderCost.equals("0")) {
+                            from_number.setText(" ");
+                            from_number.setVisibility(View.INVISIBLE);
+                        }
+                    } else {
+                        Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                     }
-
-                    String orderCost = (String) sendUrlMapCost.get("message");
-                    if (orderCost.equals("200")) {
-                        Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-                    } else if (orderCost.equals("400")) {
-                        textViewFrom.setTextColor(RED);
-                        Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
-                    } else if (orderCost.equals("1")) {
-                        from_number.setVisibility(View.VISIBLE);
-                        from_number.setText(" ");
-                        from_number.requestFocus();
-                    } else if (orderCost.equals("0")) {
-                        from_number.setText(" ");
-                        from_number.setVisibility(View.INVISIBLE);
-                    }
-                } else {
-                    Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                }
 
             }
         });
-
+        } else {
+            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+        }
         AutoCompleteTextView textViewTo =binding.textTo;
         textViewTo.setAdapter(adapter);
         to_number = binding.toNumber;
-        textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        if(hasServer()){
+            textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                               @Override
-                                              public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                                  if (connected()) {
+             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                   if (connected()) {
                                                       to = String.valueOf(adapter.getItem(position));
                                                       if (to.indexOf("/") != -1) {
                                                           to = to.substring(0, to.indexOf("/"));
@@ -252,8 +261,11 @@ public class HomeFragment extends Fragment {
                                                           to_number.setVisibility(View.INVISIBLE);
                                                       }
                                                   }
-                                              }
-                                          });
+                }
+             });
+        } else {
+            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+        }
 
         btncost = binding.btnCost;
         btncost.setOnClickListener(new View.OnClickListener() {
@@ -554,8 +566,12 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                     try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            dialogFromToOneRout(routChoice(selectedItem + 1));
+                        if(hasServer()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                dialogFromToOneRout(routChoice(selectedItem + 1));
+                            }
+                        } else {
+                            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
                         }
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
@@ -727,6 +743,28 @@ public class HomeFragment extends Fragment {
         }
         return arrayRouts;
     }
+    public CompletableFuture<Boolean> checkConnectionAsync() {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        ServerConnection.checkConnection("https://m.easy-order-taxi.site/", new ServerConnection.ConnectionCallback() {
+            @Override
+            public void onConnectionResult(boolean isConnected) {
+                future.complete(isConnected);
+            }
+        });
+
+        return future;
+    }
+    private boolean hasServer() {
+        CompletableFuture<Boolean> connectionFuture = checkConnectionAsync();
+        boolean isConnected = false;
+        try {
+            isConnected = connectionFuture.get();
+        } catch (Exception e) {
+
+        }
+        return  isConnected;
+    };
     private boolean connected() {
 
         Boolean hasConnect = false;
@@ -746,10 +784,6 @@ public class HomeFragment extends Fragment {
             hasConnect = true;
         }
 
-        if (!hasConnect) {
-            Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-        }
-        Log.d(TAG, "connected: " + hasConnect);
         return hasConnect;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)

@@ -1,8 +1,5 @@
 package com.taxieasyua.back4app.ui.finish;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -20,15 +17,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.StartActivity;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,6 +32,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class FinishActivity extends AppCompatActivity {
     private TextView text_full_message, text_status;
@@ -52,13 +52,13 @@ public class FinishActivity extends AppCompatActivity {
         List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
-                api = StartActivity.api160;
+                api = StartActivity.apiKyiv;
                 break;
             case "Odessa":
-                api = StartActivity.apiPas2;
+                api = StartActivity.apiTest;
                 break;
             default:
-                api = StartActivity.apiPas2;
+                api = StartActivity.apiTest;
                 break;
         }
         String parameterValue = getIntent().getStringExtra("messageResult_key");

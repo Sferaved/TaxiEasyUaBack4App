@@ -4,8 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -58,7 +56,7 @@ public class UpdateActivity extends Activity {
                    Toast.makeText(UpdateActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                } else {
                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                   intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.taxi.easy.ua&pli=1"));
+                   intent.setData(Uri.parse("https://play.google.com/store/apps/details?id= com.taxieasyua.back4app"));
                    startActivity(intent);
                }
            }

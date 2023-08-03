@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentAboutBinding;
 

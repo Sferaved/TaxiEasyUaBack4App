@@ -1,6 +1,5 @@
 package com.taxieasyua.back4app.ui.start;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -33,8 +32,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ServerConnection;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
@@ -47,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -55,7 +55,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_27072023_0";
+    public static final String DB_NAME = "data_02082023_0";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -70,8 +70,8 @@ public class StartActivity extends Activity {
     Intent intent;
     public static String userEmail, displayName;
 
-    public static final String  apiPas2 = "apiPas2";
-    public static final String  api160 = "api160";
+    public static final String  apiTest = "apiTest";
+    public static final String  apiKyiv = "apiPas2";
 
 
     public static long addCost, cost;
@@ -83,15 +83,22 @@ public class StartActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-        getLocalIpAddress();
-            try_again_button = findViewById(R.id.try_again_button);
-            try_again_button.setOnClickListener(new View.OnClickListener() {
+
+
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     startActivity(new Intent(StartActivity.this, StartActivity.class));
                 }
             });
 
+//        if(hasConnection()) {
+//            getLocalIpAddress();
+//        } else {
+//            finish();
+//            startActivity(new Intent(StartActivity.this, StopActivity.class));
+//        }
     }
     private void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -118,6 +125,8 @@ public class StartActivity extends Activity {
         connectivityReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+
+
                 if (hasConnectionAlarm()) {
                     // Если есть подключение к интернету, отменяем повторяющийся будильник
                     alarmManager.cancel(pendingIntent);
@@ -149,25 +158,27 @@ public class StartActivity extends Activity {
         super.onResume();
 
         if(hasConnection()) {
-
             isConnectedToGoogle();
+            try {
+
+                if(hasServer()) {
+                    initDB();
+                } else {
+                    Toast.makeText(this, R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, StopActivity.class));
+                }
+            } catch (MalformedURLException | JSONException | InterruptedException e) {
+                Log.d("TAG", "onResume:  new RuntimeException(e)");
+            }
         }
         else  {
             Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
             try_again_button.setVisibility(View.VISIBLE);
             setRepeatingAlarm();
         }
-            fab = findViewById(R.id.fab);
-            btn_again = findViewById(R.id.btn_again);
 
-//            intent = new Intent(this, MainActivity.class);
-
-        try {
-            initDB();
-        } catch (MalformedURLException | JSONException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
+        fab = findViewById(R.id.fab);
+        btn_again = findViewById(R.id.btn_again);
 
         fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -182,7 +193,6 @@ public class StartActivity extends Activity {
        btn_again.setOnClickListener(new View.OnClickListener() {
            @Override
            public void onClick(View v) {
-//               finish();
                intent = new Intent(StartActivity.this, StartActivity.class);
                startActivity(intent);
            }
@@ -193,8 +203,13 @@ public class StartActivity extends Activity {
            Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
        } else {
            try {
-               startIp();
-               startActivity(new Intent(this, FirebaseSignIn.class));
+               if(hasServer()) {
+                   startIp();
+                   startActivity(new Intent(this, FirebaseSignIn.class));
+               } else {
+                   Toast.makeText(this, R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+                   startActivity(new Intent(this, StopActivity.class));
+               }
            } catch (MalformedURLException e) {
                btn_again.setVisibility(View.VISIBLE);
                Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
@@ -203,8 +218,33 @@ public class StartActivity extends Activity {
 
 
     }
+
+    public CompletableFuture<Boolean> checkConnectionAsync() {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        ServerConnection.checkConnection("https://m.easy-order-taxi.site/", new ServerConnection.ConnectionCallback() {
+            @Override
+            public void onConnectionResult(boolean isConnected) {
+                future.complete(isConnected);
+            }
+        });
+
+        return future;
+    }
+
+    private boolean hasServer() {
+        CompletableFuture<Boolean> connectionFuture = checkConnectionAsync();
+        boolean isConnected = false;
+        try {
+            isConnected = connectionFuture.get();
+        } catch (Exception e) {
+
+        }
+        return  isConnected;
+    };
+
     public boolean hasConnection() {
-        ConnectivityManager cm = (ConnectivityManager) StartActivity.this.getSystemService(
+         ConnectivityManager cm = (ConnectivityManager) StartActivity.this.getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {
@@ -250,18 +290,19 @@ public class StartActivity extends Activity {
                         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                             Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime + " мс");
                             if (responseTime >= 2000) {
+                                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(StartActivity.this, StopActivity.class);
                                 startActivity(intent);
 
                             }
                         } else {
-                            Log.d("TAG", "Не удалось подключиться к Google. Код ответа: " + connection.getResponseCode());
+                            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(StartActivity.this, StopActivity.class);
                             startActivity(intent);
                         }
                     connection.disconnect();
                 } catch (IOException e) {
-                    Log.d("TAG","Не удалось подключиться к Google. Код ответа: " );
+                    Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(StartActivity.this, StopActivity.class);
                     startActivity(intent);
                 }
@@ -277,13 +318,13 @@ public class StartActivity extends Activity {
         List<String> stringList = logCursor(StartActivity.CITY_INFO);
         switch (stringList.get(1)){
             case "Kyiv City":
-                api = StartActivity.api160;
+                api = StartActivity.apiKyiv;
                 break;
             case "Odessa":
-                api = StartActivity.apiPas2;
+                api = StartActivity.apiTest;
                 break;
             default:
-                api = StartActivity.apiPas2;
+                api = StartActivity.apiTest;
                 break;
         }
 
@@ -300,7 +341,7 @@ public class StartActivity extends Activity {
                 urlConnection.setDoInput(true);
                 urlConnection.getResponseCode();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+
             }
             urlConnection.disconnect();
         });
@@ -562,22 +603,37 @@ public class StartActivity extends Activity {
                     if (status != null) {
                         String result = status.getResponse();
                         String message = getString(R.string.your_city);
-
+                        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                        ContentValues cv = new ContentValues();
                         switch (result){
                             case "Kyiv City":
                                 message += getString(R.string.Kyiv_city);
+                                cv = new ContentValues();
+                                cv.put("tarif", "Базовий онлайн");
+                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                        new String[] { "1" });
                                 break;
                             case "Odessa":
                                 message += getString(R.string.Odessa);
+                                cv.put("tarif", "Базовый");
+                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                        new String[] { "1" });
+                                database.close();
                                 break;
                             default:
                                 message += getString(R.string.Odessa);
+                                cv.put("tarif", "Базовый");
+                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                        new String[] { "1" });
+                                database.close();
                                 break;
                         }
-                        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+
                         updateCity(result);
                         database.close();
                         Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
+
+
                     }
                 }
             }
