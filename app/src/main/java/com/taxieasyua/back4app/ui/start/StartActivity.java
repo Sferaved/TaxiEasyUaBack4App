@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.media.browse.MediaBrowser;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -92,13 +93,44 @@ public class StartActivity extends Activity {
                     startActivity(new Intent(StartActivity.this, StartActivity.class));
                 }
             });
+        if(hasConnection() && hasServer()) {
+            isConnectedToGoogle(new ConnectionCallback() {
+                @Override
+                public void onConnectionResult(long responseTime) {
+                    if (responseTime < 0 || responseTime >= 2000) {
+                        Log.d("TAG", "Connected to Google. Response Time: " + responseTime + " ms");//
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(StartActivity.this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    initDB();
+                                    startIp();
+                                    startActivity(new Intent(StartActivity.this, FirebaseSignIn.class));
+                                } catch (MalformedURLException | JSONException | InterruptedException e) {
+                                    Log.d("TAG", "onResume:  new RuntimeException(e)");
+                                }
+                            }
+                        });
 
-//        if(hasConnection()) {
-//            getLocalIpAddress();
-//        } else {
-//            finish();
-//            startActivity(new Intent(StartActivity.this, StopActivity.class));
-//        }
+                    }
+                }
+            });
+        }
+        else  {
+            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            try_again_button.setVisibility(View.VISIBLE);
+            setRepeatingAlarm();
+        }
+
     }
     private void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -157,25 +189,7 @@ public class StartActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        if(hasConnection()) {
-            isConnectedToGoogle();
-            try {
 
-                if(hasServer()) {
-                    initDB();
-                } else {
-                    Toast.makeText(this, R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(this, StopActivity.class));
-                }
-            } catch (MalformedURLException | JSONException | InterruptedException e) {
-                Log.d("TAG", "onResume:  new RuntimeException(e)");
-            }
-        }
-        else  {
-            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-            try_again_button.setVisibility(View.VISIBLE);
-            setRepeatingAlarm();
-        }
 
         fab = findViewById(R.id.fab);
         btn_again = findViewById(R.id.btn_again);
@@ -197,25 +211,6 @@ public class StartActivity extends Activity {
                startActivity(intent);
            }
        });
-
-       if(!hasConnection()) {
-           btn_again.setVisibility(View.VISIBLE);
-           Toast.makeText(StartActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-       } else {
-           try {
-               if(hasServer()) {
-                   startIp();
-                   startActivity(new Intent(this, FirebaseSignIn.class));
-               } else {
-                   Toast.makeText(this, R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-                   startActivity(new Intent(this, StopActivity.class));
-               }
-           } catch (MalformedURLException e) {
-               btn_again.setVisibility(View.VISIBLE);
-               Toast.makeText(this, R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-           }
-       }
-
 
     }
 
@@ -262,57 +257,52 @@ public class StartActivity extends Activity {
 
         return false;
     }
-    public boolean isConnectedToGoogle() {
-        Toast.makeText(this, R.string.check_message, Toast.LENGTH_LONG).show();
+    public interface ConnectionCallback {
+        void onConnectionResult(long responseTime);
+    }
+
+    public void isConnectedToGoogle(ConnectionCallback callback) {
         ImageView mImageView = findViewById(R.id.imageView2);
         Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
         // Подключаем анимацию к нужному View
         mImageView.startAnimation(sunRiseAnimation);
 
-            AsyncTask.execute(() -> {
+        final long[] responseTime = {0}; // Объявляем как final массив
 
-                try {
-                    String googleEndpoint = "https://www.google.com";
-                    long startTime = System.currentTimeMillis();
+        AsyncTask.execute(() -> {
+            try {
+                String googleEndpoint = "https://www.google.com";
+                long startTime = System.currentTimeMillis();
 
-                    URL url = new URL(googleEndpoint);
-                    HttpsURLConnection connection = null;
-                    connection = (HttpsURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.setRequestMethod("GET");
-                    connection.setConnectTimeout(2000); // Установите тайм-аут подключения в миллисекундах
-                    connection.connect();
+                URL url = new URL(googleEndpoint);
+                HttpsURLConnection connection = null;
+                connection = (HttpsURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(2000); // Установите тайм-аут подключения в миллисекундах
+                connection.connect();
 
-                    long endTime = System.currentTimeMillis();
-                    long responseTime = endTime - startTime;
+                long endTime = System.currentTimeMillis();
+                responseTime[0] = endTime - startTime; // Используем индекс 0 для записи времени
 
-                        // Проверка успешности ответа и времени подключения
-                        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                            Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime + " мс");
-                            if (responseTime >= 2000) {
-                                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                                startActivity(intent);
-
-                            }
-                        } else {
-                            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                            startActivity(intent);
-                        }
-                    connection.disconnect();
-                } catch (IOException e) {
-                    Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                    startActivity(intent);
+                // Проверка успешности ответа и времени подключения
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime[0] + " мс");
                 }
 
-            });
+                connection.disconnect();
 
-
-
-        return false;
+                // Вызываем метод обратного вызова
+                callback.onConnectionResult(responseTime[0]);
+            } catch (IOException e) {
+                // В случае ошибки вызываем метод обратного вызова с временем -1
+                callback.onConnectionResult(-1);
+            }
+        });
     }
+
+
+
     public void startIp() throws MalformedURLException {
         String api;
         List<String> stringList = logCursor(StartActivity.CITY_INFO);
