@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.media.browse.MediaBrowser;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -42,7 +41,6 @@ import com.taxieasyua.back4app.ui.finish.City;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,7 +54,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_02082023_0";
+    public static final String DB_NAME = "data_11082023_0";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -84,7 +82,11 @@ public class StartActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-
+        try {
+            initDB();
+        } catch (MalformedURLException | JSONException | InterruptedException e) {
+            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+        }
 
         try_again_button = findViewById(R.id.try_again_button);
         try_again_button.setOnClickListener(new View.OnClickListener() {
@@ -112,11 +114,10 @@ public class StartActivity extends Activity {
                             @Override
                             public void run() {
                                 try {
-                                    initDB();
+
                                     startIp();
                                     startActivity(new Intent(StartActivity.this, FirebaseSignIn.class));
-                                } catch (MalformedURLException | JSONException | InterruptedException e) {
-                                    Log.d("TAG", "onResume:  new RuntimeException(e)");
+                                } catch (MalformedURLException e) {
                                 }
                             }
                         });
@@ -271,7 +272,7 @@ public class StartActivity extends Activity {
 
         AsyncTask.execute(() -> {
             try {
-                String googleEndpoint = "https://www.google.com";
+                String googleEndpoint = "https://firebase.google.com/";
                 long startTime = System.currentTimeMillis();
 
                 URL url = new URL(googleEndpoint);
@@ -286,9 +287,9 @@ public class StartActivity extends Activity {
                 responseTime[0] = endTime - startTime; // Используем индекс 0 для записи времени
 
                 // Проверка успешности ответа и времени подключения
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime[0] + " мс");
-                }
+//                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+//                    Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime[0] + " мс");
+//                }
 
                 connection.disconnect();
 
@@ -410,7 +411,7 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
                 " city text);");
         if (cursorDb.getCount() == 0) {
-            insertCity("Odessa");
+            insertCity("Kyiv City");
         } else {
             getLocalIpAddress();
         }
