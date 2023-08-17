@@ -57,13 +57,14 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     NetworkChangeReceiver networkChangeReceiver;
     String  cityNew;
-    String  cityNewMes;
     private final String[] cityList = new String[]{
-            "Киев",
+            "Київ",
+            "Дніпро",
             "Тест"
     };
    private final String[] cityCode = new String[]{
             "Kyiv City",
+            "Dnipropetrovsk Oblast",
             "Odessa"
     };
     String message;
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         Spinner spinner = view.findViewById(R.id.list_city);
         spinner.setAdapter(adapterCity);
-        spinner.setPrompt("Выберите город");
+        spinner.setPrompt(getString(R.string.city_change));
         spinner.setBackgroundResource(R.drawable.spinner_border);
 
         String cityOld = logCursor(StartActivity.CITY_INFO, this).get(1);
@@ -183,13 +184,20 @@ public class MainActivity extends AppCompatActivity {
                 message = getString(R.string.your_city) + cityList[position];
                 ContentValues cv = new ContentValues();
                 SQLiteDatabase database = view.getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                switch (cityNew ){
+                switch (cityNew){
                     case "Kyiv City":
                         cv = new ContentValues();
                         cv.put("tarif", "Базовий онлайн");
                         database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                                 new String[] { "1" });
                         database.close();
+                        break;
+                    case "Dnipropetrovsk Oblast":
+
+                        cv = new ContentValues();
+                        cv.put("tarif", "Базовый");
+                        database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
                         break;
                     case "Odessa":
                         cv.put("tarif", "Базовый");
@@ -217,8 +225,8 @@ public class MainActivity extends AppCompatActivity {
                         SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
                         database.update(StartActivity.CITY_INFO, cv, "id = ?",
                                 new String[] { "1" });
-                        startActivity(new Intent(MainActivity.this, MainActivity.class));
                         Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(MainActivity.this, MainActivity.class));
                     }
                 }).setNegativeButton(cancel_button, null)
                 .show();

@@ -49,6 +49,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
+import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
@@ -125,6 +126,10 @@ public class HomeFragment extends Fragment {
             case "Kyiv City":
                 arrayStreet = KyivCity.arrayStreet();
                 api = StartActivity.apiKyiv;
+                break;
+            case "Dnipropetrovsk Oblast":
+                arrayStreet = Dnipro.arrayStreet();
+                api = StartActivity.apiDnipro;
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();

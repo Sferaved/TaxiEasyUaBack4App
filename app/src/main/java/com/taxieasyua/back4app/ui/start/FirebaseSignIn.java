@@ -83,6 +83,9 @@ public class FirebaseSignIn extends AppCompatActivity {
             case "Kyiv City":
                 api = StartActivity.apiKyiv;
                 break;
+            case "Dnipropetrovsk Oblast":
+                api = StartActivity.apiDnipro;
+                break;
             case "Odessa":
                 api = StartActivity.apiTest;
                 break;

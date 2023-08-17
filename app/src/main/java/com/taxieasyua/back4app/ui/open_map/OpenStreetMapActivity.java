@@ -58,6 +58,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
+import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
@@ -207,6 +208,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 arrayStreet = KyivCity.arrayStreet();
                 api = StartActivity.apiKyiv;
                 break;
+            case "Dnipropetrovsk Oblast":
+                arrayStreet = Dnipro.arrayStreet();
+                api = StartActivity.apiDnipro;
+                break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiTest;
@@ -354,6 +359,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             case "Kyiv City":
                 arrayStreet = KyivCity.arrayStreet();
                 api = StartActivity.apiKyiv;
+                break;
+            case "Dnipropetrovsk Oblast":
+                arrayStreet = Dnipro.arrayStreet();
+                api = StartActivity.apiDnipro;
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
