@@ -54,7 +54,6 @@ public class FinishActivity extends AppCompatActivity {
             case "Kyiv City":
                 api = StartActivity.apiKyiv;
                 break;
-
             case "Dnipropetrovsk Oblast":
                 api = StartActivity.apiDnipro;
                 break;
@@ -62,7 +61,7 @@ public class FinishActivity extends AppCompatActivity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                api = StartActivity.apiTest;
+                api = StartActivity.apiDnipro;
                 break;
         }
         String parameterValue = getIntent().getStringExtra("messageResult_key");

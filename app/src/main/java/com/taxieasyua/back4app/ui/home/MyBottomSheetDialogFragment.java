@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,7 +67,6 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 getString(R.string.CONDIT),
                 getString(R.string.MEET),
                 getString(R.string.COURIER),
-                getString(R.string.TERMINAL),
                 getString(R.string.CHECK),
                 getString(R.string.BABY_SEAT),
                 getString(R.string.DRIVER),
@@ -83,7 +83,6 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 "CONDIT",
                 "MEET",
                 "COURIER",
-                "TERMINAL",
                 "CHECK_OUT",
                 "BABY_SEAT",
                 "DRIVER",
@@ -229,8 +228,9 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-
-        for (int i = 0; i < 15; i++) {
+        List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, getContext());
+        Log.d("TAG", "onPause: " + services.size());
+        for (int i = 0; i < services.size()-1; i++) {
             ContentValues cv = new ContentValues();
             cv.put(arrayServiceCode[i], "0");
             SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);

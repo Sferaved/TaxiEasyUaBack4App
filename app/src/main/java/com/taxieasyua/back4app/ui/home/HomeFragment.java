@@ -100,7 +100,6 @@ public class HomeFragment extends Fragment {
                 "CONDIT",
                 "MEET",
                 "COURIER",
-                "TERMINAL",
                 "CHECK_OUT",
                 "BABY_SEAT",
                 "DRIVER",
@@ -136,8 +135,8 @@ public class HomeFragment extends Fragment {
                 api = StartActivity.apiTest;
                 break;
             default:
-                arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiTest;
+                arrayStreet = Dnipro.arrayStreet();
+                api = StartActivity.apiDnipro;
                 break;
         }
 
@@ -994,7 +993,7 @@ public class HomeFragment extends Fragment {
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
-        for (int i = 1; i <= 15 ; i++) {
+        for (int i = 1; i <= 14 ; i++) {
             if(services.get(i).equals("1")) {
                 servicesVer = true;
                 break;
@@ -1134,7 +1133,7 @@ public class HomeFragment extends Fragment {
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
-        for (int i = 1; i <= 15 ; i++) {
+        for (int i = 1; i <= 14 ; i++) {
             if(services.get(i).equals("1")) {
                 servicesVer = true;
                 break;

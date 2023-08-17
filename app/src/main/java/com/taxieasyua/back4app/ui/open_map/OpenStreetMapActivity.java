@@ -131,7 +131,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 "CONDIT",
                 "MEET",
                 "COURIER",
-                "TERMINAL",
+//                "TERMINAL",
                 "CHECK_OUT",
                 "BABY_SEAT",
                 "DRIVER",
@@ -217,7 +217,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                arrayStreet = Odessa.arrayStreet();
+                arrayStreet = Dnipro.arrayStreet();
+                api = StartActivity.apiDnipro;
                 break;
         }
 
@@ -369,8 +370,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiTest;
+                arrayStreet = Dnipro.arrayStreet();
+                api = StartActivity.apiDnipro;
                 break;
         }
         
@@ -1531,7 +1532,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
-        for (int i = 1; i <= 15 ; i++) {
+        for (int i = 1; i < services.size()-1 ; i++) {
             if(services.get(i).equals("1")) {
                 servicesVer = true;
                 break;
@@ -1624,7 +1625,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             List<String> servicesChecked = new ArrayList<>();
             String result;
             boolean servicesVer = false;
-            for (int i = 1; i <= 15 ; i++) {
+            for (int i = 1; i < services.size()-1 ; i++) {
                 if(services.get(i).equals("1")) {
                     servicesVer = true;
                     break;

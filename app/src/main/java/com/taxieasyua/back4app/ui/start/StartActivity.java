@@ -54,7 +54,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_11082023_0";
+    public static final String DB_NAME = "data_17082023_4";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -71,7 +71,6 @@ public class StartActivity extends Activity {
 
     public static final String  apiTest = "apiTest";
     public static final String  apiKyiv = "apiPas2";
-
     public static final String  apiDnipro = "apiPas2_Dnipro";
 
 
@@ -386,7 +385,6 @@ public class StartActivity extends Activity {
                 " CONDIT text," +
                 " MEET text," +
                 " COURIER text," +
-                " TERMINAL text," +
                 " CHECK_OUT text," +
                 " BABY_SEAT text," +
                 " DRIVER text," +
@@ -416,7 +414,7 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
                 " city text);");
         if (cursorDb.getCount() == 0) {
-            insertCity("Kyiv City");
+            insertCity("Dnipropetrovsk Oblast");
         } else {
             getLocalIpAddress();
         }
@@ -442,7 +440,7 @@ public class StartActivity extends Activity {
         }
     }
     private void insertServices() {
-        String sql = "INSERT INTO " + TABLE_SERVICE_INFO + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_SERVICE_INFO + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
@@ -461,7 +459,6 @@ public class StartActivity extends Activity {
             statement.bindString(13,"0");
             statement.bindString(14,"0");
             statement.bindString(15,"0");
-            statement.bindString(16,"0");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -624,11 +621,11 @@ public class StartActivity extends Activity {
                                 database.close();
                                 break;
                             default:
-                                message += getString(R.string.Odessa);
+                                message += getString(R.string.Dnipro_city);
+                                cv = new ContentValues();
                                 cv.put("tarif", "Базовый");
                                 database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                                         new String[] { "1" });
-                                database.close();
                                 break;
                         }
 

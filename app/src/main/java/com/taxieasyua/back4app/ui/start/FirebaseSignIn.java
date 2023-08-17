@@ -90,7 +90,7 @@ public class FirebaseSignIn extends AppCompatActivity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                api = StartActivity.apiTest;
+                api = StartActivity.apiDnipro;
                 break;
         }
 

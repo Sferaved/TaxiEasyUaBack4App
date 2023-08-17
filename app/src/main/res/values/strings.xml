@@ -1,8 +1,8 @@
 <resources>
-    <string name="version_code">2.732</string>
-    <string name="version">Версия: 2.732</string>
+    <string name="version_code">2.733</string>
+    <string name="version">Версия: 2.733</string>
 
-    <string name="app_name">Такси Киев</string>
+    <string name="app_name">Такси Украина 2</string>
 
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
     <string name="back4app_app_id">01YGF894m3NJRXT1BlH6qPo9pUfDlG9sqi9K9mIL</string>
@@ -11,8 +11,8 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Попутчик такси Киев дешево Дюк</string>
-    <string name="nav_header_subtitle">Быстрые поездки по Киеву и области</string>
+    <string name="nav_header_title">Попутчик такси Украина дешево</string>
+    <string name="nav_header_subtitle">Быстрые поездки по городам Украины</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Настройки</string>
 
