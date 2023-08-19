@@ -54,7 +54,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_17082023_4";
+    public static final String DB_NAME = "data_18082023_0";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -72,7 +72,6 @@ public class StartActivity extends Activity {
     public static final String  apiTest = "apiTest";
     public static final String  apiKyiv = "apiPas2";
     public static final String  apiDnipro = "apiPas2_Dnipro";
-
 
     public static long addCost, cost;
     public static boolean verifyPhone;
@@ -335,7 +334,7 @@ public class StartActivity extends Activity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                api = StartActivity.apiTest;
+                api = StartActivity.apiKyiv;
                 break;
         }
 
@@ -430,7 +429,7 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
                 " city text);");
         if (cursorDb.getCount() == 0) {
-            insertCity("Dnipropetrovsk Oblast");
+            insertCity("Kyiv City");
         } else {
             getLocalIpAddress();
         }
@@ -637,9 +636,9 @@ public class StartActivity extends Activity {
                                 database.close();
                                 break;
                             default:
-                                message += getString(R.string.Dnipro_city);
+                                message += getString(R.string.Kyiv_city);
                                 cv = new ContentValues();
-                                cv.put("tarif", "Базовый");
+                                cv.put("tarif", "Базовий онлайн");
                                 database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                                         new String[] { "1" });
                                 break;

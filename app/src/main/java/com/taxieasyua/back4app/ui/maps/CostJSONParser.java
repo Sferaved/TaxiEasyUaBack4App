@@ -58,14 +58,14 @@ public class CostJSONParser {
         JSONObject jsonarray = new JSONObject(first.message);
 
          if(!jsonarray.getString("order_cost").equals("0")) {
-             costMap.put("dispatching_order_uid", jsonarray.getString("dispatching_order_uid"));
+//             costMap.put("dispatching_order_uid", jsonarray.getString("dispatching_order_uid"));
              costMap.put("order_cost", jsonarray.getString("order_cost"));
-             costMap.put("add_cost", jsonarray.getString("add_cost"));
-             costMap.put("recommended_add_cost", jsonarray.getString("recommended_add_cost"));
-             costMap.put("currency", jsonarray.getString("currency"));
-             costMap.put("discount_trip", jsonarray.getString("discount_trip"));
-             costMap.put("can_pay_bonuses", jsonarray.getString("can_pay_bonuses"));
-             costMap.put("can_pay_cashless", jsonarray.getString("can_pay_cashless"));
+//             costMap.put("add_cost", jsonarray.getString("add_cost"));
+//             costMap.put("recommended_add_cost", jsonarray.getString("recommended_add_cost"));
+//             costMap.put("currency", jsonarray.getString("currency"));
+//             costMap.put("discount_trip", jsonarray.getString("discount_trip"));
+//             costMap.put("can_pay_bonuses", jsonarray.getString("can_pay_bonuses"));
+//             costMap.put("can_pay_cashless", jsonarray.getString("can_pay_cashless"));
          }else {
              Log.d("TAG", "sendURL: " + jsonarray.getString("Message"));
              costMap.put("order_cost", "0");

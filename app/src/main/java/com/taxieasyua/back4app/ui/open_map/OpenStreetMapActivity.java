@@ -217,8 +217,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                arrayStreet = Dnipro.arrayStreet();
-                api = StartActivity.apiDnipro;
+                arrayStreet = KyivCity.arrayStreet();
+                api = StartActivity.apiKyiv;
                 break;
         }
 
@@ -386,8 +386,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 api = StartActivity.apiTest;
                 break;
             default:
-                arrayStreet = Dnipro.arrayStreet();
-                api = StartActivity.apiDnipro;
+                arrayStreet = KyivCity.arrayStreet();
+                api = StartActivity.apiKyiv;
                 break;
         }
         

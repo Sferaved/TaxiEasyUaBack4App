@@ -62,10 +62,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class FirebaseSignIn extends AppCompatActivity {
 
     static FloatingActionButton fab, btn_again;
-    public static final int READ_CALL_PHONE = 0;
     String api;
     private static final int REQUEST_ENABLE_GPS = 1001;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,25 +119,41 @@ public class FirebaseSignIn extends AppCompatActivity {
             }
         });
 
-
-        FirebaseApp.initializeApp(FirebaseSignIn.this);
-
-// Choose authentication providers
-        List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.GoogleBuilder().build());
-
-// Create and launch sign-in intent
-        Intent signInIntent = AuthUI.getInstance()
-                .createSignInIntentBuilder()
-                .setAvailableProviders(providers)
-                .build();
-        try {
-            signInLauncher.launch(signInIntent);
-        } catch (NullPointerException e) {
-           finish();
-           startActivity(new Intent(FirebaseSignIn.this, StopActivity.class));
-        }
+        startSignInInBackground();
     }
+
+    private void startSignInInBackground() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Инициализация FirebaseApp
+                FirebaseApp.initializeApp(FirebaseSignIn.this);
+
+                // Choose authentication providers
+                List<AuthUI.IdpConfig> providers = Arrays.asList(
+                        new AuthUI.IdpConfig.GoogleBuilder().build());
+
+                // Create and launch sign-in intent
+                Intent signInIntent = AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build();
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            signInLauncher.launch(signInIntent);
+                        }
+                    });
+                } catch (NullPointerException e) {
+                    finish();
+                    startActivity(new Intent(FirebaseSignIn.this, StopActivity.class));
+                }
+            }
+        });
+        thread.start();
+    }
+
 
     @SuppressLint("Range")
     public List<String> logCursor(String table) {
@@ -191,123 +205,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             }
     );
 
-//    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
-//
-//
-//        try {
-//            if (result.getResultCode() == RESULT_OK) {
-//                // Successfully signed in
-//                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//                StartActivity.userEmail = user.getEmail();
-//                StartActivity.displayName = user.getDisplayName();
-//
-//                addUser();
-//                if (blackList()) {
-//                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//                    boolean  gps_enabled = false;
-//
-//                    try {
-//                        gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-//                    } catch(Exception ex) {
-//                    }
-//                    Log.d("TAG", "onSignInResult: " + !gps_enabled);
-//                    if(!gps_enabled) {
-//                        // notify user
-//                        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(FirebaseSignIn.this, R.style.AlertDialogTheme);
-//                        LayoutInflater inflater = FirebaseSignIn.this.getLayoutInflater();
-//
-//                        View view_cost = inflater.inflate(R.layout.message_layout, null);
-//                        builder.setView(view_cost);
-//                        TextView message = view_cost.findViewById(R.id.textMessage);
-//                        message.setText(R.string.gps_info);
-//                        builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-//                                        FirebaseSignIn.this.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-//                                    }
-//                                })
-//                                .setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialog, int which) {
-//
-//                                        Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-//                                        startActivity(intent);
-//                                    }
-//                                })
-//                                .show();
-//                    } else {
-//                        checkLocationServiceEnabled(new LocationServiceCallback() {
-//                            @Override
-//                            public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
-//                                // Обработайте результат isEnabled здесь
-//                                if (isEnabled) {
-//                                    version();
-//
-//                                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//
-//                                        Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-//                                        startActivity(intent);
-//                                    }
-//                                    else {
-//                                        Intent intent;
-//                                        intent = new Intent(FirebaseSignIn.this, OpenStreetMapActivity.class);
-//                                        startActivity(intent);
-//                                    }
-//                                }
-//                                else {
-//                                    Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-//                                    startActivity(intent);
-//                                }
-//
-//                            }
-//                        });
-//                    }
-//
-//
-//
-//
-//
-//                    ContentValues cv = new ContentValues();
-//
-//                    cv.put("verifyOrder", "1");
-//                    SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-//                    // обновляем по id
-//                    database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
-//                            new String[] { "1" });
-//                    database.close();
-//
-//                } else {
-//                    Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-//                }
-//            } else {
-//                // Sign in failed. If response is null the user canceled the
-//                // sign-in flow using the back button. Otherwise check
-//                // response.getError().getErrorCode() and handle the error.
-//                // ...
-//                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-//                btn_again.setVisibility(View.VISIBLE);
-//                ContentValues cv = new ContentValues();
-//
-//                cv.put("verifyOrder", "0");
-//                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-//                // обновляем по id
-//                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
-//                        new String[] { "1" });
-//                database.close();
-//
-//            }
-//        } catch (NullPointerException e) {
-//            Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-//            ContentValues cv = new ContentValues();
-//
-//            cv.put("verifyOrder", "0");
-//            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-//            // обновляем по id
-//            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
-//                    new String[] { "1" });
-//            database.close();
-//        }
-//    }
+
     private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
     try {
         if (result.getResultCode() == RESULT_OK) {

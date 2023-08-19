@@ -291,21 +291,13 @@ public class FinishActivity extends AppCompatActivity {
                     text_status.setText(message);
 
                 } else {
-                    // Обработка ошибки, если запрос был выполнен не успешно
-                    // например:
-                    String errorBody = response.errorBody().toString();
-                    // Обрабатываем ошибку в зависимости от вашего случая
-                    text_status.setText(errorBody);
+                    text_status.setText(getString(R.string.ex_st_0));
                 }
             }
 
             @Override
             public void onFailure(Call<OrderResponse> call, Throwable t) {
-                // Обработка ошибки, если запрос не удался
-                // например:
-                String errorMessage = t.getMessage();
-                // Обрабатываем ошибку в зависимости от вашего случая
-                text_status.setText(errorMessage);
+                text_status.setText(getString(R.string.ex_st_0));
             }
         });
     }

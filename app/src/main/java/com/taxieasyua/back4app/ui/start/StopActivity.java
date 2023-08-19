@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import java.util.ArrayList;
 import java.util.List;

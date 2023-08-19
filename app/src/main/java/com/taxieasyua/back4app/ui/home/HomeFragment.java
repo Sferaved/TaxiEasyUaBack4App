@@ -135,8 +135,8 @@ public class HomeFragment extends Fragment {
                 api = StartActivity.apiTest;
                 break;
             default:
-                arrayStreet = Dnipro.arrayStreet();
-                api = StartActivity.apiDnipro;
+                arrayStreet = KyivCity.arrayStreet();
+                api = StartActivity.apiKyiv;
                 break;
         }
 
@@ -288,10 +288,11 @@ public class HomeFragment extends Fragment {
                         try {
                             String urlCost = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "costSearch", getActivity());
 
-                            Log.d("TAG", "onClick urlCost: " + urlCost);
+                            Log.d("TAG", "onClick urlCost 777777777777777: " + urlCost);
 
                             Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
                             String orderCost = (String) sendUrlMapCost.get("order_cost");
+                            Log.d("TAG", "onClick 888888888 orderCost: " + orderCost);
                             String message = (String) sendUrlMapCost.get("message");
 
 

@@ -76,10 +76,10 @@ public class ToJSONParser {
 
                 costMap.put("dispatching_order_uid", jsonarray.getString("dispatching_order_uid"));
                 costMap.put("order_cost", jsonarray.getString("order_cost"));
-                costMap.put("add_cost", jsonarray.getString("add_cost"));
+//                costMap.put("add_cost", jsonarray.getString("add_cost"));
 //             costMap.put("recommended_add_cost", jsonarray.getString("recommended_add_cost"));
                 costMap.put("currency", jsonarray.getString("currency"));
-                costMap.put("discount_trip", jsonarray.getString("discount_trip"));
+//                costMap.put("discount_trip", jsonarray.getString("discount_trip"));
 
                 costMap.put("routefrom", jsonarray.getString("routefrom"));
                 costMap.put("routefromnumber", jsonarray.getString("routefromnumber"));
