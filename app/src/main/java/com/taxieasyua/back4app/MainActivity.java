@@ -60,12 +60,14 @@ public class MainActivity extends AppCompatActivity {
     private final String[] cityList = new String[]{
             "Київ",
             "Дніпро",
+            "Одеса",
             "Тест"
     };
    private final String[] cityCode = new String[]{
             "Kyiv City",
             "Dnipropetrovsk Oblast",
-            "Odessa"
+            "Odessa",
+            "OdessaTest"
     };
     String message;
     @Override
@@ -200,12 +202,12 @@ public class MainActivity extends AppCompatActivity {
                                 new String[] { "1" });
                         break;
                     case "Odessa":
+                    case "OdessaTest":
                         cv.put("tarif", "Базовый");
                         database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                                 new String[] { "1" });
                         database.close();
                         break;
-
                 }
 
             }

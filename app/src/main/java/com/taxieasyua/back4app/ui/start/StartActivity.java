@@ -72,6 +72,7 @@ public class StartActivity extends Activity {
     public static final String  apiTest = "apiTest";
     public static final String  apiKyiv = "apiPas2";
     public static final String  apiDnipro = "apiPas2_Dnipro";
+    public static final String  apiOdessa = "apiPas2_Odessa";
 
     public static long addCost, cost;
     public static boolean verifyPhone;
@@ -302,11 +303,6 @@ public class StartActivity extends Activity {
                 long endTime = System.currentTimeMillis();
                 responseTime[0] = endTime - startTime; // Используем индекс 0 для записи времени
 
-                // Проверка успешности ответа и времени подключения
-//                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-//                    Log.d("TAG", "isConnectedToGoogle: Подключение к Google выполнено успешно. Время ответа: " + responseTime[0] + " мс");
-//                }
-
                 connection.disconnect();
 
                 // Вызываем метод обратного вызова
@@ -331,7 +327,7 @@ public class StartActivity extends Activity {
                 api = StartActivity.apiDnipro;
                 break;
             case "Odessa":
-                api = StartActivity.apiTest;
+                api = StartActivity.apiOdessa;
                 break;
             default:
                 api = StartActivity.apiKyiv;

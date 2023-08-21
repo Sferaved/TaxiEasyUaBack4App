@@ -1,6 +1,6 @@
-package com.taxieasyua.back4app.cities.OdessaTest;
+package com.taxieasyua.back4app.cities.Odessa;
 
-public class Odessa {
+public class OdessaTest {
 
     public static String[]  arrayStreet() {
         return new String[]{

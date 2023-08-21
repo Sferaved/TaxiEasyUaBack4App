@@ -51,7 +51,8 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
 import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
+import com.taxieasyua.back4app.cities.Odessa.Odessa;
+import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
@@ -132,6 +133,10 @@ public class HomeFragment extends Fragment {
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
+                api = StartActivity.apiOdessa;
+                break;
+            case "OdessaTest":
+                arrayStreet = OdessaTest.arrayStreet();
                 api = StartActivity.apiTest;
                 break;
             default:

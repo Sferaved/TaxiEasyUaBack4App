@@ -58,7 +58,7 @@ public class FinishActivity extends AppCompatActivity {
                 api = StartActivity.apiDnipro;
                 break;
             case "Odessa":
-                api = StartActivity.apiTest;
+                api = StartActivity.apiOdessa;
                 break;
             default:
                 api = StartActivity.apiDnipro;

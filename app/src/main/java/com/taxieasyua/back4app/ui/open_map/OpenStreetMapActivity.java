@@ -60,7 +60,8 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
 import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.OdessaTest.Odessa;
+import com.taxieasyua.back4app.cities.Odessa.Odessa;
+import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
@@ -214,6 +215,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
+                api = StartActivity.apiOdessa;
+                break;
+            case "OdessaTest":
+                arrayStreet = OdessaTest.arrayStreet();
                 api = StartActivity.apiTest;
                 break;
             default:
@@ -383,6 +388,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
+                api = StartActivity.apiOdessa;
+                break;
+            case "OdessaTest":
+                arrayStreet = OdessaTest.arrayStreet();
                 api = StartActivity.apiTest;
                 break;
             default:
