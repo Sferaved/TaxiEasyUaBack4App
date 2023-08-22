@@ -73,6 +73,7 @@ public class StartActivity extends Activity {
     public static final String  apiKyiv = "apiPas2";
     public static final String  apiDnipro = "apiPas2_Dnipro";
     public static final String  apiOdessa = "apiPas2_Odessa";
+    public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
 
     public static long addCost, cost;
     public static boolean verifyPhone;
@@ -212,6 +213,9 @@ public class StartActivity extends Activity {
                         case "Odessa":
                             phone = "tel:0737257070";
                             break;
+                        case "Zaporizhzhia":
+                            phone = "tel:0687257070";
+                            break;
                         default:
                             phone = "tel:0674443804";
                             break;
@@ -328,6 +332,9 @@ public class StartActivity extends Activity {
                 break;
             case "Odessa":
                 api = StartActivity.apiOdessa;
+                break;
+            case "Zaporizhzhia":
+                api = StartActivity.apiZaporizhzhia;
                 break;
             default:
                 api = StartActivity.apiKyiv;
@@ -612,34 +619,28 @@ public class StartActivity extends Activity {
                         switch (result){
                             case "Kyiv City":
                                 message += getString(R.string.Kyiv_city);
-                                cv = new ContentValues();
                                 cv.put("tarif", "Базовий онлайн");
-                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                        new String[] { "1" });
                                 break;
                             case "Dnipropetrovsk Oblast":
                                 message += getString(R.string.Dnipro_city);
-                                cv = new ContentValues();
                                 cv.put("tarif", "Базовый");
-                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                        new String[] { "1" });
                                 break;
                             case "Odessa":
                                 message += getString(R.string.Odessa);
                                 cv.put("tarif", "Базовый");
-                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                        new String[] { "1" });
-                                database.close();
+                                break;
+                            case "Zaporizhzhia":
+                                message += getString(R.string.Zaporizhzhia);
+                                cv.put("tarif", "Базовый");
                                 break;
                             default:
                                 message += getString(R.string.Kyiv_city);
-                                cv = new ContentValues();
                                 cv.put("tarif", "Базовий онлайн");
-                                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                        new String[] { "1" });
                                 break;
                         }
-
+                        database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
                         updateCity(result);
                         database.close();
                         Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();

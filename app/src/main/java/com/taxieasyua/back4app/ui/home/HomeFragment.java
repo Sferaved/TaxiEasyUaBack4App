@@ -53,6 +53,7 @@ import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
+import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
@@ -130,6 +131,10 @@ public class HomeFragment extends Fragment {
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
                 api = StartActivity.apiDnipro;
+                break;
+            case "Zaporizhzhia":
+                arrayStreet = Zaporizhzhia.arrayStreet();
+                api = StartActivity.apiZaporizhzhia;
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
@@ -437,6 +442,9 @@ public class HomeFragment extends Fragment {
                                                                                         case "Odessa":
                                                                                             phone = "tel:0737257070";
                                                                                             break;
+                                                                                        case "Zaporizhzhia":
+                                                                                            phone = "tel:0687257070";
+                                                                                            break;
                                                                                         default:
                                                                                             phone = "tel:0674443804";
                                                                                             break;
@@ -560,6 +568,9 @@ public class HomeFragment extends Fragment {
                         break;
                     case "Odessa":
                         phone = "tel:0737257070";
+                        break;
+                    case "Zaporizhzhia":
+                        phone = "tel:0687257070";
                         break;
                     default:
                         phone = "tel:0674443804";
@@ -949,6 +960,9 @@ public class HomeFragment extends Fragment {
                                                                             break;
                                                                         case "Odessa":
                                                                             phone = "tel:0737257070";
+                                                                            break;
+                                                                        case "Zaporizhzhia":
+                                                                            phone = "tel:0687257070";
                                                                             break;
                                                                         default:
                                                                             phone = "tel:0674443804";

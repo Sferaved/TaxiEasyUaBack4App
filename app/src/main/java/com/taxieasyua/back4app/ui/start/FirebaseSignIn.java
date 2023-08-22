@@ -87,6 +87,9 @@ public class FirebaseSignIn extends AppCompatActivity {
             case "Odessa":
                 api = StartActivity.apiOdessa;
                 break;
+            case "Zaporizhzhia":
+                api = StartActivity.apiZaporizhzhia;
+                break;
             default:
                 api = StartActivity.apiDnipro;
                 break;
@@ -109,6 +112,9 @@ public class FirebaseSignIn extends AppCompatActivity {
                         break;
                     case "Odessa":
                         phone = "tel:0737257070";
+                        break;
+                    case "Zaporizhzhia":
+                        phone = "tel:0687257070";
                         break;
                     default:
                         phone = "tel:0674443804";

@@ -62,6 +62,7 @@ import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
+import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
@@ -217,6 +218,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiOdessa;
                 break;
+            case "Zaporizhzhia":
+                arrayStreet = Zaporizhzhia.arrayStreet();
+                api = StartActivity.apiZaporizhzhia;
+                break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
                 api = StartActivity.apiTest;
@@ -264,6 +269,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         break;
                     case "Odessa":
                         phone = "tel:0737257070";
+                        break;
+                    case "Zaporizhzhia":
+                        phone = "tel:0687257070";
                         break;
                     default:
                         phone = "tel:0674443804";
@@ -389,6 +397,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiOdessa;
+                break;
+            case "Zaporizhzhia":
+                arrayStreet = Zaporizhzhia.arrayStreet();
+                api = StartActivity.apiZaporizhzhia;
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
@@ -804,6 +816,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                             case "Odessa":
                                                                                 phone = "tel:0737257070";
                                                                                 break;
+                                                                            case "Zaporizhzhia":
+                                                                                phone = "tel:0687257070";
+                                                                                break;
                                                                             default:
                                                                                 phone = "tel:0674443804";
                                                                                 break;
@@ -1156,6 +1171,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                                 case "Odessa":
                                                                                                     phone = "tel:0737257070";
                                                                                                     break;
+                                                                                                case "Zaporizhzhia":
+                                                                                                    phone = "tel:0687257070";
+                                                                                                    break;
                                                                                                 default:
                                                                                                     phone = "tel:0674443804";
                                                                                                     break;
@@ -1409,6 +1427,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                                     break;
                                                                                                 case "Odessa":
                                                                                                     phone = "tel:0737257070";
+                                                                                                    break;
+                                                                                                case "Zaporizhzhia":
+                                                                                                    phone = "tel:0687257070";
                                                                                                     break;
                                                                                                 default:
                                                                                                     phone = "tel:0674443804";

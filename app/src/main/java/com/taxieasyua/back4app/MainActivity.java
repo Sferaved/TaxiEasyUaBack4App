@@ -61,12 +61,14 @@ public class MainActivity extends AppCompatActivity {
             "Київ",
             "Дніпро",
             "Одеса",
+            "Запоріжжя",
             "Тест"
     };
    private final String[] cityCode = new String[]{
             "Kyiv City",
             "Dnipropetrovsk Oblast",
             "Odessa",
+            "Zaporizhzhia",
             "OdessaTest"
     };
     String message;
@@ -186,29 +188,21 @@ public class MainActivity extends AppCompatActivity {
                 message = getString(R.string.your_city) + cityList[position];
                 ContentValues cv = new ContentValues();
                 SQLiteDatabase database = view.getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                cv = new ContentValues();
                 switch (cityNew){
                     case "Kyiv City":
-                        cv = new ContentValues();
                         cv.put("tarif", "Базовий онлайн");
-                        database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
                         break;
                     case "Dnipropetrovsk Oblast":
-
-                        cv = new ContentValues();
-                        cv.put("tarif", "Базовый");
-                        database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        break;
+                    case "Zaporizhzhia":
                     case "Odessa":
                     case "OdessaTest":
                         cv.put("tarif", "Базовый");
-                        database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
                         break;
                 }
+                database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
 
             }
 

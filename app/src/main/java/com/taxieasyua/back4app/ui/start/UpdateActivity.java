@@ -60,6 +60,9 @@ public class UpdateActivity extends Activity {
                         case "Odessa":
                             phone = "tel:0737257070";
                             break;
+                        case "Zaporizhzhia":
+                            phone = "tel:0687257070";
+                            break;
                         default:
                             phone = "tel:0674443804";
                             break;
