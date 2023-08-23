@@ -95,6 +95,7 @@ public class MyServicesDialogFragment extends BottomSheetDialogFragment {
         }
 
         String[] tariffArr = new String[]{
+                " ",
                 "Базовий онлайн",
                 "Базовый",
                 "Универсал",

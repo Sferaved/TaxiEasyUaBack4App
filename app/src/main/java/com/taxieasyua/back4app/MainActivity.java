@@ -190,19 +190,20 @@ public class MainActivity extends AppCompatActivity {
                 message = getString(R.string.your_city) + cityList[position];
                 ContentValues cv = new ContentValues();
                 SQLiteDatabase database = view.getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                cv = new ContentValues();
-                switch (cityNew){
-                    case "Kyiv City":
-                        cv.put("tarif", "Базовий онлайн");
-                        break;
-                    case "Dnipropetrovsk Oblast":
-                    case "Zaporizhzhia":
-                    case "Cherkasy Oblast":
-                    case "Odessa":
-                    case "OdessaTest":
-                        cv.put("tarif", "Базовый");
-                        break;
-                }
+
+//                switch (cityNew){
+//                    case "Kyiv City":
+//                        cv.put("tarif", "Базовий онлайн");
+//                        break;
+//                    case "Dnipropetrovsk Oblast":
+//                    case "Zaporizhzhia":
+//                    case "Cherkasy Oblast":
+//                    case "Odessa":
+//                    case "OdessaTest":
+//                        cv.put("tarif", "Базовый");
+//                        break;
+//                }
+                cv.put("tarif", " ");
                 database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                         new String[] { "1" });
                 database.close();
