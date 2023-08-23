@@ -58,6 +58,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
+import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
 import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
@@ -222,6 +223,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 arrayStreet = Zaporizhzhia.arrayStreet();
                 api = StartActivity.apiZaporizhzhia;
                 break;
+            case "Cherkasy Oblast":
+                arrayStreet = Cherkasy.arrayStreet();
+                api = StartActivity.apiCherkasy;
+                break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
                 api = StartActivity.apiTest;
@@ -272,6 +277,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         break;
                     case "Zaporizhzhia":
                         phone = "tel:0687257070";
+                        break;
+                    case "Cherkasy Oblast":
+                        phone = "tel:0962294243";
                         break;
                     default:
                         phone = "tel:0674443804";
@@ -401,6 +409,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
                 api = StartActivity.apiZaporizhzhia;
+                break;
+            case "Cherkasy Oblast":
+                arrayStreet = Cherkasy.arrayStreet();
+                api = StartActivity.apiCherkasy;
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();

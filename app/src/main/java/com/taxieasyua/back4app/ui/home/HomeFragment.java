@@ -49,6 +49,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
+import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
 import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
@@ -135,6 +136,10 @@ public class HomeFragment extends Fragment {
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
                 api = StartActivity.apiZaporizhzhia;
+                break;
+            case "Cherkasy Oblast":
+                arrayStreet = Cherkasy.arrayStreet();
+                api = StartActivity.apiCherkasy;
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
@@ -571,6 +576,9 @@ public class HomeFragment extends Fragment {
                         break;
                     case "Zaporizhzhia":
                         phone = "tel:0687257070";
+                        break;
+                    case "Cherkasy Oblast":
+                        phone = "tel:0962294243";
                         break;
                     default:
                         phone = "tel:0674443804";

@@ -98,7 +98,7 @@
             android:id="@+id/btn_cost"
             android:layout_width="293sp"
             android:layout_height="45sp"
-            android:layout_marginTop="10sp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/buttons"
             android:fontFamily="@font/regular"
             android:insetLeft="0sp"
@@ -112,7 +112,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/to_number" />
+            app:layout_constraintTop_toBottomOf="@+id/text_to" />
 
         <TextView
             android:id="@+id/num2"

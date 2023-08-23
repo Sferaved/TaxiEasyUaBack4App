@@ -74,6 +74,7 @@ public class StartActivity extends Activity {
     public static final String  apiDnipro = "apiPas2_Dnipro";
     public static final String  apiOdessa = "apiPas2_Odessa";
     public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
+    public static final String  apiCherkasy = "apiPas2_Cherkasy";
 
     public static long addCost, cost;
     public static boolean verifyPhone;
@@ -335,6 +336,9 @@ public class StartActivity extends Activity {
                 break;
             case "Zaporizhzhia":
                 api = StartActivity.apiZaporizhzhia;
+                break;
+            case "Cherkasy Oblast":
+                api = StartActivity.apiCherkasy;
                 break;
             default:
                 api = StartActivity.apiKyiv;
@@ -630,6 +634,10 @@ public class StartActivity extends Activity {
                                 cv.put("tarif", "Базовый");
                                 break;
                             case "Zaporizhzhia":
+                                message += getString(R.string.Zaporizhzhia);
+                                cv.put("tarif", "Базовый");
+                                break;
+                            case "Cherkasy Oblast":
                                 message += getString(R.string.Zaporizhzhia);
                                 cv.put("tarif", "Базовый");
                                 break;

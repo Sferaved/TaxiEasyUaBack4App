@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
             "Дніпро",
             "Одеса",
             "Запоріжжя",
+            "Черкаси",
             "Тест"
     };
    private final String[] cityCode = new String[]{
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
             "Dnipropetrovsk Oblast",
             "Odessa",
             "Zaporizhzhia",
+            "Cherkasy Oblast",
             "OdessaTest"
     };
     String message;
@@ -195,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case "Dnipropetrovsk Oblast":
                     case "Zaporizhzhia":
+                    case "Cherkasy Oblast":
                     case "Odessa":
                     case "OdessaTest":
                         cv.put("tarif", "Базовый");
