@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.745</string>
-    <string name="version">Версія: 2.745</string>
+    <string name="version_code">2.746</string>
+    <string name="version">Версія: 2.746</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -157,5 +157,5 @@
     <string name="Dnipro_city">Дніпро</string>
     <string name="city_change">Виберіть місто</string>
     <string name="Zaporizhzhia">Запоріжжя</string>
-    <string name="Cherkasy">Черкассы</string>
+    <string name="Cherkasy">Черкаси</string>
 </resources>
