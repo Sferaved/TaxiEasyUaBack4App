@@ -84,8 +84,8 @@ public class HomeFragment extends Fragment {
     private Spinner listView;
     Button button;
     private String[] array;
-    private String api;
-    public String[] arrayStreet;
+    public  String api;
+    public  String[] arrayStreet;
     static FloatingActionButton fab_call;
     private final String TAG = "TAG";
     private static final int CM_DELETE_ID = 1;
@@ -161,7 +161,7 @@ public class HomeFragment extends Fragment {
 
         AutoCompleteTextView textViewFrom =binding.textFrom;
         textViewFrom.setAdapter(adapter);
-        Log.d("TAG", "onCreateView startPoint: " + OpenStreetMapActivity.from_name + OpenStreetMapActivity.from_house);
+//        Log.d("TAG", "onCreateView startPoint: " + OpenStreetMapActivity.from_name + OpenStreetMapActivity.from_house);
         if(OpenStreetMapActivity.from_name != null && !OpenStreetMapActivity.from_name.equals("name")) {
             textViewFrom.setText(OpenStreetMapActivity.from_name);
             from = OpenStreetMapActivity.from_name;
@@ -450,6 +450,9 @@ public class HomeFragment extends Fragment {
                                                                                         case "Zaporizhzhia":
                                                                                             phone = "tel:0687257070";
                                                                                             break;
+                                                                                        case "Cherkasy Oblast":
+                                                                                            phone = "tel:0962294243";
+                                                                                            break;
                                                                                         default:
                                                                                             phone = "tel:0674443804";
                                                                                             break;
@@ -481,11 +484,11 @@ public class HomeFragment extends Fragment {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
 
-                                                    HomeFragment newFragment = new HomeFragment();
-                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                                                    transaction.replace(getId(), newFragment);
-                                                    transaction.addToBackStack(null);
-                                                    transaction.commit();
+//                                                    HomeFragment newFragment = new HomeFragment();
+//                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+//                                                    transaction.replace(getId(), newFragment);
+//                                                    transaction.addToBackStack(null);
+//                                                    transaction.commit();
                                                 }
                                             })
                                             .show();
@@ -972,12 +975,15 @@ public class HomeFragment extends Fragment {
                                                                         case "Zaporizhzhia":
                                                                             phone = "tel:0687257070";
                                                                             break;
+                                                                        case "Cherkasy Oblast":
+                                                                            phone = "tel:0962294243";
+                                                                            break;
                                                                         default:
                                                                             phone = "tel:0674443804";
                                                                             break;
                                                                     }
                                                                     intent.setData(Uri.parse(phone));
-                                                                    getActivity().startActivity(intent);
+                                                                    startActivity(intent);
                                                                 }
                                                             })
                                                             .setNegativeButton(OpenStreetMapActivity.tra, new DialogInterface.OnClickListener() {
