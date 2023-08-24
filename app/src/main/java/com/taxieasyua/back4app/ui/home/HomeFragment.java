@@ -467,9 +467,7 @@ public class HomeFragment extends Fragment {
                                                                 }
 
 
-                                                            } catch (MalformedURLException |
-                                                                     InterruptedException |
-                                                                     JSONException e) {
+                                                            } catch (MalformedURLException e) {
                                                                 Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                                             }
                                                         } else {
@@ -495,8 +493,7 @@ public class HomeFragment extends Fragment {
                                 }
                             }
 
-                        } catch (MalformedURLException | InterruptedException |
-                                 JSONException e) {
+                        } catch (MalformedURLException e) {
                             Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                         }
                     }
@@ -997,8 +994,7 @@ public class HomeFragment extends Fragment {
                                                 }
                                             }
 
-                                        } catch (MalformedURLException | InterruptedException |
-                                                 JSONException e) {
+                                        } catch (MalformedURLException e) {
                                             Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                         }
                                     } else {

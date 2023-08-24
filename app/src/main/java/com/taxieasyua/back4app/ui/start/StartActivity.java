@@ -619,49 +619,37 @@ public class StartActivity extends Activity {
                         String message = getString(R.string.your_city);
                         SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
                         ContentValues cv = new ContentValues();
-                        switch (result){
-                            case "Kyiv City":
-                                message += getString(R.string.Kyiv_city);
-                                insertCity(result);
-//                                cv.put("tarif", "Базовий онлайн");
-                                break;
-                            case "Dnipropetrovsk Oblast":
-                                message += getString(R.string.Dnipro_city);
-                                insertCity(result);
-//                                cv.put("tarif", "Базовый");
-                                break;
-                            case "Odessa":
-                                message += getString(R.string.Odessa);
-                                insertCity(result);
-//                                cv.put("tarif", "Базовый");
-                                break;
-                            case "Zaporizhzhia":
-                                message += getString(R.string.Zaporizhzhia);
-                                insertCity(result);
-//                                cv.put("tarif", "Базовый");
-                                break;
-                            case "Cherkasy Oblast":
-                                message += getString(R.string.Zaporizhzhia);
-                                insertCity(result);
-//                                cv.put("tarif", "Базовый");
-                                break;
-                            default:
-                                message += getString(R.string.Kyiv_city);
-                                insertCity("Kyiv City");
-//                                cv.put("tarif", "Базовий онлайн");
-                                break;
-                        }
-                        insertCity(result);
                         cv.put("tarif", " ");
                         database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                                 new String[] { "1" });
                         database.close();
-                        updateCity(result);
-                        database.close();
+                        insertCity(result);
+                        switch (result){
+                            case "Kyiv City":
+                                message += getString(R.string.Kyiv_city);
+                                break;
+                            case "Dnipropetrovsk Oblast":
+                                message += getString(R.string.Dnipro_city);
+                                break;
+                            case "Odessa":
+                                message += getString(R.string.Odessa);
+                                break;
+                            case "Zaporizhzhia":
+                                message += getString(R.string.Zaporizhzhia);
+                                break;
+                            case "Cherkasy Oblast":
+                                message += getString(R.string.Cherkasy);
+                                break;
+                            default:
+                                message += getString(R.string.Kyiv_city);
+                                break;
+                        }
+                        Log.d("TAG", "onResponse: StartActivity.TABLE_SETTINGS_INFO " + logCursor(StartActivity.TABLE_SETTINGS_INFO));
                         Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
-
-
                     }
+                }
+                else {
+                    Toast.makeText(StartActivity.this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
                 }
             }
 

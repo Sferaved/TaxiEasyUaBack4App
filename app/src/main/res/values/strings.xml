@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.744</string>
-    <string name="version">Версия: 2.744</string>
+    <string name="version_code">2.745</string>
+    <string name="version">Версия: 2.745</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -158,5 +158,6 @@
     <string name="Dnipro_city">Днепр</string>
     <string name="city_change">Выберите город</string>
     <string name="Zaporizhzhia">Запорожье</string>
+    <string name="Cherkasy">Черкассы</string>
 
 </resources>
