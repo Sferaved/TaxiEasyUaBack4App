@@ -38,9 +38,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class FinishActivity extends AppCompatActivity {
-    private TextView text_full_message, text_status;
-    private Button btn_reset_status, btn_cancel_order, btn_again, btn_cancel;
-    private FloatingActionButton fab_cal;
+    private TextView text_status;
     String api;
     String baseUrl = "https://m.easy-order-taxi.site";
     @SuppressLint("MissingInflatedId")
@@ -67,12 +65,12 @@ public class FinishActivity extends AppCompatActivity {
                 api = StartActivity.apiCherkasy;
                 break;
             default:
-                api = StartActivity.apiDnipro;
+                api = StartActivity.apiKyiv;
                 break;
         }
         String parameterValue = getIntent().getStringExtra("messageResult_key");
 
-        text_full_message = findViewById(R.id.text_full_message);
+        TextView text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(parameterValue);
 
         String UID_key = getIntent().getStringExtra("UID_key");
@@ -81,7 +79,7 @@ public class FinishActivity extends AppCompatActivity {
         statusOrderWithDifferentValue(UID_key);
 
 
-        btn_reset_status = findViewById(R.id.btn_reset_status);
+        Button btn_reset_status = findViewById(R.id.btn_reset_status);
         btn_reset_status.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,21 +91,19 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
 
-        btn_cancel_order = findViewById(R.id.btn_cancel_order);
+        Button btn_cancel_order = findViewById(R.id.btn_cancel_order);
         btn_cancel_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(connected()){
                     cancelOrderWithDifferentValue(UID_key);
                 } else {
-//                    String result = getString(R.string.next_try);
-                    String result = "111111111111";
-                    text_status.setText(result);
+                    text_status.setText(R.string.verify_internet);
                 }
             }
         });
 
-        btn_again = findViewById(R.id.btn_again);
+        Button btn_again = findViewById(R.id.btn_again);
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,14 +123,14 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
 
-        btn_cancel = findViewById(R.id.btn_cancel);
+        Button btn_cancel = findViewById(R.id.btn_cancel);
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finishAffinity();
             }
         });
-        fab_cal = findViewById(R.id.fab_call);
+        FloatingActionButton fab_cal = findViewById(R.id.fab_call);
         fab_cal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,7 +164,7 @@ public class FinishActivity extends AppCompatActivity {
     }
     private boolean connected() {
 
-        Boolean hasConnect = false;
+        boolean hasConnect = false;
 
         ConnectivityManager cm = (ConnectivityManager) this.getSystemService(
                 Context.CONNECTIVITY_SERVICE);
@@ -216,7 +212,7 @@ public class FinishActivity extends AppCompatActivity {
 
         String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+//        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {
@@ -228,7 +224,7 @@ public class FinishActivity extends AppCompatActivity {
                     }
                 } else {
                     // Обработка неуспешного ответа
-                    text_status.setText("Ошибка запроса к серверу");
+                    text_status.setText(R.string.verify_internet);
                 }
             }
 
@@ -259,6 +255,7 @@ public class FinishActivity extends AppCompatActivity {
 
                     // Далее вы можете использовать полученные данные из orderResponse
                     // например:
+                    assert orderResponse != null;
                     String executionStatus = orderResponse.getExecutionStatus();
                     String orderCarInfo = orderResponse.getOrderCarInfo();
                     String driverPhone = orderResponse.getDriverPhone();
