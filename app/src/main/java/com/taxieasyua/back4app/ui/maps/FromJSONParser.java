@@ -22,6 +22,7 @@ import java.util.concurrent.Exchanger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -31,51 +32,6 @@ public class FromJSONParser {
         sendURL(urlString);
     }
 
-//    public static Map<String, String> sendURL(String urlString) throws MalformedURLException, InterruptedException, JSONException {
-//        URL url = new URL(urlString);
-//        Log.d("TAG", "sendURL: " + urlString);
-//        Map<String, String> costMap = new HashMap<>();
-//        Exchanger<String> exchanger = new Exchanger<>();
-//
-//        AsyncTask.execute(() -> {
-//            HttpsURLConnection urlConnection = null;
-//            try {
-//                urlConnection = (HttpsURLConnection) url.openConnection();
-//                urlConnection.setDoInput(true);
-//                if (urlConnection.getResponseCode() == 200) {
-//                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-//                    exchanger.exchange(convertStreamToString(in));
-//                }
-//            } catch (IOException | InterruptedException ignored) {
-//
-//            }
-//            assert urlConnection != null;
-//            urlConnection.disconnect();
-//        });
-//
-//        ResultFromThread first = new ResultFromThread(exchanger);
-//
-//        JSONObject jsonarray = new JSONObject(first.message);
-//
-//
-//            if(!jsonarray.getString("order_cost").equals("0")) {
-//                costMap.put("order_cost", "100");
-//                costMap.put("route_address_from", jsonarray.getString("route_address_from"));
-//                costMap.put("name", jsonarray.getString("name"));
-//                costMap.put("house", jsonarray.getString("house"));
-//
-//            } else {
-//                costMap.put("order_cost", "0");
-//                costMap.put("message", jsonarray.getString("Message"));
-//            }
-//
-//
-//
-//
-////        Log.d(TAG, "servicesAll: " + costMap);
-//            return costMap;
-//
-//    }
 public static Map<String, String> sendURL(String urlString) throws MalformedURLException, InterruptedException, JSONException {
     URL url = new URL(urlString);
     Log.d("TAG", "sendURL: " + urlString);
@@ -102,10 +58,10 @@ public static Map<String, String> sendURL(String urlString) throws MalformedURLE
     Future<String> asyncTaskFuture = Executors.newSingleThreadExecutor().submit(asyncTaskCallable);
 
     try {
-        String response = asyncTaskFuture.get(5, TimeUnit.SECONDS);
+        String response = asyncTaskFuture.get(10, TimeUnit.SECONDS);
         if (response != null) {
-            ResultFromThread first = new ResultFromThread(response);
-            JSONObject jsonarray = new JSONObject(first.message);
+
+            JSONObject jsonarray = new JSONObject(response);
 
             if (!jsonarray.getString("order_cost").equals("0")) {
                 costMap.put("order_cost", "100");
@@ -120,14 +76,21 @@ public static Map<String, String> sendURL(String urlString) throws MalformedURLE
             costMap.put("order_cost", "0");
             costMap.put("message", String.valueOf(R.string.verify_internet));
         }
+        return costMap;
+    } catch (TimeoutException e) {
+        e.printStackTrace();
+        asyncTaskFuture.cancel(true);
+        costMap.put("order_cost", "0");
+        costMap.put("message", String.valueOf(R.string.verify_internet));
+        return costMap;
     } catch (Exception e) {
         e.printStackTrace();
         asyncTaskFuture.cancel(true);
         costMap.put("order_cost", "0");
         costMap.put("message", String.valueOf(R.string.verify_internet));
+        return costMap;
     }
 
-    return costMap;
 }
     private static String convertStreamToString(InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -149,22 +112,6 @@ public static Map<String, String> sendURL(String urlString) throws MalformedURLE
         }
 
         return sb.toString();
-    }
-
-//    public static class ResultFromThread {
-//        public String message;
-//
-//        public ResultFromThread(Exchanger<String> exchanger) throws InterruptedException {
-//            this.message = exchanger.exchange(message);
-//        }
-//
-//    }
-    public static class ResultFromThread {
-        public String message;
-
-        public ResultFromThread(String message) {
-            this.message = message;
-        }
     }
 
 }

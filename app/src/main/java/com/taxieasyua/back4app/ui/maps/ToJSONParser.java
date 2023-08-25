@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -169,13 +170,11 @@ public class ToJSONParser {
         try {
             String response = asyncTaskFuture.get(10, TimeUnit.SECONDS);
             if (response != null) {
-                ResultFromThread first = new ResultFromThread(response);
-                if (first.message.equals("400")) {
+                if (response.equals("400")) {
                     costMap.put("order_cost", "0");
                     costMap.put("message", String.valueOf(R.string.verify_internet));
-                   return costMap;
                 } else {
-                    JSONObject jsonarray = new JSONObject(first.message);
+                    JSONObject jsonarray = new JSONObject(response);
 
                     if (!jsonarray.getString("order_cost").equals("0")) {
                         costMap.put("from_lat", jsonarray.getString("from_lat"));
@@ -198,14 +197,20 @@ public class ToJSONParser {
                 costMap.put("order_cost", "0");
                 costMap.put("message", String.valueOf(R.string.verify_internet));
             }
+            return costMap;
+        }  catch (TimeoutException e) {
+            e.printStackTrace();
+            asyncTaskFuture.cancel(true);
+            costMap.put("order_cost", "0");
+            costMap.put("message", String.valueOf(R.string.verify_internet));
+            return costMap;
         } catch (Exception e) {
             e.printStackTrace();
             asyncTaskFuture.cancel(true);
             costMap.put("order_cost", "0");
             costMap.put("message", String.valueOf(R.string.verify_internet));
+            return costMap;
         }
-
-        return costMap;
     }
 
     private static String convertStreamToString(InputStream is) {
@@ -229,11 +234,11 @@ public class ToJSONParser {
 
         return sb.toString();
     }
-    public static class ResultFromThread {
-        public String message;
-
-        public ResultFromThread(String message) {
-            this.message = message;
-        }
-    }
+//    public static class ResultFromThread {
+//        public String message;
+//
+//        public ResultFromThread(String message) {
+//            this.message = message;
+//        }
+//    }
 }

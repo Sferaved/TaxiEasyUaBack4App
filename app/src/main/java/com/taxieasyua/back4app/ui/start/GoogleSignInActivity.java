@@ -40,6 +40,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -180,7 +187,7 @@ public class GoogleSignInActivity extends Activity {
             try {
                 handleSignInResult(task);
             } catch (MalformedURLException | JSONException | InterruptedException e) {
-                throw new RuntimeException(e);
+                Log.d(TAG, "onActivityResult: " + new RuntimeException(e));
             }
         }
     }
@@ -245,36 +252,67 @@ public class GoogleSignInActivity extends Activity {
 
     }
 
-    private void addUser() throws MalformedURLException {
-        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
+//    private void addUser() throws MalformedURLException {
+//        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
+//
+//        URL url = new URL(urlString);
+//        Log.d("TAG", "sendURL: " + urlString);
+//
+//        AsyncTask.execute(() -> {
+//            HttpsURLConnection urlConnection = null;
+//            try {
+//                urlConnection = (HttpsURLConnection) url.openConnection();
+//                urlConnection.setDoInput(true);
+//                urlConnection.getResponseCode();
+//            } catch (IOException e) {
+//                Log.d(TAG, "addUser: " + new RuntimeException(e));
+//            }
+//            assert urlConnection != null;
+//            urlConnection.disconnect();
+//        });
+//    }
+    private void addUser() {
+    String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" + StartActivity.displayName + "/" + StartActivity.userEmail;
 
+    Callable<Void> addUserCallable = () -> {
         URL url = new URL(urlString);
         Log.d("TAG", "sendURL: " + urlString);
 
-        AsyncTask.execute(() -> {
-            HttpsURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpsURLConnection) url.openConnection();
-                urlConnection.setDoInput(true);
-                urlConnection.getResponseCode();
-            } catch (IOException e) {
-                Log.d(TAG, "addUser: " + new RuntimeException(e));
+        HttpsURLConnection urlConnection = null;
+        try {
+            urlConnection = (HttpsURLConnection) url.openConnection();
+            urlConnection.setDoInput(true);
+            urlConnection.getResponseCode();
+        } catch (IOException e) {
+            Log.d(TAG, "addUser: " + new RuntimeException(e));
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
             }
-            assert urlConnection != null;
-            urlConnection.disconnect();
-        });
+        }
+
+        return null;
+    };
+
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    Future<Void> addUserFuture = executorService.submit(addUserCallable);
+
+    // Дождитесь завершения выполнения задачи с тайм-аутом
+    try {
+        addUserFuture.get(10, TimeUnit.SECONDS);
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        // Обработка ошибок
+        e.printStackTrace();
+    } finally {
+        // Завершите исполнителя
+        executorService.shutdown();
     }
+}
 
     @Override
     protected void onRestart() {
         super.onRestart();
-
         try_again_button.setVisibility(View.VISIBLE);
-        try_again_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(GoogleSignInActivity.this, StartActivity.class));
-            }
-        });
+
     }
 }
