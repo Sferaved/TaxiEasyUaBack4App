@@ -47,7 +47,10 @@ public class GoogleSignInActivity extends Activity {
     private static final int RC_SIGN_IN = 9001;
     private final String TAG = "TAG";
     static FloatingActionButton fab, btn_again;
+    Button try_again_button;
     String api;
+    Intent intent;
+    SQLiteDatabase database;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,8 +118,13 @@ public class GoogleSignInActivity extends Activity {
             }
         });
 
-
-
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), StartActivity.class));
+            }
+        });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 //                .requestIdToken(getString(R.string.default_web_client_id))
@@ -163,8 +171,7 @@ public class GoogleSignInActivity extends Activity {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: requestCode" + requestCode);
-        Log.d(TAG, "onActivityResult: resultCode " + resultCode);
+
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             // The Task returned from this call is always completed, no need to attach
@@ -192,8 +199,9 @@ public class GoogleSignInActivity extends Activity {
     }
 
     //Change UI according to user data.
-    public void updateUI(GoogleSignInAccount account) throws MalformedURLException, JSONException, InterruptedException {
-
+    public void updateUI(GoogleSignInAccount account) throws MalformedURLException {
+        database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
         if(account != null){
             StartActivity.userEmail = account.getEmail();
             StartActivity.displayName = account.getDisplayName();
@@ -202,49 +210,38 @@ public class GoogleSignInActivity extends Activity {
 
             String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" +  StartActivity.userEmail;
 
-            Log.d("TAG", "onClick urlCost: " + url);
-            Map sendUrlMap = CostJSONParser.sendURL(url);
+            Map<String, String> sendUrlMap = CostJSONParser.sendURL(url);
 
-            String message = (String) sendUrlMap.get("message");
-            Log.d("TAG", "onClick orderCost : " + message);
+            String message = sendUrlMap.get("message");
 
+            assert message != null;
             if (message.equals("Не черном списке")) {
 
-                Log.d("TAG", "onSignInResult: " + account.getEmail() + " " + account.getDisplayName());
+                cv.put("verifyOrder", "1");
+                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    Intent intent = new Intent(GoogleSignInActivity.this, MainActivity.class);
-                    startActivity(intent);
+                    intent = new Intent(GoogleSignInActivity.this, MainActivity.class);
                 }
 
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    Intent intent = new Intent(GoogleSignInActivity.this, OpenStreetMapActivity.class);
-                    startActivity(intent);
+                    intent = new Intent(GoogleSignInActivity.this, OpenStreetMapActivity.class);
                 }
-                ContentValues cv = new ContentValues();
-                cv.put("verifyOrder", "1");
-                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                database.close();
+                startActivity(intent);
             }
             if (message.equals("В черном списке")) {
                 Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-                btn_again.setVisibility(View.VISIBLE);
-                ContentValues cv = new ContentValues();
+                try_again_button.setVisibility(View.VISIBLE);
                 cv.put("verifyOrder", "0");
-                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
                 database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                database.close();
-
             }
         }else {
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-            btn_again.setVisibility(View.VISIBLE);
-            ContentValues cv = new ContentValues();
+            try_again_button.setVisibility(View.VISIBLE);
             cv.put("verifyOrder", "0");
-            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-            database.close();
         }
+        database.close();
 
     }
 
@@ -261,8 +258,9 @@ public class GoogleSignInActivity extends Activity {
                 urlConnection.setDoInput(true);
                 urlConnection.getResponseCode();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                Log.d(TAG, "addUser: " + new RuntimeException(e));
             }
+            assert urlConnection != null;
             urlConnection.disconnect();
         });
     }
@@ -270,13 +268,12 @@ public class GoogleSignInActivity extends Activity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        Button btn_again = findViewById(R.id.btn_again);
-        btn_again.setVisibility(View.VISIBLE);
-        btn_again.setOnClickListener(new View.OnClickListener() {
+
+        try_again_button.setVisibility(View.VISIBLE);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(GoogleSignInActivity.this, StartActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(GoogleSignInActivity.this, StartActivity.class));
             }
         });
     }
