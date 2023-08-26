@@ -1524,7 +1524,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                     }
                                                 }
                                             })
-                                            .setNegativeButton("Відміна", new DialogInterface.OnClickListener() {
+                                            .setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
                                                     //
