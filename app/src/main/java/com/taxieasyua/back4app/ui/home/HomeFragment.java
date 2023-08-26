@@ -95,6 +95,7 @@ public class HomeFragment extends Fragment {
     AppCompatButton btncost;
     String FromAddressString, ToAddressString;
     Integer selectedItem;
+    private long firstCost;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -332,6 +333,11 @@ public class HomeFragment extends Fragment {
                                     TextView costView = view_cost.findViewById(R.id.cost);
                                     costView.setText(orderCost);
                                     StartActivity.cost = Long.parseLong(orderCost);
+                                    long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
+                                    long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
+                                    firstCost = Long.parseLong(orderCost);
+
+
                                     StartActivity.addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
@@ -339,21 +345,27 @@ public class HomeFragment extends Fragment {
                                     btn_minus.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-
-                                            if(StartActivity.addCost != 0) {
-                                                StartActivity.addCost -= 5;
-                                                StartActivity.cost -= 5;
-                                                costView.setText(String.valueOf(StartActivity.cost));
+                                            firstCost -= 5;
+                                            StartActivity.addCost -= 5;
+                                            if (firstCost <= MIN_COST_VALUE) {
+                                                firstCost = Long.parseLong(orderCost);
+                                                StartActivity.addCost = 0;
                                             }
+                                            costView.setText(String.valueOf(firstCost));
+
                                         }
                                     });
+
                                     btn_plus.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
+                                            firstCost += 5;
                                             StartActivity.addCost += 5;
-                                            StartActivity.cost += 5;
-                                            Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
-                                            costView.setText(String.valueOf(StartActivity.cost));
+                                            if (firstCost >= MAX_COST_VALUE) {
+                                                firstCost = Long.parseLong(orderCost);
+                                                StartActivity.addCost = 0;
+                                            }
+                                            costView.setText(String.valueOf(firstCost));
                                         }
                                     });
                                     if (!verifyPhone(getContext())) {
@@ -887,6 +899,11 @@ public class HomeFragment extends Fragment {
                     TextView costView = view_cost.findViewById(R.id.cost);
                     costView.setText(orderCost);
                     StartActivity.cost = Long.parseLong(orderCost);
+                    long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
+                    long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
+                    firstCost = Long.parseLong(orderCost);
+
+
                     StartActivity.addCost = 0;
                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
@@ -894,21 +911,28 @@ public class HomeFragment extends Fragment {
                     btn_minus.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-
-                            if(StartActivity.addCost != 0) {
-                                StartActivity.addCost -= 5;
-                                StartActivity.cost -= 5;
-                                costView.setText(String.valueOf(StartActivity.cost));
+                            firstCost -= 5;
+                            StartActivity.addCost -= 5;
+                            if (firstCost <= MIN_COST_VALUE) {
+                                firstCost = Long.parseLong(orderCost);
+                                StartActivity.addCost = 0;
                             }
+                            costView.setText(String.valueOf(firstCost));
+
                         }
                     });
+
                     btn_plus.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            firstCost += 5;
                             StartActivity.addCost += 5;
-                            StartActivity.cost += 5;
-                            costView.setText(String.valueOf(StartActivity.cost));
-                        }
+                            if (firstCost >= MAX_COST_VALUE) {
+                                firstCost = Long.parseLong(orderCost);
+                                StartActivity.addCost = 0;
+                            }
+                            costView.setText(String.valueOf(firstCost));
+                         }
                     });
 
                     builderAddCost

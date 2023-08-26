@@ -112,6 +112,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public static GeoPoint startPoint;
     public static GeoPoint endPoint;
     static Switch gpsSwitch;
+    static long firstCost;
+    static long add;
     private static String[] array;
 
     ArrayList<Map> adressArr;
@@ -273,10 +275,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (connected()) {
-                    Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
-                    startActivity(intent);
-                }
+                finish();
             }
         });
 
@@ -708,6 +707,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 TextView costView = view_cost.findViewById(R.id.cost);
                 costView.setText(orderCost);
                 StartActivity.cost = Long.parseLong(orderCost);
+                long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
+                long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
+                firstCost = Long.parseLong(orderCost);
+
+
                 StartActivity.addCost = 0;
                 Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                 Button btn_plus = view_cost.findViewById(R.id.btn_plus);
@@ -715,23 +719,39 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 btn_minus.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
-                        if(StartActivity.addCost != 0) {
-                            StartActivity.addCost -= 5;
-                            StartActivity.cost -= 5;
-                            costView.setText(String.valueOf(StartActivity.cost));
+                        firstCost -= 5;
+                        StartActivity.addCost -= 5;
+                        if (firstCost <= MIN_COST_VALUE) {
+                            firstCost = Long.parseLong(orderCost);
+                            StartActivity.addCost = 0;
                         }
+                        costView.setText(String.valueOf(firstCost));
+
                     }
                 });
+
                 btn_plus.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        firstCost += 5;
                         StartActivity.addCost += 5;
-                        StartActivity.cost += 5;
+                        if (firstCost >= MAX_COST_VALUE) {
+                            firstCost = Long.parseLong(orderCost);
+                            StartActivity.addCost = 0;
+                        }
+                        costView.setText(String.valueOf(firstCost));
 
-                        costView.setText(String.valueOf(StartActivity.cost));
+
+
                     }
                 });
+
+
+
+
+
+
+
                 if (!verifyPhone(map.getContext())) {
                     getPhoneNumber();
                 }
@@ -1076,6 +1096,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             TextView costView = view_cost.findViewById(R.id.cost);
                                             costView.setText(orderCost);
                                             StartActivity.cost = Long.parseLong(orderCost);
+                                            long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
+                                            long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
+                                            firstCost = Long.parseLong(orderCost);
+
+
                                             StartActivity.addCost = 0;
                                             Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                             Button btn_plus = view_cost.findViewById(R.id.btn_plus);
@@ -1083,21 +1108,30 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             btn_minus.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {
-
-                                                    if(StartActivity.addCost != 0) {
-                                                        StartActivity.addCost -= 5;
-                                                        StartActivity.cost -= 5;
-                                                        costView.setText(String.valueOf(StartActivity.cost));
+                                                    firstCost -= 5;
+                                                    StartActivity.addCost -= 5;
+                                                    if (firstCost <= MIN_COST_VALUE) {
+                                                        firstCost = Long.parseLong(orderCost);
+                                                        StartActivity.addCost = 0;
                                                     }
+                                                    costView.setText(String.valueOf(firstCost));
+
                                                 }
                                             });
+
                                             btn_plus.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {
+                                                    firstCost += 5;
                                                     StartActivity.addCost += 5;
-                                                    StartActivity.cost += 5;
-                                                    Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
-                                                    costView.setText(String.valueOf(StartActivity.cost));
+                                                    if (firstCost >= MAX_COST_VALUE) {
+                                                        firstCost = Long.parseLong(orderCost);
+                                                        StartActivity.addCost = 0;
+                                                    }
+                                                    costView.setText(String.valueOf(firstCost));
+
+
+
                                                 }
                                             });
                                             if (!verifyPhone(getApplicationContext())) {
@@ -1330,6 +1364,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     TextView costView = view_cost.findViewById(R.id.cost);
                                     costView.setText(orderCost);
                                     StartActivity.cost = Long.parseLong(orderCost);
+                                    long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
+                                    long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
+                                    firstCost = Long.parseLong(orderCost);
+
+
                                     StartActivity.addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
@@ -1337,21 +1376,30 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     btn_minus.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
-
-                                            if (StartActivity.addCost != 0) {
-                                                StartActivity.addCost -= 5;
-                                                StartActivity.cost -= 5;
-                                                costView.setText(String.valueOf(StartActivity.cost));
+                                            firstCost -= 5;
+                                            StartActivity.addCost -= 5;
+                                            if (firstCost <= MIN_COST_VALUE) {
+                                                firstCost = Long.parseLong(orderCost);
+                                                StartActivity.addCost = 0;
                                             }
+                                            costView.setText(String.valueOf(firstCost));
+
                                         }
                                     });
+
                                     btn_plus.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
+                                            firstCost += 5;
                                             StartActivity.addCost += 5;
-                                            StartActivity.cost += 5;
-                                            Log.d(TAG, "onClick StartActivity.addCost " + StartActivity.addCost);
-                                            costView.setText(String.valueOf(StartActivity.cost));
+                                            if (firstCost >= MAX_COST_VALUE) {
+                                                firstCost = Long.parseLong(orderCost);
+                                                StartActivity.addCost = 0;
+                                            }
+                                            costView.setText(String.valueOf(firstCost));
+
+
+
                                         }
                                     });
                                     if (!verifyPhone(getApplicationContext())) {
