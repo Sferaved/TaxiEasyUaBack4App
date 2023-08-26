@@ -225,7 +225,8 @@ public class FirebaseSignIn extends AppCompatActivity {
             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
             StartActivity.userEmail = user.getEmail();
             StartActivity.displayName = user.getDisplayName();
-
+            updateRecordsUserInfo("email", user.getEmail());
+            updateRecordsUserInfo("username", user.getDisplayName());
             addUser();
 
             // Проверяем состояние GPS
@@ -245,13 +246,13 @@ public class FirebaseSignIn extends AppCompatActivity {
                     @Override
                     public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
                         if (isEnabled) {
-                            version();
+
 
                             // Проверяем разрешения на местоположение
                             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                     && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                                    Intent intent = new Intent(FirebaseSignIn.this, OpenStreetMapActivity.class);
+                                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
                                     startActivity(intent);
                             } else {
                                 Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
@@ -293,7 +294,17 @@ public class FirebaseSignIn extends AppCompatActivity {
         database.close();
     }
 }
+    private void updateRecordsUserInfo(String userInfo, String result) {
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
 
+        cv.put(userInfo, result);
+
+        // обновляем по id
+        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
 
 
 // Другой код вашего Fragment или Activity...

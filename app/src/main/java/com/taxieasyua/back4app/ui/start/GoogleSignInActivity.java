@@ -88,7 +88,7 @@ public class GoogleSignInActivity extends Activity {
                 api = StartActivity.apiCherkasy;
                 break;
             default:
-                api = StartActivity.apiDnipro;
+                api = StartActivity.apiKyiv;
                 break;
         }
 
@@ -207,41 +207,17 @@ public class GoogleSignInActivity extends Activity {
 
     //Change UI according to user data.
     public void updateUI(GoogleSignInAccount account) throws MalformedURLException {
-        database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
         if(account != null){
-            StartActivity.userEmail = account.getEmail();
-            StartActivity.displayName = account.getDisplayName();
 
-            addUser();
+            updateRecordsUserInfo("email", account.getEmail());
+            updateRecordsUserInfo("username", account.getDisplayName());
 
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" +  StartActivity.userEmail;
+//            addUser(account.getEmail(), account.getDisplayName());
 
-            Map<String, String> sendUrlMap = CostJSONParser.sendURL(url);
-
-            String message = sendUrlMap.get("message");
-
-            assert message != null;
-            if (message.equals("Не черном списке")) {
-
-                cv.put("verifyOrder", "1");
-                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    intent = new Intent(GoogleSignInActivity.this, MainActivity.class);
-                }
-
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    intent = new Intent(GoogleSignInActivity.this, OpenStreetMapActivity.class);
-                }
-                startActivity(intent);
-            }
-            if (message.equals("В черном списке")) {
-                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-                try_again_button.setVisibility(View.VISIBLE);
-                cv.put("verifyOrder", "0");
-                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-            }
+//            cv.put("verifyOrder", "1");
+//            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
         }else {
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
             try_again_button.setVisibility(View.VISIBLE);
@@ -251,48 +227,40 @@ public class GoogleSignInActivity extends Activity {
         database.close();
 
     }
+    private void updateRecordsUserInfo(String userInfo, String result) {
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
 
-//    private void addUser() throws MalformedURLException {
-//        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
-//
-//        URL url = new URL(urlString);
-//        Log.d("TAG", "sendURL: " + urlString);
-//
-//        AsyncTask.execute(() -> {
-//            HttpsURLConnection urlConnection = null;
-//            try {
-//                urlConnection = (HttpsURLConnection) url.openConnection();
-//                urlConnection.setDoInput(true);
+        cv.put(userInfo, result);
+
+        // обновляем по id
+        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+    private void addUser(String displayName, String userEmail) {
+        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" + displayName + "/" + userEmail;
+
+        Callable<Void> addUserCallable = () -> {
+            URL url = new URL(urlString);
+            Log.d("TAG", "sendURL: " + urlString);
+
+            HttpsURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection.setDoInput(true);
 //                urlConnection.getResponseCode();
-//            } catch (IOException e) {
-//                Log.d(TAG, "addUser: " + new RuntimeException(e));
-//            }
-//            assert urlConnection != null;
-//            urlConnection.disconnect();
-//        });
-//    }
-    private void addUser() {
-    String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" + StartActivity.displayName + "/" + StartActivity.userEmail;
-
-    Callable<Void> addUserCallable = () -> {
-        URL url = new URL(urlString);
-        Log.d("TAG", "sendURL: " + urlString);
-
-        HttpsURLConnection urlConnection = null;
-        try {
-            urlConnection = (HttpsURLConnection) url.openConnection();
-            urlConnection.setDoInput(true);
-            urlConnection.getResponseCode();
-        } catch (IOException e) {
-            Log.d(TAG, "addUser: " + new RuntimeException(e));
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
+                Log.d(TAG, "addUser: urlConnection.getResponseCode(); " + urlConnection.getResponseCode());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
             }
-        }
 
-        return null;
-    };
+            return null;
+        };
 
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     Future<Void> addUserFuture = executorService.submit(addUserCallable);
@@ -308,6 +276,36 @@ public class GoogleSignInActivity extends Activity {
         executorService.shutdown();
     }
 }
+
+//    private void addUser(String displayName, String userEmail) {
+//        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" + displayName + "/" + userEmail;
+//
+//        new AsyncTask<Void, Void, Void>() {
+//            @Override
+//            protected Void doInBackground(Void... voids) {
+//                try {
+//                    URL url = new URL(urlString);
+//                    Log.d("TAG", "sendURL: " + urlString);
+//
+//                    HttpsURLConnection urlConnection = null;
+//                    try {
+//                        urlConnection = (HttpsURLConnection) url.openConnection();
+//                        urlConnection.setDoInput(true);
+//                        urlConnection.getResponseCode();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    } finally {
+//                        if (urlConnection != null) {
+//                            urlConnection.disconnect();
+//                        }
+//                    }
+//                } catch (MalformedURLException e) {
+//                    e.printStackTrace();
+//                }
+//                return null;
+//            }
+//        }.execute();
+//    }
 
     @Override
     protected void onRestart() {

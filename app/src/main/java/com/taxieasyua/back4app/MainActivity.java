@@ -36,24 +36,16 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
-import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.Odessa.Odessa;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
-import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
-import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.StartActivity;
@@ -68,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     NetworkChangeReceiver networkChangeReceiver;
     String  cityNew;
-
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationCallback locationCallback;
 
     private final String[] cityList = new String[]{
             "Київ",
@@ -115,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        Toast.makeText(this, getString(R.string.wellcome), Toast.LENGTH_LONG).show();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -241,14 +236,6 @@ public class MainActivity extends AppCompatActivity {
                         database.close();
                         Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(MainActivity.this, OpenStreetMapActivity.class));
-//                        HomeFragment newFragment = new HomeFragment();
-//                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//                        transaction.replace(R.id.nav_home, newFragment); // Замените R.id.fragment_container на ID вашего контейнера фрагментов
-//                        transaction.addToBackStack(null);
-//                        transaction.commit();
-
-
-
 
                     }
                 }).setNegativeButton(cancel_button, null)
@@ -452,5 +439,6 @@ public class MainActivity extends AppCompatActivity {
         database.close();
         return list;
     }
+
 
 }

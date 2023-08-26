@@ -1,5 +1,6 @@
 package com.taxieasyua.back4app.ui.start;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -32,11 +33,21 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.taxieasyua.back4app.MainActivity;
+import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
+import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
+import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
+import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
+import com.taxieasyua.back4app.cities.Odessa.Odessa;
+import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
+import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
+import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;
 
@@ -45,6 +56,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -54,13 +66,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_24082023_0";
+    public static final String DB_NAME = "data_26082023_35";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
     public static final String TABLE_SERVICE_INFO = "serviceInfo";
     public static final String TABLE_ADD_SERVICE_INFO = "serviceAddInfo";
     public static final String CITY_INFO = "cityInfo";
+    public static final String TABLE_POSITION_INFO = "myPosition";
 
     public static SQLiteDatabase database;
     public static Cursor cursorDb;
@@ -75,6 +88,7 @@ public class StartActivity extends Activity {
     public static final String  apiOdessa = "apiPas2_Odessa";
     public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
     public static final String  apiCherkasy = "apiPas2_Cherkasy";
+    private static String  api = "apiPas2";
 
     public static long addCost, cost;
     public static boolean verifyPhone;
@@ -85,56 +99,8 @@ public class StartActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-        try {
-            initDB();
-        } catch (MalformedURLException | JSONException | InterruptedException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
-        }
 
-        try_again_button = findViewById(R.id.try_again_button);
-        try_again_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(StartActivity.this, StartActivity.class));
-                }
-            });
-        if(hasConnection() && hasServer()) {
-            isConnectedToGoogle(new ConnectionCallback() {
-                @Override
-                public void onConnectionResult(long responseTime) {
-                    if (responseTime < 0 || responseTime >= 2000) {
-                        Log.d("TAG", "Connected to Google. Response Time: " + responseTime + " ms");//
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(StartActivity.this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-                    } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
 
-                                    startIp();
-//                                    startActivity(new Intent(StartActivity.this, FirebaseSignIn.class));
-                                    startActivity(new Intent(StartActivity.this, GoogleSignInActivity.class));
-                                } catch (MalformedURLException e) {
-                                }
-                            }
-                        });
-
-                    }
-                }
-            });
-        }
-        else  {
-            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-            try_again_button.setVisibility(View.VISIBLE);
-            setRepeatingAlarm();
-        }
 
     }
     private void checkPermission(String permission, int requestCode) {
@@ -194,7 +160,85 @@ public class StartActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
+        try {
+            initDB();
+        } catch (MalformedURLException | JSONException | InterruptedException ignored) {
 
+        }
+
+        List<String> stringList = logCursor(StartActivity.CITY_INFO);
+        Log.d("TAG", "onCreate: " + stringList );
+        if(stringList.size()!=0) {
+            switch (stringList.get(1)) {
+                case "Dnipropetrovsk Oblast":
+
+                    api = StartActivity.apiDnipro;
+
+                    break;
+                case "Odessa":
+
+                    api = StartActivity.apiOdessa;
+
+                    break;
+                case "Zaporizhzhia":
+
+                    api = StartActivity.apiZaporizhzhia;
+
+                    break;
+                case "Cherkasy Oblast":
+
+                    api = StartActivity.apiCherkasy;
+
+                    break;
+                case "OdessaTest":
+
+                    api = StartActivity.apiTest;
+
+                    break;
+                default:
+
+                    api = StartActivity.apiKyiv;
+
+                    break;
+            }
+        }
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(StartActivity.this, StartActivity.class));
+            }
+        });
+        Log.d("TAG", "onCreate: " + api);
+        if(hasConnection() && hasServer()) {
+
+            try {
+                startIp();
+                blackList();
+                version();
+            } catch (MalformedURLException ignored) {
+            }
+            isConnectedToGoogle(new ConnectionCallback() {
+                @Override
+                public void onConnectionResult(long responseTime) {
+                    if (responseTime < 0 || responseTime >= 2000) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(StartActivity.this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        else  {
+            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            try_again_button.setVisibility(View.VISIBLE);
+            setRepeatingAlarm();
+        }
 
         fab = findViewById(R.id.fab);
         btn_again = findViewById(R.id.btn_again);
@@ -259,7 +303,7 @@ public class StartActivity extends Activity {
         boolean isConnected = false;
         try {
             isConnected = connectionFuture.get();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         return  isConnected;
@@ -289,16 +333,13 @@ public class StartActivity extends Activity {
     }
 
     public void isConnectedToGoogle(ConnectionCallback callback) {
-        ImageView mImageView = findViewById(R.id.imageView2);
-        Animation sunRiseAnimation = AnimationUtils.loadAnimation(this, R.anim.sun_rise);
-        // Подключаем анимацию к нужному View
-        mImageView.startAnimation(sunRiseAnimation);
+
 
         final long[] responseTime = {0}; // Объявляем как final массив
 
         AsyncTask.execute(() -> {
             try {
-                String googleEndpoint = "https://firebase.google.com/";
+                String googleEndpoint = "https://www.google.com/";
                 long startTime = System.currentTimeMillis();
 
                 URL url = new URL(googleEndpoint);
@@ -324,32 +365,7 @@ public class StartActivity extends Activity {
     }
 
 
-
     public void startIp() throws MalformedURLException {
-        String api;
-        List<String> stringList = logCursor(StartActivity.CITY_INFO);
-        switch (stringList.get(1)){
-            case "Kyiv City":
-                api = StartActivity.apiKyiv;
-                break;
-            case "Dnipropetrovsk Oblast":
-                api = StartActivity.apiDnipro;
-                break;
-            case "Odessa":
-                api = StartActivity.apiOdessa;
-                break;
-            case "Zaporizhzhia":
-                api = StartActivity.apiZaporizhzhia;
-                break;
-            case "Cherkasy Oblast":
-                api = StartActivity.apiCherkasy;
-                break;
-            default:
-                api = StartActivity.apiKyiv;
-                break;
-        }
-
-
 
         String urlString = "https://m.easy-order-taxi.site/" +  api + "/android/startIP";
         Log.d("TAG", "startIp: " + urlString);
@@ -368,6 +384,7 @@ public class StartActivity extends Activity {
         });
 
     }
+
     private void initDB() throws MalformedURLException, JSONException, InterruptedException {
 //        this.deleteDatabase(DB_NAME);
         database = this.openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
@@ -375,7 +392,9 @@ public class StartActivity extends Activity {
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_USER_INFO + "(id integer primary key autoincrement," +
                 " verifyOrder text," +
-                " phone_number text);");
+                " phone_number text," +
+                " email text," +
+                " username text);");
 
         cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -386,6 +405,16 @@ public class StartActivity extends Activity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS_INFO + "(id integer primary key autoincrement," +
                 " type_auto text," +
                 " tarif text);");
+
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_POSITION_INFO + "(id integer primary key autoincrement," +
+                " startLat double," +
+                " startLan double," +
+                " position text);");
+        cursorDb = database.query(TABLE_POSITION_INFO, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            insertMyPosition();
+        }
+
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ORDERS_INFO + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
@@ -507,13 +536,24 @@ public class StartActivity extends Activity {
         }
     }
     private void insertUserInfo() {
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?);";
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+        }
+
+
+
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?);";
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
             statement.clearBindings();
             statement.bindString(2, "0");
             statement.bindString(3, "+380");
+            statement.bindString(4, "email");
+            statement.bindString(5, "username");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -557,11 +597,17 @@ public class StartActivity extends Activity {
         cv.put("phone_number", result);
 
         // обновляем по id
-        int updCount = database.update(TABLE_USER_INFO, cv, "id = ?",
+        database.update(TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
-        Log.d("TAG", "updated rows count = " + updCount);
+    }
+    public static void updateRecordsUserInfo(String userInfo, String result) {
+        ContentValues cv = new ContentValues();
 
+        cv.put(userInfo, result);
 
+        // обновляем по id
+        database.update(TABLE_USER_INFO, cv, "id = ?",
+                new String[] { "1" });
     }
 
     @SuppressLint("Range")
@@ -625,24 +671,27 @@ public class StartActivity extends Activity {
                                 new String[] { "1" });
                         database.close();
                         insertCity(result);
+                        Log.d("TAG", "onResponse: " + result);
                         switch (result){
-                            case "Kyiv City":
-                                message += getString(R.string.Kyiv_city);
-                                break;
                             case "Dnipropetrovsk Oblast":
                                 message += getString(R.string.Dnipro_city);
+                                api = StartActivity.apiDnipro;
                                 break;
                             case "Odessa":
                                 message += getString(R.string.Odessa);
+                                api = StartActivity.apiOdessa;
                                 break;
                             case "Zaporizhzhia":
                                 message += getString(R.string.Zaporizhzhia);
+                                api = StartActivity.apiZaporizhzhia;
                                 break;
                             case "Cherkasy Oblast":
                                 message += getString(R.string.Cherkasy);
+                                api = StartActivity.apiCherkasy;
                                 break;
                             default:
                                 message += getString(R.string.Kyiv_city);
+                                api = StartActivity.apiKyiv;
                                 break;
                         }
                         Log.d("TAG", "onResponse: StartActivity.TABLE_SETTINGS_INFO " + logCursor(StartActivity.TABLE_SETTINGS_INFO));
@@ -652,6 +701,8 @@ public class StartActivity extends Activity {
                 else {
                     Toast.makeText(StartActivity.this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
                 }
+
+
             }
 
             @Override
@@ -679,13 +730,100 @@ public class StartActivity extends Activity {
             database.endTransaction();
         }
     }
+    private void insertMyPosition() {
+        String sql = "INSERT INTO " + StartActivity.TABLE_POSITION_INFO + " VALUES(?,?,?,?);";
 
-    public static void updateCity(String city) {
-        ContentValues cv = new ContentValues();
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
 
-        cv.put("city", city);
-        // обновляем по id
-        database.update(CITY_INFO, cv, "id = ?",
-                new String[] { "1" });
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindDouble(2, 0);
+            statement.bindDouble(3, 0);
+            statement.bindString(4, " ");
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+    }
+    private void blackList() throws MalformedURLException {
+
+        String userEmail = logCursor(TABLE_USER_INFO).get(3);
+        if(userEmail.equals("email")) {
+            Log.d("TAG", "blackList:userEmail " + userEmail);
+//            startActivity(new Intent(StartActivity.this, GoogleSignInActivity.class));
+            startActivity(new Intent(StartActivity.this, FirebaseSignIn.class));
+
+        } else {
+
+            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" +  userEmail;
+
+            Map<String, String> sendUrlMap = CostJSONParser.sendURL(url);
+
+            String message = sendUrlMap.get("message");
+
+            ContentValues cv = new ContentValues();
+            assert message != null;
+            if (message.equals("Не черном списке")) {
+                cv.put("verifyOrder", "1");
+                database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+
+                    startActivity(new Intent(this, MainActivity.class));
+            }
+            if (message.equals("В черном списке")) {
+//                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(StartActivity.this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+                        findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
+                        try_again_button.setVisibility(View.VISIBLE);
+                        cv.put("verifyOrder", "0");
+                        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                    }
+                });
+
+
+            }
+        }
+
+
+    }
+
+    private void version() throws MalformedURLException {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" +"versionAPI";
+
+
+        Log.d("TAG", "onClick urlCost: " + url);
+        Map sendUrlMapCost = null;
+        try {
+            sendUrlMapCost = ResultSONParser.sendURL(url);
+        } catch (MalformedURLException | InterruptedException | JSONException e) {
+            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+        }
+
+        String message = (String) sendUrlMapCost.get("message");
+        if(!message.equals(getString(R.string.version_code))) {
+            NotificationHelper notificationHelper = new NotificationHelper();
+
+            String title = getString(R.string.new_version);
+            String messageNotif = getString(R.string.news_of_version);
+            String urlStr = "https://play.google.com/store/apps/details?id= com.taxieasyua.back4app";
+
+            notificationHelper.showNotification(this, title, messageNotif, urlStr);
+        }
+
+
+
     }
 }

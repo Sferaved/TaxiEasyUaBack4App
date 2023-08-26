@@ -1037,6 +1037,8 @@ public class HomeFragment extends Fragment {
 
         String parameters = null;
         String phoneNumber = "no phone";
+        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
 
         if(urlAPI.equals("costSearch")) {
             Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -1044,14 +1046,14 @@ public class HomeFragment extends Fragment {
                 phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName ;
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1177,6 +1179,10 @@ public class HomeFragment extends Fragment {
 
         String parameters = null;
         String phoneNumber = "no phone";
+        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+
+
         if(urlAPI.equals("costSearchMarkers")) {
             Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
@@ -1184,7 +1190,7 @@ public class HomeFragment extends Fragment {
                 phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName + "(" + StartActivity.userEmail + ")";
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
         if(urlAPI.equals("orderSearchMarkers")) {
@@ -1192,7 +1198,7 @@ public class HomeFragment extends Fragment {
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 

@@ -154,12 +154,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
     Dialog alertDialog;
+    String phone;
 
     @SuppressLint("MissingInflatedId")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toast.makeText(this, getString(R.string.check_position), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
+
         networkChangeReceiver = new NetworkChangeReceiver();
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
@@ -189,15 +191,22 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         vph = getString(R.string.verify_phone);
         coo = getString(R.string.cost_of_order);
 
+        progressBar = findViewById(R.id.progressBar);
+
         inflater = getLayoutInflater();
         view = inflater.inflate(R.layout.phone_verify_layout, null);
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
-
         mapController = map.getController();
-        startLat = 50.27;
-        startLan = 30.31;
+        List<String> startList = logCursor(StartActivity.TABLE_POSITION_INFO, this);
+        Log.d(TAG, "onCreate: startList" + startList);
+
+        startLat =  Double.parseDouble(startList.get(1));
+        startLan = Double.parseDouble(startList.get(2));
+        FromAdressString = startList.get(3);
+
         GeoPoint initialGeoPoint = new GeoPoint(startLat, startLan);
+        map.getController().setCenter(initialGeoPoint);
         map.getController().setCenter(initialGeoPoint);
 
         map.setBuiltInZoomControls(true);
@@ -205,35 +214,47 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         mapController.setZoom(16);
         map.setClickable(true);
 
+
+        MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
+        map.getOverlays().add(markerOverlay);
+        setMarker(startLat, startLan, FromAdressString);
+
+        map.invalidate();
+        progressBar.setVisibility(View.INVISIBLE);
+
+
+
         List<String> stringList = logCursor(StartActivity.CITY_INFO, this);
         switch (stringList.get(1)){
-            case "Kyiv City":
-                arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.apiKyiv;
-                break;
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
                 api = StartActivity.apiDnipro;
+                phone = "tel:0667257070";
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
                 api = StartActivity.apiOdessa;
+                phone = "tel:0737257070";
                 break;
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
                 api = StartActivity.apiZaporizhzhia;
+                phone = "tel:0687257070";
                 break;
             case "Cherkasy Oblast":
                 arrayStreet = Cherkasy.arrayStreet();
                 api = StartActivity.apiCherkasy;
+                phone = "tel:0962294243";
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
                 api = StartActivity.apiTest;
+                phone = "tel:0674443804";
                 break;
             default:
                 arrayStreet = KyivCity.arrayStreet();
                 api = StartActivity.apiKyiv;
+                phone = "tel:0674443804";
                 break;
         }
 
@@ -263,28 +284,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
-                String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO, OpenStreetMapActivity.this);
-                switch (stringList.get(1)){
-                    case "Kyiv City":
-                        phone = "tel:0674443804";
-                        break;
-                    case "Dnipropetrovsk Oblast":
-                        phone = "tel:0667257070";
-                        break;
-                    case "Odessa":
-                        phone = "tel:0737257070";
-                        break;
-                    case "Zaporizhzhia":
-                        phone = "tel:0687257070";
-                        break;
-                    case "Cherkasy Oblast":
-                        phone = "tel:0962294243";
-                        break;
-                    default:
-                        phone = "tel:0674443804";
-                        break;
-                }
                 intent.setData(Uri.parse(phone));
                 startActivity(intent);
             }
@@ -292,12 +291,29 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         fab_open_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class));
-                } else {
-                    Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
-                    startActivity(intent);
+//                if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                    startActivity(new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class));
+//                } else {
+//                    Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
+//                    startActivity(intent);
+//                }
+
+                Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+
+                if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                    return;
                 }
+
+                if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    startLocationUpdates();
+                } else {
+                    requestLocationPermission();
+                }
+
             }
         });
 
@@ -321,7 +337,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 
 
-        progressBar = findViewById(R.id.progressBar);
+
 
 //        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
 //        LayoutInflater inflater = this.getLayoutInflater();
@@ -343,89 +359,77 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 //        alertDialog = builder.show();
 
         array = arrayAdressAdapter();
-
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                // Обработка полученных местоположений
-                stopLocationUpdates();
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    // Обработка полученных местоположений
+                    stopLocationUpdates();
 
-                // Обработка полученных местоположений
-                List<Location> locations = locationResult.getLocations();
-                if (!locations.isEmpty()) {
-                    Location firstLocation = locations.get(0);
-                    double latitude = firstLocation.getLatitude();
-                    double longitude = firstLocation.getLongitude();
-                    startLat = latitude;
-                    startLan = longitude;
+                    // Обработка полученных местоположений
+                    List<Location> locations = locationResult.getLocations();
+                    if (!locations.isEmpty()) {
+                        Location firstLocation = locations.get(0);
+                        if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()){
 
-                    String urlFrom =  "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-                    Map sendUrlFrom = null;
-                    try {
-                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+                            double latitude = firstLocation.getLatitude();
+                            double longitude = firstLocation.getLongitude();
+                            startLat = latitude;
+                            startLan = longitude;
 
-                    } catch (MalformedURLException | InterruptedException | JSONException e) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                        finish();
+
+                            String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+                            Map sendUrlFrom = null;
+                            try {
+                                sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+
+                            } catch (MalformedURLException | InterruptedException |
+                                     JSONException e) {
+                                Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                                finish();
+                            }
+                            FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                            updateMyPosition(startLat, startLan, FromAdressString);
+
+
+                            MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
+                            map.getOverlays().add(markerOverlay);
+                            setMarker(startLat, startLan, FromAdressString);
+                            GeoPoint initialGeoPoint = new GeoPoint(startLat, startLan);
+                            map.getController().setCenter(initialGeoPoint);
+
+                            map.invalidate();
+                            progressBar.setVisibility(View.INVISIBLE);
+                        }
+                        try {
+                            dialogFromToGeo();
+                        } catch (MalformedURLException | InterruptedException |
+                                 JSONException ignored) {
+
+                        }
+
                     }
-                    FromAdressString =  (String) sendUrlFrom.get("route_address_from");
-                    progressBar.setVisibility(View.INVISIBLE);
-                    MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
-                    map.getOverlays().add(markerOverlay);
-                    setMarker(startLat, startLan, FromAdressString);
-                    GeoPoint initialGeoPoint = new GeoPoint(startLat, startLan);
-                    map.getController().setCenter(initialGeoPoint);
-
-                    map.invalidate();
-                    progressBar.setVisibility(View.INVISIBLE);
-
-                }
-
-
-                try {
-                    dialogFromToGeo();
-                } catch (MalformedURLException | InterruptedException | JSONException e) {
-                    Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                }
-
-            }
+            };
         };
 
-        List<String> stringListArr = logCursor(StartActivity.CITY_INFO, this);
-        switch (stringListArr.get(1)){
-            case "Kyiv City":
-                arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.apiKyiv;
-                break;
-            case "Dnipropetrovsk Oblast":
-                arrayStreet = Dnipro.arrayStreet();
-                api = StartActivity.apiDnipro;
-                break;
-            case "Odessa":
-                arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiOdessa;
-                break;
-            case "Zaporizhzhia":
-                arrayStreet = Zaporizhzhia.arrayStreet();
-                api = StartActivity.apiZaporizhzhia;
-                break;
-            case "Cherkasy Oblast":
-                arrayStreet = Cherkasy.arrayStreet();
-                api = StartActivity.apiCherkasy;
-                break;
-            case "OdessaTest":
-                arrayStreet = OdessaTest.arrayStreet();
-                api = StartActivity.apiTest;
-                break;
-            default:
-                arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.apiKyiv;
-                break;
-        }
         
     }
+    private void updateMyPosition(Double startLat, Double startLan, String position) {
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
 
+        cv.put("startLat", startLat);
+        database.update(StartActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        cv.put("startLan", startLan);
+        database.update(StartActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        cv.put("position", position);
+        database.update(StartActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+
+    }
     private void startLocationUpdates() {
         LocationRequest locationRequest = createLocationRequest();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -521,20 +525,25 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
-        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
+            Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
-        } else {
-            requestLocationPermission();
-        }
+            if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                return;
+            }
+
+            if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+            } else {
+                requestLocationPermission();
+            }
+
+
+
         map.onResume();
     }
 
@@ -1600,6 +1609,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         String parameters = null;
         String phoneNumber = "no phone";
+        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+
         if(urlAPI.equals("costSearchGeo")) {
             Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
@@ -1607,14 +1619,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName + "(" + StartActivity.userEmail + ")";
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
