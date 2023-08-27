@@ -57,7 +57,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     Button btn_min, btn_plus;
     long discountFist;
     final static long MIN_VALUE = -90;
-    final static long MAX_VALUE = 300;
+    final static long MAX_VALUE = 200;
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
@@ -196,7 +196,11 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 if (discountFist <= MIN_VALUE) {
                     discountFist = MIN_VALUE;
                 }
-                discount.setText( String.valueOf(discountFist));
+                if(discountFist > 0) {
+                    discount.setText("+" + String.valueOf(discountFist));
+                } else {
+                    discount.setText( String.valueOf(discountFist));
+                }
             }
         });
         btn_plus = view.findViewById(R.id.btn_plus);
@@ -207,7 +211,11 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 if (discountFist >= MAX_VALUE) {
                     discountFist = MAX_VALUE;
                 }
-                discount.setText( String.valueOf(discountFist));
+                if(discountFist > 0) {
+                    discount.setText("+" + String.valueOf(discountFist));
+                } else {
+                    discount.setText( String.valueOf(discountFist));
+                }
             }
         });
 

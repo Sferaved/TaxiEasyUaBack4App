@@ -341,11 +341,8 @@ public class HomeFragment extends Fragment {
                                     String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                                     long discountInt = Integer.parseInt(discountText);
                                     long discount;
-                                    if (discountInt >=0 ) {
-                                        discount = firstCost  * (discountInt - 100) /100;
-                                    } else {
-                                        discount =  firstCost * discountInt/100;
-                                    }
+
+                                    discount =  firstCost * discountInt/100;
                                     firstCost = firstCost  + discount;
 
                                     addCost = discount;
@@ -785,16 +782,17 @@ public class HomeFragment extends Fragment {
                         break;
                 }
 
-                String subject = "Повідомлення від користувача";
 
                 List<String> userList = logCursor(StartActivity.TABLE_USER_INFO, getActivity());
+                String subject = "Повідомлення про додаток " + getString(R.string.version);
 
-                String body = "База адрес міста " + city + "\n" +
+                String body ="Опишить, будь ласка, Вашу проблему далі: " + "\n"+ "\n" +
+                        "Інформація про додаток: "+ "\n" +
+                        "База адрес міста " + city + "\n" +
                         "Додаток: " + getString(R.string.version) + "\n" +
                         "Користувач: " + userList.get(4) + "\n" +
                         "email: " + userList.get(3) + "\n" +
-                        "телефон: " + userList.get(2) + "\n"+"\n"+
-                        "Опишить, будь ласка, Вашу проблему далі: " + "\n";
+                        "телефон: " + userList.get(2) + "\n"+"\n";
 
                 String[] CC = {"cartaxi4@gmail.com"};
                 String[] TO = {"taxi.easy.ua@gmail.com"};
@@ -973,11 +971,8 @@ public class HomeFragment extends Fragment {
                     String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                     long discountInt = Integer.parseInt(discountText);
                     long discount;
-                    if (discountInt >=0 ) {
-                        discount = firstCost  * (discountInt - 100) /100;
-                    } else {
-                        discount =  firstCost * discountInt/100;
-                    }
+
+                    discount =  firstCost * discountInt/100;
                     firstCost = firstCost  + discount;
 
                     addCost = discount;

@@ -718,11 +718,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
                 long discount;
-                if (discountInt >=0 ) {
-                    discount = firstCost  * (discountInt - 100) /100;
-                } else {
-                    discount =  firstCost * discountInt/100;
-                }
+                discount =  firstCost * discountInt/100;
                 firstCost = firstCost  + discount;
 
                 addCost = discount;
@@ -1114,11 +1110,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
                                             long discountInt = Integer.parseInt(discountText);
                                             long discount;
-                                            if (discountInt >=0 ) {
-                                                discount = firstCost  * (discountInt - 100) /100;
-                                            } else {
-                                                discount =  firstCost * discountInt/100;
-                                            }
+                                            discount =  firstCost * discountInt/100;
                                             firstCost = firstCost  + discount;
 
                                             addCost = discount;
@@ -1390,11 +1382,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
                                     long discountInt = Integer.parseInt(discountText);
                                     long discount;
-                                    if (discountInt >=0 ) {
-                                        discount = firstCost  * (discountInt - 100) /100;
-                                    } else {
-                                        discount =  firstCost * discountInt/100;
-                                    }
+                                    discount =  firstCost * discountInt/100;
                                     firstCost = firstCost  + discount;
 
                                     addCost = discount;
