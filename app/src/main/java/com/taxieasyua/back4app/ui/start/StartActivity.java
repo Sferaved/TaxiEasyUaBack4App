@@ -21,10 +21,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,17 +34,10 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
-import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.Odessa.Odessa;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
-import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;
 
@@ -66,7 +56,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_26082023_35";
+    public static final String DB_NAME = "data_27082023_4";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -101,106 +91,42 @@ public class StartActivity extends Activity {
         setContentView(R.layout.start_layout);
 
 
-
-    }
-    private void checkPermission(String permission, int requestCode) {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
-        }
-    }
-
-    // Создаем метод для установки повторяющегося будильника
-    private void setRepeatingAlarm() {
-        // Получаем системный сервис AlarmManager
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        // Создаем намерение для запуска StartActivity
-        Intent intent = new Intent(this, StartActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
-        // Устанавливаем повторяющийся будильник с интервалом 60 секунд
-        long intervalMillis = 60 * 1000; // 60 секунд
-        long triggerTimeMillis = System.currentTimeMillis() + intervalMillis;
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTimeMillis, intervalMillis, pendingIntent);
-
-        // Проверяем наличие интернет-соединения
-        connectivityReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-
-                if (hasConnectionAlarm()) {
-                    // Если есть подключение к интернету, отменяем повторяющийся будильник
-                    alarmManager.cancel(pendingIntent);
-                    try_again_button.setVisibility(View.INVISIBLE);
-                    startActivity(new Intent(StartActivity.this, StartActivity.class));
-                    if (connectivityReceiver != null) {
-                        unregisterReceiver(connectivityReceiver);
-                    }
-                }
-            }
-        };
-
-        // Регистрируем BroadcastReceiver для изменений состояния сети
-        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(connectivityReceiver, intentFilter);
-
-    }
-    private boolean hasConnectionAlarm() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-
-    }
-    @SuppressLint("SuspiciousIndentation")
-    @Override
-    protected void onResume() {
-        super.onResume();
-
         try {
             initDB();
         } catch (MalformedURLException | JSONException | InterruptedException ignored) {
 
         }
-
         List<String> stringList = logCursor(StartActivity.CITY_INFO);
-        Log.d("TAG", "onCreate: " + stringList );
+        String message = getString(R.string.your_city);
         if(stringList.size()!=0) {
             switch (stringList.get(1)) {
                 case "Dnipropetrovsk Oblast":
-
+                    message += getString(R.string.Dnipro_city);
                     api = StartActivity.apiDnipro;
-
                     break;
                 case "Odessa":
-
+                    message += getString(R.string.Odessa);
                     api = StartActivity.apiOdessa;
-
                     break;
                 case "Zaporizhzhia":
-
+                    message += getString(R.string.Zaporizhzhia);
                     api = StartActivity.apiZaporizhzhia;
-
                     break;
                 case "Cherkasy Oblast":
-
+                    message += getString(R.string.Cherkasy);
                     api = StartActivity.apiCherkasy;
-
                     break;
                 case "OdessaTest":
-
+                    message += getString(R.string.OdessaTest);
                     api = StartActivity.apiTest;
-
                     break;
                 default:
-
+                    message += getString(R.string.Kyiv_city);
                     api = StartActivity.apiKyiv;
-
                     break;
             }
+
+            Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
         }
         try_again_button = findViewById(R.id.try_again_button);
         try_again_button.setOnClickListener(new View.OnClickListener() {
@@ -209,7 +135,7 @@ public class StartActivity extends Activity {
                 startActivity(new Intent(StartActivity.this, StartActivity.class));
             }
         });
-        Log.d("TAG", "onCreate: " + api);
+
         if(hasConnection() && hasServer()) {
 
             try {
@@ -244,44 +170,99 @@ public class StartActivity extends Activity {
         btn_again = findViewById(R.id.btn_again);
 
         fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                    String phone;
-                    List<String> stringList = logCursor(StartActivity.CITY_INFO);
-                    switch (stringList.get(1)){
-                        case "Kyiv City":
-                            phone = "tel:0674443804";
-                            break;
-                        case "Dnipropetrovsk Oblast":
-                            phone = "tel:0667257070";
-                            break;
-                        case "Odessa":
-                            phone = "tel:0737257070";
-                            break;
-                        case "Zaporizhzhia":
-                            phone = "tel:0687257070";
-                            break;
-                        case "Cherkasy Oblast":
-                            phone = "tel:0962294243";
-                            break;
-                        default:
-                            phone = "tel:0674443804";
-                            break;
-                    }
-                    intent.setData(Uri.parse(phone));
-                    startActivity(intent);
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                String phone;
+                List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                switch (stringList.get(1)){
+                    case "Kyiv City":
+                        phone = "tel:0674443804";
+                        break;
+                    case "Dnipropetrovsk Oblast":
+                        phone = "tel:0667257070";
+                        break;
+                    case "Odessa":
+                        phone = "tel:0737257070";
+                        break;
+                    case "Zaporizhzhia":
+                        phone = "tel:0687257070";
+                        break;
+                    case "Cherkasy Oblast":
+                        phone = "tel:0962294243";
+                        break;
+                    default:
+                        phone = "tel:0674443804";
+                        break;
                 }
-            });
+                intent.setData(Uri.parse(phone));
+                startActivity(intent);
+            }
+        });
+        btn_again.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent = new Intent(StartActivity.this, StartActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+    private void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+        }
+    }
+
+    // Создаем метод для установки повторяющегося будильника
+    private void setRepeatingAlarm() {
+        // Получаем системный сервис AlarmManager
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        // Создаем намерение для запуска StartActivity
+        Intent intent = new Intent(this, StartActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        // Устанавливаем повторяющийся будильник с интервалом 60 секунд
+        long intervalMillis = 60 * 1000; // 60 секунд
+        long triggerTimeMillis = System.currentTimeMillis() + intervalMillis;
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTimeMillis, intervalMillis, pendingIntent);
+
+        // Проверяем наличие интернет-соединения
+        connectivityReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+            if (hasConnectionAlarm()) {
+                    // Если есть подключение к интернету, отменяем повторяющийся будильник
+                    alarmManager.cancel(pendingIntent);
+                    try_again_button.setVisibility(View.INVISIBLE);
+                    startActivity(new Intent(StartActivity.this, StartActivity.class));
+                    if (connectivityReceiver != null) {
+                        unregisterReceiver(connectivityReceiver);
+                    }
+                }
+            }
+        };
+
+        // Регистрируем BroadcastReceiver для изменений состояния сети
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(connectivityReceiver, intentFilter);
+
+    }
+    private boolean hasConnectionAlarm() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+    }
+    @SuppressLint("SuspiciousIndentation")
+    @Override
+    protected void onResume() {
+        super.onResume();
 
 
-       btn_again.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-               intent = new Intent(StartActivity.this, StartActivity.class);
-               startActivity(intent);
-           }
-       });
 
     }
 
@@ -399,13 +380,26 @@ public class StartActivity extends Activity {
         cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertUserInfo();
+            if (cursorDb != null && !cursorDb.isClosed())
+                cursorDb.close();
         }
 
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS_INFO + "(id integer primary key autoincrement," +
                 " type_auto text," +
-                " tarif text);");
+                " tarif text," +
+                " discount text);");
 
+        cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            List<String> settings = new ArrayList<>();
+            settings.add("usually");
+            settings.add(" ");
+            settings.add("0");
+            insertFirstSettings(settings);
+            if (cursorDb != null && !cursorDb.isClosed())
+                cursorDb.close();
+        }
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_POSITION_INFO + "(id integer primary key autoincrement," +
                 " startLat double," +
                 " startLan double," +
@@ -413,6 +407,8 @@ public class StartActivity extends Activity {
         cursorDb = database.query(TABLE_POSITION_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertMyPosition();
+            if (cursorDb != null && !cursorDb.isClosed())
+                cursorDb.close();
         }
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ORDERS_INFO + "(id integer primary key autoincrement," +
@@ -424,16 +420,8 @@ public class StartActivity extends Activity {
                 " to_number text," +
                 " to_lat text," +
                 " to_lng text);");
-//        Log.d("TAG", "initDB TABLE_ORDERS_INFO:" + logCursor(TABLE_ORDERS_INFO));
-        cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        if (cursorDb.getCount() == 0) {
-            List<String> settings = new ArrayList<>();
-            settings.add("usually");
-            settings.add(" ");
-            insertFirstSettings(settings);
-            if (cursorDb != null && !cursorDb.isClosed())
-                cursorDb.close();
-        }
+
+
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SERVICE_INFO + "(id integer primary key autoincrement," +
                 " BAGGAGE text," +
                 " ANIMAL text," +
@@ -452,6 +440,8 @@ public class StartActivity extends Activity {
         cursorDb = database.query(TABLE_SERVICE_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertServices();
+            if (cursorDb != null && !cursorDb.isClosed())
+                cursorDb.close();
         }
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_ADD_SERVICE_INFO + "(id integer primary key autoincrement," +
@@ -464,24 +454,28 @@ public class StartActivity extends Activity {
         } else {
             resetRecordsAddServices();
         }
-
+        if (cursorDb != null && !cursorDb.isClosed())
+            cursorDb.close();
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
                 " city text);");
         getLocalIpAddress();
 
-        Cursor cursor = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-        verifyPhone = cursor.getCount() == 1;
+        cursorDb = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        verifyPhone = cursorDb.getCount() == 1;
+        if (cursorDb != null && !cursorDb.isClosed())
+            cursorDb.close();
     }
 
     private void insertFirstSettings(List<String> settings) {
-        String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?);";
+        String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?);";
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
             statement.clearBindings();
             statement.bindString(2, settings.get(0));
             statement.bindString(3, settings.get(1));
+            statement.bindString(4, settings.get(2));
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -652,68 +646,74 @@ public class StartActivity extends Activity {
     }
 
     private void getLocalIpAddress() {
-        ApiService apiService = ApiClient.getApiService();
 
-        Call<City> call = apiService.cityOrder();
+        List<String> city = logCursor(CITY_INFO);
 
-        call.enqueue(new Callback<City>() {
-            @Override
-            public void onResponse(Call<City> call, Response<City> response) {
-                if (response.isSuccessful()) {
-                    City status = response.body();
-                    if (status != null) {
-                        String result = status.getResponse();
-                        String message = getString(R.string.your_city);
-                        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                        ContentValues cv = new ContentValues();
-                        cv.put("tarif", " ");
-                        database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
-                        insertCity(result);
-                        Log.d("TAG", "onResponse: " + result);
-                        switch (result){
-                            case "Dnipropetrovsk Oblast":
-                                message += getString(R.string.Dnipro_city);
-                                api = StartActivity.apiDnipro;
-                                break;
-                            case "Odessa":
-                                message += getString(R.string.Odessa);
-                                api = StartActivity.apiOdessa;
-                                break;
-                            case "Zaporizhzhia":
-                                message += getString(R.string.Zaporizhzhia);
-                                api = StartActivity.apiZaporizhzhia;
-                                break;
-                            case "Cherkasy Oblast":
-                                message += getString(R.string.Cherkasy);
-                                api = StartActivity.apiCherkasy;
-                                break;
-                            default:
-                                message += getString(R.string.Kyiv_city);
-                                api = StartActivity.apiKyiv;
-                                break;
+
+        if(city.size() == 0) {
+            ApiService apiService = ApiClient.getApiService();
+
+            Call<City> call = apiService.cityOrder();
+
+            call.enqueue(new Callback<City>() {
+                @Override
+                public void onResponse(Call<City> call, Response<City> response) {
+                    if (response.isSuccessful()) {
+                        City status = response.body();
+                        if (status != null) {
+                            String result = status.getResponse();
+                            String message = getString(R.string.your_city);
+
+                            insertCity(result);
+                            Log.d("TAG", "onResponse: " + result);
+                            switch (result){
+                                case "Dnipropetrovsk Oblast":
+                                    message += getString(R.string.Dnipro_city);
+                                    api = StartActivity.apiDnipro;
+                                    break;
+                                case "Odessa":
+                                    message += getString(R.string.Odessa);
+                                    api = StartActivity.apiOdessa;
+                                    break;
+                                case "Zaporizhzhia":
+                                    message += getString(R.string.Zaporizhzhia);
+                                    api = StartActivity.apiZaporizhzhia;
+                                    break;
+                                case "Cherkasy Oblast":
+                                    message += getString(R.string.Cherkasy);
+                                    api = StartActivity.apiCherkasy;
+                                    break;
+                                default:
+                                    message += getString(R.string.Kyiv_city);
+                                    api = StartActivity.apiKyiv;
+                                    break;
+                            }
+
+                            Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
                         }
-                        Log.d("TAG", "onResponse: StartActivity.TABLE_SETTINGS_INFO " + logCursor(StartActivity.TABLE_SETTINGS_INFO));
-                        Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
                     }
+                    else {
+                        Toast.makeText(StartActivity.this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+                    }
+
+
                 }
-                else {
-                    Toast.makeText(StartActivity.this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+
+                @Override
+                public void onFailure(Call<City> call, Throwable t) {
+                    // Обработка ошибок сети или других ошибок
+                    String errorMessage = t.getMessage();
+                    t.printStackTrace();
+                    Log.d("TAG", "onFailure: " + errorMessage);
+
                 }
+            });
+        } else {
+
+        }
 
 
-            }
 
-            @Override
-            public void onFailure(Call<City> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
-
-            }
-        });
     }
     private void insertCity(String city) {
         String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?);";
@@ -786,8 +786,6 @@ public class StartActivity extends Activity {
                         database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                     }
                 });
-
-
             }
         }
 
@@ -825,5 +823,11 @@ public class StartActivity extends Activity {
 
 
 
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        try_again_button.setVisibility(View.VISIBLE);
     }
 }

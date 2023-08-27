@@ -158,4 +158,6 @@
     <string name="city_change">Виберіть місто</string>
     <string name="Zaporizhzhia">Запоріжжя</string>
     <string name="Cherkasy">Черкаси</string>
+    <string name="OdessaTest">Одеса (Тест)</string>
+    <string name="disc_text">Скидка</string>
 </resources>

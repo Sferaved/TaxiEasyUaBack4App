@@ -108,17 +108,9 @@ public class FinishActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(connected()){
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                        startActivity(intent);
-                    } else {
-                        Intent intent = new Intent(getApplicationContext(), OpenStreetMapActivity.class);
-                        startActivity(intent);
-                    }
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 } else {
-                    {
-                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                    }
+                    Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -234,7 +226,7 @@ public class FinishActivity extends AppCompatActivity {
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
                 Log.d("TAG", "onFailure: " + errorMessage);
-                text_status.setText("Ошибка запроса к серверу");
+                text_status.setText(R.string.verify_internet);
             }
         });
     }

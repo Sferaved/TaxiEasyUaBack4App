@@ -705,16 +705,21 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
                 builderAddCost.setView(view_cost);
                 TextView costView = view_cost.findViewById(R.id.cost);
-                costView.setText(orderCost);
+
                 StartActivity.cost = Long.parseLong(orderCost);
                 long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                 long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                 firstCost = Long.parseLong(orderCost);
 
-
                 StartActivity.addCost = 0;
                 Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                 Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
+                long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
+                firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
+                StartActivity.addCost = discount;
+                costView.setText(String.valueOf(firstCost));
 
                 btn_minus.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -722,8 +727,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         firstCost -= 5;
                         StartActivity.addCost -= 5;
                         if (firstCost <= MIN_COST_VALUE) {
-                            firstCost = Long.parseLong(orderCost);
-                            StartActivity.addCost = 0;
+                            firstCost = MIN_COST_VALUE;
+                            StartActivity.addCost = MIN_COST_VALUE - firstCost;
                         }
                         costView.setText(String.valueOf(firstCost));
 
@@ -736,13 +741,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         firstCost += 5;
                         StartActivity.addCost += 5;
                         if (firstCost >= MAX_COST_VALUE) {
-                            firstCost = Long.parseLong(orderCost);
-                            StartActivity.addCost = 0;
+                            firstCost = MAX_COST_VALUE;
+                            StartActivity.addCost = MAX_COST_VALUE - firstCost;
                         }
                         costView.setText(String.valueOf(firstCost));
-
-
-
                     }
                 });
 
@@ -1094,16 +1096,21 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
                                             builderAddCost.setView(view_cost);
                                             TextView costView = view_cost.findViewById(R.id.cost);
-                                            costView.setText(orderCost);
+
                                             StartActivity.cost = Long.parseLong(orderCost);
                                             long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                                             long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                             firstCost = Long.parseLong(orderCost);
 
-
                                             StartActivity.addCost = 0;
                                             Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                             Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                            String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getApplicationContext()).get(3);
+                                            long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
+                                            firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
+                                            StartActivity.addCost = discount;
+                                            costView.setText(String.valueOf(firstCost));
 
                                             btn_minus.setOnClickListener(new View.OnClickListener() {
                                                 @Override
@@ -1111,8 +1118,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                     firstCost -= 5;
                                                     StartActivity.addCost -= 5;
                                                     if (firstCost <= MIN_COST_VALUE) {
-                                                        firstCost = Long.parseLong(orderCost);
-                                                        StartActivity.addCost = 0;
+                                                        firstCost = MIN_COST_VALUE;
+                                                        StartActivity.addCost = MIN_COST_VALUE - firstCost;
                                                     }
                                                     costView.setText(String.valueOf(firstCost));
 
@@ -1125,13 +1132,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                     firstCost += 5;
                                                     StartActivity.addCost += 5;
                                                     if (firstCost >= MAX_COST_VALUE) {
-                                                        firstCost = Long.parseLong(orderCost);
-                                                        StartActivity.addCost = 0;
+                                                        firstCost = MAX_COST_VALUE;
+                                                        StartActivity.addCost = MAX_COST_VALUE - firstCost;
                                                     }
                                                     costView.setText(String.valueOf(firstCost));
-
-
-
                                                 }
                                             });
                                             if (!verifyPhone(getApplicationContext())) {
@@ -1362,16 +1366,21 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
                                     builderAddCost.setView(view_cost);
                                     TextView costView = view_cost.findViewById(R.id.cost);
-                                    costView.setText(orderCost);
+
                                     StartActivity.cost = Long.parseLong(orderCost);
                                     long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                     firstCost = Long.parseLong(orderCost);
 
-
                                     StartActivity.addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
+
+                                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getApplicationContext()).get(3);
+                                    long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
+                                    firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
+                                    StartActivity.addCost = discount;
+                                    costView.setText(String.valueOf(firstCost));
 
                                     btn_minus.setOnClickListener(new View.OnClickListener() {
                                         @Override
@@ -1379,8 +1388,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             firstCost -= 5;
                                             StartActivity.addCost -= 5;
                                             if (firstCost <= MIN_COST_VALUE) {
-                                                firstCost = Long.parseLong(orderCost);
-                                                StartActivity.addCost = 0;
+                                                firstCost = MIN_COST_VALUE;
+                                                StartActivity.addCost = MIN_COST_VALUE - firstCost;
                                             }
                                             costView.setText(String.valueOf(firstCost));
 
@@ -1393,13 +1402,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             firstCost += 5;
                                             StartActivity.addCost += 5;
                                             if (firstCost >= MAX_COST_VALUE) {
-                                                firstCost = Long.parseLong(orderCost);
-                                                StartActivity.addCost = 0;
+                                                firstCost = MAX_COST_VALUE;
+                                                StartActivity.addCost = MAX_COST_VALUE - firstCost;
                                             }
                                             costView.setText(String.valueOf(firstCost));
-
-
-
                                         }
                                     });
                                     if (!verifyPhone(getApplicationContext())) {
@@ -1657,8 +1663,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         String parameters = null;
         String phoneNumber = "no phone";
-        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
-        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(4);
 
         if(urlAPI.equals("costSearchGeo")) {
             Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);

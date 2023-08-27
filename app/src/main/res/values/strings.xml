@@ -159,5 +159,7 @@
     <string name="city_change">Выберите город</string>
     <string name="Zaporizhzhia">Запорожье</string>
     <string name="Cherkasy">Черкассы</string>
+    <string name="OdessaTest">Одесса (Тест)</string>
+    <string name="disc_text">Скидка</string>
 
 </resources>

@@ -54,15 +54,7 @@
             android:name="visicom.API_KEY"
             android:value="@string/visicom_key_storage" />
 
-        <!-- <activity android:name=".LoginActivity" -->
-        <!-- android:exported="true"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.MAIN" /> -->
-        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-        <!-- </intent-filter> -->
-        <!-- </activity> -->
-        <!-- <activity android:name=".SignUpActivity"> -->
-        <!-- </activity> -->
+
         <activity
             android:name=".ui.start.StartActivity"
             android:exported="true"

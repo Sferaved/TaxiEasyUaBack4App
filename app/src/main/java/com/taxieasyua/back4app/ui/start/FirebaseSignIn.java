@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SyncAdapterType;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,6 +19,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -78,10 +80,7 @@ public class FirebaseSignIn extends AppCompatActivity {
 
         List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
         switch (stringListArr.get(1)){
-            case "Kyiv City":
-                api = StartActivity.apiKyiv;
-                break;
-            case "Dnipropetrovsk Oblast":
+           case "Dnipropetrovsk Oblast":
                 api = StartActivity.apiDnipro;
                 break;
             case "Odessa":
@@ -93,8 +92,11 @@ public class FirebaseSignIn extends AppCompatActivity {
             case "Cherkasy Oblast":
                 api = StartActivity.apiCherkasy;
                 break;
+            case "OdessaTest":
+                api = StartActivity.apiTest;
+                break;
             default:
-                api = StartActivity.apiDnipro;
+                api = StartActivity.apiKyiv;
                 break;
         }
 
@@ -219,80 +221,74 @@ public class FirebaseSignIn extends AppCompatActivity {
 
 
     private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
-    try {
-        if (result.getResultCode() == RESULT_OK) {
-            // Successfully signed in
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            StartActivity.userEmail = user.getEmail();
-            StartActivity.displayName = user.getDisplayName();
-            updateRecordsUserInfo("email", user.getEmail());
-            updateRecordsUserInfo("username", user.getDisplayName());
-            addUser();
+        ContentValues cv = new ContentValues();
+        try {
+            if (result.getResultCode() == RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                StartActivity.userEmail = user.getEmail();
+                StartActivity.displayName = user.getDisplayName();
+                updateRecordsUserInfo("email", user.getEmail());
+                updateRecordsUserInfo("username", user.getDisplayName());
+                addUser();
 
-            // Проверяем состояние GPS
-            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            boolean gpsEnabled = false;
-            try {
-                gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            } catch (Exception ex) {
-            }
+                // Проверяем состояние GPS
+                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                boolean gpsEnabled = false;
+                try {
+                    gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                } catch (Exception ignored) {
+                }
 
-            // Если GPS выключен, выводим диалог с предложением его включить
-            if (!gpsEnabled) {
-                openGPSSettings();
-            } else {
-                // Проверяем состояние Location Service с помощью колбэка
-                checkLocationServiceEnabled(new LocationServiceCallback() {
-                    @Override
-                    public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
-                        if (isEnabled) {
+                // Если GPS выключен, выводим диалог с предложением его включить
+                if (!gpsEnabled) {
+                    openGPSSettings();
+                } else {
+                    // Проверяем состояние Location Service с помощью колбэка
+                    checkLocationServiceEnabled(new LocationServiceCallback() {
+                        @Override
+                        public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
+                            if (isEnabled) {
+                               // Проверяем разрешения на местоположение
+                                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                        && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-
-                            // Проверяем разрешения на местоположение
-                            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                    && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-                                    startActivity(intent);
-                            } else {
-                                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-                                startActivity(intent);
+                                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                                }
                             }
 
-                        } else {
-                            Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-                            startActivity(intent);
                         }
-                    }
-                });
+                    });
+                }
+
+                // Здесь также происходит обновление значения verifyOrder в базе данных
+
+                cv.put("verifyOrder", "1");
+                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                database.close();
+                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
+                startActivity(intent);
+            } else {
+                // Sign in failed
+                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+                btn_again.setVisibility(View.VISIBLE);
+
+                cv.put("verifyOrder", "0");
+                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                database.close();
             }
-
-            // Здесь также происходит обновление значения verifyOrder в базе данных
-            ContentValues cv = new ContentValues();
-            cv.put("verifyOrder", "1");
-            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-            database.close();
-
-        } else {
-            // Sign in failed
+        } catch (NullPointerException e) {
+            // Error handling
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-            btn_again.setVisibility(View.VISIBLE);
-            ContentValues cv = new ContentValues();
+
             cv.put("verifyOrder", "0");
             SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
             database.close();
         }
-    } catch (NullPointerException e) {
-        // Error handling
-        Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-        ContentValues cv = new ContentValues();
-        cv.put("verifyOrder", "0");
-        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-        database.close();
-    }
 }
     private void updateRecordsUserInfo(String userInfo, String result) {
         SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
@@ -436,61 +432,18 @@ public class FirebaseSignIn extends AppCompatActivity {
             }
             urlConnection.disconnect();
         });
-
-
-
     }
 
-    private boolean blackList() throws MalformedURLException, JSONException, InterruptedException {
-        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" +  StartActivity.userEmail;
-
-        Log.d("TAG", "onClick urlCost: " + urlString);
-
-        boolean result = false;
-        Map sendUrlMap = CostJSONParser.sendURL(urlString);
-
-        String message = (String) sendUrlMap.get("message");
-        Log.d("TAG", "onClick orderCost : " + message);
-
-        if (message.equals("Не черном списке")) {
-            result = true;
-        }
-        if (message.equals("В черном списке")) {
-            result = false;
-        }
-        return result;
-    }
-
-    private void version() throws MalformedURLException {
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" +"versionAPI";
-
-
-        Log.d("TAG", "onClick urlCost: " + url);
-        Map sendUrlMapCost = null;
-        try {
-            sendUrlMapCost = ResultSONParser.sendURL(url);
-        } catch (MalformedURLException | InterruptedException | JSONException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
-        }
-
-        String message = (String) sendUrlMapCost.get("message");
-        if(!message.equals(getString(R.string.version_code))) {
-            NotificationHelper notificationHelper = new NotificationHelper();
-
-            String title = getString(R.string.new_version);
-            String messageNotif = getString(R.string.news_of_version);
-            String urlStr = "https://play.google.com/store/apps/details?id= com.taxieasyua.back4app";
-
-            notificationHelper.showNotification(this, title, messageNotif, urlStr);
-        }
-
-
-
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Button try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setVisibility(View.VISIBLE);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), StartActivity.class));
+            }
+        });
     }
 }

@@ -126,10 +126,6 @@ public class HomeFragment extends Fragment {
 
         List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
         switch (stringList.get(1)){
-            case "Kyiv City":
-                arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.apiKyiv;
-                break;
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
                 api = StartActivity.apiDnipro;
@@ -251,36 +247,36 @@ public class HomeFragment extends Fragment {
                                               @Override
              public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                    if (connected()) {
-                                                      to = String.valueOf(adapter.getItem(position));
-                                                      if (to.indexOf("/") != -1) {
-                                                          to = to.substring(0, to.indexOf("/"));
-                                                      }
-                                                      ;
-                                                      String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
+                       to = String.valueOf(adapter.getItem(position));
+                       if (to.indexOf("/") != -1) {
+                           to = to.substring(0, to.indexOf("/"));
+                       }
+                       ;
+                       String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
 
-                                                      Map sendUrlMapCost = null;
-                                                      try {
-                                                          sendUrlMapCost = ResultSONParser.sendURL(url);
-                                                      } catch (MalformedURLException | InterruptedException | JSONException e) {
-                                                          Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-                                                      }
+                       Map sendUrlMapCost = null;
+                       try {
+                           sendUrlMapCost = ResultSONParser.sendURL(url);
+                       } catch (MalformedURLException | InterruptedException | JSONException e) {
+                           Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                       }
 
-                                                      String orderCost = (String) sendUrlMapCost.get("message");
+                       String orderCost = (String) sendUrlMapCost.get("message");
 
-                                                      if (orderCost.equals("200")) {
-                                                          Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-                                                      } else if (orderCost.equals("400")) {
-                                                          textViewTo.setTextColor(RED);
-                                                          Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
-                                                      } else if (orderCost.equals("1")) {
-                                                          to_number.setVisibility(View.VISIBLE);
-                                                          to_number.setText(" ");
-                                                          to_number.requestFocus();
-                                                      }  else if (orderCost.equals("0")) {
-                                                          to_number.setText(" ");
-                                                          to_number.setVisibility(View.INVISIBLE);
-                                                      }
-                                                  }
+                       if (orderCost.equals("200")) {
+                           Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                       } else if (orderCost.equals("400")) {
+                           textViewTo.setTextColor(RED);
+                           Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
+                       } else if (orderCost.equals("1")) {
+                           to_number.setVisibility(View.VISIBLE);
+                           to_number.setText(" ");
+                           to_number.requestFocus();
+                       }  else if (orderCost.equals("0")) {
+                           to_number.setText(" ");
+                           to_number.setVisibility(View.INVISIBLE);
+                       }
+                   }
                 }
              });
         } else {
@@ -304,16 +300,15 @@ public class HomeFragment extends Fragment {
                         try {
                             String urlCost = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "costSearch", getActivity());
 
-                            Log.d("TAG", "onClick urlCost 777777777777777: " + urlCost);
 
                             Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
                             String orderCost = (String) sendUrlMapCost.get("order_cost");
-                            Log.d("TAG", "onClick 888888888 orderCost: " + orderCost);
+
                             String message = (String) sendUrlMapCost.get("message");
 
 
                             if (orderCost.equals("0")) {
-                                Log.d("TAG", "onClick 9998465465465: ");
+
                                 if (to.equals(from)) {
                                     textViewTo.setText("");
                                     to = null;
@@ -330,26 +325,31 @@ public class HomeFragment extends Fragment {
 
                                     View view_cost = inflaterCost.inflate(R.layout.add_cost_layout, null);
                                     builderAddCost.setView(view_cost);
+
                                     TextView costView = view_cost.findViewById(R.id.cost);
-                                    costView.setText(orderCost);
+
                                     StartActivity.cost = Long.parseLong(orderCost);
                                     long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                     firstCost = Long.parseLong(orderCost);
 
-
                                     StartActivity.addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
+                                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                                    long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
+                                    firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
+                                    StartActivity.addCost = discount;
+                                    costView.setText(String.valueOf(firstCost));
                                     btn_minus.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
                                             firstCost -= 5;
                                             StartActivity.addCost -= 5;
                                             if (firstCost <= MIN_COST_VALUE) {
-                                                firstCost = Long.parseLong(orderCost);
-                                                StartActivity.addCost = 0;
+                                                firstCost = MIN_COST_VALUE;
+                                                StartActivity.addCost = MIN_COST_VALUE - firstCost;
                                             }
                                             costView.setText(String.valueOf(firstCost));
 
@@ -362,8 +362,8 @@ public class HomeFragment extends Fragment {
                                             firstCost += 5;
                                             StartActivity.addCost += 5;
                                             if (firstCost >= MAX_COST_VALUE) {
-                                                firstCost = Long.parseLong(orderCost);
-                                                StartActivity.addCost = 0;
+                                                firstCost = MAX_COST_VALUE;
+                                                StartActivity.addCost = MAX_COST_VALUE - firstCost;
                                             }
                                             costView.setText(String.valueOf(firstCost));
                                         }
@@ -897,25 +897,29 @@ public class HomeFragment extends Fragment {
                     View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
                     builderAddCost.setView(view_cost);
                     TextView costView = view_cost.findViewById(R.id.cost);
-                    costView.setText(orderCost);
+
                     StartActivity.cost = Long.parseLong(orderCost);
                     long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                     firstCost = Long.parseLong(orderCost);
 
-
                     StartActivity.addCost = 0;
                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
+                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                    long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
+                    firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
+                    StartActivity.addCost = discount;
+                    costView.setText(String.valueOf(firstCost));
                     btn_minus.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             firstCost -= 5;
                             StartActivity.addCost -= 5;
                             if (firstCost <= MIN_COST_VALUE) {
-                                firstCost = Long.parseLong(orderCost);
-                                StartActivity.addCost = 0;
+                                firstCost = MIN_COST_VALUE;
+                                StartActivity.addCost = MIN_COST_VALUE - firstCost;
                             }
                             costView.setText(String.valueOf(firstCost));
 
@@ -928,11 +932,11 @@ public class HomeFragment extends Fragment {
                             firstCost += 5;
                             StartActivity.addCost += 5;
                             if (firstCost >= MAX_COST_VALUE) {
-                                firstCost = Long.parseLong(orderCost);
-                                StartActivity.addCost = 0;
+                                firstCost = MAX_COST_VALUE;
+                                StartActivity.addCost = MAX_COST_VALUE - firstCost;
                             }
                             costView.setText(String.valueOf(firstCost));
-                         }
+                        }
                     });
 
                     builderAddCost
@@ -1061,8 +1065,8 @@ public class HomeFragment extends Fragment {
 
         String parameters = null;
         String phoneNumber = "no phone";
-        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
-        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(4);
 
         if(urlAPI.equals("costSearch")) {
             Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -1203,8 +1207,8 @@ public class HomeFragment extends Fragment {
 
         String parameters = null;
         String phoneNumber = "no phone";
-        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
-        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(4);
 
 
         if(urlAPI.equals("costSearchMarkers")) {

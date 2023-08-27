@@ -199,18 +199,6 @@ public class MainActivity extends AppCompatActivity {
                 ContentValues cv = new ContentValues();
                 SQLiteDatabase database = view.getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
 
-//                switch (cityNew){
-//                    case "Kyiv City":
-//                        cv.put("tarif", "Базовий онлайн");
-//                        break;
-//                    case "Dnipropetrovsk Oblast":
-//                    case "Zaporizhzhia":
-//                    case "Cherkasy Oblast":
-//                    case "Odessa":
-//                    case "OdessaTest":
-//                        cv.put("tarif", "Базовый");
-//                        break;
-//                }
                 cv.put("tarif", " ");
                 database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                         new String[] { "1" });
@@ -235,7 +223,8 @@ public class MainActivity extends AppCompatActivity {
                                 new String[] { "1" });
                         database.close();
                         Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(MainActivity.this, OpenStreetMapActivity.class));
+                        finishAffinity();
+                        startActivity(new Intent(MainActivity.this, StartActivity.class));
 
                     }
                 }).setNegativeButton(cancel_button, null)

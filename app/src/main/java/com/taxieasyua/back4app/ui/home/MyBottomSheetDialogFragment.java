@@ -52,7 +52,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     public static String[] arrayServiceCode;
     private TextView tvSelectedTime, tvSelectedDate;
     private Calendar calendar;
-    private EditText komenterinp;
+    private EditText komenterinp, discount;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
@@ -176,6 +176,10 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 //        database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?", new String[] { "1" });
 
         komenterinp = view.findViewById(R.id.komenterinp);
+        discount = view.findViewById(R.id.discinp);
+        Log.d("TAG", "onCreateView: logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()) " + logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()));
+        discount.setText(logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3));
+
         tvSelectedDate = view.findViewById(R.id.tv_selected_date);
         LocalDate currentDate = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -262,6 +266,30 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             // обновляем по id
             SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[]{"1"});
+            database.close();
+        }
+
+        String discountText = discount.getText().toString();
+        if (!discountText.isEmpty()) {
+            int discountValue;
+            try {
+                discountValue = Integer.parseInt(discountText);
+                // Используйте переменную discountValue как целочисленное значение
+            } catch (NumberFormatException e) {
+                // Обработка ошибки, если текст не может быть преобразован в число
+                discountValue = 50;
+            }
+            if (discountValue >= 50 || discountValue <= 0) {
+                discountValue = 50;
+            }
+            ContentValues cv = new ContentValues();
+
+            cv.put("discount", String.valueOf(discountValue));
+
+            // обновляем по id
+            SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+            database.update(StartActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                     new String[]{"1"});
             database.close();
         }
