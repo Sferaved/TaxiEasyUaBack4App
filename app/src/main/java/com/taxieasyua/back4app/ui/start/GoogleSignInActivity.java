@@ -62,76 +62,6 @@ public class GoogleSignInActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-
-        }
-
-        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
-        switch (stringListArr.get(1)){
-            case "Kyiv City":
-                api = StartActivity.apiKyiv;
-                break;
-            case "Dnipropetrovsk Oblast":
-                api = StartActivity.apiDnipro;
-                break;
-            case "Odessa":
-                api = StartActivity.apiOdessa;
-                break;
-            case "Zaporizhzhia":
-                api = StartActivity.apiZaporizhzhia;
-                break;
-            case "Cherkasy Oblast":
-                api = StartActivity.apiCherkasy;
-                break;
-            default:
-                api = StartActivity.apiKyiv;
-                break;
-        }
-
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("SuspiciousIndentation")
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO);
-                switch (stringList.get(1)){
-                    case "Kyiv City":
-                        phone = "tel:0674443804";
-                        break;
-                    case "Dnipropetrovsk Oblast":
-                        phone = "tel:0667257070";
-                        break;
-                    case "Odessa":
-                        phone = "tel:0737257070";
-                        break;
-                    case "Zaporizhzhia":
-                        phone = "tel:0687257070";
-                        break;
-                    case "Cherkasy Oblast":
-                        phone = "tel:0962294243";
-                        break;
-                    default:
-                        phone = "tel:0674443804";
-                        break;
-                }
-                intent.setData(Uri.parse(phone));
-                startActivity(intent);
-            }
-        });
-
-        try_again_button = findViewById(R.id.try_again_button);
-        try_again_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), StartActivity.class));
-            }
-        });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 //                .requestIdToken(getString(R.string.default_web_client_id))
@@ -214,10 +144,11 @@ public class GoogleSignInActivity extends Activity {
             updateRecordsUserInfo("email", account.getEmail());
             updateRecordsUserInfo("username", account.getDisplayName());
 
-//            addUser(account.getEmail(), account.getDisplayName());
+            addUser(account.getEmail(), account.getDisplayName());
 
-//            cv.put("verifyOrder", "1");
-//            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+            cv.put("verifyOrder", "1");
+            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+            startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
         }else {
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
             try_again_button.setVisibility(View.VISIBLE);
@@ -311,6 +242,82 @@ public class GoogleSignInActivity extends Activity {
     protected void onRestart() {
         super.onRestart();
         try_again_button.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+
+        }
+
+        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
+        switch (stringListArr.get(1)){
+            case "Kyiv City":
+                api = StartActivity.apiKyiv;
+                break;
+            case "Dnipropetrovsk Oblast":
+                api = StartActivity.apiDnipro;
+                break;
+            case "Odessa":
+                api = StartActivity.apiOdessa;
+                break;
+            case "Zaporizhzhia":
+                api = StartActivity.apiZaporizhzhia;
+                break;
+            case "Cherkasy Oblast":
+                api = StartActivity.apiCherkasy;
+                break;
+            default:
+                api = StartActivity.apiKyiv;
+                break;
+        }
+
+        fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("SuspiciousIndentation")
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                String phone;
+                List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                switch (stringList.get(1)){
+                    case "Kyiv City":
+                        phone = "tel:0674443804";
+                        break;
+                    case "Dnipropetrovsk Oblast":
+                        phone = "tel:0667257070";
+                        break;
+                    case "Odessa":
+                        phone = "tel:0737257070";
+                        break;
+                    case "Zaporizhzhia":
+                        phone = "tel:0687257070";
+                        break;
+                    case "Cherkasy Oblast":
+                        phone = "tel:0962294243";
+                        break;
+                    default:
+                        phone = "tel:0674443804";
+                        break;
+                }
+                intent.setData(Uri.parse(phone));
+                startActivity(intent);
+            }
+        });
+
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), StartActivity.class));
+            }
+        });
 
     }
 }
