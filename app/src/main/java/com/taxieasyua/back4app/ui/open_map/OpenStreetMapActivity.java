@@ -163,15 +163,30 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
+        setContentView(R.layout.open_street_map_layout);
 
+        progressBar = findViewById(R.id.progressBar);
+
+        Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
         networkChangeReceiver = new NetworkChangeReceiver();
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-        setContentView(R.layout.open_street_map_layout);
+
         fragmentManager = getSupportFragmentManager();
 
+
+        inflater = getLayoutInflater();
+        view = inflater.inflate(R.layout.phone_verify_layout, null);
+        map = findViewById(R.id.map);
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        mapController = map.getController();
+
+        map.setBuiltInZoomControls(true);
+        map.setMultiTouchControls(true);
+        mapController.setZoom(16);
+        map.setClickable(true);
+        map.invalidate();
         cm = getString(R.string.coastMarkersMessage);
         UAH = getString(R.string.UAH);
         em = getString(R.string.error_message);
@@ -194,16 +209,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         vph = getString(R.string.verify_phone);
         coo = getString(R.string.cost_of_order);
 
-        progressBar = findViewById(R.id.progressBar);
 
-        inflater = getLayoutInflater();
-        view = inflater.inflate(R.layout.phone_verify_layout, null);
-        map = findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.MAPNIK);
-        mapController = map.getController();
+
+
+
+
         List<String> startList = logCursor(StartActivity.TABLE_POSITION_INFO, this);
-        Log.d(TAG, "onCreate: startList" + startList);
-
         startLat =  Double.parseDouble(startList.get(1));
         startLan = Double.parseDouble(startList.get(2));
         FromAdressString = startList.get(3);
@@ -211,13 +222,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         GeoPoint initialGeoPoint = new GeoPoint(startLat, startLan);
         map.getController().setCenter(initialGeoPoint);
         map.getController().setCenter(initialGeoPoint);
-
-        map.setBuiltInZoomControls(true);
-        map.setMultiTouchControls(true);
-        mapController.setZoom(16);
-        map.setClickable(true);
-
-
         MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
         map.getOverlays().add(markerOverlay);
         setMarker(startLat, startLan, FromAdressString);

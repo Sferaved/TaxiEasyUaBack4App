@@ -72,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
@@ -672,7 +673,7 @@ public class HomeFragment extends Fragment {
             }
             cursor.close();
         }
-
+        database.close();
         return verify;
     }
 
@@ -784,7 +785,8 @@ public class HomeFragment extends Fragment {
 
 
                 List<String> userList = logCursor(StartActivity.TABLE_USER_INFO, getActivity());
-                String subject = "Повідомлення про додаток " + getString(R.string.version);
+
+                String subject = "Повідомлення № I-" + generateRandomString(10);
 
                 String body ="Опишить, будь ласка, Вашу проблему далі: " + "\n"+ "\n" +
                         "Інформація про додаток: "+ "\n" +
@@ -813,6 +815,20 @@ public class HomeFragment extends Fragment {
 
             }
         });
+    }
+
+    private String generateRandomString(int length) {
+        String characters = "012345678901234567890123456789";
+        StringBuilder randomString = new StringBuilder();
+
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            int randomIndex = random.nextInt(characters.length());
+            char randomChar = characters.charAt(randomIndex);
+            randomString.append(randomChar);
+        }
+
+        return randomString.toString();
     }
     @Override
     public void onDestroyView() {

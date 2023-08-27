@@ -166,6 +166,28 @@ public class StartActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        try_again_button = findViewById(R.id.try_again_button);
+        try_again_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(StartActivity.this, StartActivity.class));
+            }
+        });
+
+
+
+        fab = findViewById(R.id.fab);
+        btn_again = findViewById(R.id.btn_again);
+
+
+        btn_again.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent = new Intent(StartActivity.this, StartActivity.class);
+                startActivity(intent);
+            }
+        });
+
         try {
             initDB();
         } catch (MalformedURLException | JSONException | InterruptedException ignored) {
@@ -710,7 +732,7 @@ public class StartActivity extends Activity {
 
         if(userEmail.equals("email")) {
             Log.d("TAG", "blackList:userEmail " + userEmail);
-//            startActivity(new Intent(StartActivity.this, GoogleSignInActivity.class));
+
             startActivity(new Intent(StartActivity.this, FirebaseSignIn.class));
 
 
@@ -728,10 +750,7 @@ public class StartActivity extends Activity {
         @Override
         protected Map<String, String> doInBackground(Void... voids) {
             String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
-
             try {
-//                startIp();
-                version();
                 return CostJSONParser.sendURL(url);
             } catch (Exception e) {
                 exception = e;
@@ -746,46 +765,40 @@ public class StartActivity extends Activity {
             ContentValues cv = new ContentValues();
             SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
             if (message != null) {
-                if (message.equals("Не черном списке")) {
-                    cv.put("verifyOrder", "1");
-                    database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                    startActivity(new Intent(StartActivity.this, MainActivity.class));
-                }
+
                 if (message.equals("В черном списке")) {
                     Toast.makeText(StartActivity.this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
                     findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
                     try_again_button.setVisibility(View.VISIBLE);
                     cv.put("verifyOrder", "0");
                     database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                } else {
+                    cv.put("verifyOrder", "1");
+                    database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                    startActivity(new Intent(StartActivity.this, MainActivity.class));
+                    try {
+                        version(message);
+                    } catch (MalformedURLException ignored) {
+
+                    }
                 }
             }
             database.close();
         }
     }
 
-// Запускаем асинхронную задачу
 
 
-    private void version() throws MalformedURLException {
+
+    private void version(String versionApi) throws MalformedURLException {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
             return;
         }
 
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" +"versionAPI";
 
-
-        Log.d("TAG", "onClick urlCost: " + url);
-        Map sendUrlMapCost = null;
-        try {
-            sendUrlMapCost = ResultSONParser.sendURL(url);
-        } catch (MalformedURLException | InterruptedException | JSONException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
-        }
-
-        String message = (String) sendUrlMapCost.get("message");
-        if(!message.equals(getString(R.string.version_code))) {
+        if(!versionApi.equals(getString(R.string.version_code))) {
             NotificationHelper notificationHelper = new NotificationHelper();
 
             String title = getString(R.string.new_version);

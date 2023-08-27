@@ -111,8 +111,24 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_about)
                 .setOpenableLayout(drawer)
                 .build();
+
+
+
+
+
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
+
+        networkChangeReceiver = new NetworkChangeReceiver();
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         List<String> stringList = logCursor(StartActivity.CITY_INFO);
-        String message = getString(R.string.your_city);
         if(stringList.size()!=0) {
             switch (stringList.get(1)) {
                 case "Dnipropetrovsk Oblast":
@@ -143,58 +159,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
-
-
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
-
-        networkChangeReceiver = new NetworkChangeReceiver();
-
-//        Toast.makeText(this, getString(R.string.wellcome), Toast.LENGTH_LONG).show();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        new LoadDataTask().execute();
-    }
-    private class LoadDataTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... voids) {
-            try {
-                startIp(); // Выполняем в фоновом потоке
-
-            } catch (MalformedURLException e) {
-                return null;
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            // Выполнение завершено, здесь можно выполнять действия после загрузки данных
-        }
-    }
-    public void startIp() throws MalformedURLException {
-
-        String urlString = "https://m.easy-order-taxi.site/" +  api + "/android/startIP";
-        Log.d("TAG", "startIp: " + urlString);
-        URL url = new URL(urlString);
-
-        AsyncTask.execute(() -> {
-            HttpsURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpsURLConnection) url.openConnection();
-                urlConnection.setDoInput(true);
-                urlConnection.getResponseCode();
-            } catch (IOException e) {
-
-            }
-            urlConnection.disconnect();
-        });
-    }
 
 
     private void checkPermission(String permission, int requestCode) {
