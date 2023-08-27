@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             try {
                 startIp(); // Выполняем в фоновом потоке
-                version(); // Выполняем в фоновом потоке
+
             } catch (MalformedURLException e) {
                 return null;
             }
@@ -195,35 +195,7 @@ public class MainActivity extends AppCompatActivity {
             urlConnection.disconnect();
         });
     }
-    private void version() throws MalformedURLException {
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" +"versionAPI";
-
-
-        Log.d("TAG", "onClick urlCost: " + url);
-        Map sendUrlMapCost = null;
-        try {
-            sendUrlMapCost = ResultSONParser.sendURL(url);
-        } catch (MalformedURLException | InterruptedException | JSONException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
-        }
-
-        String message = (String) sendUrlMapCost.get("message");
-        if(!message.equals(getString(R.string.version_code))) {
-            NotificationHelper notificationHelper = new NotificationHelper();
-
-            String title = getString(R.string.new_version);
-            String messageNotif = getString(R.string.news_of_version);
-            String urlStr = "https://play.google.com/store/apps/details?id= com.taxieasyua.back4app";
-
-            notificationHelper.showNotification(this, title, messageNotif, urlStr);
-        }
-    }
 
     private void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -274,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 phoneNumberChange();
         }
         if (item.getItemId() == R.id.nav_driver) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job&pli=1"));
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
             startActivity(browserIntent);
         }
         if (item.getItemId() == R.id.action_exit) {
@@ -287,6 +259,12 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.nav_city) {
             cityChange();
         }
+
+        if (item.getItemId() == R.id.send_like) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.back4app"));
+            startActivity(browserIntent);
+        }
+
         if (item.getItemId() == R.id.send_email) {
             String subject = getString(R.string.android);
             String body = getString(R.string.good_day);

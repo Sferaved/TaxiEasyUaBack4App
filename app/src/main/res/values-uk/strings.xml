@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.753</string>
-    <string name="version">Версія: 2.753</string>
+    <string name="version_code">2.755</string>
+    <string name="version">Версія: 2.755</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -159,5 +159,7 @@
     <string name="Zaporizhzhia">Запоріжжя</string>
     <string name="Cherkasy">Черкаси</string>
     <string name="OdessaTest">Одеса (Тест)</string>
-    <string name="disc_text">Змінити вартість до</string>
+    <string name="disc_text">Змінити вартість на</string>
+    <string name="email_sent">Повідомлення відправлено</string>
+    <string name="send_like">Оцінити додаток</string>
 </resources>

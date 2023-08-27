@@ -119,11 +119,13 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-
-
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        return root;
+    }
+
+    private void order() {
 
         List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
         switch (stringList.get(1)){
@@ -152,8 +154,6 @@ public class HomeFragment extends Fragment {
                 api = StartActivity.apiKyiv;
                 break;
         }
-
-
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, arrayStreet);
 
@@ -165,6 +165,7 @@ public class HomeFragment extends Fragment {
             from = OpenStreetMapActivity.from_name;
         }
         from_number = binding.fromNumber;
+        to_number = binding.toNumber;
         if(hasServer()){
             if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
                 String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
@@ -196,11 +197,11 @@ public class HomeFragment extends Fragment {
         }
         if(hasServer()){
             textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @SuppressLint("ResourceAsColor")
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedPosition = position; // Обновляем выбранную позицию
-                adapter.notifyDataSetChanged(); // Обновляем вид списка
+                @SuppressLint("ResourceAsColor")
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    selectedPosition = position; // Обновляем выбранную позицию
+                    adapter.notifyDataSetChanged(); // Обновляем вид списка
 
                     if(connected()) {
                         from = String.valueOf(adapter.getItem(position));
@@ -235,51 +236,51 @@ public class HomeFragment extends Fragment {
                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                     }
 
-            }
-        });
+                }
+            });
         } else {
             Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
         }
         AutoCompleteTextView textViewTo =binding.textTo;
         textViewTo.setAdapter(adapter);
-        to_number = binding.toNumber;
+
         if(hasServer()){
             textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                              @Override
-             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                   if (connected()) {
-                       to = String.valueOf(adapter.getItem(position));
-                       if (to.indexOf("/") != -1) {
-                           to = to.substring(0, to.indexOf("/"));
-                       }
-                       ;
-                       String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (connected()) {
+                        to = String.valueOf(adapter.getItem(position));
+                        if (to.indexOf("/") != -1) {
+                            to = to.substring(0, to.indexOf("/"));
+                        }
+                        ;
+                        String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
 
-                       Map sendUrlMapCost = null;
-                       try {
-                           sendUrlMapCost = ResultSONParser.sendURL(url);
-                       } catch (MalformedURLException | InterruptedException | JSONException e) {
-                           Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-                       }
+                        Map sendUrlMapCost = null;
+                        try {
+                            sendUrlMapCost = ResultSONParser.sendURL(url);
+                        } catch (MalformedURLException | InterruptedException | JSONException e) {
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        }
 
-                       String orderCost = (String) sendUrlMapCost.get("message");
+                        String orderCost = (String) sendUrlMapCost.get("message");
 
-                       if (orderCost.equals("200")) {
-                           Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-                       } else if (orderCost.equals("400")) {
-                           textViewTo.setTextColor(RED);
-                           Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
-                       } else if (orderCost.equals("1")) {
-                           to_number.setVisibility(View.VISIBLE);
-                           to_number.setText(" ");
-                           to_number.requestFocus();
-                       }  else if (orderCost.equals("0")) {
-                           to_number.setText(" ");
-                           to_number.setVisibility(View.INVISIBLE);
-                       }
-                   }
+                        if (orderCost.equals("200")) {
+                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("400")) {
+                            textViewTo.setTextColor(RED);
+                            Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
+                        } else if (orderCost.equals("1")) {
+                            to_number.setVisibility(View.VISIBLE);
+                            to_number.setText(" ");
+                            to_number.requestFocus();
+                        }  else if (orderCost.equals("0")) {
+                            to_number.setText(" ");
+                            to_number.setVisibility(View.INVISIBLE);
+                        }
+                    }
                 }
-             });
+            });
         } else {
             Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
         }
@@ -334,13 +335,19 @@ public class HomeFragment extends Fragment {
                                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                     firstCost = Long.parseLong(orderCost);
 
-                                    addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
                                     String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-                                    long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
-                                    firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                                    long discountInt = Integer.parseInt(discountText);
+                                    long discount;
+                                    if (discountInt >=0 ) {
+                                        discount = firstCost  * (discountInt - 100) /100;
+                                    } else {
+                                        discount =  firstCost * discountInt/100;
+                                    }
+                                    firstCost = firstCost  + discount;
+
                                     addCost = discount;
                                     costView.setText(String.valueOf(firstCost));
                                     btn_minus.setOnClickListener(new View.OnClickListener() {
@@ -640,24 +647,22 @@ public class HomeFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    try {
-                        if(hasServer()) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                dialogFromToOneRout(routChoice(selectedItem + 1));
-                            }
-                        } else {
-                            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+                try {
+                    if(hasServer()) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            dialogFromToOneRout(routChoice(selectedItem + 1));
                         }
-                    } catch (MalformedURLException | InterruptedException | JSONException e) {
-                        Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
                     }
+                } catch (MalformedURLException | InterruptedException | JSONException e) {
+                    Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                }
 
             }
         });
 
-        return root;
     }
-
     private boolean verifyOrder(Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -753,6 +758,63 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        order();
+        binding.fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
+                String city;
+                switch (stringList.get(1)){
+                    case "Dnipropetrovsk Oblast":
+                        city = getString(R.string.Dnipro_city);
+                        break;
+                    case "Zaporizhzhia":
+                        city = getString(R.string.Zaporizhzhia);
+                        break;
+                    case "Cherkasy Oblast":
+                        city = getString(R.string.Cherkasy);
+                        break;
+                    case "Odessa":
+                        city = getString(R.string.Odessa);
+                        break;
+                    case "OdessaTest":
+                        city = getString(R.string.OdessaTest);
+                        break;
+                    default:
+                        city = getString(R.string.Kyiv_city);
+                        break;
+                }
+
+                String subject = "Повідомлення від користувача";
+
+                List<String> userList = logCursor(StartActivity.TABLE_USER_INFO, getActivity());
+
+                String body = "База адрес міста " + city + "\n" +
+                        "Додаток: " + getString(R.string.version) + "\n" +
+                        "Користувач: " + userList.get(4) + "\n" +
+                        "email: " + userList.get(3) + "\n" +
+                        "телефон: " + userList.get(2) + "\n"+"\n"+
+                        "Опишить, будь ласка, Вашу проблему далі: " + "\n";
+
+                String[] CC = {"cartaxi4@gmail.com"};
+                String[] TO = {"taxi.easy.ua@gmail.com"};
+                Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+                emailIntent.setData(Uri.parse("mailto:"));
+                emailIntent.setType("text/plain");
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+                emailIntent.putExtra(Intent.EXTRA_CC, CC);
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+                emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+                try {
+                    startActivity(Intent.createChooser(emailIntent, subject));
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(), getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
     }
     @Override
     public void onDestroyView() {
@@ -905,13 +967,19 @@ public class HomeFragment extends Fragment {
                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                     firstCost = Long.parseLong(orderCost);
 
-                    addCost = 0;
                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
                     String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-                    long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
-                    firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                    long discountInt = Integer.parseInt(discountText);
+                    long discount;
+                    if (discountInt >=0 ) {
+                        discount = firstCost  * (discountInt - 100) /100;
+                    } else {
+                        discount =  firstCost * discountInt/100;
+                    }
+                    firstCost = firstCost  + discount;
+
                     addCost = discount;
                     costView.setText(String.valueOf(firstCost));
                     btn_minus.setOnClickListener(new View.OnClickListener() {

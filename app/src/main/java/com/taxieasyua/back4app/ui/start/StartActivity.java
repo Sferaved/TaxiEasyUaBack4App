@@ -56,7 +56,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class StartActivity extends Activity {
-    public static final String DB_NAME = "data_27082023_4";
+    public static final String DB_NAME = "data_27082023_9";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -80,7 +80,6 @@ public class StartActivity extends Activity {
     public static final String  apiCherkasy = "apiPas2_Cherkasy";
     private static String  api = "apiPas2";
 
-    public static long addCost, cost;
     public static boolean verifyPhone;
     Button try_again_button;
     private BroadcastReceiver connectivityReceiver;
@@ -90,42 +89,7 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
 
-        List<String> stringList = logCursor(StartActivity.CITY_INFO);
-        Log.d("TAG", "onCreate: stringList " + stringList);
-        if(stringList.size()!=0) {
-            try {
-                initDB();
-            } catch (MalformedURLException | JSONException | InterruptedException ignored) {
 
-            }
-            switch (stringList.get(1)) {
-                case "Dnipropetrovsk Oblast":
-
-                    api = StartActivity.apiDnipro;
-                    break;
-                case "Odessa":
-
-                    api = StartActivity.apiOdessa;
-                    break;
-                case "Zaporizhzhia":
-
-                    api = StartActivity.apiZaporizhzhia;
-                    break;
-                case "Cherkasy Oblast":
-
-                    api = StartActivity.apiCherkasy;
-                    break;
-                case "OdessaTest":
-
-                    api = StartActivity.apiTest;
-                    break;
-                default:
-
-                    api = StartActivity.apiKyiv;
-                    break;
-            }
-
-        }
         try_again_button = findViewById(R.id.try_again_button);
         try_again_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,70 +98,12 @@ public class StartActivity extends Activity {
             }
         });
 
-        if(hasConnection() && hasServer()) {
 
-            try {
-//                new LoadDataTask().execute();
-
-                blackList();
-
-            } catch (MalformedURLException ignored) {
-            }
-            isConnectedToGoogle(new ConnectionCallback() {
-                @Override
-                public void onConnectionResult(long responseTime) {
-                    if (responseTime < 0 || responseTime >= 2000) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(StartActivity.this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-                    }
-                }
-            });
-        }
-        else  {
-            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
-            try_again_button.setVisibility(View.VISIBLE);
-            setRepeatingAlarm();
-        }
 
         fab = findViewById(R.id.fab);
         btn_again = findViewById(R.id.btn_again);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO);
-                switch (stringList.get(1)){
-                    case "Kyiv City":
-                        phone = "tel:0674443804";
-                        break;
-                    case "Dnipropetrovsk Oblast":
-                        phone = "tel:0667257070";
-                        break;
-                    case "Odessa":
-                        phone = "tel:0737257070";
-                        break;
-                    case "Zaporizhzhia":
-                        phone = "tel:0687257070";
-                        break;
-                    case "Cherkasy Oblast":
-                        phone = "tel:0962294243";
-                        break;
-                    default:
-                        phone = "tel:0674443804";
-                        break;
-                }
-                intent.setData(Uri.parse(phone));
-                startActivity(intent);
-            }
-        });
+
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -260,6 +166,100 @@ public class StartActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        try {
+            initDB();
+        } catch (MalformedURLException | JSONException | InterruptedException ignored) {
+
+        }
+        List<String> stringList = logCursor(StartActivity.CITY_INFO);
+
+        if(stringList.size()!=0) {
+
+            switch (stringList.get(1)) {
+                case "Dnipropetrovsk Oblast":
+
+                    api = StartActivity.apiDnipro;
+                    break;
+                case "Odessa":
+
+                    api = StartActivity.apiOdessa;
+                    break;
+                case "Zaporizhzhia":
+
+                    api = StartActivity.apiZaporizhzhia;
+                    break;
+                case "Cherkasy Oblast":
+
+                    api = StartActivity.apiCherkasy;
+                    break;
+                case "OdessaTest":
+
+                    api = StartActivity.apiTest;
+                    break;
+                default:
+
+                    api = StartActivity.apiKyiv;
+                    break;
+            }
+
+        }
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                String phone;
+                List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                switch (stringList.get(1)){
+                    case "Kyiv City":
+                        phone = "tel:0674443804";
+                        break;
+                    case "Dnipropetrovsk Oblast":
+                        phone = "tel:0667257070";
+                        break;
+                    case "Odessa":
+                        phone = "tel:0737257070";
+                        break;
+                    case "Zaporizhzhia":
+                        phone = "tel:0687257070";
+                        break;
+                    case "Cherkasy Oblast":
+                        phone = "tel:0962294243";
+                        break;
+                    default:
+                        phone = "tel:0674443804";
+                        break;
+                }
+                intent.setData(Uri.parse(phone));
+                startActivity(intent);
+            }
+        });
+        if(hasConnection() && hasServer()) {
+
+            try {
+                blackList();
+            } catch (MalformedURLException ignored) {
+            }
+            isConnectedToGoogle(new ConnectionCallback() {
+                @Override
+                public void onConnectionResult(long responseTime) {
+                    if (responseTime < 0 || responseTime >= 2000) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(StartActivity.this, R.string.slow_internet, Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(StartActivity.this, StopActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        else  {
+            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            try_again_button.setVisibility(View.VISIBLE);
+            setRepeatingAlarm();
+        }
     }
 
     public CompletableFuture<Boolean> checkConnectionAsync() {
@@ -339,28 +339,6 @@ public class StartActivity extends Activity {
                 callback.onConnectionResult(-1);
             }
         });
-    }
-
-
-    public void startIp() throws MalformedURLException {
-
-        String urlString = "https://m.easy-order-taxi.site/" +  api + "/android/startIP";
-        Log.d("TAG", "startIp: " + urlString);
-        URL url = new URL(urlString);
-
-        AsyncTask.execute(() -> {
-            HttpsURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpsURLConnection) url.openConnection();
-                urlConnection.setDoInput(true);
-                urlConnection.getResponseCode();
-            } catch (IOException e) {
-
-            }
-            assert urlConnection != null;
-            urlConnection.disconnect();
-        });
-
     }
 
     private void initDB() throws MalformedURLException, JSONException, InterruptedException {
@@ -729,6 +707,7 @@ public class StartActivity extends Activity {
     }
     private void blackList() throws MalformedURLException {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
+
         if(userEmail.equals("email")) {
             Log.d("TAG", "blackList:userEmail " + userEmail);
 //            startActivity(new Intent(StartActivity.this, GoogleSignInActivity.class));
@@ -752,7 +731,7 @@ public class StartActivity extends Activity {
 
             try {
 //                startIp();
-//                version();
+                version();
                 return CostJSONParser.sendURL(url);
             } catch (Exception e) {
                 exception = e;

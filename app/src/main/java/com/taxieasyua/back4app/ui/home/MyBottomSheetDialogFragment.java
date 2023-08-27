@@ -56,7 +56,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     private EditText komenterinp, discount;
     Button btn_min, btn_plus;
     long discountFist;
-    final static long MIN_VALUE = 10;
+    final static long MIN_VALUE = -90;
     final static long MAX_VALUE = 300;
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable

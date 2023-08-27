@@ -712,16 +712,21 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                 firstCost = Long.parseLong(orderCost);
 
-                addCost = 0;
                 Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                 Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
                 String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
-                long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
-                firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                long discountInt = Integer.parseInt(discountText);
+                long discount;
+                if (discountInt >=0 ) {
+                    discount = firstCost  * (discountInt - 100) /100;
+                } else {
+                    discount =  firstCost * discountInt/100;
+                }
+                firstCost = firstCost  + discount;
+
                 addCost = discount;
                 costView.setText(String.valueOf(firstCost));
-
                 btn_minus.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -1103,13 +1108,19 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                             firstCost = Long.parseLong(orderCost);
 
-                                            addCost = 0;
                                             Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                             Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                                            String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getApplicationContext()).get(3);
-                                            long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
-                                            firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                                            String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
+                                            long discountInt = Integer.parseInt(discountText);
+                                            long discount;
+                                            if (discountInt >=0 ) {
+                                                discount = firstCost  * (discountInt - 100) /100;
+                                            } else {
+                                                discount =  firstCost * discountInt/100;
+                                            }
+                                            firstCost = firstCost  + discount;
+
                                             addCost = discount;
                                             costView.setText(String.valueOf(firstCost));
 
@@ -1373,13 +1384,19 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                     firstCost = Long.parseLong(orderCost);
 
-                                    addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getApplicationContext()).get(3);
-                                    long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
-                                    firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
+                                    long discountInt = Integer.parseInt(discountText);
+                                    long discount;
+                                    if (discountInt >=0 ) {
+                                        discount = firstCost  * (discountInt - 100) /100;
+                                    } else {
+                                        discount =  firstCost * discountInt/100;
+                                    }
+                                    firstCost = firstCost  + discount;
+
                                     addCost = discount;
                                     costView.setText(String.valueOf(firstCost));
 
