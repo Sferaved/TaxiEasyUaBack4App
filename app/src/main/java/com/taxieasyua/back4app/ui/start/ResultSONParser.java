@@ -3,6 +3,8 @@ package com.taxieasyua.back4app.ui.start;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.taxieasyua.back4app.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,7 +17,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Exchanger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -31,37 +38,67 @@ public class ResultSONParser {
         Map<String, String> costMap = new HashMap<>();
         Exchanger<String> exchanger = new Exchanger<>();
 
-        AsyncTask.execute(() -> {
+        Callable<String> asyncTaskCallable = () -> {
             HttpsURLConnection urlConnection = null;
             try {
                 urlConnection = (HttpsURLConnection) url.openConnection();
                 urlConnection.setDoInput(true);
                 if (urlConnection.getResponseCode() == 200) {
                     InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                    exchanger.exchange(convertStreamToString(in));
+                    return convertStreamToString(in);
+                } else {
+                    return "400";
+                }
+            } catch (IOException ignored) {
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+            }
+            return null;
+        };
+        Future<String> asyncTaskFuture = Executors.newSingleThreadExecutor().submit(asyncTaskCallable);
+
+        try {
+            String response = asyncTaskFuture.get(10, TimeUnit.SECONDS);
+            if (response != null) {
+                if (response.equals("400")) {
+                    costMap.put("order_cost", "0");
+                    costMap.put("message", String.valueOf(R.string.verify_internet));
                 } else {
 
+                    JSONObject jsonarray = new JSONObject(response);
+                    Log.d("TAG", "sendURL jsonarray: "   + jsonarray);
+                    if(jsonarray.getString("resp_result").equals("200")) {
+                        costMap.put("resp_result", "200");
+                        costMap.put("message", jsonarray.getString("message"));
+                    } else {
+                        costMap.put("resp_result", "0");
+                        costMap.put("message", jsonarray.getString("message"));
+                    }
+                    return costMap;
                 }
-            } catch (IOException e) {
-                Log.d("TAG", "onCreate:" + new RuntimeException(e));
-            } catch (InterruptedException e) {
-                Log.d("TAG", "onCreate:" + new RuntimeException(e));
+            } else {
+                costMap.put("order_cost", "0");
+                costMap.put("message", String.valueOf(R.string.verify_internet));
             }
-            urlConnection.disconnect();
-        });
+            return costMap;
+        }  catch (TimeoutException e) {
+            e.printStackTrace();
+            asyncTaskFuture.cancel(true);
+            costMap.put("order_cost", "0");
+            costMap.put("message", String.valueOf(R.string.verify_internet));
+            return costMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            asyncTaskFuture.cancel(true);
+            costMap.put("order_cost", "0");
+            costMap.put("message", String.valueOf(R.string.verify_internet));
+            return costMap;
+        }
 
-        ResultFromThread first = new ResultFromThread(exchanger);
 
-        JSONObject jsonarray = new JSONObject(first.message);
-        Log.d("TAG", "sendURL jsonarray: "   + jsonarray);
-         if(jsonarray.getString("resp_result").equals("200")) {
-             costMap.put("resp_result", "200");
-             costMap.put("message", jsonarray.getString("message"));
-         } else {
-             costMap.put("resp_result", "0");
-             costMap.put("message", jsonarray.getString("message"));
-         }
-         return costMap;
+
 
     }
     private static String convertStreamToString(InputStream is) {

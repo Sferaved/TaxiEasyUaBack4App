@@ -4,6 +4,7 @@ import static com.taxieasyua.back4app.R.string.cancel_button;
 import static com.taxieasyua.back4app.R.string.format_phone;
 import static com.taxieasyua.back4app.R.string.verify_internet;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -13,10 +14,12 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -35,6 +38,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -48,11 +52,20 @@ import com.google.android.material.navigation.NavigationView;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
-
+    private static String  api = "apiPas2";
     private final String[] cityList = new String[]{
             "Київ",
             "Дніпро",
@@ -98,7 +111,38 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_about)
                 .setOpenableLayout(drawer)
                 .build();
+        List<String> stringList = logCursor(StartActivity.CITY_INFO);
+        String message = getString(R.string.your_city);
+        if(stringList.size()!=0) {
+            switch (stringList.get(1)) {
+                case "Dnipropetrovsk Oblast":
 
+                    api = StartActivity.apiDnipro;
+                    break;
+                case "Odessa":
+
+                    api = StartActivity.apiOdessa;
+                    break;
+                case "Zaporizhzhia":
+
+                    api = StartActivity.apiZaporizhzhia;
+                    break;
+                case "Cherkasy Oblast":
+
+                    api = StartActivity.apiCherkasy;
+                    break;
+                case "OdessaTest":
+
+                    api = StartActivity.apiTest;
+                    break;
+                default:
+
+                    api = StartActivity.apiKyiv;
+                    break;
+            }
+
+
+        }
 
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -110,7 +154,105 @@ public class MainActivity extends AppCompatActivity {
 //        Toast.makeText(this, getString(R.string.wellcome), Toast.LENGTH_LONG).show();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        new LoadDataTask().execute();
+    }
+    private class LoadDataTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                startIp(); // Выполняем в фоновом потоке
+                version(); // Выполняем в фоновом потоке
+            } catch (MalformedURLException e) {
+                return null;
+            }
 
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            // Выполнение завершено, здесь можно выполнять действия после загрузки данных
+        }
+    }
+    public void startIp() throws MalformedURLException {
+
+        String urlString = "https://m.easy-order-taxi.site/" +  api + "/android/startIP";
+        Log.d("TAG", "startIp: " + urlString);
+        URL url = new URL(urlString);
+
+        AsyncTask.execute(() -> {
+            HttpsURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection.setDoInput(true);
+                urlConnection.getResponseCode();
+            } catch (IOException e) {
+
+            }
+            urlConnection.disconnect();
+        });
+    }
+    private void version() throws MalformedURLException {
+
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" +"versionAPI";
+
+
+        Log.d("TAG", "onClick urlCost: " + url);
+        Map sendUrlMapCost = null;
+        try {
+            sendUrlMapCost = ResultSONParser.sendURL(url);
+        } catch (MalformedURLException | InterruptedException | JSONException e) {
+            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+        }
+
+        String message = (String) sendUrlMapCost.get("message");
+        if(!message.equals(getString(R.string.version_code))) {
+            NotificationHelper notificationHelper = new NotificationHelper();
+
+            String title = getString(R.string.new_version);
+            String messageNotif = getString(R.string.news_of_version);
+            String urlStr = "https://play.google.com/store/apps/details?id= com.taxieasyua.back4app";
+
+            notificationHelper.showNotification(this, title, messageNotif, urlStr);
+        }
+    }
+
+    private void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+        }
+    }
+    @SuppressLint("Range")
+    public List<String> logCursor(String table) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase database = MainActivity.this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(table, null, null, null, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                String str;
+                do {
+                    str = "";
+                    for (String cn : c.getColumnNames()) {
+                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
+                        list.add(c.getString(c.getColumnIndex(cn)));
+
+                    }
+
+                } while (c.moveToNext());
+            }
+        }
+        database.close();
+        return list;
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -223,8 +365,8 @@ public class MainActivity extends AppCompatActivity {
                                 new String[] { "1" });
                         database.close();
                         Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
-                        finishAffinity();
-                        startActivity(new Intent(MainActivity.this, StartActivity.class));
+                        finish();
+                        startActivity(new Intent(MainActivity.this, MainActivity.class));
 
                     }
                 }).setNegativeButton(cancel_button, null)
@@ -303,7 +445,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
 
                             } else {
-                                StartActivity.updateRecordsUser(phoneNumber.getText().toString());
+                               updateRecordsUser(phoneNumber.getText().toString());
                             }
                         }
                     }
@@ -319,7 +461,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    private void updateRecordsUser(String result) {
+        ContentValues cv = new ContentValues();
 
+        cv.put("phone_number", result);
+
+        // обновляем по id
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
     private static boolean verifyPhone(Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -356,12 +508,28 @@ public class MainActivity extends AppCompatActivity {
 //                getActivity().finish();
 
             } else {
-                StartActivity.insertRecordsUser(mPhoneNumber);
+                 insertRecordsUser(mPhoneNumber);
             }
         }
 
     }
+    private void insertRecordsUser(String phoneNumber) {
+        String sql = "INSERT INTO " + StartActivity.TABLE_USER_INFO + " VALUES(?,?,?);";
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindString(3, phoneNumber);
 
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+        database.close();
+    }
     private boolean connected() {
 
         Boolean hasConnect = false;

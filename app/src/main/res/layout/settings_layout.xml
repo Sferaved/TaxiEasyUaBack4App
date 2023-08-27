@@ -23,8 +23,8 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="80sp"
-        android:layout_height="wrap_content"
+        android:layout_width="125dp"
+        android:layout_height="47dp"
         android:layout_marginStart="16sp"
         android:layout_marginTop="16sp"
         android:fontFamily="@font/regular"
@@ -39,8 +39,8 @@
         android:id="@+id/textView5"
         android:layout_width="19dp"
         android:layout_height="23dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
         android:fontFamily="@font/regular"
         android:text="%"
         android:textAlignment="center"
@@ -48,6 +48,22 @@
         android:textSize="18sp"
         app:layout_constraintStart_toEndOf="@+id/discinp"
         app:layout_constraintTop_toBottomOf="@+id/tv_selected_time" />
+
+    <Button
+        android:id="@+id/btn_plus"
+        android:layout_width="60sp"
+        android:layout_height="60sp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/colorAccent"
+        android:gravity="center"
+
+        android:text="+"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.116"
+        app:layout_constraintStart_toEndOf="@+id/textView5"
+        app:layout_constraintTop_toBottomOf="@+id/tv_selected_date"
+        tools:ignore="MissingConstraints" />
 
     <TextView
         android:id="@+id/tv_selected_time"
@@ -89,13 +105,12 @@
         android:layout_width="100sp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
         android:fontFamily="@font/light"
         android:text="@string/coment"
         android:textColor="#9DA0A8"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintTop_toBottomOf="@+id/btn_minus" />
 
     <EditText
         android:id="@+id/komenterinp"
@@ -116,21 +131,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/komentar" />
 
+
+    <Button
+        android:id="@+id/btn_minus"
+        android:layout_width="60sp"
+        android:layout_height="60sp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/colorAccent"
+        android:gravity="center"
+        android:text="-"
+        android:textSize="30sp"
+        app:layout_constraintStart_toEndOf="@+id/textView2"
+        app:layout_constraintTop_toBottomOf="@+id/tv_selected_time" />
+
     <EditText
         android:id="@+id/discinp"
-        android:layout_width="100sp"
-        android:layout_height="33sp"
-        android:layout_marginTop="8dp"
+        android:layout_width="50sp"
+        android:layout_height="30sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+
         android:background="@drawable/input"
         android:ems="10"
-
         android:fontFamily="@font/regular"
         android:inputType="number"
         android:textAlignment="center"
         android:textAllCaps="true"
         android:textColor="#D9D9D9"
         android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@+id/textView2"
+        app:layout_constraintStart_toEndOf="@+id/btn_minus"
         app:layout_constraintTop_toBottomOf="@+id/tv_selected_time" />
 
     <TextView

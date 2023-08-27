@@ -125,7 +125,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             tra, plm, epm, tlm, sbt, cbt, vph, coo;
     LayoutInflater inflater;
     static View view;
-
+    public static long addCost;
+    public static long cost;
     int selectedItem;
     public static FragmentManager fragmentManager;
     ProgressBar progressBar;
@@ -706,29 +707,29 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 builderAddCost.setView(view_cost);
                 TextView costView = view_cost.findViewById(R.id.cost);
 
-                StartActivity.cost = Long.parseLong(orderCost);
+                cost = Long.parseLong(orderCost);
                 long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                 long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                 firstCost = Long.parseLong(orderCost);
 
-                StartActivity.addCost = 0;
+                addCost = 0;
                 Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                 Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
                 String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
-                long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
-                firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
-                StartActivity.addCost = discount;
+                long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
+                firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                addCost = discount;
                 costView.setText(String.valueOf(firstCost));
 
                 btn_minus.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         firstCost -= 5;
-                        StartActivity.addCost -= 5;
+                        addCost -= 5;
                         if (firstCost <= MIN_COST_VALUE) {
                             firstCost = MIN_COST_VALUE;
-                            StartActivity.addCost = MIN_COST_VALUE - firstCost;
+                            addCost = MIN_COST_VALUE - firstCost;
                         }
                         costView.setText(String.valueOf(firstCost));
 
@@ -739,10 +740,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         firstCost += 5;
-                        StartActivity.addCost += 5;
+                        addCost += 5;
                         if (firstCost >= MAX_COST_VALUE) {
                             firstCost = MAX_COST_VALUE;
-                            StartActivity.addCost = MAX_COST_VALUE - firstCost;
+                            addCost = MAX_COST_VALUE - firstCost;
                         }
                         costView.setText(String.valueOf(firstCost));
                     }
@@ -1097,29 +1098,29 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             builderAddCost.setView(view_cost);
                                             TextView costView = view_cost.findViewById(R.id.cost);
 
-                                            StartActivity.cost = Long.parseLong(orderCost);
+                                            cost = Long.parseLong(orderCost);
                                             long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                                             long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                             firstCost = Long.parseLong(orderCost);
 
-                                            StartActivity.addCost = 0;
+                                            addCost = 0;
                                             Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                             Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
                                             String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getApplicationContext()).get(3);
-                                            long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
-                                            firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
-                                            StartActivity.addCost = discount;
+                                            long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
+                                            firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                                            addCost = discount;
                                             costView.setText(String.valueOf(firstCost));
 
                                             btn_minus.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {
                                                     firstCost -= 5;
-                                                    StartActivity.addCost -= 5;
+                                                    addCost -= 5;
                                                     if (firstCost <= MIN_COST_VALUE) {
                                                         firstCost = MIN_COST_VALUE;
-                                                        StartActivity.addCost = MIN_COST_VALUE - firstCost;
+                                                        addCost = MIN_COST_VALUE - firstCost;
                                                     }
                                                     costView.setText(String.valueOf(firstCost));
 
@@ -1130,10 +1131,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                 @Override
                                                 public void onClick(View v) {
                                                     firstCost += 5;
-                                                    StartActivity.addCost += 5;
+                                                    addCost += 5;
                                                     if (firstCost >= MAX_COST_VALUE) {
                                                         firstCost = MAX_COST_VALUE;
-                                                        StartActivity.addCost = MAX_COST_VALUE - firstCost;
+                                                        addCost = MAX_COST_VALUE - firstCost;
                                                     }
                                                     costView.setText(String.valueOf(firstCost));
                                                 }
@@ -1367,29 +1368,29 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     builderAddCost.setView(view_cost);
                                     TextView costView = view_cost.findViewById(R.id.cost);
 
-                                    StartActivity.cost = Long.parseLong(orderCost);
+                                    cost = Long.parseLong(orderCost);
                                     long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
                                     long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
                                     firstCost = Long.parseLong(orderCost);
 
-                                    StartActivity.addCost = 0;
+                                    addCost = 0;
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
                                     String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getApplicationContext()).get(3);
-                                    long discount = firstCost - firstCost  * (100 - Integer.parseInt(discountText))/100;
-                                    firstCost = firstCost  * (100 - Integer.parseInt(discountText))/100;
-                                    StartActivity.addCost = discount;
+                                    long discount =  firstCost  * Integer.parseInt(discountText)/100 - firstCost;
+                                    firstCost = firstCost  *  Integer.parseInt(discountText)/100;
+                                    addCost = discount;
                                     costView.setText(String.valueOf(firstCost));
 
                                     btn_minus.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
                                             firstCost -= 5;
-                                            StartActivity.addCost -= 5;
+                                            addCost -= 5;
                                             if (firstCost <= MIN_COST_VALUE) {
                                                 firstCost = MIN_COST_VALUE;
-                                                StartActivity.addCost = MIN_COST_VALUE - firstCost;
+                                                addCost = MIN_COST_VALUE - firstCost;
                                             }
                                             costView.setText(String.valueOf(firstCost));
 
@@ -1400,10 +1401,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(View v) {
                                             firstCost += 5;
-                                            StartActivity.addCost += 5;
+                                            addCost += 5;
                                             if (firstCost >= MAX_COST_VALUE) {
                                                 firstCost = MAX_COST_VALUE;
-                                                StartActivity.addCost = MAX_COST_VALUE - firstCost;
+                                                addCost = MAX_COST_VALUE - firstCost;
                                             }
                                             costView.setText(String.valueOf(firstCost));
                                         }
@@ -1680,7 +1681,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1772,7 +1773,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 
                 parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                        + StartActivity.displayName  + "/" + StartActivity.addCost + "/" + time + "/" + comment + "/" + date;
+                        + StartActivity.displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
                 ContentValues cv = new ContentValues();
 

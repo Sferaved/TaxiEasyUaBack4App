@@ -65,7 +65,7 @@ public class StartActivity extends Activity {
     public static final String CITY_INFO = "cityInfo";
     public static final String TABLE_POSITION_INFO = "myPosition";
 
-    public static SQLiteDatabase database;
+
     public static Cursor cursorDb;
     static FloatingActionButton fab, btn_again;
 
@@ -90,43 +90,41 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_layout);
 
-
-        try {
-            initDB();
-        } catch (MalformedURLException | JSONException | InterruptedException ignored) {
-
-        }
         List<String> stringList = logCursor(StartActivity.CITY_INFO);
-        String message = getString(R.string.your_city);
+        Log.d("TAG", "onCreate: stringList " + stringList);
         if(stringList.size()!=0) {
+            try {
+                initDB();
+            } catch (MalformedURLException | JSONException | InterruptedException ignored) {
+
+            }
             switch (stringList.get(1)) {
                 case "Dnipropetrovsk Oblast":
-                    message += getString(R.string.Dnipro_city);
+
                     api = StartActivity.apiDnipro;
                     break;
                 case "Odessa":
-                    message += getString(R.string.Odessa);
+
                     api = StartActivity.apiOdessa;
                     break;
                 case "Zaporizhzhia":
-                    message += getString(R.string.Zaporizhzhia);
+
                     api = StartActivity.apiZaporizhzhia;
                     break;
                 case "Cherkasy Oblast":
-                    message += getString(R.string.Cherkasy);
+
                     api = StartActivity.apiCherkasy;
                     break;
                 case "OdessaTest":
-                    message += getString(R.string.OdessaTest);
+
                     api = StartActivity.apiTest;
                     break;
                 default:
-                    message += getString(R.string.Kyiv_city);
+
                     api = StartActivity.apiKyiv;
                     break;
             }
 
-            Toast.makeText(StartActivity.this, message, Toast.LENGTH_SHORT).show();
         }
         try_again_button = findViewById(R.id.try_again_button);
         try_again_button.setOnClickListener(new View.OnClickListener() {
@@ -139,9 +137,10 @@ public class StartActivity extends Activity {
         if(hasConnection() && hasServer()) {
 
             try {
-                startIp();
+//                new LoadDataTask().execute();
+
                 blackList();
-                version();
+
             } catch (MalformedURLException ignored) {
             }
             isConnectedToGoogle(new ConnectionCallback() {
@@ -261,9 +260,6 @@ public class StartActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-
-
-
     }
 
     public CompletableFuture<Boolean> checkConnectionAsync() {
@@ -361,6 +357,7 @@ public class StartActivity extends Activity {
             } catch (IOException e) {
 
             }
+            assert urlConnection != null;
             urlConnection.disconnect();
         });
 
@@ -368,6 +365,7 @@ public class StartActivity extends Activity {
 
     private void initDB() throws MalformedURLException, JSONException, InterruptedException {
 //        this.deleteDatabase(DB_NAME);
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         database = this.openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
         Log.d("TAG", "initDB: " + database);
 
@@ -461,14 +459,16 @@ public class StartActivity extends Activity {
                 " city text);");
         getLocalIpAddress();
 
-        cursorDb = StartActivity.database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        cursorDb = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         verifyPhone = cursorDb.getCount() == 1;
         if (cursorDb != null && !cursorDb.isClosed())
             cursorDb.close();
+        database.close();
     }
 
     private void insertFirstSettings(List<String> settings) {
         String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?);";
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
@@ -483,9 +483,11 @@ public class StartActivity extends Activity {
         } finally {
             database.endTransaction();
         }
+        database.close();
     }
     private void insertServices() {
         String sql = "INSERT INTO " + TABLE_SERVICE_INFO + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
@@ -511,9 +513,11 @@ public class StartActivity extends Activity {
         } finally {
             database.endTransaction();
         }
+        database.close();
     }
     private void insertAddServices() {
         String sql = "INSERT INTO " + TABLE_ADD_SERVICE_INFO + " VALUES(?,?,?,?);";
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
@@ -528,6 +532,7 @@ public class StartActivity extends Activity {
         } finally {
             database.endTransaction();
         }
+        database.close();
     }
     private void insertUserInfo() {
 
@@ -540,6 +545,7 @@ public class StartActivity extends Activity {
 
 
         String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?);";
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
@@ -555,8 +561,9 @@ public class StartActivity extends Activity {
         } finally {
             database.endTransaction();
         }
+        database.close();
     }
-    public static void resetRecordsAddServices() {
+    public void resetRecordsAddServices() {
         ContentValues cv = new ContentValues();
 
         cv.put("time", "no_time");
@@ -564,49 +571,16 @@ public class StartActivity extends Activity {
         cv.put("date", "no_date");
 
         // обновляем по id
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(TABLE_ADD_SERVICE_INFO, cv, "id = ?",
                 new String[] { "1" });
-    }
-
-    public static void insertRecordsUser(String phoneNumber) {
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?);";
-        SQLiteStatement statement = database.compileStatement(sql);
-        database.beginTransaction();
-        try {
-            statement.clearBindings();
-            statement.bindString(3, phoneNumber);
-
-            statement.execute();
-            database.setTransactionSuccessful();
-
-        } finally {
-            database.endTransaction();
-        }
-        fab.setVisibility(View.VISIBLE);
-    }
-
-    public static void updateRecordsUser(String result) {
-        ContentValues cv = new ContentValues();
-
-        cv.put("phone_number", result);
-
-        // обновляем по id
-        database.update(TABLE_USER_INFO, cv, "id = ?",
-                new String[] { "1" });
-    }
-    public static void updateRecordsUserInfo(String userInfo, String result) {
-        ContentValues cv = new ContentValues();
-
-        cv.put(userInfo, result);
-
-        // обновляем по id
-        database.update(TABLE_USER_INFO, cv, "id = ?",
-                new String[] { "1" });
+        database.close();
     }
 
     @SuppressLint("Range")
-    public static List<String> logCursor(String table) {
+    public List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -622,6 +596,7 @@ public class StartActivity extends Activity {
                 } while (c.moveToNext());
             }
         }
+        database.close();
         return list;
     }
 
@@ -639,7 +614,7 @@ public class StartActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        database.close();
+
         if (connectivityReceiver != null) {
             unregisterReceiver(connectivityReceiver);
         }
@@ -717,6 +692,7 @@ public class StartActivity extends Activity {
     }
     private void insertCity(String city) {
         String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?);";
+        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
@@ -729,6 +705,7 @@ public class StartActivity extends Activity {
         } finally {
             database.endTransaction();
         }
+        database.close();
     }
     private void insertMyPosition() {
         String sql = "INSERT INTO " + StartActivity.TABLE_POSITION_INFO + " VALUES(?,?,?,?);";
@@ -751,46 +728,64 @@ public class StartActivity extends Activity {
         }
     }
     private void blackList() throws MalformedURLException {
-
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         if(userEmail.equals("email")) {
             Log.d("TAG", "blackList:userEmail " + userEmail);
 //            startActivity(new Intent(StartActivity.this, GoogleSignInActivity.class));
             startActivity(new Intent(StartActivity.this, FirebaseSignIn.class));
 
+
         } else {
 
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" +  userEmail;
-
-            Map<String, String> sendUrlMap = CostJSONParser.sendURL(url);
-
-            String message = sendUrlMap.get("message");
-
-            ContentValues cv = new ContentValues();
-            assert message != null;
-            if (message.equals("Не черном списке")) {
-                cv.put("verifyOrder", "1");
-                database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-
-                    startActivity(new Intent(this, MainActivity.class));
-            }
-            if (message.equals("В черном списке")) {
-//                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(StartActivity.this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-                        findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
-                        try_again_button.setVisibility(View.VISIBLE);
-                        cv.put("verifyOrder", "0");
-                        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                    }
-                });
-            }
+            new VerifyUserTask().execute();
         }
 
 
     }
+
+    @SuppressLint("StaticFieldLeak")
+    private class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {
+        private Exception exception;
+        @Override
+        protected Map<String, String> doInBackground(Void... voids) {
+            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
+
+            try {
+//                startIp();
+//                version();
+                return CostJSONParser.sendURL(url);
+            } catch (Exception e) {
+                exception = e;
+                return null;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Map<String, String> sendUrlMap) {
+            String message = sendUrlMap.get("message");
+            ContentValues cv = new ContentValues();
+            SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+            if (message != null) {
+                if (message.equals("Не черном списке")) {
+                    cv.put("verifyOrder", "1");
+                    database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                    startActivity(new Intent(StartActivity.this, MainActivity.class));
+                }
+                if (message.equals("В черном списке")) {
+                    Toast.makeText(StartActivity.this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+                    findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
+                    try_again_button.setVisibility(View.VISIBLE);
+                    cv.put("verifyOrder", "0");
+                    database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                }
+            }
+            database.close();
+        }
+    }
+
+// Запускаем асинхронную задачу
+
 
     private void version() throws MalformedURLException {
 

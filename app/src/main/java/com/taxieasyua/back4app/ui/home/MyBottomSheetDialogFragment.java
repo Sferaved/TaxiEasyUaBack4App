@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -53,7 +54,10 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     private TextView tvSelectedTime, tvSelectedDate;
     private Calendar calendar;
     private EditText komenterinp, discount;
-
+    Button btn_min, btn_plus;
+    long discountFist;
+    final static long MIN_VALUE = 10;
+    final static long MAX_VALUE = 300;
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
@@ -177,8 +181,35 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
         komenterinp = view.findViewById(R.id.komenterinp);
         discount = view.findViewById(R.id.discinp);
-        Log.d("TAG", "onCreateView: logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()) " + logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()));
+
+
         discount.setText(logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3));
+        String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+        discountFist =  Integer.parseInt(discountText);
+
+
+        btn_min = view.findViewById(R.id.btn_minus);
+        btn_min.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                discountFist -= 5;
+                if (discountFist <= MIN_VALUE) {
+                    discountFist = MIN_VALUE;
+                }
+                discount.setText( String.valueOf(discountFist));
+            }
+        });
+        btn_plus = view.findViewById(R.id.btn_plus);
+        btn_plus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                discountFist += 5;
+                if (discountFist >= MAX_VALUE) {
+                    discountFist = MAX_VALUE;
+                }
+                discount.setText( String.valueOf(discountFist));
+            }
+        });
 
         tvSelectedDate = view.findViewById(R.id.tv_selected_date);
         LocalDate currentDate = LocalDate.now();
@@ -214,6 +245,9 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         });
 
         database.close();
+
+
+
         return view;
     }
     // Метод для обновления отображаемой даты
@@ -272,20 +306,10 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
         String discountText = discount.getText().toString();
         if (!discountText.isEmpty()) {
-            int discountValue;
-            try {
-                discountValue = Integer.parseInt(discountText);
-                // Используйте переменную discountValue как целочисленное значение
-            } catch (NumberFormatException e) {
-                // Обработка ошибки, если текст не может быть преобразован в число
-                discountValue = 50;
-            }
-            if (discountValue >= 50 || discountValue <= 0) {
-                discountValue = 50;
-            }
+
             ContentValues cv = new ContentValues();
 
-            cv.put("discount", String.valueOf(discountValue));
+            cv.put("discount", discountText);
 
             // обновляем по id
             SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
