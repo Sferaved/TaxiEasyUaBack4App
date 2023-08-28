@@ -1,10 +1,8 @@
 package com.taxieasyua.back4app.ui.finish;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -18,13 +16,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

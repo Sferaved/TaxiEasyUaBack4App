@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class UpdateActivity extends Activity {
                 public void onClick(View v) {
                     Intent intent = new Intent(Intent.ACTION_DIAL);
                     String phone;
-                    List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO);
                     switch (stringList.get(1)){
                         case "message = getString(R.string.Dnipro_city);":
                             phone = "tel:0674443804";
@@ -115,7 +116,7 @@ public class UpdateActivity extends Activity {
     @SuppressLint("Range")
     private List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {

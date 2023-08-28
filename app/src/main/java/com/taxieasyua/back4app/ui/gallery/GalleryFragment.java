@@ -21,9 +21,9 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
-import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ public class GalleryFragment extends Fragment {
     }
 
     private void reIndexOrders() {
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.execSQL("CREATE TABLE  temp_table" + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
@@ -90,13 +90,13 @@ public class GalleryFragment extends Fragment {
                 " to_lat text," +
                 " to_lng text);");
         // Копирование данных из старой таблицы во временную
-        database.execSQL("INSERT INTO temp_table SELECT * FROM " + StartActivity.TABLE_ORDERS_INFO);
+        database.execSQL("INSERT INTO temp_table SELECT * FROM " + MainActivity.TABLE_ORDERS_INFO);
 
         // Удаление старой таблицы
-        database.execSQL("DROP TABLE " + StartActivity.TABLE_ORDERS_INFO);
+        database.execSQL("DROP TABLE " + MainActivity.TABLE_ORDERS_INFO);
 
         // Создание новой таблицы
-        database.execSQL("CREATE TABLE " + StartActivity.TABLE_ORDERS_INFO + "(id integer primary key autoincrement," +
+        database.execSQL("CREATE TABLE " + MainActivity.TABLE_ORDERS_INFO + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
                 " from_lat text," +
@@ -106,7 +106,7 @@ public class GalleryFragment extends Fragment {
                 " to_lat text," +
                 " to_lng text);");
 
-        String query = "INSERT INTO " + StartActivity.TABLE_ORDERS_INFO + " (from_street, from_number, from_lat, from_lng, to_street, to_number, to_lat, to_lng) " +
+        String query = "INSERT INTO " + MainActivity.TABLE_ORDERS_INFO + " (from_street, from_number, from_lat, from_lng, to_street, to_number, to_lat, to_lng) " +
                 "SELECT from_street, from_number, from_lat, from_lng, to_street, to_number, to_lat, to_lng FROM temp_table";
 
         // Копирование данных из временной таблицы в новую
@@ -133,8 +133,8 @@ public class GalleryFragment extends Fragment {
         for (int position : selectedPositions) {
             int i = position + 1;
 
-            String deleteQuery = "DELETE FROM " + StartActivity.TABLE_ORDERS_INFO + " WHERE id = " + i  + ";";
-            SQLiteDatabase database = getActivity().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+            String deleteQuery = "DELETE FROM " + MainActivity.TABLE_ORDERS_INFO + " WHERE id = " + i  + ";";
+            SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
             database.execSQL(deleteQuery);
             database.close();
@@ -195,8 +195,8 @@ public class GalleryFragment extends Fragment {
     private ArrayList<Map> routMaps(Context context) {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         int i = 0;
         if (c != null) {
             if (c.moveToFirst()) {

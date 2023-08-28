@@ -71,7 +71,6 @@ import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
-import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import org.json.JSONException;
 import org.osmdroid.api.IMapController;

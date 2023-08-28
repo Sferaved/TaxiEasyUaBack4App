@@ -7,7 +7,6 @@ import static com.taxieasyua.back4app.R.string.verify_internet;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -49,44 +48,31 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
-import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.Odessa.Odessa;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
-import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.GoogleSignInActivity;
-import com.taxieasyua.back4app.ui.start.ResultSONParser;
-import com.taxieasyua.back4app.ui.start.StartActivity;
 import com.taxieasyua.back4app.ui.start.StopActivity;
 
 import org.json.JSONException;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String DB_NAME = "data_28082023_111";
+    public static final String DB_NAME = "data_28082023_113";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -498,8 +484,8 @@ public class MainActivity extends AppCompatActivity {
         database.beginTransaction();
         try {
             statement.clearBindings();
-            statement.bindDouble(2, 0);
-            statement.bindDouble(3, 0);
+            statement.bindDouble(2, 50.43);
+            statement.bindDouble(3, 30.51);
             statement.bindString(4, " ");
 
             statement.execute();

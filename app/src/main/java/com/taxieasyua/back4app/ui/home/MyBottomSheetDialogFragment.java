@@ -34,7 +34,6 @@ import androidx.annotation.RequiresApi;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;

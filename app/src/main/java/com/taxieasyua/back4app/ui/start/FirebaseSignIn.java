@@ -78,25 +78,25 @@ public class FirebaseSignIn extends AppCompatActivity {
 
         }
 
-        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
+        List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
            case "Dnipropetrovsk Oblast":
-                api = StartActivity.apiDnipro;
+                api = MainActivity.apiDnipro;
                 break;
             case "Odessa":
-                api = StartActivity.apiOdessa;
+                api = MainActivity.apiOdessa;
                 break;
             case "Zaporizhzhia":
-                api = StartActivity.apiZaporizhzhia;
+                api = MainActivity.apiZaporizhzhia;
                 break;
             case "Cherkasy Oblast":
-                api = StartActivity.apiCherkasy;
+                api = MainActivity.apiCherkasy;
                 break;
             case "OdessaTest":
-                api = StartActivity.apiTest;
+                api = MainActivity.apiTest;
                 break;
             default:
-                api = StartActivity.apiKyiv;
+                api = MainActivity.apiKyiv;
                 break;
         }
 
@@ -107,7 +107,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                List<String> stringList = logCursor(MainActivity.CITY_INFO);
                 switch (stringList.get(1)){
                     case "Kyiv City":
                         phone = "tel:0674443804";
@@ -133,46 +133,46 @@ public class FirebaseSignIn extends AppCompatActivity {
             }
         });
 
-        startSignInInBackground();
+//        startSignInInBackground();
     }
 
-    private void startSignInInBackground() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Инициализация FirebaseApp
-                FirebaseApp.initializeApp(FirebaseSignIn.this);
-
-                // Choose authentication providers
-                List<AuthUI.IdpConfig> providers = Arrays.asList(
-                        new AuthUI.IdpConfig.GoogleBuilder().build());
-
-                // Create and launch sign-in intent
-                Intent signInIntent = AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build();
-                try {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            signInLauncher.launch(signInIntent);
-                        }
-                    });
-                } catch (NullPointerException e) {
-                    finish();
-                    startActivity(new Intent(FirebaseSignIn.this, StopActivity.class));
-                }
-            }
-        });
-        thread.start();
-    }
+//    private void startSignInInBackground() {
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // Инициализация FirebaseApp
+//                FirebaseApp.initializeApp(FirebaseSignIn.this);
+//
+//                // Choose authentication providers
+//                List<AuthUI.IdpConfig> providers = Arrays.asList(
+//                        new AuthUI.IdpConfig.GoogleBuilder().build());
+//
+//                // Create and launch sign-in intent
+//                Intent signInIntent = AuthUI.getInstance()
+//                        .createSignInIntentBuilder()
+//                        .setAvailableProviders(providers)
+//                        .build();
+//                try {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            signInLauncher.launch(signInIntent);
+//                        }
+//                    });
+//                } catch (NullPointerException e) {
+//                    finish();
+//                    startActivity(new Intent(FirebaseSignIn.this, StopActivity.class));
+//                }
+//            }
+//        });
+//        thread.start();
+//    }
 
 
     @SuppressLint("Range")
     public List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -199,105 +199,105 @@ public class FirebaseSignIn extends AppCompatActivity {
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(FirebaseSignIn.this, StartActivity.class));
+                startActivity(new Intent(FirebaseSignIn.this, MainActivity.class));
             }
         });
 
     }
 
-    private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
-            new FirebaseAuthUIActivityResultContract(),
-            new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
-                @Override
-                public void onActivityResult(FirebaseAuthUIAuthenticationResult result) {
-                    try {
-                        onSignInResult(result);
-                    } catch (MalformedURLException | JSONException | InterruptedException e) {
-                        Log.d("TAG", "onCreate:" + new RuntimeException(e));
-                    }
-                }
-            }
-    );
+//    private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
+//            new FirebaseAuthUIActivityResultContract(),
+//            new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
+//                @Override
+//                public void onActivityResult(FirebaseAuthUIAuthenticationResult result) {
+//                    try {
+//                        onSignInResult(result);
+//                    } catch (MalformedURLException | JSONException | InterruptedException e) {
+//                        Log.d("TAG", "onCreate:" + new RuntimeException(e));
+//                    }
+//                }
+//            }
+//    );
 
 
-    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
-        ContentValues cv = new ContentValues();
-        try {
-            if (result.getResultCode() == RESULT_OK) {
-                // Successfully signed in
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                StartActivity.userEmail = user.getEmail();
-                StartActivity.displayName = user.getDisplayName();
-                updateRecordsUserInfo("email", user.getEmail());
-                updateRecordsUserInfo("username", user.getDisplayName());
-                addUser();
-
-                // Проверяем состояние GPS
-                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                boolean gpsEnabled = false;
-                try {
-                    gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch (Exception ignored) {
-                }
-
-                // Если GPS выключен, выводим диалог с предложением его включить
-                if (!gpsEnabled) {
-                    openGPSSettings();
-                } else {
-                    // Проверяем состояние Location Service с помощью колбэка
-                    checkLocationServiceEnabled(new LocationServiceCallback() {
-                        @Override
-                        public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
-                            if (isEnabled) {
-                               // Проверяем разрешения на местоположение
-                                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                                        && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                                }
-                            }
-
-                        }
-                    });
-                }
-
-                // Здесь также происходит обновление значения verifyOrder в базе данных
-
-                cv.put("verifyOrder", "1");
-                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                database.close();
-                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
-                startActivity(intent);
-            } else {
-                // Sign in failed
-                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-                btn_again.setVisibility(View.VISIBLE);
-
-                cv.put("verifyOrder", "0");
-                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-                database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                database.close();
-            }
-        } catch (NullPointerException e) {
-            // Error handling
-            Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-
-            cv.put("verifyOrder", "0");
-            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-            database.close();
-        }
-}
+//    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
+//        ContentValues cv = new ContentValues();
+//        try {
+//            if (result.getResultCode() == RESULT_OK) {
+//                // Successfully signed in
+//                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+//                MainActivity.userEmail = user.getEmail();
+//                MainActivity.displayName = user.getDisplayName();
+//                updateRecordsUserInfo("email", user.getEmail());
+//                updateRecordsUserInfo("username", user.getDisplayName());
+//                addUser();
+//
+//                // Проверяем состояние GPS
+//                LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//                boolean gpsEnabled = false;
+//                try {
+//                    gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+//                } catch (Exception ignored) {
+//                }
+//
+//                // Если GPS выключен, выводим диалог с предложением его включить
+//                if (!gpsEnabled) {
+//                    openGPSSettings();
+//                } else {
+//                    // Проверяем состояние Location Service с помощью колбэка
+//                    checkLocationServiceEnabled(new LocationServiceCallback() {
+//                        @Override
+//                        public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
+//                            if (isEnabled) {
+//                               // Проверяем разрешения на местоположение
+//                                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+//                                        && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+//                                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+//                                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+//                                }
+//                            }
+//
+//                        }
+//                    });
+//                }
+//
+//                // Здесь также происходит обновление значения verifyOrder в базе данных
+//
+//                cv.put("verifyOrder", "1");
+//                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+//                database.close();
+//                Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
+//                startActivity(intent);
+//            } else {
+//                // Sign in failed
+//                Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+//                btn_again.setVisibility(View.VISIBLE);
+//
+//                cv.put("verifyOrder", "0");
+//                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+//                database.close();
+//            }
+//        } catch (NullPointerException e) {
+//            // Error handling
+//            Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
+//
+//            cv.put("verifyOrder", "0");
+//            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+//            database.close();
+//        }
+//}
     private void updateRecordsUserInfo(String userInfo, String result) {
-        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
 
         cv.put(userInfo, result);
 
         // обновляем по id
-        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+        database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
     }
@@ -415,24 +415,25 @@ public class FirebaseSignIn extends AppCompatActivity {
         }
     }
 
-    private void addUser() throws MalformedURLException, JSONException, InterruptedException {
-        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" +  StartActivity.displayName + "/" + StartActivity.userEmail;
-
-        URL url = new URL(urlString);
-        Log.d("TAG", "sendURL: " + urlString);
-
-        AsyncTask.execute(() -> {
-            HttpsURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpsURLConnection) url.openConnection();
-                urlConnection.setDoInput(true);
-                urlConnection.getResponseCode();
-            } catch (IOException e) {
-                Log.d("TAG", "onCreate:" + new RuntimeException(e));
-            }
-            urlConnection.disconnect();
-        });
-    }
+//    private void addUser() throws MalformedURLException, JSONException, InterruptedException {
+//
+//        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" +  MainActivity.displayName + "/" + MainActivity.userEmail;
+//
+//        URL url = new URL(urlString);
+//        Log.d("TAG", "sendURL: " + urlString);
+//
+//        AsyncTask.execute(() -> {
+//            HttpsURLConnection urlConnection = null;
+//            try {
+//                urlConnection = (HttpsURLConnection) url.openConnection();
+//                urlConnection.setDoInput(true);
+//                urlConnection.getResponseCode();
+//            } catch (IOException e) {
+//                Log.d("TAG", "onCreate:" + new RuntimeException(e));
+//            }
+//            urlConnection.disconnect();
+//        });
+//    }
 
     @Override
     protected void onRestart() {
@@ -442,7 +443,7 @@ public class FirebaseSignIn extends AppCompatActivity {
         try_again_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), StartActivity.class));
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
     }

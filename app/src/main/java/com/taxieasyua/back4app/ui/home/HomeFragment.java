@@ -57,16 +57,11 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
-import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.ApiService;
-import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.start.GoogleSignInActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
-import com.taxieasyua.back4app.ui.start.StartActivity;
 
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -81,10 +76,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
