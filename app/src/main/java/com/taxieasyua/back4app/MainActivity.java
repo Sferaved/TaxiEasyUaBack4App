@@ -86,7 +86,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String DB_NAME = "data_28082023_110";
+    public static final String DB_NAME = "data_28082023_111";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             database.close();
                             Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-                            finish();
+                            finishAffinity();
                             startActivity(new Intent(MainActivity.this, MainActivity.class));
                         }
                     }
