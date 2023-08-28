@@ -788,7 +788,7 @@ public class HomeFragment extends Fragment {
 
                 String subject = "Повідомлення № I-" + generateRandomString(10);
 
-                String body ="Опишить, будь ласка, Вашу проблему далі: " + "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n" +
+                String body ="Ваше повідомленя: " + "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n" +
                         "Інформація про додаток: "+ "\n" +
                         "База адрес міста " + city + "\n" +
                         "Додаток: " + getString(R.string.version) + "\n" +

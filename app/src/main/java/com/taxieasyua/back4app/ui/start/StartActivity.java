@@ -738,7 +738,6 @@ public class StartActivity extends Activity {
 
 
         } else {
-
             new VerifyUserTask().execute();
         }
 
@@ -750,6 +749,8 @@ public class StartActivity extends Activity {
         private Exception exception;
         @Override
         protected Map<String, String> doInBackground(Void... voids) {
+            String userEmail = logCursor(TABLE_USER_INFO).get(3);
+
             String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
             try {
                 return CostJSONParser.sendURL(url);
