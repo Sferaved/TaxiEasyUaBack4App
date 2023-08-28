@@ -1653,7 +1653,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     if(hasServer()) {
         //  Проверка даты и времени
 
-        List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
         String comment = stringList.get(2);
         String date = stringList.get(3);
@@ -1664,30 +1664,30 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         // Destination of route
         String str_dest = to + "/" + to_number;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        String tarif = logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
+        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
 
         // Building the parameters to the web service
 
         String parameters = null;
         String phoneNumber = "no phone";
-        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(4);
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
 
         if(urlAPI.equals("costSearchGeo")) {
-            Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
             if (c.getCount() == 1) {
-                phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
-            phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
@@ -1699,12 +1699,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             cv.put("date", "no_date");
 
             // обновляем по id
-            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
                     new String[] { "1" });
         }
 
         // Building the url to the web service
-        List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, context);
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
@@ -1747,7 +1747,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                  String urlAPI, Context context) {
         //  Проверка даты и времени
         if(hasServer()) {
-            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+            List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
             String time = stringList.get(1);
             String comment = stringList.get(2);
             String date = stringList.get(3);
@@ -1758,31 +1758,33 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             // Destination of route
             String str_dest = toLatitude + "/" + toLongitude;
 
-    //        Cursor cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-            SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-            String tarif = logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
+    //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
+            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
 
             // Building the parameters to the web service
 
             String parameters = null;
             String phoneNumber = "no phone";
+            String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
+            String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
             if(urlAPI.equals("costSearchMarkers")) {
-                Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+                Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
                 if (c.getCount() == 1) {
-                    phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+                    phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                     c.close();
                 }
-                parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + StartActivity.displayName + "(" + StartActivity.userEmail + ")";
+                parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
             }
 
             if(urlAPI.equals("orderSearchMarkers")) {
-                phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
                 parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                        + StartActivity.displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                        + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
                 ContentValues cv = new ContentValues();
 
@@ -1791,13 +1793,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 cv.put("date", "no_date");
 
                 // обновляем по id
-                database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
                         new String[] { "1" });
 
             }
 
             // Building the url to the web service
-            List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, context);
+            List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
             List<String> servicesChecked = new ArrayList<>();
             String result;
             boolean servicesVer = false;
@@ -1840,7 +1842,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -1889,8 +1891,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         cv.put("phone_number", result);
 
         // обновляем по id
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        int updCount = database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        int updCount = database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
         Log.d("TAG", "updated rows count = " + updCount);
 
@@ -1903,21 +1905,21 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         String selection = "from_street = ?";
         String[] selectionArgs = new String[] {from};
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor_from = database.query(StartActivity.TABLE_ORDERS_INFO,
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor_from = database.query(MainActivity.TABLE_ORDERS_INFO,
                 null, selection, selectionArgs, null, null, null);
 
         selection = "to_street = ?";
         selectionArgs = new String[] {to};
 
-        Cursor cursor_to = database.query(StartActivity.TABLE_ORDERS_INFO,
+        Cursor cursor_to = database.query(MainActivity.TABLE_ORDERS_INFO,
                 null, selection, selectionArgs, null, null, null);
 
 
 
         if (cursor_from.getCount() == 0 || cursor_to.getCount() == 0) {
 
-            String sql = "INSERT INTO " + StartActivity.TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?,?,?,?,?);";
+            String sql = "INSERT INTO " + MainActivity.TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?,?,?,?,?);";
             SQLiteStatement statement = database.compileStatement(sql);
             database.beginTransaction();
             try {
