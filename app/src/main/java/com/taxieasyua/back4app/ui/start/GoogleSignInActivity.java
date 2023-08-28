@@ -56,8 +56,7 @@ public class GoogleSignInActivity extends Activity {
     static FloatingActionButton fab, btn_again;
     Button try_again_button;
     String api;
-    Intent intent;
-    SQLiteDatabase database;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +77,7 @@ public class GoogleSignInActivity extends Activity {
     @SuppressLint("Range")
     public List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -97,13 +96,6 @@ public class GoogleSignInActivity extends Activity {
         database.close();
         return list;
     }
-    public void checkPermission(String permission, int requestCode) {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
-        }
-    }
-
     @Override
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -137,7 +129,7 @@ public class GoogleSignInActivity extends Activity {
 
     //Change UI according to user data.
     public void updateUI(GoogleSignInAccount account) throws MalformedURLException {
-        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
         if(account != null){
 
@@ -147,25 +139,26 @@ public class GoogleSignInActivity extends Activity {
             addUser(account.getEmail(), account.getDisplayName());
 
             cv.put("verifyOrder", "1");
-            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+
             startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
         }else {
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
             try_again_button.setVisibility(View.VISIBLE);
             cv.put("verifyOrder", "0");
-            database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
         }
         database.close();
 
     }
     private void updateRecordsUserInfo(String userInfo, String result) {
-        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
 
         cv.put(userInfo, result);
 
         // обновляем по id
-        database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+        database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
     }
@@ -248,33 +241,27 @@ public class GoogleSignInActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
 
-        }
-
-        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
+        List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
-                api = StartActivity.apiKyiv;
+                api = MainActivity.apiKyiv;
                 break;
             case "Dnipropetrovsk Oblast":
-                api = StartActivity.apiDnipro;
+                api = MainActivity.apiDnipro;
                 break;
             case "Odessa":
-                api = StartActivity.apiOdessa;
+                api = MainActivity.apiOdessa;
                 break;
             case "Zaporizhzhia":
-                api = StartActivity.apiZaporizhzhia;
+                api = MainActivity.apiZaporizhzhia;
                 break;
             case "Cherkasy Oblast":
-                api = StartActivity.apiCherkasy;
+                api = MainActivity.apiCherkasy;
                 break;
             default:
-                api = StartActivity.apiKyiv;
+                api = MainActivity.apiKyiv;
                 break;
         }
 
@@ -285,7 +272,7 @@ public class GoogleSignInActivity extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                List<String> stringList = logCursor(MainActivity.CITY_INFO);
                 switch (stringList.get(1)){
                     case "Kyiv City":
                         phone = "tel:0674443804";
@@ -315,7 +302,7 @@ public class GoogleSignInActivity extends Activity {
         try_again_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), StartActivity.class));
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
 

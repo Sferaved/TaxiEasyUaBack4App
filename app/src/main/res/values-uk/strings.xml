@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.758</string>
-    <string name="version">Версія: 2.758</string>
+    <string name="version_code">2.759</string>
+    <string name="version">Версія: 2.759</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -45,7 +45,7 @@
     <string name="gps_on">Увімкнути</string>
     <string name="gps_info">Щоб покращити роботу програми, увімкніть на пристрої геолокацію Google</string>
     <string name="gps_on_button">включить gps</string>
-    <string name="wellcome">Ласкаво просимо. Сформуйте маршрут або виберіть улюблений.</string>
+    <string name="wellcome">Сформуйте маршрут або виберіть улюблений.</string>
     <string name="verify_phone">Перевірка телефону</string>
     <string name="format_phone">Формат вводу номера телефону: +380936665544</string>
     <string name="sent_button">Відправити</string>

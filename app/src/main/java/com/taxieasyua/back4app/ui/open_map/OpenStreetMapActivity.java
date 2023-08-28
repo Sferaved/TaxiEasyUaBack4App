@@ -214,7 +214,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 
 
-        List<String> startList = logCursor(StartActivity.TABLE_POSITION_INFO, this);
+        List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
         startLat =  Double.parseDouble(startList.get(1));
         startLan = Double.parseDouble(startList.get(2));
         FromAdressString = startList.get(3);
@@ -231,36 +231,36 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
 
 
-        List<String> stringList = logCursor(StartActivity.CITY_INFO, this);
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, this);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
-                api = StartActivity.apiDnipro;
+                api = MainActivity.apiDnipro;
                 phone = "tel:0667257070";
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiOdessa;
+                api = MainActivity.apiOdessa;
                 phone = "tel:0737257070";
                 break;
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
-                api = StartActivity.apiZaporizhzhia;
+                api = MainActivity.apiZaporizhzhia;
                 phone = "tel:0687257070";
                 break;
             case "Cherkasy Oblast":
                 arrayStreet = Cherkasy.arrayStreet();
-                api = StartActivity.apiCherkasy;
+                api = MainActivity.apiCherkasy;
                 phone = "tel:0962294243";
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
-                api = StartActivity.apiTest;
+                api = MainActivity.apiTest;
                 phone = "tel:0674443804";
                 break;
             default:
                 arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.apiKyiv;
+                api = MainActivity.apiKyiv;
                 phone = "tel:0674443804";
                 break;
         }
@@ -419,17 +419,17 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         
     }
     private void updateMyPosition(Double startLat, Double startLan, String position) {
-        SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
 
         cv.put("startLat", startLat);
-        database.update(StartActivity.TABLE_POSITION_INFO, cv, "id = ?",
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
                 new String[] { "1" });
         cv.put("startLan", startLan);
-        database.update(StartActivity.TABLE_POSITION_INFO, cv, "id = ?",
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
                 new String[] { "1" });
         cv.put("position", position);
-        database.update(StartActivity.TABLE_POSITION_INFO, cv, "id = ?",
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
 
@@ -476,8 +476,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
    ArrayList<Map> routMaps() {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
-        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         int i = 0;
         if (c != null) {
             if (c.moveToFirst()) {
@@ -719,7 +719,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                 Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
+                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
                 long discount;
                 discount =  firstCost * discountInt/100;
@@ -854,7 +854,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                     public void onClick(DialogInterface dialog, int which) {
                                                                         Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                         String phone;
-                                                                        List<String> stringList = logCursor(StartActivity.CITY_INFO, map.getContext());
+                                                                        List<String> stringList = logCursor(MainActivity.CITY_INFO, map.getContext());
                                                                         switch (stringList.get(1)){
                                                                             case "Kyiv City":
                                                                                 phone = "tel:0674443804";
@@ -926,13 +926,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     }
 
     private static boolean verifyOrder(Context context) {
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
         boolean verify = true;
         if (cursor.getCount() == 1) {
 
-            if (logCursor(StartActivity.TABLE_USER_INFO, context).get(1).equals("0")) {
+            if (logCursor(MainActivity.TABLE_USER_INFO, context).get(1).equals("0")) {
                 verify = false;
             }
             cursor.close();
@@ -943,12 +943,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     }
 
     private static boolean verifyPhone(Context context) {
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         boolean verify = true;
         if (cursor.getCount() == 1) {
 
-            if (logCursor(StartActivity.TABLE_USER_INFO, context).get(2).equals("+380")) {
+            if (logCursor(MainActivity.TABLE_USER_INFO, context).get(2).equals("+380")) {
                 verify = false;
             }
             cursor.close();
@@ -1111,7 +1111,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                             Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                                            String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
+                                            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
                                             long discountInt = Integer.parseInt(discountText);
                                             long discount;
                                             discount =  firstCost * discountInt/100;
@@ -1228,7 +1228,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                         public void onClick(DialogInterface dialog, int which) {
                                                                                             Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                                             String phone;
-                                                                                            List<String> stringList = logCursor(StartActivity.CITY_INFO, OpenStreetMapActivity.this);
+                                                                                            List<String> stringList = logCursor(MainActivity.CITY_INFO, OpenStreetMapActivity.this);
                                                                                             switch (stringList.get(1)){
                                                                                                 case "Kyiv City":
                                                                                                     phone = "tel:0674443804";
@@ -1383,7 +1383,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
+                                    String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
                                     long discountInt = Integer.parseInt(discountText);
                                     long discount;
                                     discount =  firstCost * discountInt/100;
@@ -1421,7 +1421,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                     if (!verifyPhone(getApplicationContext())) {
                                         getPhoneNumber();
                                     }
-                                    if (!StartActivity.verifyPhone) {
+                                    if (!MainActivity.verifyPhone) {
                                         MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
                                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                                     }
@@ -1499,7 +1499,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                                     Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                                     String phone;
-                                                                                    List<String> stringList = logCursor(StartActivity.CITY_INFO, OpenStreetMapActivity.this);
+                                                                                    List<String> stringList = logCursor(MainActivity.CITY_INFO, OpenStreetMapActivity.this);
                                                                                     switch (stringList.get(1)) {
                                                                                         case "Kyiv City":
                                                                                             phone = "tel:0674443804";

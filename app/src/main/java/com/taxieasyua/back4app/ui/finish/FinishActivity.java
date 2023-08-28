@@ -47,25 +47,25 @@ public class FinishActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finish);
 
-        List<String> stringListArr = logCursor(StartActivity.CITY_INFO);
+        List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
-                api = StartActivity.apiKyiv;
+                api = MainActivity.apiKyiv;
                 break;
             case "Dnipropetrovsk Oblast":
-                api = StartActivity.apiDnipro;
+                api = MainActivity.apiDnipro;
                 break;
             case "Odessa":
-                api = StartActivity.apiOdessa;
+                api = MainActivity.apiOdessa;
                 break;
             case "Zaporizhzhia":
-                api = StartActivity.apiZaporizhzhia;
+                api = MainActivity.apiZaporizhzhia;
                 break;
             case "Cherkasy Oblast":
-                api = StartActivity.apiCherkasy;
+                api = MainActivity.apiCherkasy;
                 break;
             default:
-                api = StartActivity.apiKyiv;
+                api = MainActivity.apiKyiv;
                 break;
         }
         String parameterValue = getIntent().getStringExtra("messageResult_key");
@@ -128,7 +128,7 @@ public class FinishActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO);
+                List<String> stringList = logCursor(MainActivity.CITY_INFO);
                 switch (stringList.get(1)){
                     case "Kyiv City":
                         phone = "tel:0674443804";
@@ -181,7 +181,7 @@ public class FinishActivity extends AppCompatActivity {
     @SuppressLint("Range")
     private List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = this.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {

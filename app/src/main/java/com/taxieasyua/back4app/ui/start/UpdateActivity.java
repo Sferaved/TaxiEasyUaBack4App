@@ -51,7 +51,7 @@ public class UpdateActivity extends Activity {
                     String phone;
                     List<String> stringList = logCursor(StartActivity.CITY_INFO);
                     switch (stringList.get(1)){
-                        case "Kyiv City":
+                        case "message = getString(R.string.Dnipro_city);":
                             phone = "tel:0674443804";
                             break;
                         case "Dnipropetrovsk Oblast":

@@ -19,6 +19,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -56,13 +57,18 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.ApiService;
+import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.start.GoogleSignInActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import com.taxieasyua.back4app.ui.start.StartActivity;
 
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;
 
@@ -76,6 +82,10 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
@@ -86,7 +96,7 @@ public class HomeFragment extends Fragment {
     Button button;
     private String[] array;
     public  String api;
-    public  String[] arrayStreet;
+
     static FloatingActionButton fab_call;
     private final String TAG = "TAG";
     private static final int CM_DELETE_ID = 1;
@@ -98,6 +108,7 @@ public class HomeFragment extends Fragment {
     Integer selectedItem;
     private long firstCost;
     public long addCost, cost;
+    private static String[] arrayStreet;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -122,52 +133,120 @@ public class HomeFragment extends Fragment {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        binding.fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                String city;
+                switch (stringList.get(1)){
+                    case "Dnipropetrovsk Oblast":
+                        city = getString(R.string.Dnipro_city);
+                        break;
+                    case "Zaporizhzhia":
+                        city = getString(R.string.Zaporizhzhia);
+                        break;
+                    case "Cherkasy Oblast":
+                        city = getString(R.string.Cherkasy);
+                        break;
+                    case "Odessa":
+                        city = getString(R.string.Odessa);
+                        break;
+                    case "OdessaTest":
+                        city = getString(R.string.OdessaTest);
+                        break;
+                    default:
+                        city = getString(R.string.Kyiv_city);
+                        break;
+                }
+
+
+                List<String> userList = logCursor(MainActivity.TABLE_USER_INFO, getActivity());
+
+                String subject = "Повідомлення № I-" + generateRandomString(10);
+
+                String body ="Ваше повідомленя: " + "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n" +
+                        "Інформація про додаток: "+ "\n" +
+                        "База адрес міста " + city + "\n" +
+                        "Додаток: " + getString(R.string.version) + "\n" +
+                        "Користувач: " + userList.get(4) + "\n" +
+                        "email: " + userList.get(3) + "\n" +
+                        "телефон: " + userList.get(2) + "\n"+"\n";
+
+                String[] CC = {"cartaxi4@gmail.com"};
+                String[] TO = {"taxi.easy.ua@gmail.com"};
+                Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+                emailIntent.setData(Uri.parse("mailto:"));
+                emailIntent.setType("text/plain");
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+                emailIntent.putExtra(Intent.EXTRA_CC, CC);
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+                emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+                try {
+                    startActivity(Intent.createChooser(emailIntent, subject));
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(getActivity(), getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
 
         return root;
     }
 
+    @SuppressLint("StaticFieldLeak")
+    private class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {
+        private Exception exception;
+        @Override
+        protected Map<String, String> doInBackground(Void... voids) {
+            String userEmail = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+
+            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
+            try {
+                return CostJSONParser.sendURL(url);
+            } catch (Exception e) {
+                exception = e;
+                return null;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Map<String, String> sendUrlMap) {
+            String message = sendUrlMap.get("message");
+            ContentValues cv = new ContentValues();
+            SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            if (message != null) {
+
+                if (message.equals("В черном списке")) {
+
+                    cv.put("verifyOrder", "0");
+                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                } else {
+                    cv.put("verifyOrder", "1");
+                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                }
+            }
+            database.close();
+        }
+    }
     private void order() {
 
-        List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
-        switch (stringList.get(1)){
-            case "Dnipropetrovsk Oblast":
-                arrayStreet = Dnipro.arrayStreet();
-                api = StartActivity.apiDnipro;
-                break;
-            case "Zaporizhzhia":
-                arrayStreet = Zaporizhzhia.arrayStreet();
-                api = StartActivity.apiZaporizhzhia;
-                break;
-            case "Cherkasy Oblast":
-                arrayStreet = Cherkasy.arrayStreet();
-                api = StartActivity.apiCherkasy;
-                break;
-            case "Odessa":
-                arrayStreet = Odessa.arrayStreet();
-                api = StartActivity.apiOdessa;
-                break;
-            case "OdessaTest":
-                arrayStreet = OdessaTest.arrayStreet();
-                api = StartActivity.apiTest;
-                break;
-            default:
-                arrayStreet = KyivCity.arrayStreet();
-                api = StartActivity.apiKyiv;
-                break;
-        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, arrayStreet);
 
         AutoCompleteTextView textViewFrom =binding.textFrom;
         textViewFrom.setAdapter(adapter);
 //        Log.d("TAG", "onCreateView startPoint: " + OpenStreetMapActivity.from_name + OpenStreetMapActivity.from_house);
-        if(OpenStreetMapActivity.from_name != null && !OpenStreetMapActivity.from_name.equals("name")) {
-            textViewFrom.setText(OpenStreetMapActivity.from_name);
-            from = OpenStreetMapActivity.from_name;
-        }
+//        if(OpenStreetMapActivity.from_name != null && !OpenStreetMapActivity.from_name.equals("name")) {
+//            textViewFrom.setText(OpenStreetMapActivity.from_name);
+//            from = OpenStreetMapActivity.from_name;
+//        }
         from_number = binding.fromNumber;
         to_number = binding.toNumber;
-        if(hasServer()){
+//        if(hasServer()){
             if((OpenStreetMapActivity.from_house != null) && !OpenStreetMapActivity.from_house.equals("house")) {
                 String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
 
@@ -193,10 +272,10 @@ public class HomeFragment extends Fragment {
                     from_number.setVisibility(View.INVISIBLE);
                 }
             }
-        } else {
-            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-        }
-        if(hasServer()){
+//        } else {
+//            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+//        }
+//        if(hasServer()){
             textViewFrom.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @SuppressLint("ResourceAsColor")
                 @Override
@@ -239,13 +318,13 @@ public class HomeFragment extends Fragment {
 
                 }
             });
-        } else {
-            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-        }
+//        } else {
+//            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+//        }
         AutoCompleteTextView textViewTo =binding.textTo;
         textViewTo.setAdapter(adapter);
 
-        if(hasServer()){
+//        if(hasServer()){
             textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -282,9 +361,9 @@ public class HomeFragment extends Fragment {
                     }
                 }
             });
-        } else {
-            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-        }
+//        } else {
+//            Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
+//        }
 
         btncost = binding.btnCost;
         btncost.setOnClickListener(new View.OnClickListener() {
@@ -339,7 +418,7 @@ public class HomeFragment extends Fragment {
                                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                                    String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                                     long discountInt = Integer.parseInt(discountText);
                                     long discount;
 
@@ -455,7 +534,7 @@ public class HomeFragment extends Fragment {
                                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                                     Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                                     String phone;
-                                                                                    List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
+                                                                                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
                                                                                     switch (stringList.get(1)){
                                                                                         case "Kyiv City":
                                                                                             phone = "tel:0674443804";
@@ -582,7 +661,7 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 String phone;
-                List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
                 switch (stringList.get(1)){
                     case "Kyiv City":
                         phone = "tel:0674443804";
@@ -662,14 +741,14 @@ public class HomeFragment extends Fragment {
 
     }
     private boolean verifyOrder(Context context) {
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
         boolean verify = true;
         if (cursor.getCount() == 1) {
 
-            if (logCursor(StartActivity.TABLE_USER_INFO, context).get(1).equals("0")) {
-                verify = false;
+            if (logCursor(MainActivity.TABLE_USER_INFO, context).get(1).equals("0")) {
+                verify = false;Log.d("TAG", "verifyOrder:verify " +verify);
             }
             cursor.close();
         }
@@ -678,12 +757,12 @@ public class HomeFragment extends Fragment {
     }
 
     private boolean verifyPhone(Context context) {
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         boolean verify = true;
         if (cursor.getCount() == 1) {
 
-            if (logCursor(StartActivity.TABLE_USER_INFO, context).get(2).equals("+380")) {
+            if (logCursor(MainActivity.TABLE_USER_INFO, context).get(2).equals("+380")) {
                 verify = false;
             }
             cursor.close();
@@ -697,8 +776,8 @@ public class HomeFragment extends Fragment {
         cv.put("phone_number", result);
 
         // обновляем по id
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        int updCount = database.update(StartActivity.TABLE_USER_INFO, cv, "id = ?",
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        int updCount = database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
         Log.d("TAG", "updated rows count = " + updCount);
 
@@ -736,8 +815,8 @@ public class HomeFragment extends Fragment {
 
     private Map <String, String> routChoice(int i) {
         Map <String, String> rout = new HashMap<>();
-        SQLiteDatabase database = getContext().openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         c.move(i);
         rout.put("id", c.getString(c.getColumnIndexOrThrow ("id")));
         rout.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
@@ -756,65 +835,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        order();
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
-                String city;
-                switch (stringList.get(1)){
-                    case "Dnipropetrovsk Oblast":
-                        city = getString(R.string.Dnipro_city);
-                        break;
-                    case "Zaporizhzhia":
-                        city = getString(R.string.Zaporizhzhia);
-                        break;
-                    case "Cherkasy Oblast":
-                        city = getString(R.string.Cherkasy);
-                        break;
-                    case "Odessa":
-                        city = getString(R.string.Odessa);
-                        break;
-                    case "OdessaTest":
-                        city = getString(R.string.OdessaTest);
-                        break;
-                    default:
-                        city = getString(R.string.Kyiv_city);
-                        break;
-                }
+//        order();
 
-
-                List<String> userList = logCursor(StartActivity.TABLE_USER_INFO, getActivity());
-
-                String subject = "Повідомлення № I-" + generateRandomString(10);
-
-                String body ="Ваше повідомленя: " + "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n" +
-                        "Інформація про додаток: "+ "\n" +
-                        "База адрес міста " + city + "\n" +
-                        "Додаток: " + getString(R.string.version) + "\n" +
-                        "Користувач: " + userList.get(4) + "\n" +
-                        "email: " + userList.get(3) + "\n" +
-                        "телефон: " + userList.get(2) + "\n"+"\n";
-
-                String[] CC = {"cartaxi4@gmail.com"};
-                String[] TO = {"taxi.easy.ua@gmail.com"};
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-
-                emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.setType("text/plain");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
-                emailIntent.putExtra(Intent.EXTRA_CC, CC);
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-                emailIntent.putExtra(Intent.EXTRA_TEXT, body);
-
-                try {
-                    startActivity(Intent.createChooser(emailIntent, subject));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(getActivity(), getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
     }
 
     private String generateRandomString(int length) {
@@ -838,8 +860,8 @@ public class HomeFragment extends Fragment {
     public static ArrayList<Map> routMaps(Context context) {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(StartActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         int i = 0;
         if (c != null) {
             if (c.moveToFirst()) {
@@ -984,7 +1006,7 @@ public class HomeFragment extends Fragment {
                     Button btn_minus = view_cost.findViewById(R.id.btn_minus);
                     Button btn_plus = view_cost.findViewById(R.id.btn_plus);
 
-                    String discountText = logCursor(StartActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                    String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                     long discountInt = Integer.parseInt(discountText);
                     long discount;
 
@@ -1067,7 +1089,7 @@ public class HomeFragment extends Fragment {
                                                                 public void onClick(DialogInterface dialog, int which) {
                                                                     Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                     String phone;
-                                                                    List<String> stringList = logCursor(StartActivity.CITY_INFO, getActivity());
+                                                                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
                                                                     switch (stringList.get(1)){
                                                                         case "Kyiv City":
                                                                             phone = "tel:0674443804";
@@ -1125,7 +1147,7 @@ public class HomeFragment extends Fragment {
 
             //  Проверка даты и времени
 
-            List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+            List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
             String time = stringList.get(1);
             String comment = stringList.get(2);
             String date = stringList.get(3);
@@ -1138,28 +1160,28 @@ public class HomeFragment extends Fragment {
         // Destination of route
         String str_dest = to + "/" + to_number;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        String tarif =  logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
+        String tarif =  logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
         // Building the parameters to the web service
 
         String parameters = null;
         String phoneNumber = "no phone";
-        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(4);
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
 
         if(urlAPI.equals("costSearch")) {
-            Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
             if (c.getCount() == 1) {
-                phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
         if(urlAPI.equals("orderSearch")) {
-            phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
@@ -1171,14 +1193,14 @@ public class HomeFragment extends Fragment {
             cv.put("date", "no_date");
 
             // обновляем по id
-            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
                     new String[] { "1" });
 
         }
 
         // Building the url to the web service
 // Building the url to the web service
-        List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, context);
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
@@ -1215,9 +1237,9 @@ public class HomeFragment extends Fragment {
     }
 
     @SuppressLint("Range")
-    public static List<String> logCursor(String table, Context context) {
+    public List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -1233,7 +1255,7 @@ public class HomeFragment extends Fragment {
                 } while (c.moveToNext());
             }
         }
-        database.close();
+
         return list;
     }
     private void getPhoneNumber () {
@@ -1268,7 +1290,7 @@ public class HomeFragment extends Fragment {
                                                  String urlAPI, Context context) {
         //  Проверка даты и времени
 
-        List<String> stringList = logCursor(StartActivity.TABLE_ADD_SERVICE_INFO, context);
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
         String comment = stringList.get(2);
         String date = stringList.get(3);
@@ -1279,31 +1301,31 @@ public class HomeFragment extends Fragment {
         // Destination of route
         String str_dest = toLatitude + "/" + toLongitude;
 
-//        Cursor cursorDb = StartActivity.database.query(StartActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(StartActivity.TABLE_SETTINGS_INFO, context).get(2);
+//        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
 
         // Building the parameters to the web service
 
         String parameters = null;
         String phoneNumber = "no phone";
-        String userEmail = logCursor(StartActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(StartActivity.TABLE_USER_INFO, context).get(4);
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
 
 
         if(urlAPI.equals("costSearchMarkers")) {
-            Cursor c = database.query(StartActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
             if (c.getCount() == 1) {
-                phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
         if(urlAPI.equals("orderSearchMarkers")) {
-            phoneNumber = logCursor(StartActivity.TABLE_USER_INFO, context).get(2);
+            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
@@ -1316,13 +1338,13 @@ public class HomeFragment extends Fragment {
             cv.put("date", "no_date");
 
             // обновляем по id
-            database.update(StartActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
                     new String[] { "1" });
 
         }
 
         // Building the url to the web service
-        List<String> services = logCursor(StartActivity.TABLE_SERVICE_INFO, context);
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
@@ -1365,21 +1387,21 @@ public class HomeFragment extends Fragment {
 
         String selection = "from_street = ?";
         String[] selectionArgs = new String[] {from};
-        SQLiteDatabase database = context.openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor_from = database.query(StartActivity.TABLE_ORDERS_INFO,
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor_from = database.query(MainActivity.TABLE_ORDERS_INFO,
                 null, selection, selectionArgs, null, null, null);
 
         selection = "to_street = ?";
         selectionArgs = new String[] {to};
 
-        Cursor cursor_to = database.query(StartActivity.TABLE_ORDERS_INFO,
+        Cursor cursor_to = database.query(MainActivity.TABLE_ORDERS_INFO,
                 null, selection, selectionArgs, null, null, null);
 
 
 
         if (cursor_from.getCount() == 0 || cursor_to.getCount() == 0) {
 
-            String sql = "INSERT INTO " + StartActivity.TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?,?,?,?,?);";
+            String sql = "INSERT INTO " + MainActivity.TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?,?,?,?,?);";
             SQLiteStatement statement = database.compileStatement(sql);
             database.beginTransaction();
             try {
@@ -1406,5 +1428,69 @@ public class HomeFragment extends Fragment {
         cursor_to.close();
 
     }
+    @Override
+    public void onStart() {
+        super.onStart();
+
+
+    }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+        Log.d("TAG", "onViewCreated: " + stringList);
+        if(stringList.size() !=0 ) {
+            switch (stringList.get(1)){
+                case "Dnipropetrovsk Oblast":
+                    arrayStreet = Dnipro.arrayStreet();
+                    api = MainActivity.apiDnipro;
+                    break;
+                case "Zaporizhzhia":
+                    arrayStreet = Zaporizhzhia.arrayStreet();
+                    api = MainActivity.apiZaporizhzhia;
+                    break;
+                case "Cherkasy Oblast":
+                    arrayStreet = Cherkasy.arrayStreet();
+                    api = MainActivity.apiCherkasy;
+                    break;
+                case "Odessa":
+                    arrayStreet = Odessa.arrayStreet();
+                    api = MainActivity.apiOdessa;
+                    break;
+                case "OdessaTest":
+                    arrayStreet = OdessaTest.arrayStreet();
+                    api = MainActivity.apiTest;
+                    break;
+                default:
+                    arrayStreet = KyivCity.arrayStreet();
+                    api = MainActivity.apiKyiv;
+                    break;
+            };
+            order();
+        }
+
+    }
+
+
+
+    private void insertCity(String city) {
+        String sql = "INSERT INTO " + MainActivity.CITY_INFO + " VALUES(?,?);";
+        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindString(2, city);
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+        database.close();
+    }
+
 
 }

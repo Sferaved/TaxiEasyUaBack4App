@@ -687,8 +687,6 @@ public class StartActivity extends Activity {
 
         }
 
-
-
     }
     private void insertCity(String city) {
         String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?);";
@@ -738,55 +736,12 @@ public class StartActivity extends Activity {
 
 
         } else {
-            new VerifyUserTask().execute();
-        }
-
-
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {
-        private Exception exception;
-        @Override
-        protected Map<String, String> doInBackground(Void... voids) {
-            String userEmail = logCursor(TABLE_USER_INFO).get(3);
-
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
-            try {
-                return CostJSONParser.sendURL(url);
-            } catch (Exception e) {
-                exception = e;
-                return null;
-            }
+//            new VerifyUserTask().execute();
+            startActivity(new Intent(StartActivity.this, MainActivity.class));
 
         }
 
-        @Override
-        protected void onPostExecute(Map<String, String> sendUrlMap) {
-            String message = sendUrlMap.get("message");
-            ContentValues cv = new ContentValues();
-            SQLiteDatabase database = openOrCreateDatabase(StartActivity.DB_NAME, MODE_PRIVATE, null);
-            if (message != null) {
 
-                if (message.equals("В черном списке")) {
-                    Toast.makeText(StartActivity.this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-                    findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
-                    try_again_button.setVisibility(View.VISIBLE);
-                    cv.put("verifyOrder", "0");
-                    database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                } else {
-                    cv.put("verifyOrder", "1");
-                    database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                    startActivity(new Intent(StartActivity.this, MainActivity.class));
-                    try {
-                        version(message);
-                    } catch (MalformedURLException ignored) {
-
-                    }
-                }
-            }
-            database.close();
-        }
     }
 
 
