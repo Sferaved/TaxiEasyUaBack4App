@@ -93,7 +93,7 @@ public class FirebaseSignIn extends AppCompatActivity {
             }
         });
         btn_again = findViewById(R.id.btn_again);
-        btn_again.setVisibility(View.VISIBLE);
+
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -207,7 +207,7 @@ public class FirebaseSignIn extends AppCompatActivity {
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                 database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                 database.close();
-//                finish();
+                finishAffinity();
                 Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
                 startActivity(intent);
             } else {
@@ -223,7 +223,8 @@ public class FirebaseSignIn extends AppCompatActivity {
         } catch (NullPointerException e) {
             // Error handling
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
-
+            btn_again.setVisibility(View.VISIBLE);
+            try_again_button.setVisibility(View.VISIBLE);
             cv.put("verifyOrder", "0");
             SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
