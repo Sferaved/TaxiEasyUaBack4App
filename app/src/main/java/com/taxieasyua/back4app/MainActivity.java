@@ -1127,7 +1127,7 @@ public class MainActivity extends AppCompatActivity {
 
             String title = getString(R.string.new_version);
             String messageNotif = getString(R.string.news_of_version);
-            String urlStr = "https://play.google.com/store/apps/details?id= com.taxieasyua.back4app";
+            String urlStr = "https://play.google.com/store/apps/details?id=com.taxieasyua.back4app";
 
             notificationHelper.showNotification(this, title, messageNotif, urlStr);
 

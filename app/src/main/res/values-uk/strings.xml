@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.764</string>
-    <string name="version">Версія: 2.764</string>
+    <string name="version_code">2.765</string>
+    <string name="version">Версія: 2.765</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -79,7 +79,7 @@
     <string name="to_edit">Куди</string>
     <string name="from_edit">Звідки</string>
     <string name="sms_code">Код перевіркі зі смс-повідомлення</string>
-    <string name="android">Андроїд-додаток для швидких та дешевих поїздок по Києву та області.</string>
+    <string name="android">Андроїд-додаток для швидких та дешевих поїздок при замовленні онлайн.</string>
     <string name="good_day">Мої вітання. \n \n Знайшов чудовий додаток для поїздок на таксі. \n \n Раджу спробувати за посиланням в офіційному магазині Google: \n\n https://play.google.com/store/apps/details?id=com.taxieasyua.back4app \n\n Гарного дня. \n Ще побачимось.</string>
     <string name="share">Порадити другові додаток...</string>
     <string name="no_email_agent">Поштовий клієнт не встановлено.</string>
