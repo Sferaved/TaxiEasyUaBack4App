@@ -3,10 +3,12 @@ package com.taxieasyua.back4app;
 import static com.taxieasyua.back4app.R.string.cancel_button;
 import static com.taxieasyua.back4app.R.string.format_phone;
 import static com.taxieasyua.back4app.R.string.verify_internet;
+import static com.taxieasyua.back4app.R.string.version;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -14,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -46,6 +49,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
@@ -54,6 +59,8 @@ import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
 import com.taxieasyua.back4app.ui.start.GoogleSignInActivity;
 import com.taxieasyua.back4app.ui.start.StopActivity;
 
@@ -64,6 +71,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
@@ -72,7 +80,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String DB_NAME = "data_28082023_113";
+    public static final String DB_NAME = "data_29082023_21";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -118,38 +126,32 @@ public class MainActivity extends AppCompatActivity {
     private Semaphore semaphore = new Semaphore(0);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        super.onCreate(savedInstanceState);
         try {
             initDB();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (MalformedURLException | JSONException | InterruptedException ignored) {
+
         }
 
-        super.onCreate(savedInstanceState);
-
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+            setContentView(binding.getRoot());
 
-        setSupportActionBar(binding.appBarMain.toolbar);
+            setSupportActionBar(binding.appBarMain.toolbar);
 
-        DrawerLayout drawer = binding.drawerLayout;
-        NavigationView navigationView = binding.navView;
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_about)
-                .setOpenableLayout(drawer)
-                .build();
+            DrawerLayout drawer = binding.drawerLayout;
+            NavigationView navigationView = binding.navView;
+            // Passing each menu ID as a set of Ids because each
+            // menu should be considered as top level destinations.
+            mAppBarConfiguration = new AppBarConfiguration.Builder(
+                    R.id.nav_home, R.id.nav_gallery, R.id.nav_about)
+                    .setOpenableLayout(drawer)
+                    .build();
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
-        networkChangeReceiver = new NetworkChangeReceiver();
+            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+            NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+            NavigationUI.setupWithNavController(navigationView, navController);
+            networkChangeReceiver = new NetworkChangeReceiver();
+
     }
 
     @Override
@@ -163,16 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public void initDB() throws MalformedURLException, JSONException, InterruptedException {
 //        this.deleteDatabase(DB_NAME);
-        if (!databaseExists(DB_NAME)) {
-            startActivity(new Intent(this, StopActivity.class));
-        } else {
-            try {
-                newUser();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-            new VerifyUserTask().execute();
-        }
+
         database = openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
 
         Log.d("TAG", "initDB: " + database);
@@ -274,8 +267,9 @@ public class MainActivity extends AppCompatActivity {
         cursorDb = database.query(CITY_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             getLocalIpAddress();
-
         }
+
+        newUser();
 
     }
 
@@ -289,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(2, settings.get(0));
             statement.bindString(3, settings.get(1));
             statement.bindString(4, settings.get(2));
+
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -349,11 +344,6 @@ public class MainActivity extends AppCompatActivity {
     }
     private void insertUserInfo() {
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-        }
 
 
 
@@ -496,12 +486,7 @@ public class MainActivity extends AppCompatActivity {
         }
         database.close();
     }
-    private void checkPermission(String permission, int requestCode) {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
-        }
-    }
+
     @SuppressLint("Range")
 
     @Override
@@ -564,10 +549,82 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+        if (item.getItemId() == R.id.send_email_admin) {
+            sendEmailAdmin();
+        }
 
         return false;
     }
+    private String generateRandomString(int length) {
+        String characters = "012345678901234567890123456789";
+        StringBuilder randomString = new StringBuilder();
 
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            int randomIndex = random.nextInt(characters.length());
+            char randomChar = characters.charAt(randomIndex);
+            randomString.append(randomChar);
+        }
+
+        return randomString.toString();
+    }
+
+    private void sendEmailAdmin () {
+        List<String> stringList = logCursor(MainActivity.CITY_INFO);
+        String city;
+        switch (stringList.get(1)){
+            case "Dnipropetrovsk Oblast":
+                city = getString(R.string.Dnipro_city);
+                break;
+            case "Zaporizhzhia":
+                city = getString(R.string.Zaporizhzhia);
+                break;
+            case "Cherkasy Oblast":
+                city = getString(R.string.Cherkasy);
+                break;
+            case "Odessa":
+                city = getString(R.string.Odessa);
+                break;
+            case "OdessaTest":
+                city = getString(R.string.OdessaTest);
+                break;
+            default:
+                city = getString(R.string.Kyiv_city);
+                break;
+        }
+
+
+        List<String> userList = logCursor(MainActivity.TABLE_USER_INFO);
+
+        String subject = getString(R.string.SA_subject) + generateRandomString(10);
+
+        String body =getString(R.string.SA_message_start) + "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n" +
+                getString(R.string.SA_info_pas)+ "\n" +
+                getString(R.string.SA_info_city) + " " + city + "\n" +
+                getString(R.string.SA_pas_text) + " " + getString(R.string.version) + "\n" +
+                getString(R.string.SA_user_text) + " " + userList.get(4) + "\n" +
+                getString(R.string.SA_email) + " " + userList.get(3) + "\n" +
+                getString(R.string.SA_phone_text) + " " + userList.get(2) + "\n"+"\n";
+
+        String[] CC = {"cartaxi4@gmail.com"};
+        String[] TO = {"taxi.easy.ua@gmail.com"};
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setType("text/plain");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+        emailIntent.putExtra(Intent.EXTRA_CC, CC);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+        try {
+            startActivity(Intent.createChooser(emailIntent, subject));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
     private void cityChange() {
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
@@ -827,13 +884,6 @@ public class MainActivity extends AppCompatActivity {
         // Регистрация BroadcastReceiver с фильтром намерений
         registerReceiver(networkChangeReceiver, filter);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-
-        }
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO);
         if(stringList.size()!=0) {
@@ -897,14 +947,132 @@ public class MainActivity extends AppCompatActivity {
     }
     public void newUser() throws MalformedURLException {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
-
+        Log.d("TAG", "newUser: " + userEmail);
         if(userEmail.equals("email")) {
 
-//            startActivity(new Intent(MainActivity.this, FirebaseSignIn.class));
-            startActivity(new Intent(this, GoogleSignInActivity.class));
-      }
+            startActivity(new Intent(MainActivity.this, FirebaseSignIn.class));
+//            startActivity(new Intent(this, GoogleSignInActivity.class));
+      } else {
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            }
+            verifyAccess();
+            new VerifyUserTask().execute();
+        }
 
 
+    }
+    private void verifyAccess() throws MalformedURLException {
+     LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+     boolean gpsEnabled = false;
+     try {
+         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+     } catch (Exception ignored) {
+     }
+
+//                 Если GPS выключен, выводим диалог с предложением его включить
+     if (!gpsEnabled) {
+         openGPSSettings();
+     } else {
+         // Проверяем состояние Location Service с помощью колбэка
+         checkLocationServiceEnabled(new FirebaseSignIn.LocationServiceCallback() {
+             @Override
+             public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
+                 if (isEnabled) {
+                     // Проверяем разрешения на местоположение
+                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                             && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                         checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                         checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                     }
+                 }
+
+             }
+         });
+     }
+ }
+    public void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
+        }
+    }
+    private static final int REQUEST_ENABLE_GPS = 1001;
+    private void openGPSSettings() {
+        // Проверяем, включен ли GPS
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        if (!isGPSEnabled) {
+            // Если GPS не включен, открываем окно настроек для GPS
+            MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
+            LayoutInflater inflater = this.getLayoutInflater();
+
+            View view_cost = inflater.inflate(R.layout.message_layout, null);
+            builder.setView(view_cost);
+            TextView message = view_cost.findViewById(R.id.textMessage);
+            message.setText(R.string.gps_info);
+            builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivityForResult(intent, REQUEST_ENABLE_GPS);
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
+                        }
+                    })
+                    .show();
+
+        } else {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                startActivity(new Intent(this, OpenStreetMapActivity.class));
+            } else {
+                startActivity(new Intent(this, MainActivity.class));
+            }
+
+        }
+    }
+    private void checkLocationServiceEnabled(FirebaseSignIn.LocationServiceCallback callback) throws MalformedURLException {
+        Context context = getApplicationContext(); // Получите контекст вашего приложения
+
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+
+        // Проверяем, доступны ли данные о местоположении
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            callback.onLocationServiceResult(false);
+//            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+//            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+
+        Task<Location> locationTask = fusedLocationClient.getLastLocation();
+        locationTask.addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                try {
+                    callback.onLocationServiceResult(true);
+                } catch (MalformedURLException e) {
+                    Log.d("TAG", "onCreate:" + new RuntimeException(e));
+                }
+            } else {
+                try {
+                    callback.onLocationServiceResult(false);
+                } catch (MalformedURLException e) {
+                    Log.d("TAG", "onCreate:" + new RuntimeException(e));
+                }
+            }
+        });
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -936,12 +1104,46 @@ public class MainActivity extends AppCompatActivity {
                     cv.put("verifyOrder", "0");
                     database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                 } else {
+                    try {
+                        version(message);
+                    } catch (MalformedURLException ignored) {
+
+                    }
                     cv.put("verifyOrder", "1");
                     database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                 }
             }
             database.close();
         }
+    }
+
+    private void version(String versionApi) throws MalformedURLException {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+
+
+
+
+
+        if(!versionApi.equals(getString(R.string.version_code)) ) {
+
+            NotificationHelper notificationHelper = new NotificationHelper();
+
+            String title = getString(R.string.new_version);
+            String messageNotif = getString(R.string.news_of_version);
+            String urlStr = "https://play.google.com/store/apps/details?id= com.taxieasyua.back4app";
+
+            notificationHelper.showNotification(this, title, messageNotif, urlStr);
+
+
+
+        }
+
+
+
     }
 
 }

@@ -124,104 +124,11 @@ public class HomeFragment extends Fragment {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                String city;
-                switch (stringList.get(1)){
-                    case "Dnipropetrovsk Oblast":
-                        city = getString(R.string.Dnipro_city);
-                        break;
-                    case "Zaporizhzhia":
-                        city = getString(R.string.Zaporizhzhia);
-                        break;
-                    case "Cherkasy Oblast":
-                        city = getString(R.string.Cherkasy);
-                        break;
-                    case "Odessa":
-                        city = getString(R.string.Odessa);
-                        break;
-                    case "OdessaTest":
-                        city = getString(R.string.OdessaTest);
-                        break;
-                    default:
-                        city = getString(R.string.Kyiv_city);
-                        break;
-                }
 
-
-                List<String> userList = logCursor(MainActivity.TABLE_USER_INFO, getActivity());
-
-                String subject = "Повідомлення № I-" + generateRandomString(10);
-
-                String body ="Ваше повідомленя: " + "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n"+ "\n" +
-                        "Інформація про додаток: "+ "\n" +
-                        "База адрес міста " + city + "\n" +
-                        "Додаток: " + getString(R.string.version) + "\n" +
-                        "Користувач: " + userList.get(4) + "\n" +
-                        "email: " + userList.get(3) + "\n" +
-                        "телефон: " + userList.get(2) + "\n"+"\n";
-
-                String[] CC = {"cartaxi4@gmail.com"};
-                String[] TO = {"taxi.easy.ua@gmail.com"};
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-
-                emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.setType("text/plain");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
-                emailIntent.putExtra(Intent.EXTRA_CC, CC);
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-                emailIntent.putExtra(Intent.EXTRA_TEXT, body);
-
-                try {
-                    startActivity(Intent.createChooser(emailIntent, subject));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(getActivity(), getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
 
         return root;
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {
-        private Exception exception;
-        @Override
-        protected Map<String, String> doInBackground(Void... voids) {
-            String userEmail = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
-            try {
-                return CostJSONParser.sendURL(url);
-            } catch (Exception e) {
-                exception = e;
-                return null;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(Map<String, String> sendUrlMap) {
-            String message = sendUrlMap.get("message");
-            ContentValues cv = new ContentValues();
-            SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-            if (message != null) {
-
-                if (message.equals("В черном списке")) {
-
-                    cv.put("verifyOrder", "0");
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                } else {
-                    cv.put("verifyOrder", "1");
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                }
-            }
-            database.close();
-        }
-    }
     private void order() {
 
 
@@ -636,16 +543,15 @@ public class HomeFragment extends Fragment {
                             })
                             .setNegativeButton(R.string.cancel_button, null)
                             .show();
-                }  else  if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-
-                } else if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
+                }  else  {
+                    // Разрешения уже предоставлены, выполнить ваш код
+                    Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
+                    startActivity(intent);
                 }
+
             }
         });
+
 
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -774,34 +680,7 @@ public class HomeFragment extends Fragment {
 
 
     }
-    private void checkPermission(String permission, int requestCode) {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
-        }
-    }
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001; // Произвольный код для запроса разрешений
 
-
-// Другой код вашего Fragment или Activity...
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        Log.d("TAG", "onRequestPermissionsResult requestCode: " + requestCode);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
-                // Разрешения получены, теперь можно продолжить обновление местоположения
-                startActivity(intent);
-            } else {
-                // Пользователь не предоставил необходимые разрешения, переход на MainActivity
-                Intent intent = new Intent(getActivity(), MainActivity.class);
-                startActivity(intent);
-            }
-        }
-    }
 
 
     private Map <String, String> routChoice(int i) {
@@ -830,19 +709,7 @@ public class HomeFragment extends Fragment {
 
     }
 
-    private String generateRandomString(int length) {
-        String characters = "012345678901234567890123456789";
-        StringBuilder randomString = new StringBuilder();
 
-        Random random = new Random();
-        for (int i = 0; i < length; i++) {
-            int randomIndex = random.nextInt(characters.length());
-            char randomChar = characters.charAt(randomIndex);
-            randomString.append(randomChar);
-        }
-
-        return randomString.toString();
-    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

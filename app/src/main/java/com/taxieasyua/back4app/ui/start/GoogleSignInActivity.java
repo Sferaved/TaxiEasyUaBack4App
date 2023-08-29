@@ -140,7 +140,8 @@ public class GoogleSignInActivity extends Activity {
 
             cv.put("verifyOrder", "1");
             database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-
+            requestLocationPermissions();
+            finish();
             startActivity(new Intent(GoogleSignInActivity.this, MainActivity.class));
         }else {
             Toast.makeText(this, getString(R.string.firebase_error), Toast.LENGTH_SHORT).show();
@@ -163,7 +164,7 @@ public class GoogleSignInActivity extends Activity {
         database.close();
     }
     private void addUser(String displayName, String userEmail) {
-        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" + displayName + "/" + userEmail;
+        String urlString = "https://m.easy-order-taxi.site/" + MainActivity.apiKyiv + "/android/addUser/" + displayName + "/" + userEmail;
 
         Callable<Void> addUserCallable = () -> {
             URL url = new URL(urlString);
@@ -200,36 +201,25 @@ public class GoogleSignInActivity extends Activity {
         executorService.shutdown();
     }
 }
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001; // Произвольный код для запроса разрешений
 
-//    private void addUser(String displayName, String userEmail) {
-//        String urlString = "https://m.easy-order-taxi.site/" + api + "/android/addUser/" + displayName + "/" + userEmail;
-//
-//        new AsyncTask<Void, Void, Void>() {
-//            @Override
-//            protected Void doInBackground(Void... voids) {
-//                try {
-//                    URL url = new URL(urlString);
-//                    Log.d("TAG", "sendURL: " + urlString);
-//
-//                    HttpsURLConnection urlConnection = null;
-//                    try {
-//                        urlConnection = (HttpsURLConnection) url.openConnection();
-//                        urlConnection.setDoInput(true);
-//                        urlConnection.getResponseCode();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    } finally {
-//                        if (urlConnection != null) {
-//                            urlConnection.disconnect();
-//                        }
-//                    }
-//                } catch (MalformedURLException e) {
-//                    e.printStackTrace();
-//                }
-//                return null;
-//            }
-//        }.execute();
-//    }
+
+    private void requestLocationPermissions() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION) ||
+                ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            // Показать объяснение пользователю почему нужны разрешения (если необходимо)
+
+            // Затем запросить разрешения
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            // Запросить разрешения
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        }
+    }
 
     @Override
     protected void onRestart() {
@@ -241,29 +231,6 @@ public class GoogleSignInActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-
-
-        List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
-        switch (stringListArr.get(1)){
-            case "Kyiv City":
-                api = MainActivity.apiKyiv;
-                break;
-            case "Dnipropetrovsk Oblast":
-                api = MainActivity.apiDnipro;
-                break;
-            case "Odessa":
-                api = MainActivity.apiOdessa;
-                break;
-            case "Zaporizhzhia":
-                api = MainActivity.apiZaporizhzhia;
-                break;
-            case "Cherkasy Oblast":
-                api = MainActivity.apiCherkasy;
-                break;
-            default:
-                api = MainActivity.apiKyiv;
-                break;
-        }
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

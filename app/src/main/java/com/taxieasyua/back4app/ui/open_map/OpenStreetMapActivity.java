@@ -209,10 +209,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         coo = getString(R.string.cost_of_order);
 
 
-
-
-
-
         List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
         startLat =  Double.parseDouble(startList.get(1));
         startLan = Double.parseDouble(startList.get(2));
@@ -294,21 +290,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         fab_open_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                    startActivity(new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class));
-//                } else {
-//                    Intent intent = new Intent(OpenStreetMapActivity.this, MainActivity.class);
-//                    startActivity(intent);
-//                }
 
                 Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
-
-                if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                        && ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    return;
-                }
 
                 if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {
@@ -436,13 +419,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private void startLocationUpdates() {
         LocationRequest locationRequest = createLocationRequest();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             return;
         }
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
@@ -471,7 +449,25 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     REQUEST_LOCATION_PERMISSION);
         }
     }
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001; // Произвольный код для запроса разрешений
 
+
+    private void requestLocationPermissions() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION) ||
+                ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            // Показать объяснение пользователю почему нужны разрешения (если необходимо)
+
+            // Затем запросить разрешения
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            // Запросить разрешения
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        }
+    }
    ArrayList<Map> routMaps() {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
