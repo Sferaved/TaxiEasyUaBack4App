@@ -1023,14 +1023,7 @@ public class MainActivity extends AppCompatActivity {
                             startActivityForResult(intent, REQUEST_ENABLE_GPS);
                         }
                     })
-                    .setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(intent);
-                        }
-                    })
+                    .setNegativeButton(R.string.cancel_button, null)
                     .show();
 
         } else {
