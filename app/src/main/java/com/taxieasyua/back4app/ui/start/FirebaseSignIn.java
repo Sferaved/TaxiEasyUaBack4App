@@ -207,7 +207,7 @@ public class FirebaseSignIn extends AppCompatActivity {
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                 database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                 database.close();
-                finishAffinity();
+
                 Intent intent = new Intent(FirebaseSignIn.this, MainActivity.class);
                 startActivity(intent);
             } else {
