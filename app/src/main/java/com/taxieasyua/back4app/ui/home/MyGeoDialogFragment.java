@@ -53,8 +53,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
-//                startActivity(new Intent(getActivity(), MainActivity.class));
+//                getActivity().finish();
+                startActivity(new Intent(getActivity(), MainActivity.class));
             }
         });
         return view;

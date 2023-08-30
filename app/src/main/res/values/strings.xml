@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.764</string>
-    <string name="version">Версия: 2.764</string>
+    <string name="version_code">2.766</string>
+    <string name="version">Версия: 2.766</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -172,5 +172,8 @@
     <string name="SA_user_text">Пользователь: </string>
     <string name="SA_email">Электронная почта: </string>
     <string name="SA_phone_text">Телефон: </string>
+    <string name="black_list_message">Извините, Вы не можете заказывать поездки. За информацией обратитесь к оператору.</string>
+    <string name="action_help">ПОДДЕРЖКА</string>
+    <string name="cost_of_road">Стоимость поездки по выбранному маршруту составит</string>
 
 </resources>

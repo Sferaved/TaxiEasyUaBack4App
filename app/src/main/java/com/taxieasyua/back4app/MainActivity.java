@@ -1045,8 +1045,8 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             callback.onLocationServiceResult(false);
-//            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             return;
         }
 
@@ -1075,7 +1075,7 @@ public class MainActivity extends AppCompatActivity {
         protected Map<String, String> doInBackground(Void... voids) {
             String userEmail = logCursor(TABLE_USER_INFO).get(3);
 
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/verifyBlackListUser/" + userEmail;
+            String url = "https://m.easy-order-taxi.site/" + MainActivity.apiKyiv  + "/android/verifyBlackListUser/" + userEmail;
             try {
                 return CostJSONParser.sendURL(url);
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.taxieasyua.back4app.ui.finish;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -8,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +22,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
+import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -41,7 +46,7 @@ public class FinishActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finish);
-
+        new VerifyUserTask().execute();
         List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
@@ -102,10 +107,15 @@ public class FinishActivity extends AppCompatActivity {
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(connected()){
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                if(!verifyOrder()) {
+                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 } else {
-                    Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                    if(connected()){
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    } else {
+                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });
@@ -149,6 +159,23 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private boolean verifyOrder() {
+        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+
+        boolean verify = true;
+        if (cursor.getCount() == 1) {
+
+            if (logCursor(MainActivity.TABLE_USER_INFO).get(1).equals("0")) {
+                verify = false;Log.d("TAG", "verifyOrder:verify " +verify);
+            }
+            cursor.close();
+        }
+        database.close();
+        return verify;
+    }
     private boolean connected() {
 
         boolean hasConnect = false;
@@ -168,9 +195,6 @@ public class FinishActivity extends AppCompatActivity {
             hasConnect = true;
         }
 
-        if (!hasConnect) {
-            Toast.makeText(this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-        }
         return hasConnect;
     }
     @SuppressLint("Range")
@@ -313,5 +337,38 @@ public class FinishActivity extends AppCompatActivity {
         // Форматируем дату и время в украинском формате
         return outputFormat.format(date);
 
+    }
+
+    public class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {
+        private Exception exception;
+        @Override
+        protected Map<String, String> doInBackground(Void... voids) {
+            String userEmail = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+
+            String url = "https://m.easy-order-taxi.site/" + MainActivity.apiKyiv  + "/android/verifyBlackListUser/" + userEmail;
+            try {
+                return CostJSONParser.sendURL(url);
+            } catch (Exception e) {
+                exception = e;
+                return null;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Map<String, String> sendUrlMap) {
+            String message = sendUrlMap.get("message");
+            ContentValues cv = new ContentValues();
+            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            if (message != null) {
+
+                if (message.equals("В черном списке")) {
+
+                    cv.put("verifyOrder", "0");
+                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                }
+            }
+            database.close();
+        }
     }
 }

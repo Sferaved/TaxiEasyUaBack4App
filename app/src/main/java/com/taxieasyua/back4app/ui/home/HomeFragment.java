@@ -226,7 +226,7 @@ public class HomeFragment extends Fragment {
             textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    if (connected()) {
+//                    if (connected()) {
                         to = String.valueOf(adapter.getItem(position));
                         if (to.indexOf("/") != -1) {
                             to = to.substring(0, to.indexOf("/"));
@@ -256,7 +256,7 @@ public class HomeFragment extends Fragment {
                             to_number.setText(" ");
                             to_number.setVisibility(View.INVISIBLE);
                         }
-                    }
+//                    }
                 }
             });
 //        } else {
@@ -297,7 +297,9 @@ public class HomeFragment extends Fragment {
                             }
                             if (!orderCost.equals("0")) {
                                 if(!verifyOrder(getContext())) {
-                                    Toast.makeText(getActivity(), getString(R.string.cost_of_order) + orderCost + getString(R.string.firebase_false_message), Toast.LENGTH_SHORT).show();
+
+                                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
+                                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                 } else {
 
                                     MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
@@ -467,8 +469,8 @@ public class HomeFragment extends Fragment {
                                                                 Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                                             }
                                                         } else {
-                                                            Toast.makeText(getActivity(), getString(R.string.please_phone_message), Toast.LENGTH_SHORT).show();
-
+                                                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
+                                                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                                         }
                                                     }  else {
                                                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
@@ -477,12 +479,8 @@ public class HomeFragment extends Fragment {
                                             .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialog, int which) {
-
-//                                                    HomeFragment newFragment = new HomeFragment();
-//                                                    FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-//                                                    transaction.replace(getId(), newFragment);
-//                                                    transaction.addToBackStack(null);
-//                                                    transaction.commit();
+                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                    getActivity().startActivity(intent);
                                                 }
                                             })
                                             .show();
@@ -512,43 +510,48 @@ public class HomeFragment extends Fragment {
         mapbut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                boolean gps_enabled = false;
-                boolean network_enabled = false;
+                if(!verifyOrder(getContext())) {
 
-                try {
-                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch(Exception ex) {
+                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                } else {
+                    LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                    boolean gps_enabled = false;
+                    boolean network_enabled = false;
+
+                    try {
+                        gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    } catch(Exception ex) {
+                    }
+
+                    try {
+                        network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                    } catch(Exception ex) {
+                    }
+
+                    if(!gps_enabled || !network_enabled) {
+                        // notify user
+                        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+                        View view_cost = inflater.inflate(R.layout.message_layout, null);
+                        builder.setView(view_cost);
+                        TextView message = view_cost.findViewById(R.id.textMessage);
+                        message.setText(R.string.gps_info);
+                        builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                                        getActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel_button, null)
+                                .show();
+                    }  else  {
+                        // Разрешения уже предоставлены, выполнить ваш код
+                        Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
+                        startActivity(intent);
+                    }
                 }
-
-                try {
-                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                } catch(Exception ex) {
-                }
-
-                if(!gps_enabled || !network_enabled) {
-                    // notify user
-                    MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                    LayoutInflater inflater = getActivity().getLayoutInflater();
-
-                    View view_cost = inflater.inflate(R.layout.message_layout, null);
-                    builder.setView(view_cost);
-                    TextView message = view_cost.findViewById(R.id.textMessage);
-                    message.setText(R.string.gps_info);
-                    builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                                    getActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                                }
-                            })
-                            .setNegativeButton(R.string.cancel_button, null)
-                            .show();
-                }  else  {
-                    // Разрешения уже предоставлены, выполнить ваш код
-                    Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
-                    startActivity(intent);
-                }
-
             }
         });
 
@@ -619,16 +622,11 @@ public class HomeFragment extends Fragment {
         }
 
         button.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 try {
-                    if(hasServer()) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            dialogFromToOneRout(routChoice(selectedItem + 1));
-                        }
-                    } else {
-                        Toast.makeText(getActivity(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-                    }
+                   dialogFromToOneRout(routChoice(selectedItem + 1));
                 } catch (MalformedURLException | InterruptedException | JSONException e) {
                     Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                 }
@@ -847,6 +845,11 @@ public class HomeFragment extends Fragment {
                     Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
 //                    coastOfRoad(startPoint, message);
                 }
+            if(!verifyOrder(getContext())) {
+
+                MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            } else {
                 if (!orderCost.equals("0")) {
 
                     MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
@@ -868,8 +871,8 @@ public class HomeFragment extends Fragment {
                     long discountInt = Integer.parseInt(discountText);
                     long discount;
 
-                    discount =  firstCost * discountInt/100;
-                    firstCost = firstCost  + discount;
+                    discount = firstCost * discountInt / 100;
+                    firstCost = firstCost + discount;
 
                     addCost = discount;
                     costView.setText(String.valueOf(firstCost));
@@ -905,7 +908,7 @@ public class HomeFragment extends Fragment {
                                 @RequiresApi(api = Build.VERSION_CODES.O)
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    if(connected()) {
+                                    if (connected()) {
                                         try {
                                             String urlCost = getTaxiUrlSearchMarkers(from_lat, from_lng,
                                                     to_lat, to_lng, "orderSearchMarkers", getContext());
@@ -948,7 +951,7 @@ public class HomeFragment extends Fragment {
                                                                     Intent intent = new Intent(Intent.ACTION_DIAL);
                                                                     String phone;
                                                                     List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                                                                    switch (stringList.get(1)){
+                                                                    switch (stringList.get(1)) {
                                                                         case "Kyiv City":
                                                                             phone = "tel:0674443804";
                                                                             break;
@@ -989,12 +992,19 @@ public class HomeFragment extends Fragment {
                                     } else {
                                         Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
                                     }
-                                }})
-                            .setNegativeButton(getString(R.string.cancel_button), null)
+                                }
+                            })
+                            .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                    getActivity().startActivity(intent);
+                                }
+                            })
                             .show();
 
                 }
-
+            }
             } else {
             Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
         }
