@@ -407,7 +407,8 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
         String orderC = (String) sendUrl.get("order_cost");
 
         if (orderC.equals("0")) {
-            Toast.makeText(getActivity(), OpenStreetMapActivity.em + mes, Toast.LENGTH_LONG).show();
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
         if (!orderC.equals("0")) {
 

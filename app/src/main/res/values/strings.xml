@@ -121,7 +121,7 @@
     <string name="news_of_version">В новой версии улучшена производительность и добавлены новые удобные функции</string>
     <string name="Street_hint">Улица</string>
     <string name="gps">GPS</string>
-    <string name="btn_cost">Подтвердить</string>
+    <string name="btn_cost">Заказать</string>
     <string name="texthist">Предыдущие адреса</string>
     <string name="routs">Быстрый заказ</string>
     <string name="on_map">По карте</string>

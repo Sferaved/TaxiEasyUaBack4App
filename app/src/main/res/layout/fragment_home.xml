@@ -23,7 +23,7 @@
             app:layout_constraintEnd_toStartOf="@+id/text_from"
             app:layout_constraintTop_toTopOf="@+id/text_from" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_minus"
             android:layout_width="60sp"
             android:layout_height="60sp"
@@ -32,9 +32,9 @@
             android:text="-"
             android:textSize="30sp"
             app:layout_constraintEnd_toStartOf="@+id/text_view_cost"
-            app:layout_constraintHorizontal_bias="0.848"
+            app:layout_constraintHorizontal_bias="0.813"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_to" />
+            app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
 
         <TextView
             android:id="@+id/text_view_cost"
@@ -42,7 +42,7 @@
             android:layout_height="60sp"
             android:layout_margin="@dimen/activity_vertical_margin"
 
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/input"
             android:ems="10"
             android:fontFamily="@font/light"
@@ -52,10 +52,10 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_to"
+            app:layout_constraintTop_toBottomOf="@+id/btnAdd"
             tools:ignore="MissingConstraints" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_plus"
             android:layout_width="60sp"
             android:layout_height="60sp"
@@ -65,29 +65,30 @@
             android:text="+"
             android:textSize="30sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.16"
+            app:layout_constraintHorizontal_bias="0.149"
             app:layout_constraintStart_toEndOf="@+id/text_view_cost"
-            app:layout_constraintTop_toBottomOf="@+id/text_to"
+            app:layout_constraintTop_toBottomOf="@+id/btnAdd"
             tools:ignore="MissingConstraints" />
 
         <TextView
             android:id="@+id/textfrom"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5sp"
-            android:layout_marginBottom="1sp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/light"
             android:text="@string/from_text"
             android:textColor="#9DA0A8"
             android:textSize="14sp"
-            app:layout_constraintBottom_toTopOf="@+id/text_from"
-            app:layout_constraintStart_toStartOf="@+id/text_from" />
+            app:layout_constraintStart_toStartOf="@+id/text_from"
+            app:layout_constraintTop_toBottomOf="@+id/gpsbut" />
 
         <AutoCompleteTextView
             android:id="@+id/text_from"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="55sp"
+            android:layout_marginStart="52dp"
+
             android:background="@drawable/input"
             android:ems="10"
             android:fontFamily="@font/light"
@@ -100,8 +101,8 @@
             android:textColor="#D9D9D9"
             android:textColorHint="#ABD9D9D9"
             android:textSize="18sp"
-            app:layout_constraintStart_toStartOf="@+id/text_to"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textfrom" />
 
         <EditText
             android:id="@+id/from_number"
@@ -119,8 +120,8 @@
             android:textColorHint="#ABD9D9D9"
             android:textSize="18sp"
             android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="@+id/list"
-            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/text_from"
             app:layout_constraintTop_toTopOf="@+id/text_from" />
 
@@ -128,7 +129,8 @@
             android:id="@+id/gpsbut"
             android:layout_width="60sp"
             android:layout_height="48sp"
-            android:layout_marginTop="10sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/buttons"
             android:fontFamily="@font/regular"
             android:insetLeft="0sp"
@@ -138,14 +140,14 @@
             android:text="@string/gps"
             android:textAlignment="center"
             android:textColor="#D9D9D9"
-            app:layout_constraintEnd_toEndOf="@+id/list"
-            app:layout_constraintTop_toBottomOf="@+id/from_number" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_cost"
+            android:id="@+id/btnOrder"
             android:layout_width="293sp"
             android:layout_height="45sp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/buttons"
             android:fontFamily="@font/regular"
             android:insetLeft="0sp"
@@ -155,7 +157,7 @@
             android:text="@string/btn_cost"
             android:textAlignment="center"
             android:textColor="#D9D9D9"
-            android:textSize="20sp"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_view_cost" />
@@ -164,19 +166,20 @@
             android:id="@+id/num2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="17sp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="5sp"
             android:fontFamily="@font/regular"
             android:text="2"
             android:textColor="#D9D9D9"
             android:textSize="16sp"
             app:layout_constraintEnd_toStartOf="@+id/text_to"
-            app:layout_constraintTop_toBottomOf="@+id/gpsbut" />
+            app:layout_constraintTop_toBottomOf="@+id/textwhere" />
 
         <AutoCompleteTextView
             android:id="@+id/text_to"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="52dp"
             android:background="@drawable/input"
             android:ems="10"
             android:fontFamily="@font/light"
@@ -189,21 +192,22 @@
             android:textColor="#D9D9D9"
             android:textColorHint="#ABD9D9D9"
             android:textSize="18sp"
-            app:layout_constraintStart_toStartOf="@+id/list"
-            app:layout_constraintTop_toTopOf="@+id/num2" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textwhere" />
 
         <TextView
             android:id="@+id/textwhere"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5sp"
-            android:layout_marginBottom="1sp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="20dp"
             android:fontFamily="@font/light"
             android:text="@string/to_text"
             android:textColor="#9DA0A8"
             android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@+id/text_to"
-            app:layout_constraintStart_toStartOf="@+id/text_to" />
+            app:layout_constraintStart_toStartOf="@+id/text_to"
+            app:layout_constraintTop_toBottomOf="@+id/text_from" />
+
 
         <EditText
             android:id="@+id/to_number"
@@ -221,100 +225,63 @@
             android:textColorHint="#ABD9D9D9"
             android:textSize="18sp"
             android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="@+id/list"
-            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/text_to"
             app:layout_constraintTop_toTopOf="@+id/text_to" />
-
-
-        <TextView
-            android:id="@+id/texthist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4sp"
-            android:layout_marginTop="20dp"
-            android:fontFamily="@font/light"
-            android:text="@string/texthist"
-            android:textColor="#9DA0A8"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="@+id/list"
-            app:layout_constraintTop_toBottomOf="@+id/btn_cost" />
-
-        <Spinner
-            android:id="@+id/list"
-            android:layout_width="293sp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/history"
-            android:fontFamily="@font/light"
-            android:text="Відсутні"
-            android:textAlignment="textStart"
-            android:textColor="#D9D9D9"
-            android:textSize="17sp"
-
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.55"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/texthist" />
-
-        <Button
-            android:id="@+id/btn_routs"
-            android:layout_width="293sp"
-            android:layout_height="45sp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/buttons"
-
-            android:fontFamily="@font/regular"
-            android:text="@string/routs"
-            android:textAlignment="center"
-            android:textColor="#D9D9D9"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/list" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnAdd"
             android:layout_width="293sp"
             android:layout_height="45sp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="28dp"
             android:background="@drawable/buttons"
-
             android:fontFamily="@font/regular"
             android:text="@string/add_services"
             android:textAlignment="center"
             android:textColor="#D9D9D9"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.52"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_routs" />
+            app:layout_constraintTop_toBottomOf="@+id/text_to" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/mapbut"
-            android:layout_width="293sp"
-            android:layout_height="45sp"
-            android:layout_marginTop="60dp"
-            android:background="@drawable/buttons"
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="60sp"
+            android:layout_height="60sp"
 
-            android:fontFamily="@font/regular"
-            android:text="@string/on_map"
-            android:textAlignment="center"
-            android:textColor="#D9D9D9"
+            android:layout_marginTop="56dp"
+
+            android:visibility="invisible"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_routs" />
+            app:layout_constraintTop_toBottomOf="@+id/text_to" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_open_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/on_map"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.988"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnOrder"
+            app:srcCompat="@android:drawable/ic_dialog_map" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_call"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="52dp"
+            android:layout_height="139dp"
             android:layout_gravity="bottom|end"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="12dp"
             android:contentDescription="@string/call_admin"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.991"
+            app:layout_constraintHorizontal_bias="0.979"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/mapbut"
+            app:layout_constraintTop_toBottomOf="@+id/fab_open_map"
             app:srcCompat="@android:drawable/stat_sys_phone_call_forward" />
 
         <androidx.constraintlayout.widget.Guideline
