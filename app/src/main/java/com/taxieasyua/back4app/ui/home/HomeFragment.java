@@ -93,13 +93,14 @@ public class HomeFragment extends Fragment {
     private static final int CM_DELETE_ID = 1;
     String from_street_rout, to_street_rout;
     private int selectedPosition = -1;
-    Button mapbut, gpsbut, buttonAddServices;
+    Button mapbut, gpsbut, buttonAddServices, btn_minus, btn_plus;
     AppCompatButton btncost;
-    String FromAddressString, ToAddressString;
+    public String FromAddressString, ToAddressString;
     Integer selectedItem;
     private long firstCost;
     public long addCost, cost;
     private static String[] arrayStreet;
+
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -119,13 +120,35 @@ public class HomeFragment extends Fragment {
                 "SMOKE",
         };
     }
+    public static TextView text_view_cost;
+
+    long costJust;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        text_view_cost = binding.textViewCost;
+        text_view_cost.setText("1156");
+        btn_minus = binding.btnMinus;
+        btn_minus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               costJust = Long.parseLong((String) text_view_cost.getText());
+               costJust--;
+               text_view_cost.setText(String.valueOf(costJust));
+            }
+        });
 
-
+        btn_plus= binding.btnPlus;
+        btn_plus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                costJust = Long.parseLong((String) text_view_cost.getText());
+                costJust++;
+                text_view_cost.setText(String.valueOf(costJust));
+            }
+        });
         return root;
     }
 

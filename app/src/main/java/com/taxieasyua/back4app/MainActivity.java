@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String  apiCherkasy = "apiPas2_Cherkasy";
     public static String  api = "apiPas2";
     public static SQLiteDatabase database;
+
     private final String[] cityList = new String[]{
             "Київ",
             "Дніпро",

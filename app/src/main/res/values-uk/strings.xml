@@ -131,10 +131,10 @@
     <string name="coment">Коментар</string>
     <string name="services">ПОСЛУГИ</string>
     <string name="resettimetoorder">Змініть дату або час для попереднього замовлення</string>
-    <string name="my_routs">Позначьте маршрути для видалення</string>
+    <string name="my_routs">Оберить маршрут</string>
     <string name="no_routs">Немає маршрутів</string>
     <string name="cheng">Змінити</string>
-    <string name="delete_routs">видалити обрані маршрути</string>
+    <string name="delete_routs">видалити</string>
     <string name="text_result">Ваше замовлення</string>
     <string name="btn_again_text">Замовити ще</string>
     <string name="textStatus">Статус замовлення</string>
