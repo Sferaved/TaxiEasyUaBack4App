@@ -161,7 +161,9 @@ public class HomeFragment extends Fragment {
                     api = MainActivity.apiKyiv;
                     break;
             };
+            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_dropdown_item_1line, arrayStreet);
         }
+
         progressBar = binding.progressBar;
         text_view_cost = binding.textViewCost;
 
@@ -202,8 +204,7 @@ public class HomeFragment extends Fragment {
         from_number = binding.fromNumber;
         to_number = binding.toNumber;
 
-        adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_dropdown_item_1line, arrayStreet);
+
 
         textViewFrom =binding.textFrom;
         textViewFrom.setAdapter(adapter);

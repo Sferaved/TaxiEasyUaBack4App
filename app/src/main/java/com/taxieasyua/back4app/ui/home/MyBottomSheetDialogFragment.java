@@ -389,7 +389,6 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             database.close();
         }
         try {
-//            changeCost();
             HomeFragment.text_view_cost.setText(changeCost());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
@@ -421,17 +420,13 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             discount = firstCost * discountInt / 100;
             newCost = Long.toString(firstCost + discount);
 
+            HomeFragment.cost = firstCost + discount;
             HomeFragment.addCost = discount;
-            Log.d("TAG", "changeCost:newCost " + newCost);
-            Log.d("TAG", "changeCost:discount " + discount);
+
         }
         return newCost;
     }
     private String getTaxiUrlSearch(String from, String from_number, String to, String to_number, String urlAPI, Context context) {
-
-        //  Проверка даты и времени
-
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
 
         // Origin of route
         String str_origin = from + "/" + from_number;
