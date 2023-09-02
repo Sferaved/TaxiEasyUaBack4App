@@ -64,7 +64,7 @@ public class ResultSONParser {
             if (response != null) {
                 if (response.equals("400")) {
                     costMap.put("order_cost", "0");
-                    costMap.put("message", String.valueOf(R.string.verify_internet));
+                    costMap.put("message", "Сталася помілка");
                 } else {
 
                     JSONObject jsonarray = new JSONObject(response);

@@ -397,8 +397,8 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     }
     private String changeCost() throws MalformedURLException {
         String newCost = "0";
-        String url = getTaxiUrlSearch(HomeFragment.from, HomeFragment.from_number.getText().toString(),
-                HomeFragment.to, HomeFragment.to_number.getText().toString(), "costSearch", getActivity());
+        String url = getTaxiUrlSearch(HomeFragment.from, HomeFragment.from_numberCost,
+                HomeFragment.toCost, HomeFragment.to_numberCost, "costSearch", getActivity());
 
         Map<String, String> sendUrl = CostJSONParser.sendURL(url);
 

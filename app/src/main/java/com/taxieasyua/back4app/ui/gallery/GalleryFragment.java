@@ -325,7 +325,14 @@ public class GalleryFragment extends Fragment {
 
 
             if (orderCost.equals("0")) {
-                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                text_view_cost.setVisibility(View.INVISIBLE);
+                btnRouts.setVisibility(View.INVISIBLE);
+                btn_minus.setVisibility(View.INVISIBLE);
+                btn_plus.setVisibility(View.INVISIBLE);
+                btnAdd.setVisibility(View.INVISIBLE);
             }
             if (!orderCost.equals("0")) {
 

@@ -1,6 +1,6 @@
 package com.taxieasyua.back4app.ui.maps;
 
-import android.os.AsyncTask;
+
 import android.util.Log;
 
 import com.taxieasyua.back4app.R;
@@ -18,7 +18,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Exchanger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -62,10 +61,12 @@ public class CostJSONParser {
 
         try {
             String response = asyncTaskFuture.get(10, TimeUnit.SECONDS);
+            Log.d("TAG", "sendURL: response " + response);
             if (response != null) {
                 if (response.equals("400")) {
                     costMap.put("order_cost", "0");
-                    costMap.put("message", String.valueOf(R.string.verify_internet));
+                    costMap.put("message", "Сталася помілка");
+
                 } else {
                     JSONObject jsonarray = new JSONObject(response);
 

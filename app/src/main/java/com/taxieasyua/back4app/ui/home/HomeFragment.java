@@ -2,6 +2,7 @@ package com.taxieasyua.back4app.ui.home;
 
 
 import static android.content.Context.MODE_PRIVATE;
+import static android.graphics.Color.*;
 import static android.graphics.Color.RED;
 import static com.taxieasyua.back4app.R.string.address_error_message;
 
@@ -12,9 +13,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.BlendMode;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -24,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +48,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -102,8 +108,8 @@ public class HomeFragment extends Fragment {
     public static long addCost, cost;
     private static String[] arrayStreet;
     private String numberFlagFrom = "1", numberFlagTo = "1";
-    private ProgressBar progressBar;
 
+    public static String  from_numberCost, toCost, to_numberCost;
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -164,7 +170,7 @@ public class HomeFragment extends Fragment {
             adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_dropdown_item_1line, arrayStreet);
         }
 
-        progressBar = binding.progressBar;
+
         text_view_cost = binding.textViewCost;
 
         btn_minus = binding.btnMinus;
@@ -344,7 +350,9 @@ public class HomeFragment extends Fragment {
             to = null;
             text_view_cost.setText("");
             textViewFrom.setText("");
+            from_number.setText("");
             textViewTo.setText("");
+            to_number.setText("");
         }
 
 
@@ -356,14 +364,25 @@ public class HomeFragment extends Fragment {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedPosition = position; // Обновляем выбранную позицию
-                adapter.notifyDataSetChanged(); // Обновляем вид списка
+//                selectedPosition = position; // Обновляем выбранную позицию
+//                adapter.notifyDataSetChanged(); // Обновляем вид списка
+                Log.d(TAG, "onItemClick: textViewTo.getText().toString()" + textViewTo.getText().toString());
 
+                if (textViewTo.getText().toString().isEmpty()) {
+                        to = null;
+                } else {
+                    to = textViewTo.getText().toString();
+                }
+                if (numberFlagTo.equals("0")) {
+                    to_number.setText(" ");
+                }
+                Log.d(TAG, "onItemClick: to" + to);
                 if(connected()) {
                     from = String.valueOf(adapter.getItem(position));
                     if (from.indexOf("/") != -1) {
                         from = from.substring(0,  from.indexOf("/"));
                     };
+
 
                     String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
 
@@ -373,26 +392,38 @@ public class HomeFragment extends Fragment {
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
                         Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
                     }
+                    assert sendUrlMapCost != null;
                     String orderCost = (String) sendUrlMapCost.get("message");
-                    if (orderCost.equals("200")) {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_firebase_start));
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    } else if (orderCost.equals("400")) {
-                        textViewFrom.setTextColor(RED);
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.address_error_message));
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    } else if (orderCost.equals("1")) {
-                        from_number.setVisibility(View.VISIBLE);
-                        from_number.setText(" ");
-                        from_number.requestFocus();
-                        numberFlagFrom = "1";
-
-                    } else if (orderCost.equals("0")) {
-                        from_number.setText(" ");
-                        from_number.setVisibility(View.INVISIBLE);
-                        numberFlagFrom = "0";
-                        cost();
+                    switch (Objects.requireNonNull(orderCost)) {
+                        case "200": {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_firebase_start));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            break;
+                        }
+                        case "400": {
+                            textViewFrom.setTextColor(RED);
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(address_error_message));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            break;
+                        }
+                        case "1":
+                            from_number.setVisibility(View.VISIBLE);
+                            from_number.requestFocus();
+                            numberFlagFrom = "1";
+                            from_number.setText("1");
+                            cost();
+                            from_number.setText(" ");
+                            break;
+                        case "0":
+                            from_number.setText(" ");
+                            from_number.setVisibility(View.INVISIBLE);
+                            numberFlagFrom = "0";
+                            cost();
+                            break;
+                        default:
+                            Log.d(TAG, "onItemClick: " + new IllegalStateException("Unexpected value: " + Objects.requireNonNull(orderCost)));
                     }
+
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -400,39 +431,37 @@ public class HomeFragment extends Fragment {
 
             }
         });
-        textViewFrom.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+        from_number.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    if(textViewTo.getText() == null){
-                        to = null;
+                    if (!from_number.getText().toString().equals(" ")) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                            from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+                        } else {
+                            ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                        }
+
                     }
-                    progressBar.setVisibility(View.VISIBLE);
                 }
             }
         });
-
-        if (numberFlagFrom.equals("1")) {
-            from_number.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        cost();
-                    }
-                }
-            });
-        }
-
         textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    selectedPosition = position; // Обновляем выбранную позицию
+//                    adapter.notifyDataSetChanged(); // Обновляем вид списка
+
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment;
+
                     if (connected()) {
                         to = String.valueOf(adapter.getItem(position));
                         if (to.indexOf("/") != -1) {
                             to = to.substring(0, to.indexOf("/"));
                         }
-                        ;
-                        String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
+                         String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
 
                         Map sendUrlMapCost = null;
                         try {
@@ -442,83 +471,145 @@ public class HomeFragment extends Fragment {
                         }
 
                         String orderCost = (String) sendUrlMapCost.get("message");
-                        if (orderCost.equals("200")) {
-                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
-                        } else if (orderCost.equals("400")) {
-                            textViewTo.setTextColor(RED);
-                            Toast.makeText(getActivity(), address_error_message, Toast.LENGTH_SHORT).show();
-                        } else if (orderCost.equals("1")) {
-                            to_number.setVisibility(View.VISIBLE);
-                            to_number.setText(" ");
-                            to_number.requestFocus();
-                            numberFlagTo = "1";
-
-                        }  else if (orderCost.equals("0")) {
-                            to_number.setText(" ");
-                            to_number.setVisibility(View.INVISIBLE);
-                            cost();
+                        Log.d(TAG, "onItemClick: orderCost" + orderCost);
+                        switch (Objects.requireNonNull(orderCost)) {
+                            case "200":
+                                bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_firebase_start));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                                break;
+                            case "400":
+                                textViewTo.setTextColor(RED);
+                                bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.address_error_message));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                                break;
+                            case "1":
+                                to_number.setVisibility(View.VISIBLE);
+                                to_number.requestFocus();
+                                numberFlagTo = "1";
+                                to_number.setText("1");
+                                cost();
+                                to_number.setText(" ");
+                                break;
+                            case "0":
+                                to_number.setText(" ");
+                                to_number.setVisibility(View.INVISIBLE);
+                                numberFlagTo = "0";
+                                cost();
+                                break;
+                            default:
+                                Log.d(TAG, "onItemClick: " + new IllegalStateException("Unexpected value: " + Objects.requireNonNull(orderCost)));
                         }
+                        if (textViewFrom.getText().toString().isEmpty()) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                textViewFrom.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                                textViewFrom.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+                            } else {
+                                ViewCompat.setBackgroundTintList(textViewFrom, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                            }
+
+                        }
+
                 }
                     else {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
             };
 
         });
 
-        if (numberFlagTo.equals("1")) {
-            to_number.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        cost();
-                    }
-                }
-            });
-        }
-
     }
+    @SuppressLint("ResourceAsColor")
     private void cost(){
+        textViewTo.setVisibility(View.VISIBLE);
+        binding.textwhere.setVisibility(View.VISIBLE);
+        binding.num2.setVisibility(View.VISIBLE);
 
-        text_view_cost.setVisibility(View.VISIBLE);
-        btn_minus.setVisibility(View.VISIBLE);
-        btn_plus.setVisibility(View.VISIBLE);
-        buttonAddServices.setVisibility(View.VISIBLE);
-        btn_order.setVisibility(View.VISIBLE);
-        if (to == null) {
-            to = from;
-            to_number.setText(from_number.getText());
+
+        if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            } else {
+                ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+            }
+            from_numberCost = "1";
+        } else {
+
+            if (numberFlagFrom.equals("0")) {
+                from_numberCost = " ";
+            } else{
+                from_numberCost = from_number.getText().toString();
+            }
         }
+
+        if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            } else {
+                ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+            }
+            to_numberCost = "1";
+        } else {
+            if (numberFlagTo.equals("0")) {
+                to_numberCost = " ";
+            } else{
+                to_numberCost = to_number.getText().toString();
+            }
+
+        }
+        Log.d(TAG, "cost: numberFlagTo " + numberFlagTo);
+
+        if (to == null) {
+            toCost = from;
+            to_numberCost = from_numberCost;
+        } else {
+            toCost = to;
+        }
+
+
         try {
             String urlCost = null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                urlCost = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "costSearch", getActivity());
+                urlCost = getTaxiUrlSearch(from, from_numberCost, toCost, to_numberCost, "costSearch", getActivity());
             }
 
             Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
             String orderCost = (String) sendUrlMapCost.get("order_cost");
             String message = (String) sendUrlMapCost.get("message");
-            progressBar.setVisibility(View.INVISIBLE);
+
             if (orderCost.equals("0")) {
-                if (to.equals(from)) {
-                    textViewTo.setText("");
-                    to = null;
-                }
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                text_view_cost.setVisibility(View.INVISIBLE);
+                btn_minus.setVisibility(View.INVISIBLE);
+                btn_plus.setVisibility(View.INVISIBLE);
+                buttonAddServices.setVisibility(View.INVISIBLE);
             }
             if (!orderCost.equals("0")) {
-                if(!verifyOrder(getContext())) {
-                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                } else {
-                    Log.d(TAG, "cost: addCost" + addCost);
-                    if (addCost == 0) {
-                        cost = Long.parseLong(orderCost);
-                        text_view_cost.setText(orderCost);
-                    }
-                }
+                text_view_cost.setVisibility(View.VISIBLE);
+                btn_minus.setVisibility(View.VISIBLE);
+                btn_plus.setVisibility(View.VISIBLE);
+                buttonAddServices.setVisibility(View.VISIBLE);
+                btn_order.setVisibility(View.VISIBLE);
+
+                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                long discountInt = Integer.parseInt(discountText);
+                long discount;
+
+                cost = Long.parseLong(orderCost);
+
+                MIN_COST_VALUE = (long) ((long) cost * 0.1);
+                MAX_COST_VALUE = cost * 3;
+                firstCost = cost;
+
+                discount = firstCost * discountInt / 100;
+                cost = firstCost + discount;
+                text_view_cost.setText(Long.toString(cost));
+
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -529,11 +620,66 @@ public class HomeFragment extends Fragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
+    @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void order() {
+        if(!verifyOrder(getContext())) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            return;
+        }
+        boolean stop = false;
+        if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            } else {
+                ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+            }
+            stop = true;
+        }
+        if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
+            to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            } else {
+               ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+            }
+            stop = true;
+
+        }
+        if(stop) {return;}
+
+        if (numberFlagFrom.equals("1") && !from_number.getText().toString().equals(" ")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            } else {
+                ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+            }
+
+        }
+        if (numberFlagTo.equals("1") && !to_number.getText().toString().equals(" ")) {
+            to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            } else {
+                ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+            }
+
+
+        }
+
+
+        String toCost, to_numberCost;
         if (to == null) {
-            to = from;
-            to_number.setText(from_number.getText());
+            toCost = from;
+            to_numberCost = from_number.getText().toString();
+        } else {
+            toCost = to;
+            to_numberCost = to_number.getText().toString();
         }
 
         if (!verifyPhone(getContext())) {
@@ -546,7 +692,7 @@ public class HomeFragment extends Fragment {
         if(connected()) {
             if (verifyPhone(getContext())) {
                 try {
-                    String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), to, to_number.getText().toString(), "orderSearch", getActivity());
+                    String urlOrder = getTaxiUrlSearch(from, from_number.getText().toString(), toCost, to_numberCost, "orderSearch", getActivity());
                     Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
                     String orderWeb = (String) sendUrlMap.get("order_cost");
@@ -566,8 +712,9 @@ public class HomeFragment extends Fragment {
                                     to_name + " " + to_number.getText() + "." +
                                     getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
                         }
-                        if(from_name.equals(to_name)) {
-                            if(!sendUrlMap.get("lat").equals("0")) {
+
+                        if(!sendUrlMap.get("from_lat").equals("0") && !sendUrlMap.get("lat").equals("0")) {
+                            if(from_name.equals(to_name)) {
                                 insertRecordsOrders(
                                         from_name, from_name,
                                         from_number.getText().toString(), from_number.getText().toString(),
@@ -575,17 +722,17 @@ public class HomeFragment extends Fragment {
                                         (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
                                         getContext()
                                 );
-                            }
-                        } else {
-                            if(!sendUrlMap.get("lat").equals("0")) {
+                            } else {
                                 insertRecordsOrders(
                                         from_name, to_name,
                                         from_number.getText().toString(), to_number.getText().toString(),
                                         (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
                                         (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng"), getContext()
                                 );
+
                             }
                         }
+
                         Intent intent = new Intent(getActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
                         intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
@@ -765,203 +912,6 @@ public class HomeFragment extends Fragment {
         }
 
         return hasConnect;
-    }
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void dialogFromToOneRout(Map <String, String> rout) throws MalformedURLException, InterruptedException, JSONException {
-        if(connected()) {
-            Log.d("TAG", "dialogFromToOneRout: " + rout.toString());
-            Double from_lat =  Double.valueOf(rout.get("from_lat"));
-            Double from_lng = Double.valueOf(rout.get("from_lng"));
-            Double to_lat = Double.valueOf(rout.get("to_lat"));
-            Double to_lng = Double.valueOf(rout.get("to_lng"));
-            FromAddressString = rout.get("from_street") + rout.get("from_number") ;
-            Log.d("TAG", "dialogFromToOneRout: FromAddressString" + FromAddressString);
-            ToAddressString = rout.get("to_street") + rout.get("to_number");
-            if(rout.get("from_street").equals(rout.get("to_street"))) {
-                ToAddressString =  getString(R.string.on_city_tv);;
-            }
-            Log.d("TAG", "dialogFromToOneRout: ToAddressString" + ToAddressString);
-
-                String urlCost = getTaxiUrlSearchMarkers(from_lat, from_lng,
-                        to_lat, to_lng, "costSearchMarkers", getContext());
-
-                Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
-
-                String message = (String) sendUrlMapCost.get("message");
-                String orderCost = (String) sendUrlMapCost.get("order_cost");
-
-                GeoPoint startPoint = new GeoPoint(from_lat, to_lat);
-
-                if (orderCost.equals("0")) {
-                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-//                    coastOfRoad(startPoint, message);
-                }
-            if(!verifyOrder(getContext())) {
-
-                MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            } else {
-                if (!orderCost.equals("0")) {
-
-                    MaterialAlertDialogBuilder builderAddCost = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                    LayoutInflater inflater = getActivity().getLayoutInflater();
-
-                    View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
-                    builderAddCost.setView(view_cost);
-                    TextView costView = view_cost.findViewById(R.id.cost);
-
-                    cost = Long.parseLong(orderCost);
-                    long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
-                    long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
-                    firstCost = Long.parseLong(orderCost);
-
-                    Button btn_minus = view_cost.findViewById(R.id.btn_minus);
-                    Button btn_plus = view_cost.findViewById(R.id.btn_plus);
-
-                    String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-                    long discountInt = Integer.parseInt(discountText);
-                    long discount;
-
-                    discount = firstCost * discountInt / 100;
-                    firstCost = firstCost + discount;
-
-                    addCost = discount;
-                    costView.setText(String.valueOf(firstCost));
-                    btn_minus.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            firstCost -= 5;
-                            addCost -= 5;
-                            if (firstCost <= MIN_COST_VALUE) {
-                                firstCost = MIN_COST_VALUE;
-                                addCost = MIN_COST_VALUE - firstCost;
-                            }
-                            costView.setText(String.valueOf(firstCost));
-
-                        }
-                    });
-
-                    btn_plus.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            firstCost += 5;
-                            addCost += 5;
-                            if (firstCost >= MAX_COST_VALUE) {
-                                firstCost = MAX_COST_VALUE;
-                                addCost = MAX_COST_VALUE - firstCost;
-                            }
-                            costView.setText(String.valueOf(firstCost));
-                        }
-                    });
-
-                    builderAddCost
-                            .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
-                                @RequiresApi(api = Build.VERSION_CODES.O)
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (connected()) {
-                                        try {
-                                            String urlCost = getTaxiUrlSearchMarkers(from_lat, from_lng,
-                                                    to_lat, to_lng, "orderSearchMarkers", getContext());
-
-                                            Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
-
-                                            String message = (String) sendUrlMapCost.get("message");
-                                            String orderCost = (String) sendUrlMapCost.get("order_cost");
-
-                                            if (orderCost.equals("0")) {
-                                                Toast.makeText(getActivity(), OpenStreetMapActivity.em + message, Toast.LENGTH_LONG).show();
-                                            }
-                                            if (!orderCost.equals("0")) {
-                                                String orderWeb = (String) sendUrlMapCost.get("order_cost");
-                                                if (!orderWeb.equals("0")) {
-
-                                                    String messageResult = getString(R.string.thanks_message) +
-                                                            FromAddressString + getString(R.string.to_message) + ToAddressString +
-                                                            getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
-
-//                                                    Toast.makeText(getActivity(), messageResult, Toast.LENGTH_LONG).show();
-                                                    Intent intent = new Intent(getActivity(), FinishActivity.class);
-                                                    intent.putExtra("messageResult_key", messageResult);
-                                                    intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMapCost.get("dispatching_order_uid")));
-                                                    startActivity(intent);
-                                                } else {
-                                                    message = (String) sendUrlMapCost.get("message");
-
-                                                    MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                                                    LayoutInflater inflater = LayoutInflater.from(getActivity());
-                                                    View view = inflater.inflate(R.layout.free_message_layout, null);
-                                                    TextView alertMessage = view.findViewById(R.id.text_message);
-                                                    alertMessage.setText(message);
-                                                    alertDialogBuilder.setView(view);
-
-                                                    alertDialogBuilder.setPositiveButton(OpenStreetMapActivity.hlp, new DialogInterface.OnClickListener() {
-                                                                @SuppressLint("SuspiciousIndentation")
-                                                                @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                                                                    String phone;
-                                                                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                                                                    switch (stringList.get(1)) {
-                                                                        case "Kyiv City":
-                                                                            phone = "tel:0674443804";
-                                                                            break;
-                                                                        case "Dnipropetrovsk Oblast":
-                                                                            phone = "tel:0667257070";
-                                                                            break;
-                                                                        case "Odessa":
-                                                                            phone = "tel:0737257070";
-                                                                            break;
-                                                                        case "Zaporizhzhia":
-                                                                            phone = "tel:0687257070";
-                                                                            break;
-                                                                        case "Cherkasy Oblast":
-                                                                            phone = "tel:0962294243";
-                                                                            break;
-                                                                        default:
-                                                                            phone = "tel:0674443804";
-                                                                            break;
-                                                                    }
-                                                                    intent.setData(Uri.parse(phone));
-                                                                    startActivity(intent);
-                                                                }
-                                                            })
-                                                            .setNegativeButton(OpenStreetMapActivity.tra, new DialogInterface.OnClickListener() {
-                                                                @Override
-                                                                public void onClick(DialogInterface dialog, int which) {
-                                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                                                                    getActivity().startActivity(intent);
-                                                                }
-                                                            })
-                                                            .show();
-                                                }
-                                            }
-
-                                        } catch (MalformedURLException e) {
-                                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                        }
-                                    } else {
-                                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                    }
-                                }
-                            })
-                            .setNegativeButton(getString(R.string.cancel_button), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                                    getActivity().startActivity(intent);
-                                }
-                            })
-                            .show();
-
-                }
-            }
-            } else {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -1146,7 +1096,7 @@ public class HomeFragment extends Fragment {
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
-        if(urlAPI.equals("orderSearchMarkers")) {
+        if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
