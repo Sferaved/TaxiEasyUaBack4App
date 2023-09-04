@@ -258,37 +258,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         progressBar = findViewById(R.id.progressBar);
 
-//        String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-//        Map sendUrlMap = null;
-//        try {
-//            sendUrlMap = FromJSONParser.sendURL(urlFrom);
-//        } catch (MalformedURLException | InterruptedException | JSONException ignored) {
-//
-//        }
-//
-//        String orderWeb = (String) sendUrlMap.get("order_cost");
-//        if (orderWeb.equals("100")) {
-//
-//            from_geo = (String) sendUrlMap.get("route_address_from");
-//
-//            from_name = (String) sendUrlMap.get("name");
-//            from_house = (String) sendUrlMap.get("house");
-//
-//            MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(from_geo);
-//            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//            startPoint = new GeoPoint(startLat, startLan);
-//            setMarker(startLat,startLan, from_geo);
-//            map.invalidate();
-//
-//        } else {
-//            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_firebase_start));
-//            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//        }
-
-
-
-
-
         if (!routMaps().isEmpty()) {
             adressArr = new ArrayList<>(routMaps().size());
         }
@@ -451,91 +420,76 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         gpsSwitch.setChecked(switchState());
-        Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
-        Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
-
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                // Обработка полученных местоположений
-                    stopLocationUpdates();
-
-                // Обработка полученных местоположений
-                List<Location> locations = locationResult.getLocations();
-                if (!locations.isEmpty()) {
-                    Location firstLocation = locations.get(0);
-                    if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()){
-
-                        double latitude = firstLocation.getLatitude();
-                        double longitude = firstLocation.getLongitude();
-                        startLat = latitude;
-                        startLan = longitude;
-
-                    }
-                }
-                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-                    Map sendUrlFrom = null;
-                    try {
-                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-
-                    } catch (MalformedURLException | InterruptedException |
-                             JSONException e) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                    FromAdressString = (String) sendUrlFrom.get("route_address_from");
-                    updateMyPosition(startLat, startLan, FromAdressString);
-
-                    MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
-                    map.getOverlays().add(markerOverlay);
-                    setMarker(startLat, startLan, FromAdressString);
-                    GeoPoint initialGeoPoint = new GeoPoint(startLat-0.01, startLan);
-                    map.getController().setCenter(initialGeoPoint);
-
-                    map.invalidate();
-
-
-                    MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//                        try {
+        MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 //
-//                            dialogFromToGeo();
-//                        } catch (MalformedURLException | InterruptedException |
-//                                 JSONException ignored) {
+//        Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
+//        Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+
+
+//        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+
+//        locationCallback = new LocationCallback() {
+//            @Override
+//            public void onLocationResult(LocationResult locationResult) {
+//                // Обработка полученных местоположений
+//                    stopLocationUpdates();
 //
-//                        }
-
-
-            };
-        };
-
-
-        //this will refresh the osmdroid configuration on resuming.
-        //if you make changes to the configuration, use
-        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        //Configuration.getInstance().save(this, prefs);
-
-//            Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+//                // Обработка полученных местоположений
+//                List<Location> locations = locationResult.getLocations();
+//                if (!locations.isEmpty()) {
+//                    Location firstLocation = locations.get(0);
+//                    if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()){
 //
-//            if (ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                    && ActivityCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                return;
-//            }
-
-
-        if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
-        } else {
-            requestLocationPermission();
-        }
-
+//                        double latitude = firstLocation.getLatitude();
+//                        double longitude = firstLocation.getLongitude();
+//                        startLat = latitude;
+//                        startLan = longitude;
+//
+//                    }
+//                }
+//                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+//                    Map sendUrlFrom = null;
+//                    try {
+//                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+//
+//                    } catch (MalformedURLException | InterruptedException |
+//                             JSONException e) {
+//                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+//                        finish();
+//                    }
+//                    FromAdressString = (String) sendUrlFrom.get("route_address_from");
+//                    updateMyPosition(startLat, startLan, FromAdressString);
+//
+//                    MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
+//                    map.getOverlays().add(markerOverlay);
+//                    setMarker(startLat, startLan, FromAdressString);
+//                    GeoPoint initialGeoPoint = new GeoPoint(startLat-0.01, startLan);
+//                    map.getController().setCenter(initialGeoPoint);
+//
+//                    map.invalidate();
+//
+//
+//                    MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+//                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+//
+//
+//
+//            };
+//        };
+////
+//
+//
+//
+//
+//        if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                == PackageManager.PERMISSION_GRANTED) {
+//            startLocationUpdates();
+//        } else {
+//            requestLocationPermission();
+//        }
+//
 
 
 
@@ -854,7 +808,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                             }
 
                                         } catch (MalformedURLException e) {
-                                             
+
                                         }
                                     }
                                     else {
@@ -886,9 +840,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             OpenStreetMapActivity.showRout(startPoint, endPoint);
         };
-//        } else {
-//            Toast.makeText(map.getContext(), R.string.server_error_connected, Toast.LENGTH_SHORT).show();
-//        }
+
     }
     private void dialogFromToGeo() throws MalformedURLException, InterruptedException, JSONException {
 //        alertDialog.dismiss();
@@ -983,275 +935,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
         });
 
-//        builder.setPositiveButton("Ок", new DialogInterface.OnClickListener() {
-//                    @RequiresApi(api = Build.VERSION_CODES.O)
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        coastDialog.dismiss();
-//                        if (!verifyOrder(map.getContext())) {
-//                            Log.d("TAG", "onClick verifyOrder(map.getContext(): " + verifyOrder(map.getContext()));
-////                                                    Toast.makeText(map.getContext(), co + orderCost + fb, Toast.LENGTH_SHORT).show();
-//
-//                            MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
-//                            bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
-//                        } else {
-//                            if(connected()) {
-//                                String urlCost = getTaxiUrlSearchGeo(startPoint.getLatitude(), startPoint.getLongitude(),
-//                                        to, to_number.getText().toString(), "costSearchGeo", OpenStreetMapActivity.this);
-//
-//                                Log.d("TAG", "onClick urlCost: " + urlCost);
-//
-//                                Map<String, String> sendUrlMapCost = null;
-//                                try {
-//                                    sendUrlMapCost = ToJSONParser.sendURL(urlCost);
-//                                } catch (MalformedURLException e) {
-//                                    Toast.makeText(OpenStreetMapActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-//                                }
-//
-//                                String message = (String) sendUrlMapCost.get("message");
-//                                String orderCost = (String) sendUrlMapCost.get("order_cost");
-//                                Log.d("TAG", "onClick orderCost : " + orderCost);
-//
-//                                if (orderCost.equals("0")) {
-//                                    Log.d("TAG", "onClick: 6579465465465465465456");
-//                                    Toast.makeText(OpenStreetMapActivity.this, getString(R.string.error_message) + message, Toast.LENGTH_LONG).show();
-//    //                                        finish();
-//    //                                        Intent intent = new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class);
-//    //                                        startActivity(intent);
-//                                }
-//                                if (!orderCost.equals("0")) {
-//                                    Log.d(TAG, "onClick 3333: " + sendUrlMapCost.get("lat") + " " + sendUrlMapCost.get("lng"));
-//
-//                                    finishLat = Double.parseDouble(sendUrlMapCost.get("lat").toString());
-//                                    finishLan = Double.parseDouble(sendUrlMapCost.get("lng").toString());
-//                                    if(finishLan != 0) {
-//                                        String target = to + " " + to_number.getText().toString();
-//                                        setMarker(finishLat, finishLan, target);
-//                                        GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
-//                                        showRout(startPoint, endPoint);
-//                                    }
-//
-//                                    if (!verifyOrder(getApplicationContext())) {
-//                                        MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
-//                                        bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
-//                                    } else {
-//
-//
-//                                        MaterialAlertDialogBuilder builderAddCost =  new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
-//                                        LayoutInflater inflater = OpenStreetMapActivity.this.getLayoutInflater();
-//
-//                                        View view_cost = inflater.inflate(R.layout.add_cost_layout, null);
-//                                        builderAddCost.setView(view_cost);
-//                                        TextView costView = view_cost.findViewById(R.id.cost);
-//
-//                                        cost = Long.parseLong(orderCost);
-//                                        long MIN_COST_VALUE = (long) ((long) Double.parseDouble(orderCost) * 0.1);
-//                                        long MAX_COST_VALUE = Long.parseLong(orderCost) * 3;
-//                                        firstCost = Long.parseLong(orderCost);
-//
-//                                        Button btn_minus = view_cost.findViewById(R.id.btn_minus);
-//                                        Button btn_plus = view_cost.findViewById(R.id.btn_plus);
-//
-//                                        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, map.getContext()).get(3);
-//                                        long discountInt = Integer.parseInt(discountText);
-//                                        long discount;
-//                                        discount =  firstCost * discountInt/100;
-//                                        firstCost = firstCost  + discount;
-//
-//                                        addCost = discount;
-//                                        costView.setText(String.valueOf(firstCost));
-//
-//                                        btn_minus.setOnClickListener(new View.OnClickListener() {
-//                                            @Override
-//                                            public void onClick(View v) {
-//                                                firstCost -= 5;
-//                                                addCost -= 5;
-//                                                if (firstCost <= MIN_COST_VALUE) {
-//                                                    firstCost = MIN_COST_VALUE;
-//                                                    addCost = MIN_COST_VALUE - firstCost;
-//                                                }
-//                                                costView.setText(String.valueOf(firstCost));
-//
-//                                            }
-//                                        });
-//
-//                                        btn_plus.setOnClickListener(new View.OnClickListener() {
-//                                            @Override
-//                                            public void onClick(View v) {
-//                                                firstCost += 5;
-//                                                addCost += 5;
-//                                                if (firstCost >= MAX_COST_VALUE) {
-//                                                    firstCost = MAX_COST_VALUE;
-//                                                    addCost = MAX_COST_VALUE - firstCost;
-//                                                }
-//                                                costView.setText(String.valueOf(firstCost));
-//                                            }
-//                                        });
-//                                        if (!verifyPhone(getApplicationContext())) {
-//                                            getPhoneNumber();
-//                                        }
-//                                        if (!verifyPhone(getApplicationContext())) {
-//                                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
-//                                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//                                        }
-//                                        builderAddCost
-//                                                .setPositiveButton(getString(R.string.order), new DialogInterface.OnClickListener() {
-//                                                    @RequiresApi(api = Build.VERSION_CODES.O_MR1)
-//                                                    @Override
-//                                                    public void onClick(DialogInterface dialog, int which) {
-//
-//
-//                                                        if (!verifyOrder(map.getContext())) {
-//                                                            MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
-//                                                            bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
-//                                                        } else {
-//                                                            if (verifyPhone(getApplicationContext())) {
-//                                                                try {
-//                                                                    String urlOrder = getTaxiUrlSearchGeo(startPoint.getLatitude(), startPoint.getLongitude(),
-//                                                                            to, to_number.getText().toString(), "orderSearchGeo", OpenStreetMapActivity.this);
-//                                                                    Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
-//                                                                    Log.d(TAG, "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
-//
-//                                                                    String orderWeb = (String) sendUrlMap.get("order_cost");
-//
-//                                                                    if (!orderWeb.equals("0")) {
-//                                                                        String to_name;
-//                                                                        if (Objects.equals(sendUrlMap.get("routefrom"), sendUrlMap.get("routeto"))) {
-//                                                                            to_name = getString(R.string.on_city_tv);
-//                                                                            if (!sendUrlMap.get("lat").equals("0")) {
-//                                                                                insertRecordsOrders(
-//                                                                                        (String) sendUrlMap.get("routefrom"), (String) sendUrlMap.get("routefrom"),
-//                                                                                        (String) sendUrlMap.get("routefromnumber"), (String) sendUrlMap.get("routefromnumber"),
-//                                                                                        Double.toString(startPoint.getLatitude()), Double.toString(startPoint.getLongitude()),
-//                                                                                        Double.toString(startPoint.getLatitude()), Double.toString(startPoint.getLongitude()),
-//                                                                                        getApplicationContext()
-//                                                                                );
-//                                                                            }
-//                                                                        } else {
-//                                                                            to_name = (String) sendUrlMap.get("routeto") + " " + (String) sendUrlMap.get("to_number");
-//                                                                            if (!sendUrlMap.get("lat").equals("0")) {
-//                                                                                insertRecordsOrders(
-//                                                                                        (String) sendUrlMap.get("routefrom"), (String) sendUrlMap.get("routeto"),
-//                                                                                        (String) sendUrlMap.get("routefromnumber"), (String) sendUrlMap.get("to_number"),
-//                                                                                        Double.toString(startPoint.getLatitude()), Double.toString(startPoint.getLongitude()),
-//                                                                                        (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng"), getApplicationContext()
-//                                                                                );
-//                                                                            }
-//                                                                        }
-//                                                                        messageResult = getString(R.string.thanks_message) +
-//                                                                                FromAdressString + " " + getString(R.string.to_message) +
-//                                                                                to_name + "." +
-//                                                                                getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
-//
-//                                                                        finishLat = Double.parseDouble((String) sendUrlMap.get("lat"));
-//                                                                        finishLan = Double.parseDouble((String) sendUrlMap.get("lng"));
-//                                                                        if(finishLan != 0) {
-//
-//                                                                            setMarker(finishLat, finishLan, to_name);
-//                                                                            GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
-//                                                                            showRout(startPoint, endPoint);
-//                                                                        }
-//    //                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_SHORT).show();
-//                                                                        Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);
-//                                                                        intent.putExtra("messageResult_key", messageResult);
-//                                                                        intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
-//                                                                        startActivity(intent);
-//                                                                    } else {
-//
-//                                                                        String message = (String) sendUrlMap.get("message");
-//                                                                        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(OpenStreetMapActivity.this, R.style.AlertDialogTheme);
-//                                                                        LayoutInflater inflater = getLayoutInflater();
-//                                                                        View view = inflater.inflate(R.layout.free_message_layout, null);
-//                                                                        TextView alertMessage = view.findViewById(R.id.text_message);
-//                                                                        alertMessage.setText(getString(R.string.error_message) + message );
-//                                                                        alertDialogBuilder.setView(view);
-//
-//                                                                        alertDialogBuilder.setPositiveButton(hlp, new DialogInterface.OnClickListener() {
-//                                                                                    @SuppressLint("SuspiciousIndentation")
-//                                                                                    @Override
-//                                                                                    public void onClick(DialogInterface dialog, int which) {
-//                                                                                        Intent intent = new Intent(Intent.ACTION_DIAL);
-//                                                                                        String phone;
-//                                                                                        List<String> stringList = logCursor(MainActivity.CITY_INFO, OpenStreetMapActivity.this);
-//                                                                                        switch (stringList.get(1)){
-//                                                                                            case "Kyiv City":
-//                                                                                                phone = "tel:0674443804";
-//                                                                                                break;
-//                                                                                            case "Dnipropetrovsk Oblast":
-//                                                                                                phone = "tel:0667257070";
-//                                                                                                break;
-//                                                                                            case "Odessa":
-//                                                                                                phone = "tel:0737257070";
-//                                                                                                break;
-//                                                                                            case "Zaporizhzhia":
-//                                                                                                phone = "tel:0687257070";
-//                                                                                                break;
-//                                                                                            default:
-//                                                                                                phone = "tel:0674443804";
-//                                                                                                break;
-//                                                                                        }
-//                                                                                        intent.setData(Uri.parse(phone));
-//                                                                                        startActivity(intent);
-//                                                                                    }
-//                                                                                })
-//                                                                                .setNegativeButton(getString(R.string.try_again), null)
-//                                                                                .show();
-//                                                                    }
-//
-//
-//                                                                } catch (MalformedURLException e) {
-//
-//                                                                }
-//                                                            }
-//                                                            else {
-//                                                                MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
-//                                                                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//                                                            }
-//                                                        }
-//
-//
-//                                                    }
-//                                                })
-//
-//                                                .setNegativeButton(getString(R.string.cancel_button), null)
-//                                                .show();
-//
-//
-//
-//                                    }
-//                                }
-//                            } else {
-//                                Toast.makeText(OpenStreetMapActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-//                            }
-//                        }
-//                    }
-//                })
-//                .setNeutralButton(R.string.my_adresses, new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        coastDialog.dismiss();
-//                        if(array.length == 0) {
-//                            Toast.makeText(OpenStreetMapActivity.this, R.string.make_order_message, Toast.LENGTH_SHORT).show();
-//                        } else {
-//                            try {
-//                                dialogFromToGeoAdress(array);
-//                            } catch (MalformedURLException | InterruptedException |
-//                                     JSONException e) {
-//                                Toast.makeText(OpenStreetMapActivity.this, getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-//                            }
-//                        }
-//
-//                    }
-//                }).show();
 
-//        }
-//        else {
-//            Toast.makeText(OpenStreetMapActivity.this, getString(R.string.server_error_connected), Toast.LENGTH_LONG).show();
-//        }
     }
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
 
-//        if(hasServer()) {
+
         new  VerifyUserTask(getApplicationContext()).execute();
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
         LayoutInflater inflater = this.getLayoutInflater();
