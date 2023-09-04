@@ -74,7 +74,7 @@ public static Map<String, String> sendURL(String urlString) throws MalformedURLE
             }
         } else {
             costMap.put("order_cost", "0");
-            costMap.put("message", String.valueOf(R.string.verify_internet));
+            costMap.put("message", "Сталася помілка");
         }
         return costMap;
     } catch (TimeoutException e) {

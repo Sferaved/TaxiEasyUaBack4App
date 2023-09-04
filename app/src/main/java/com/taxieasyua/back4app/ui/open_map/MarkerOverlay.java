@@ -46,14 +46,14 @@ public class MarkerOverlay extends Overlay {
 //                bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 //            }
 //        });
-        try {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
-            }
-        } catch (MalformedURLException | JSONException | InterruptedException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
-        }
+//        try {
+//
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
+//            }
+//        } catch (MalformedURLException | JSONException | InterruptedException e) {
+//            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+//        }
 
         return true;
     }
