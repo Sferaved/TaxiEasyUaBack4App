@@ -433,9 +433,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             to_numberCost = MyGeoDialogFragment.to_number.getText().toString();
         }
 
-        String urlOrder = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                toCost, to_numberCost, "costSearchGeo", getActivity());
-        Map<String, String> sendUrl = ToJSONParser.sendURL(urlOrder);
+        String  urlCost = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+                OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", getActivity());
+        Map<String, String> sendUrl = ToJSONParser.sendURL(urlCost);
 
         String mes = (String) sendUrl.get("message");
         String orderC = (String) sendUrl.get("order_cost");
@@ -463,9 +463,11 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         return newCost;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude, String to, String to_number, String urlAPI, Context context) {
-//    if(hasServer()) {
+    public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
+                                                 double toLatitude, double toLongitude,
+                                                 String urlAPI, Context context) {
         //  Проверка даты и времени
+//        if(hasServer()) {
 
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
@@ -476,10 +478,10 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         String str_origin = originLatitude + "/" + originLongitude;
 
         // Destination of route
-        String str_dest = to + "/" + to_number;
+        String str_dest = toLatitude + "/" + toLongitude;
 
+        //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
         String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
 
@@ -489,8 +491,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         String phoneNumber = "no phone";
         String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
         String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
-
-        if(urlAPI.equals("costSearchGeo")) {
+        if(urlAPI.equals("costSearchMarkers")) {
             Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
             if (c.getCount() == 1) {
@@ -500,8 +501,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
-        if(urlAPI.equals("orderSearchGeo")) {
+        if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
+
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName  + "/" + OpenStreetMapActivity.addCost + "/" + time + "/" + comment + "/" + date;
@@ -515,6 +517,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             // обновляем по id
             database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
                     new String[] { "1" });
+
         }
 
         // Building the url to the web service
@@ -546,13 +549,12 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         }
 
         String url = "https://m.easy-order-taxi.site/" + OpenStreetMapActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-        Log.d("TAG", "getTaxiUrlSearch services: " + url);
+
+
+        database.close();
+
 
         return url;
-//    } else  {
-//        Toast.makeText(context, context.getString(R.string.server_error_connected), Toast.LENGTH_LONG).show();
-//        return null;
-//    }
 
     }
     private void showTimePickerDialog() {

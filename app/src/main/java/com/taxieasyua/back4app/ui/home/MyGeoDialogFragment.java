@@ -188,14 +188,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                          MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                          bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                      } else {
-                         if (!verifyPhone(getActivity())) {
-                             getPhoneNumber();
-                         }
-                         if (!verifyPhone(getActivity())) {
-                             MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
-                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                         }
-
                          String  to_numberCost;
                          Log.d("TAG", "onItemClick: numberFlagTo " + numberFlagTo);
                          if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
@@ -300,42 +292,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     }
     private void startCost () {
 
-//        Log.d("TAG", "dialogFromToGeo textViewTo: " + textViewTo.getText());
-
-//        textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                if(connected()) {
-//                    String to = String.valueOf(adapter.getItem(position));
-//                    if (to.indexOf("/") != -1) {
-//                        to = to.substring(0,  to.indexOf("/"));
-//                    };
-//                    String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
-//
-//
-//                    Log.d("TAG", "onClick urlCost: " + url);
-//                    Map sendUrlMapCost = null;
-//                    try {
-//                        sendUrlMapCost = ResultSONParser.sendURL(url);
-//                    } catch (MalformedURLException | InterruptedException | JSONException e) {
-//
-//                    }
-//
-//                    String orderCost = (String) sendUrlMapCost.get("message");
-//                    Log.d("TAG", "onClick Hid : " + orderCost);
-//
-//                    if (orderCost.equals("1")) {
-//                        to_number.setVisibility(View.VISIBLE);
-//                        to_number.setText(" ");
-//                        to_number.requestFocus();
-//                    }  else if (orderCost.equals("0")) {
-//                        to_number.setText(" ");
-//                        to_number.setVisibility(View.INVISIBLE);
-//                    }
-//                }
-//
-//            }
-//        });
 
 
         String urlCost = null;
@@ -1133,56 +1089,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         Log.d("TAG", "getTaxiUrlSearch services: " + url);
 
         return url;
-//    } else  {
-//        Toast.makeText(context, context.getString(R.string.server_error_connected), Toast.LENGTH_LONG).show();
-//        return null;
-//    }
+
 
     }
 
-//    @RequiresApi(api = Build.VERSION_CODES.O)
-//    private String changeCost() throws MalformedURLException {
-//        String toCost, to_numberCost;
-//
-//        if (TextUtils.isEmpty(textViewTo.getText())) {
-//            toCost = String.valueOf(OpenStreetMapActivity.startLat);
-//            to_numberCost = " ";
-//        } else {
-//            toCost = String.valueOf(textViewTo.getText());
-//            to_numberCost = to_number.getText().toString();
-//        }
-//        String newCost = "0";
-//        String url = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-//                toCost, to_numberCost, "orderSearchGeo", getActivity());
-//
-//
-//        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
-//
-//        String mes = (String) sendUrl.get("message");
-//        String orderC = (String) sendUrl.get("order_cost");
-//
-//        if (orderC.equals("0")) {
-//            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
-//            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//        }
-//        if (!orderC.equals("0")) {
-//
-//            Long  firstCost = Long.parseLong(orderC);
-//
-//            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-//            long discountInt = Integer.parseInt(discountText);
-//            long discount;
-//
-//            discount = firstCost * discountInt / 100;
-//            newCost = Long.toString(firstCost + discount);
-//
-//            OpenStreetMapActivity.cost = firstCost + discount;
-//            OpenStreetMapActivity.addCost = discount;
-//        }
-//
-//
-//        return newCost;
-//    }
 }
 
 
