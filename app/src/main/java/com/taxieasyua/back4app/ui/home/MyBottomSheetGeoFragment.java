@@ -7,8 +7,10 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.BlendMode;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -31,6 +33,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.view.ViewCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
@@ -273,7 +276,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
     public void onPause() {
         super.onPause();
         List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, getContext());
-        Log.d("TAG", "onPause: " + services.size());
+
         for (int i = 0; i < services.size()-1; i++) {
             ContentValues cv = new ContentValues();
             cv.put(arrayServiceCode[i], "0");
@@ -399,46 +402,41 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         }
 
     }
-//    private String changeCost() throws MalformedURLException {
-//        String newCost;
-//
-//        Long  firstCost = OpenStreetMapActivity.cost;
-//
-//        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-//        long discountInt = Integer.parseInt(discountText);
-//        long discount;
-//
-//        discount = firstCost * discountInt / 100;
-//        newCost = Long.toString(firstCost + discount);
-//
-//        HomeFragment.cost = firstCost + discount;
-//        HomeFragment.addCost = discount;
-//
-//
-//
-//        return newCost;
-//    }
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     private String changeCost() throws MalformedURLException {
         String newCost = "0";
 
         String toCost, to_numberCost;
-
+        String  url;
         if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
-            toCost = String.valueOf(OpenStreetMapActivity.startLat);
-            to_numberCost = " ";
+            url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", getActivity());
         } else {
             toCost = String.valueOf(MyGeoDialogFragment.textViewTo.getText());
-            to_numberCost = MyGeoDialogFragment.to_number.getText().toString();
+            if (toCost.indexOf("/") != -1) {
+                toCost = toCost.substring(0,  toCost.indexOf("/"));
+            };
+            if (MyGeoDialogFragment.numberFlagTo.equals("1") && MyGeoDialogFragment.to_number.getText().toString().equals(" ")) {
+                to_numberCost = "1";
+            } else {
+                if (MyGeoDialogFragment.numberFlagTo.equals("0")) {
+                    to_numberCost = " ";
+                } else{
+                    to_numberCost = MyGeoDialogFragment.to_number.getText().toString();
+                }
+
+            }
+
+
+            url = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+                    toCost, to_numberCost, "costSearchGeo", getActivity());
         }
 
-        String  urlCost = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", getActivity());
-        Map<String, String> sendUrl = ToJSONParser.sendURL(urlCost);
 
-        String mes = (String) sendUrl.get("message");
-        String orderC = (String) sendUrl.get("order_cost");
+        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
+
+        String mes = sendUrl.get("message");
+        String orderC = sendUrl.get("order_cost");
 
         if (orderC.equals("0")) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
@@ -454,14 +452,144 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 
             discount = firstCost * discountInt / 100;
             newCost = Long.toString(firstCost + discount);
+            MyGeoDialogFragment.addCost = discount;
 
-            OpenStreetMapActivity.cost = firstCost + discount;
-            OpenStreetMapActivity.addCost = discount;
         }
 
 
         return newCost;
     }
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+//    private String changeCost() throws MalformedURLException {
+//        String newCost = "0";
+//
+//        String toCost, to_numberCost;
+//        String  url;
+//        if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
+//            url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+//                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", getActivity());
+//        } else {
+//            toCost = String.valueOf(MyGeoDialogFragment.textViewTo.getText());
+//            Log.d("TAG", "changeCost: MyGeoDialogFragment.to_number.getText()" + MyGeoDialogFragment.to_number.getText());
+//            to_numberCost = MyGeoDialogFragment.to_number.getText().toString();
+////            to_numberCost = "1";
+//
+//            url = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+//                    toCost, to_numberCost, "costSearchGeo", getActivity());
+//        }
+//
+//
+//        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
+//
+//        String mes = sendUrl.get("message");
+//        String orderC = sendUrl.get("order_cost");
+//
+//        if (orderC.equals("0")) {
+//            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
+//            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//        }
+//        if (!orderC.equals("0")) {
+//
+//            Long  firstCost = Long.parseLong(orderC);
+//
+//            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+//            long discountInt = Integer.parseInt(discountText);
+//            long discount;
+//
+//            discount = firstCost * discountInt / 100;
+//            newCost = Long.toString(firstCost + discount);
+//
+//            ContentValues cv = new ContentValues();
+//
+//            cv.put("cost", newCost);
+//            SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+//                    new String[] { "1" });
+//
+//            cv.put("addCost", Long.toString(discount));
+//            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+//                    new String[] { "1" });
+//            database.close();
+//        }
+//
+//
+//        return newCost;
+//    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude,
+                                              String to, String to_number,
+                                              String urlAPI, Context context) {
+//    if(hasServer()) {
+        //  Проверка даты и времени
+
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
+
+        // Origin of route
+        String str_origin = originLatitude + "/" + originLongitude;
+
+        // Destination of route
+        String str_dest = to + "/" + to_number;
+
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
+
+
+        // Building the parameters to the web service
+
+        String parameters = null;
+        String phoneNumber = "no phone";
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
+
+        if(urlAPI.equals("costSearchGeo")) {
+            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+
+            if (c.getCount() == 1) {
+                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
+                c.close();
+            }
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
+        }
+
+        // Building the url to the web service
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i < services.size()-1 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
+                }
+            }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
+                }
+            }
+            result = String.join("*", servicesChecked);
+            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_extra_charge_codes";
+        }
+
+        String url = "https://m.easy-order-taxi.site/" + OpenStreetMapActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        Log.d("TAG", "getTaxiUrlSearch services: " + url);
+
+        return url;
+
+
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
                                                  double toLatitude, double toLongitude,
@@ -501,24 +629,6 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
         }
 
-        if(urlAPI.equals("orderSearchMarkers")) {
-            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-
-
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + OpenStreetMapActivity.addCost + "/" + time + "/" + comment + "/" + date;
-
-            ContentValues cv = new ContentValues();
-
-            cv.put("time", "no_time");
-            cv.put("comment", "no_comment");
-            cv.put("date", "no_date");
-
-            // обновляем по id
-            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                    new String[] { "1" });
-
-        }
 
         // Building the url to the web service
         List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);

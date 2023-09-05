@@ -109,7 +109,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     static FloatingActionButton fab, fab_call, fab_open_map;
 
     public static double startLat, startLan, finishLat, finishLan;
-    static MapView map = null;
+    public static MapView map = null;
     public static String api;
     public static GeoPoint startPoint;
     public static GeoPoint endPoint;
@@ -120,7 +120,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
     ArrayList<Map> adressArr;
     AlertDialog  coastDialog;
-    static Polyline roadOverlay;
+    public static Polyline roadOverlay;
     static Marker m;
     public static String FromAdressString;
     public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp,
@@ -188,15 +188,19 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
         mapController.setZoom(16);
         map.setClickable(true);
-
         List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
-        startLat =  Double.parseDouble(startList.get(1));
+        startLat = Double.parseDouble(startList.get(1));
         startLan = Double.parseDouble(startList.get(2));
         FromAdressString = startList.get(3);
 
-        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.01, startLan);
+        GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
         map.getController().setCenter(initialGeoPoint);
+
+
         map.invalidate();
+
+
+
 
         cm = getString(R.string.coastMarkersMessage);
         UAH = getString(R.string.UAH);
@@ -273,6 +277,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finish();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
 
@@ -420,78 +425,81 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         gpsSwitch.setChecked(switchState());
-        MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//
-//        Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
-//        Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+
+        List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
+        startLat = Double.parseDouble(startList.get(1));
+        startLan = Double.parseDouble(startList.get(2));
+        FromAdressString = startList.get(3);
+        if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
+            GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
+            map.getController().setCenter(initialGeoPoint);
+            setMarker(startLat, startLan, FromAdressString);
+            MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            map.invalidate();
+        } else {
+             Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
+             Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+
+             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+             locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    // Обработка полученных местоположений
+                    stopLocationUpdates();
+
+                    // Обработка полученных местоположений
+                    List<Location> locations = locationResult.getLocations();
+                    if (!locations.isEmpty()) {
+                        Location firstLocation = locations.get(0);
+                        if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()) {
+
+                            double latitude = firstLocation.getLatitude();
+                            double longitude = firstLocation.getLongitude();
+                            startLat = latitude;
+                            startLan = longitude;
+
+                        }
+                    }
+                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+                    Map sendUrlFrom = null;
+                    try {
+                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+
+                    } catch (MalformedURLException | InterruptedException |
+                             JSONException e) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                    FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                    updateMyPosition(startLat, startLan, FromAdressString);
+                    MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                    MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
+                    map.getOverlays().add(markerOverlay);
+                    setMarker(startLat, startLan, FromAdressString);
+                    GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
+                    map.getController().setCenter(initialGeoPoint);
+
+                    setMarker(startLat, startLan, FromAdressString);
+                    map.invalidate();
 
 
-//        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+            }
+
+            ;
+        };
 
 
-//        locationCallback = new LocationCallback() {
-//            @Override
-//            public void onLocationResult(LocationResult locationResult) {
-//                // Обработка полученных местоположений
-//                    stopLocationUpdates();
-//
-//                // Обработка полученных местоположений
-//                List<Location> locations = locationResult.getLocations();
-//                if (!locations.isEmpty()) {
-//                    Location firstLocation = locations.get(0);
-//                    if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()){
-//
-//                        double latitude = firstLocation.getLatitude();
-//                        double longitude = firstLocation.getLongitude();
-//                        startLat = latitude;
-//                        startLan = longitude;
-//
-//                    }
-//                }
-//                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-//                    Map sendUrlFrom = null;
-//                    try {
-//                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-//
-//                    } catch (MalformedURLException | InterruptedException |
-//                             JSONException e) {
-//                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-//                        finish();
-//                    }
-//                    FromAdressString = (String) sendUrlFrom.get("route_address_from");
-//                    updateMyPosition(startLat, startLan, FromAdressString);
-//
-//                    MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
-//                    map.getOverlays().add(markerOverlay);
-//                    setMarker(startLat, startLan, FromAdressString);
-//                    GeoPoint initialGeoPoint = new GeoPoint(startLat-0.01, startLan);
-//                    map.getController().setCenter(initialGeoPoint);
-//
-//                    map.invalidate();
-//
-//
-//                    MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-//                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//
-//
-//
-//            };
-//        };
-////
-//
-//
-//
-//
-//        if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//            startLocationUpdates();
-//        } else {
-//            requestLocationPermission();
-//        }
-//
-
-
+        if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates();
+        } else {
+            requestLocationPermission();
+        }
+    }
 
 
         map.onResume();

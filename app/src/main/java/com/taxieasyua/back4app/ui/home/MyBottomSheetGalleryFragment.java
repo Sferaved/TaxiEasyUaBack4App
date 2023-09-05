@@ -270,7 +270,7 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
     public void onPause() {
         super.onPause();
         List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, getContext());
-        Log.d("TAG", "onPause: " + services.size());
+
         for (int i = 0; i < services.size()-1; i++) {
             ContentValues cv = new ContentValues();
             cv.put(arrayServiceCode[i], "0");

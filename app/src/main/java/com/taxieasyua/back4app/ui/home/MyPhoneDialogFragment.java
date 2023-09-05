@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatButton;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
 
 public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
     EditText phoneNumber;
-    Button button;
+    AppCompatButton button;
     CheckBox checkBox;
 
     @Nullable

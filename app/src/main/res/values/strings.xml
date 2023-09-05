@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.772</string>
-    <string name="version">Версия: 2.772</string>
+    <string name="version_code">2.773</string>
+    <string name="version">Версия: 2.773</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -123,7 +123,7 @@
     <string name="gps">GPS</string>
     <string name="btn_cost">Заказать</string>
     <string name="texthist">Предыдущие адреса</string>
-    <string name="routs">Быстрый заказ</string>
+    <string name="routs">Мои адреса</string>
     <string name="on_map">По карте</string>
     <string name="add_cost_message">Увеличьте стоимость поездки для более быстрого поиска машины</string>
     <string name="from_text">Откуда</string>
