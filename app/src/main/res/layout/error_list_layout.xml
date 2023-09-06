@@ -8,10 +8,10 @@
 
     <TextView
         android:id="@+id/textViewInfo"
-        android:layout_width="276dp"
-        android:layout_height="79dp"
+        android:layout_width="280sp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:background="@color/selected_text_color"
+        android:background="@drawable/error"
         android:gravity="center"
         android:text="@string/black_list_message"
         android:textColor="@color/white"
@@ -22,10 +22,10 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_help"
-        android:layout_width="197dp"
-        android:layout_height="45dp"
+        android:layout_width="197sp"
+        android:layout_height="45sp"
         android:layout_marginTop="16sp"
         android:layout_marginBottom="16sp"
         android:backgroundTint="@color/colorAccent"

@@ -19,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.widget.AppCompatButton;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
@@ -30,7 +31,7 @@ import java.util.List;
 
 public class MyBottomSheetBlackListFragment extends BottomSheetDialogFragment {
     TextView textViewCost;
-    Button btn_help;
+    AppCompatButton btn_help;
     String cost;
 
     public MyBottomSheetBlackListFragment(String cost) {
