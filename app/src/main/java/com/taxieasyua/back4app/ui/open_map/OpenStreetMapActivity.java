@@ -173,7 +173,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharespreferences(ctx));
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
 
         fragmentManager = getSupportFragmentManager();
 
@@ -439,7 +439,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             map.invalidate();
         } else {
              Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
-             Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharespreferences(OpenStreetMapActivity.this));
+             Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
 
              fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 

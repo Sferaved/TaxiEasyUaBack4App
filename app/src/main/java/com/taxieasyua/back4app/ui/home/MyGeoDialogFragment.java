@@ -414,7 +414,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getActivity(), R.string.check_position, Toast.LENGTH_SHORT).show();
-                Configuration.getInstance().load(getActivity(), PreferenceManager.getDefaultSharespreferences(getActivity()));
+                Configuration.getInstance().load(getActivity(), PreferenceManager.getDefaultSharedPreferences(getActivity()));
 
 
                 fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());

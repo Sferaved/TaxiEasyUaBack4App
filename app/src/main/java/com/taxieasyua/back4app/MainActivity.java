@@ -12,7 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Sharespreferences;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -81,7 +81,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String DB_NAME = "data_05092023_6";
+    public static final String DB_NAME = "data_05092023_7";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -1122,11 +1122,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Получаем Sharespreferences
-        Sharespreferences sharespreferences = getSharespreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        // Получаем SharedPreferences
+        SharedPreferences SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
         // Получаем время последней отправки уведомления
-        long lastNotificationTime = sharespreferences.getLong(LAST_NOTIFICATION_TIME_KEY, 0);
+        long lastNotificationTime = SharedPreferences.getLong(LAST_NOTIFICATION_TIME_KEY, 0);
 
         // Получаем текущее время
         long currentTime = System.currentTimeMillis();
@@ -1141,7 +1141,7 @@ public class MainActivity extends AppCompatActivity {
                 notificationHelper.showNotification(this, title, messageNotif, urlStr);
 
                 // Обновляем время последней отправки уведомления
-                Sharespreferences.Editor editor = sharespreferences.edit();
+                SharedPreferences.Editor editor = SharedPreferences.edit();
                 editor.putLong(LAST_NOTIFICATION_TIME_KEY, currentTime);
                 editor.apply();
             }

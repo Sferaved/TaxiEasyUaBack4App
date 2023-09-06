@@ -154,11 +154,16 @@ public class GalleryFragment extends Fragment {
         text_view_cost = binding.textViewCost;
         btn_minus = binding.btnMinus;
         btn_plus = binding.btnPlus;
+        if(!text_view_cost.getText().toString().isEmpty()) {
+            cost = Long.parseLong(text_view_cost.getText().toString());
+            MIN_COST_VALUE = (long) (cost * 0.1);
+            MAX_COST_VALUE = cost * 3;
+        }
+
         btn_minus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MIN_COST_VALUE = (long) (cost * 0.1);
-                MAX_COST_VALUE = cost * 3;
+
 
                 cost -= 5;
                 addCost -= 5;
@@ -174,8 +179,6 @@ public class GalleryFragment extends Fragment {
         btn_plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MIN_COST_VALUE = (long) (cost * 0.1);
-                MAX_COST_VALUE = cost * 3;
 
                 cost += 5;
                 addCost += 5;
@@ -337,23 +340,19 @@ public class GalleryFragment extends Fragment {
             if (!orderCost.equals("0")) {
 
 
-                    cost = Long.parseLong(orderCost);
-
-                    MIN_COST_VALUE = (long) ((long) cost * 0.1);
-                    MAX_COST_VALUE = cost * 3;
-                    firstCost = cost;
-
-                    String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-                    long discountInt = Integer.parseInt(discountText);
-                    long discount;
-
-                    discount = firstCost * discountInt / 100;
-                    firstCost = firstCost + discount;
-                    addCost = discount;
+                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                long discountInt = Integer.parseInt(discountText);
+                long discount;
+                firstCost = Long.parseLong(orderCost);
+                discount = firstCost * discountInt / 100;
+                cost = firstCost + discount;
+                addCost = discount;
+                text_view_cost.setText(String.valueOf(cost));
+//                    addCost = discount;
                     Log.d("TAG", "dialogFromToOneRout: cost " + cost);
                     Log.d("TAG", "dialogFromToOneRout: addCost " + addCost);
                     Log.d("TAG", "dialogFromToOneRout: cost " + cost);
-                    text_view_cost.setText(Long.toString(firstCost));
+
 
 
                 }
