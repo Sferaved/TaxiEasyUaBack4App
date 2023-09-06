@@ -90,8 +90,7 @@ public class HomeFragment extends Fragment {
     public static String from, to;
     public static EditText from_number, to_number;
     String messageResult;
-    private Spinner listView;
-    Button button;
+
     private String[] array;
     public  static String api;
 
@@ -101,7 +100,7 @@ public class HomeFragment extends Fragment {
     String from_street_rout, to_street_rout;
     private int selectedPosition = -1;
     Button gpsbut;
-    AppCompatButton btn_order, buttonAddServices, btn_minus, btn_plus;
+    AppCompatButton btn_order, buttonAddServices, btn_minus, btn_plus, btnGeo;
     public String FromAddressString, ToAddressString;
     Integer selectedItem;
     private long firstCost;
@@ -172,7 +171,20 @@ public class HomeFragment extends Fragment {
 
 
         text_view_cost = binding.textViewCost;
-
+        btnGeo = binding.btnGeo;
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            btnGeo.setVisibility(View.VISIBLE);
+        }  else {
+            btnGeo.setVisibility(View.INVISIBLE);
+        }
+        btnGeo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            }
+        });
         btn_minus = binding.btnMinus;
         btn_plus= binding.btnPlus;
         btn_minus.setOnClickListener(new View.OnClickListener() {
@@ -282,8 +294,19 @@ public class HomeFragment extends Fragment {
                                 .show();
                     }  else  {
                         // Разрешения уже предоставлены, выполнить ваш код
-                        Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
-                        startActivity(intent);
+                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            btnGeo.setVisibility(View.VISIBLE);
+                        }  else {
+                            btnGeo.setVisibility(View.INVISIBLE);
+                            Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
+                            startActivity(intent);
+                        }
+
                     }
                 }
             }
@@ -330,7 +353,13 @@ public class HomeFragment extends Fragment {
 
         return root;
     }
+    public void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
 
+        }
+    }
     @Override
     public void onResume() {
         super.onResume();
