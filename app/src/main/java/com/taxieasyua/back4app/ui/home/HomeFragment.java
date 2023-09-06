@@ -91,16 +91,16 @@ public class HomeFragment extends Fragment {
     public static EditText from_number, to_number;
     String messageResult;
 
-    private String[] array;
+
     public  static String api;
 
     FloatingActionButton fab_call, fab_map;
     private final String TAG = "TAG";
     private static final int CM_DELETE_ID = 1;
-    String from_street_rout, to_street_rout;
+
     private int selectedPosition = -1;
     Button gpsbut;
-    AppCompatButton btn_order, buttonAddServices, btn_minus, btn_plus, btnGeo;
+    AppCompatButton btn_order, buttonAddServices, btn_minus, btn_plus, btnGeo, on_map;
     public String FromAddressString, ToAddressString;
     Integer selectedItem;
     private long firstCost;
@@ -254,6 +254,66 @@ public class HomeFragment extends Fragment {
         fab_call = binding.fabCall;
         fab_map = binding.fabOpenMap;
         fab_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!verifyOrder(getContext())) {
+
+                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                } else {
+                    LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                    boolean gps_enabled = false;
+                    boolean network_enabled = false;
+
+                    try {
+                        gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    } catch(Exception ex) {
+                    }
+
+                    try {
+                        network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                    } catch(Exception ex) {
+                    }
+
+                    if(!gps_enabled || !network_enabled) {
+                        // notify user
+                        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+                        LayoutInflater inflater = getActivity().getLayoutInflater();
+
+                        View view_cost = inflater.inflate(R.layout.message_layout, null);
+                        builder.setView(view_cost);
+                        TextView message = view_cost.findViewById(R.id.textMessage);
+                        message.setText(R.string.gps_info);
+                        builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                                        getActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel_button, null)
+                                .show();
+                    }  else  {
+                        // Разрешения уже предоставлены, выполнить ваш код
+                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            btnGeo.setVisibility(View.VISIBLE);
+                        }  else {
+                            btnGeo.setVisibility(View.INVISIBLE);
+                            Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
+                            startActivity(intent);
+                        }
+
+                    }
+                }
+            }
+        });
+
+        on_map = binding.btnMap;
+        on_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!verifyOrder(getContext())) {

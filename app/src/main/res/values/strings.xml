@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.774</string>
-    <string name="version">Версия: 2.774</string>
+    <string name="version_code">2.775</string>
+    <string name="version">Версия: 2.775</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -177,5 +177,7 @@
     <string name="cost_of_road">Стоимость поездки по выбранному маршруту составит</string>
     <string name="btn_geo_text">Доступ к геопозиции</string>
     <string name="on_geo_loc_mes">Для работы с картой разрешите доступ приложению к определнию Вашего местоположения</string>
+    <string name="OK">Ок</string>
+    <string name="to_marker_mes">Отметьте маркером на карте место высадки</string>
 
 </resources>
