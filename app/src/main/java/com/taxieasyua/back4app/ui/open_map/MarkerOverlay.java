@@ -35,9 +35,9 @@ public class MarkerOverlay extends Overlay {
         }
 
 
-        OpenStreetMapActivity.endPoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
+        OpenStreetMapActivity.enspoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
         String target = OpenStreetMapActivity.epm;
-        OpenStreetMapActivity.setMarker(OpenStreetMapActivity.endPoint.getLatitude(), OpenStreetMapActivity.endPoint.getLongitude(), target);
+        OpenStreetMapActivity.setMarker(OpenStreetMapActivity.enspoint.getLatitude(), OpenStreetMapActivity.enspoint.getLongitude(), target);
 //        OpenStreetMapActivity.buttonAddServices.setVisibility(View.VISIBLE);
 //        OpenStreetMapActivity.buttonAddServices.setOnClickListener(new View.OnClickListener() {
 //            @Override

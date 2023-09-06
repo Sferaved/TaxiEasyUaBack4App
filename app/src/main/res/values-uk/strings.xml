@@ -152,8 +152,8 @@
     <string name="city">Місто</string>
     <string name="change_message">"Зміна бази адрес."</string>
     <string name="server_error_connected">Сервер не прийняв запит, наберіть операторів</string>
-    <string name="GDPR">Користувач погоджується з Правилами конфіденційності Загального регламенту захисту персональних даних (GDPR) ЄС та усвідомлює, що введення інформації про телефон є обов\'язковим для замовлення таксі.</string>
-    <string name="ok_gdpr">Погодитись</string>
+    <string name="GspR">Користувач погоджується з Правилами конфіденційності Загального регламенту захисту персональних даних (GspR) ЄС та усвідомлює, що введення інформації про телефон є обов\'язковим для замовлення таксі.</string>
+    <string name="ok_gspr">Погодитись</string>
     <string name="Dnipro_city">Дніпро</string>
     <string name="city_change">Виберіть місто</string>
     <string name="Zaporizhzhia">Запоріжжя</string>
