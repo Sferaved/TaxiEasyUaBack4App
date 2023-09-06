@@ -9,7 +9,7 @@
 
     <TextView
         android:id="@+id/textMessage"
-        android:layout_width="280sp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/input"
         android:ellipsize="end"
