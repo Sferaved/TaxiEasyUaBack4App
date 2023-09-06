@@ -156,12 +156,11 @@
         android:layout_width="120sp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4sp"
-        android:layout_marginEnd="48sp"
         android:background="@drawable/buttons"
         android:text="@string/routs"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.964"
+        app:layout_constraintHorizontal_bias="0.542"
         app:layout_constraintStart_toEndOf="@+id/change"
         app:layout_constraintTop_toBottomOf="@+id/textGeo" />
 
