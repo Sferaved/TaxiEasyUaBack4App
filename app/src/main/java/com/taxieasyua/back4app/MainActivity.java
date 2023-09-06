@@ -12,7 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.Sharespreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -1122,11 +1122,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Получаем SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        // Получаем Sharespreferences
+        Sharespreferences sharespreferences = getSharespreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
         // Получаем время последней отправки уведомления
-        long lastNotificationTime = sharedPreferences.getLong(LAST_NOTIFICATION_TIME_KEY, 0);
+        long lastNotificationTime = sharespreferences.getLong(LAST_NOTIFICATION_TIME_KEY, 0);
 
         // Получаем текущее время
         long currentTime = System.currentTimeMillis();
@@ -1141,7 +1141,7 @@ public class MainActivity extends AppCompatActivity {
                 notificationHelper.showNotification(this, title, messageNotif, urlStr);
 
                 // Обновляем время последней отправки уведомления
-                SharedPreferences.Editor editor = sharedPreferences.edit();
+                Sharespreferences.Editor editor = sharespreferences.edit();
                 editor.putLong(LAST_NOTIFICATION_TIME_KEY, currentTime);
                 editor.apply();
             }

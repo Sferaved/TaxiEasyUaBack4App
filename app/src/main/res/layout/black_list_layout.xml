@@ -27,7 +27,7 @@
         android:layout_width="280sp"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_vertical_margin"
-        android:layout_marginTop="160dp"
+        android:layout_marginTop="160sp"
         android:background="@drawable/input"
         android:gravity="center"
         android:ems="10"

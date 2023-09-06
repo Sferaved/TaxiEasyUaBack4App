@@ -10,7 +10,7 @@
         android:id="@+id/textViewInfo"
         android:layout_width="280sp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="20sp"
         android:background="@drawable/error"
         android:gravity="center"
         android:text="@string/black_list_message"

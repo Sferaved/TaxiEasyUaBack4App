@@ -214,17 +214,17 @@ public class GalleryFragment extends Fragment {
                     btn_minus.setVisibility(View.VISIBLE);
                     btn_plus.setVisibility(View.VISIBLE);
                     btnAdd.setVisibility(View.VISIBLE);
-                    SparseBooleanArray checkedPositions = listView.getCheckedItemPositions();
-                    ArrayList<Integer> selectedPositions = new ArrayList<>();
+                    SparseBooleanArray checkespositions = listView.getCheckedItemPositions();
+                    ArrayList<Integer> selectespositions = new ArrayList<>();
 
-                    for (int i = 0; i < checkedPositions.size(); i++) {
-                        int pos = checkedPositions.keyAt(i);
-                        if (checkedPositions.get(pos)) {
-                            selectedPositions.add(pos);
+                    for (int i = 0; i < checkespositions.size(); i++) {
+                        int pos = checkespositions.keyAt(i);
+                        if (checkespositions.get(pos)) {
+                            selectespositions.add(pos);
                         }
                     }
 
-                    for (int posit : selectedPositions) {
+                    for (int posit : selectespositions) {
                         selectedItem = posit + 1;
                     }
 
@@ -570,17 +570,17 @@ public class GalleryFragment extends Fragment {
         database.close();
     }
     private void deleteRouts () {
-        SparseBooleanArray checkedPositions = listView.getCheckedItemPositions();
-        ArrayList<Integer> selectedPositions = new ArrayList<>();
+        SparseBooleanArray checkespositions = listView.getCheckedItemPositions();
+        ArrayList<Integer> selectespositions = new ArrayList<>();
 
-        for (int i = 0; i < checkedPositions.size(); i++) {
-            int pos = checkedPositions.keyAt(i);
-            if (checkedPositions.get(pos)) {
-                selectedPositions.add(pos);
+        for (int i = 0; i < checkespositions.size(); i++) {
+            int pos = checkespositions.keyAt(i);
+            if (checkespositions.get(pos)) {
+                selectespositions.add(pos);
             }
         }
 
-        for (int position : selectedPositions) {
+        for (int position : selectespositions) {
             int i = position + 1;
 
             String deleteQuery = "DELETE FROM " + MainActivity.TABLE_ORDERS_INFO + " WHERE id = " + i  + ";";

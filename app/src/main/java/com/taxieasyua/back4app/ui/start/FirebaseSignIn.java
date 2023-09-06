@@ -118,8 +118,8 @@ public class FirebaseSignIn extends AppCompatActivity {
                 FirebaseApp.initializeApp(FirebaseSignIn.this);
 
                 // Choose authentication providers
-                List<AuthUI.IdpConfig> providers = Arrays.asList(
-                        new AuthUI.IdpConfig.GoogleBuilder().build());
+                List<AuthUI.IspConfig> providers = Arrays.asList(
+                        new AuthUI.IspConfig.GoogleBuilder().build());
 
                 // Create and launch sign-in intent
                 Intent signInIntent = AuthUI.getInstance()

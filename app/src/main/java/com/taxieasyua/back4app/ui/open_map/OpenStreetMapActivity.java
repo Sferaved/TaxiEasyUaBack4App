@@ -112,7 +112,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public static MapView map = null;
     public static String api;
     public static GeoPoint startPoint;
-    public static GeoPoint endPoint;
+    public static GeoPoint enspoint;
     static Switch gpsSwitch;
     static long firstCost;
     static long add;
@@ -173,7 +173,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharespreferences(ctx));
 
         fragmentManager = getSupportFragmentManager();
 
@@ -439,7 +439,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             map.invalidate();
         } else {
              Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
-             Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+             Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharespreferences(OpenStreetMapActivity.this));
 
              fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -528,7 +528,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map.invalidate();
     }
 
-    private static void showRout(GeoPoint startPoint, GeoPoint endPoint) {
+    private static void showRout(GeoPoint startPoint, GeoPoint enspoint) {
         map.getOverlays().removeAll(Collections.singleton(roadOverlay));
         AsyncTask.execute(() -> {
             RoadManager roadManager = new OSRMRoadManager(map.getContext(),  System.getProperty("http.agent"));
@@ -536,7 +536,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             waypoints.add(startPoint);
 
-            waypoints.add(endPoint);
+            waypoints.add(enspoint);
             Road road = roadManager.getRoad(waypoints);
             roadOverlay = RoadManager.buildRoadOverlay(road);
 
@@ -611,14 +611,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public static void dialogMarkers(FragmentManager fragmentManager) throws MalformedURLException, JSONException, InterruptedException {
 //        if(hasServer()){
         new  VerifyUserTask(map.getContext()).execute();
-            if(endPoint != null) {
+            if(enspoint != null) {
 
-            Log.d("TAG", "onResume: endPoint" +  endPoint.getLatitude());
+            Log.d("TAG", "onResume: enspoint" +  enspoint.getLatitude());
             map.getOverlays().remove(OpenStreetMapActivity.m);
             map.getOverlays().removeAll(Collections.singleton(roadOverlay));
 
             String urlCost = getTaxiUrlSearchMarkers(startPoint.getLatitude(), startPoint.getLongitude(),
-                    endPoint.getLatitude(), endPoint.getLongitude(), "costSearchMarkers", map.getContext());
+                    enspoint.getLatitude(), enspoint.getLongitude(), "costSearchMarkers", map.getContext());
 
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
@@ -700,7 +700,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                                         try {
                                             String urlCost = getTaxiUrlSearchMarkers(startPoint.getLatitude(), startPoint.getLongitude(),
-                                                    endPoint.getLatitude(), endPoint.getLongitude(), "orderSearchMarkers", map.getContext());
+                                                    enspoint.getLatitude(), enspoint.getLongitude(), "orderSearchMarkers", map.getContext());
 
                                             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
@@ -756,8 +756,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         if(finishLan != 0) {
 
                                                             setMarker(finishLat, finishLan, to_name);
-                                                            GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
-                                                            showRout(startPoint, endPoint);
+                                                            GeoPoint enspoint = new GeoPoint(finishLat, finishLan);
+                                                            showRout(startPoint, enspoint);
                                                         }
 //                                                        Toast.makeText(map.getContext(), messageResult, Toast.LENGTH_SHORT).show();
                                                         Intent intent = new Intent(map.getContext(), FinishActivity.class);
@@ -844,9 +844,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             OpenStreetMapActivity.setMarker(startPoint.getLatitude(), startPoint.getLongitude(), target);
 
             target = sendUrlMapCost.get("routeto");
-            OpenStreetMapActivity.setMarker(endPoint.getLatitude(), endPoint.getLongitude(), target);
+            OpenStreetMapActivity.setMarker(enspoint.getLatitude(), enspoint.getLongitude(), target);
 
-            OpenStreetMapActivity.showRout(startPoint, endPoint);
+            OpenStreetMapActivity.showRout(startPoint, enspoint);
         };
 
     }
@@ -1116,8 +1116,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                                         if (finishLan != 0) {
 
                                                             setMarker(finishLat, finishLan, to_name);
-                                                            GeoPoint endPoint = new GeoPoint(finishLat, finishLan);
-                                                            showRout(startPoint, endPoint);
+                                                            GeoPoint enspoint = new GeoPoint(finishLat, finishLan);
+                                                            showRout(startPoint, enspoint);
                                                         }
 //                                                                            Toast.makeText(OpenStreetMapActivity.this, messageResult, Toast.LENGTH_LONG).show();
                                                         Intent intent = new Intent(OpenStreetMapActivity.this, FinishActivity.class);

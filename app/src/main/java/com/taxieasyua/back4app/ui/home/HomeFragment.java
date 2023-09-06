@@ -98,7 +98,7 @@ public class HomeFragment extends Fragment {
     private final String TAG = "TAG";
     private static final int CM_DELETE_ID = 1;
 
-    private int selectedPosition = -1;
+    private int selectesposition = -1;
     Button gpsbut;
     AppCompatButton btn_order, buttonAddServices, btn_minus, btn_plus, btnGeo, on_map;
     public String FromAddressString, ToAddressString;
@@ -453,7 +453,7 @@ public class HomeFragment extends Fragment {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                selectedPosition = position; // Обновляем выбранную позицию
+//                selectesposition = position; // Обновляем выбранную позицию
 //                adapter.notifyDataSetChanged(); // Обновляем вид списка
                 Log.d(TAG, "onItemClick: textViewTo.getText().toString()" + textViewTo.getText().toString());
 
@@ -546,7 +546,7 @@ public class HomeFragment extends Fragment {
         textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    selectedPosition = position; // Обновляем выбранную позицию
+//                    selectesposition = position; // Обновляем выбранную позицию
 //                    adapter.notifyDataSetChanged(); // Обновляем вид списка
 
                     MyBottomSheetErrorFragment bottomSheetDialogFragment;

@@ -23,16 +23,16 @@
         android:layout_width="match_parent"
         android:layout_height="100sp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="60sp"
         android:scaleType="fitCenter"
         android:src="@mipmap/ic_launcher_round"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp" />
+        tools:layout_editor_absoluteX="0sp" />
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="344dp"
+        android:layout_width="344sp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/nav_header_title"
@@ -48,7 +48,7 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="409dp"
+        android:layout_width="409sp"
         android:layout_height="wrap_content"
         android:indeterminateTint="@android:color/holo_green_light"
         android:visibility="visible"
@@ -91,6 +91,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="-33dp" />
+        app:layout_constraintGuide_begin="-33sp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
