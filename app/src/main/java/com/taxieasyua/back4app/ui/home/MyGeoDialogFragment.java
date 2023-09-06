@@ -847,7 +847,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-        Toast.makeText(getActivity(), getString(R.string.to_marker_mes), Toast.LENGTH_LONG).show();
+//        Toast.makeText(getActivity(), getString(R.string.to_marker_mes), Toast.LENGTH_LONG).show();
     }
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
