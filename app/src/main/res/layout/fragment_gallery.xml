@@ -6,12 +6,14 @@
     android:background="#434C5E"
     tools:context=".ui.gallery.GalleryFragment">
 
+
+
     <TextView
         android:id="@+id/text_gallery"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8sp"
-        android:layout_marginTop="36sp"
+        android:layout_marginTop="8sp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
         android:minHeight="30sp"
@@ -28,8 +30,8 @@
 
     <ListView
         android:id="@+id/listView"
-        android:layout_width="391dp"
-        android:layout_height="338dp"
+        android:layout_width="match_parent"
+        android:layout_height="140sp"
         android:layout_marginTop="8sp"
         android:divider="@color/colorAccent"
         android:dividerHeight="1sp"
@@ -37,7 +39,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_gallery" />
-
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/del_but"
@@ -141,4 +142,5 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/del_but" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

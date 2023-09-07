@@ -4,7 +4,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.MediaRouteButton;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,13 +14,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.BlendMode;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -37,9 +33,7 @@ import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -70,24 +64,16 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
-import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
-import com.taxieasyua.back4app.ui.open_map.MarkerOverlay;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
 import org.json.JSONException;
-import org.osmdroid.bonuspack.routing.OSRMRoadManager;
-import org.osmdroid.bonuspack.routing.Road;
-import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.Marker;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -906,15 +892,19 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+//                OpenStreetMapActivity.bottomSheetDialogFragment.dismissAllowingStateLoss();
                 Double to_lat = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
                 Double to_lng = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
-//                Log.d("TAG", "onClick  adressArr.toString() " + adressArr.get(listView.getCheckedItemPosition()).get("street").toString());
 
+                OpenStreetMapActivity.finishLat = to_lat;
+                OpenStreetMapActivity.finishLan = to_lng;
+
+                Log.d("TAG", "onClick: OpenStreetMapActivity.finishLat " + OpenStreetMapActivity.finishLat);
+                Log.d("TAG", "onClick: OpenStreetMapActivity.finishLan " + OpenStreetMapActivity.finishLan);
                 try {
 
                     String urlCost = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                            to_lat, to_lng, "orderSearchMarkers", getActivity());
+                            to_lat, to_lng, "costSearchMarkers", getActivity());
 
                     Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
@@ -933,40 +923,37 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         } else {
                             text_view_cost.setText(orderCost);
-                            textViewTo.setText(adressArr.get(listView.getCheckedItemPosition()).get("street").toString());
-                            String to_name;
-                            if (Objects.equals(sendUrlMapCost.get("routefrom"), sendUrlMapCost.get("routeto"))) {
-                                to_name = getString(R.string.on_city_tv);
-                                if (!sendUrlMapCost.get("lat").equals("0")) {
-                                    insertRecordsOrders(
-                                            sendUrlMapCost.get("routefrom"), sendUrlMapCost.get("routefrom"),
-                                            sendUrlMapCost.get("routefromnumber"), sendUrlMapCost.get("routefromnumber"),
-                                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                                            getActivity()
-                                    );
+                            to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
+                            textViewTo.setText(to);
+                            if(connected()) {
+                                if (to.indexOf("/") != -1) {
+                                    to = to.substring(0,  to.indexOf("/"));
+                                };
+                                String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
+
+
+                                Log.d("TAG", "onClick urlCost: " + url);
+
+                                try {
+                                    sendUrlMapCost = ResultSONParser.sendURL(url);
+                                } catch (MalformedURLException | InterruptedException | JSONException e) {
+
                                 }
-                            } else {
-                                to_name = sendUrlMapCost.get("routeto") + " " + sendUrlMapCost.get("to_number");
-                                if (!sendUrlMapCost.get("lat").equals("0")) {
-                                    insertRecordsOrders(
-                                            sendUrlMapCost.get("routefrom"), sendUrlMapCost.get("routeto"),
-                                            sendUrlMapCost.get("routefromnumber"), sendUrlMapCost.get("to_number"),
-                                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                                            sendUrlMapCost.get("lat"), sendUrlMapCost.get("lng"), getActivity()
-                                    );
+
+                                orderCost = (String) sendUrlMapCost.get("message");
+                                Log.d("TAG", "onClick Hid : " + orderCost);
+
+                                if (orderCost.equals("1")) {
+                                    to_number.setVisibility(View.VISIBLE);
+                                    to_number.setText(" ");
+                                    to_number.requestFocus();
+                                    numberFlagTo = "1";
+                                }  else if (orderCost.equals("0")) {
+                                    to_number.setText("XXX");
+                                    to_number.setVisibility(View.INVISIBLE);
+                                    numberFlagTo = "0";
                                 }
                             }
-                            String messageResult = getString(R.string.thanks_message) +
-                                    OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
-                                    to_name + "." +
-                                    getString(R.string.call_of_order) + orderCost + getString(R.string.UAH);
-
-
-                            Intent intent = new Intent(getActivity(), FinishActivity.class);
-                            intent.putExtra("messageResult_key", messageResult);
-                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMapCost.get("dispatching_order_uid")));
-                            startActivity(intent);
 
                             }
 

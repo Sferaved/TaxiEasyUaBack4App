@@ -132,6 +132,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     int selectedItem;
     public static FragmentManager fragmentManager;
     public static ProgressBar progressBar;
+    public static MyGeoDialogFragment bottomSheetDialogFragment;
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -305,7 +306,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                 map.invalidate();
 
-                MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+                bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
             }
@@ -434,7 +435,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
             map.getController().setCenter(initialGeoPoint);
             setMarker(startLat, startLan, FromAdressString);
-            MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+            bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             map.invalidate();
         } else {
@@ -474,7 +475,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     }
                     FromAdressString = (String) sendUrlFrom.get("route_address_from");
                     updateMyPosition(startLat, startLan, FromAdressString);
-                    MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+                    bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                     MarkerOverlay markerOverlay = new MarkerOverlay(OpenStreetMapActivity.this);
                     map.getOverlays().add(markerOverlay);
@@ -885,7 +886,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             from_name = (String) sendUrlMap.get("name");
             from_house = (String) sendUrlMap.get("house");
 
-            MyGeoDialogFragment bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(from_geo);
+            bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(from_geo);
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             startPoint = new GeoPoint(startLat, startLan);
             setMarker(startLat,startLan, from_geo);
