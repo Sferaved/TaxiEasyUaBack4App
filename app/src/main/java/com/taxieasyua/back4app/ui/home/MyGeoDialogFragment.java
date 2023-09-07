@@ -923,6 +923,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         } else {
                             text_view_cost.setText(orderCost);
+                            firstCost = Long.parseLong(text_view_cost.getText().toString());
                             to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
                             textViewTo.setText(to);
                             if(connected()) {
