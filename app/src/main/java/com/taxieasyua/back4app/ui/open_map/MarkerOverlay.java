@@ -35,9 +35,10 @@ public class MarkerOverlay extends Overlay {
         }
 
 
-        OpenStreetMapActivity.enspoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
+        OpenStreetMapActivity.endPoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
         String target = OpenStreetMapActivity.epm;
-        OpenStreetMapActivity.setMarker(OpenStreetMapActivity.enspoint.getLatitude(), OpenStreetMapActivity.enspoint.getLongitude(), target);
+        Log.d("TAG", "onSingleTapConfirmed:OpenStreetMapActivity.endPoint " + OpenStreetMapActivity.endPoint);
+        OpenStreetMapActivity.setMarker(OpenStreetMapActivity.endPoint.getLatitude(), OpenStreetMapActivity.endPoint.getLongitude(), target);
 //        OpenStreetMapActivity.buttonAddServices.setVisibility(View.VISIBLE);
 //        OpenStreetMapActivity.buttonAddServices.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -46,14 +47,14 @@ public class MarkerOverlay extends Overlay {
 //                bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 //            }
 //        });
-//        try {
-//
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
-//            }
-//        } catch (MalformedURLException | JSONException | InterruptedException e) {
-//            Log.d("TAG", "onCreate:" + new RuntimeException(e));
-//        }
+        try {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
+            }
+        } catch (MalformedURLException | JSONException | InterruptedException e) {
+            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+        }
 
         return true;
     }
