@@ -81,13 +81,13 @@ public static Map<String, String> sendURL(String urlString) throws MalformedURLE
         e.printStackTrace();
         asyncTaskFuture.cancel(true);
         costMap.put("order_cost", "0");
-        costMap.put("message", String.valueOf(R.string.verify_internet));
+        costMap.put("message", "Сталася помілка");
         return costMap;
     } catch (Exception e) {
         e.printStackTrace();
         asyncTaskFuture.cancel(true);
         costMap.put("order_cost", "0");
-        costMap.put("message", String.valueOf(R.string.verify_internet));
+        costMap.put("message", "Сталася помілка");
         return costMap;
     }
 
