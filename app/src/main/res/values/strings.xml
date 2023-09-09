@@ -153,8 +153,8 @@
     <string name="city">Город</string>
     <string name="change_message">"Смена базы адресов. "</string>
     <string name="server_error_connected">Сервер не принял запрос, наберите операторов</string>
-    <string name="GspR">Пользователь соглашается с Правилами конфеденциальности Общего регламента защиты персональных данных (GspR) ЕС и осознает, что ввод информации о телефоне является обязательным для заказа такси.</string>
-    <string name="ok_gspr">Согласиться</string>
+    <string name="GDPR">Пользователь соглашается с Правилами конфеденциальности Общего регламента защиты персональных данных (GDPR) ЕС и осознает, что ввод информации о телефоне является обязательным для заказа такси.</string>
+    <string name="ok_GDPR">Согласиться</string>
     <string name="Dnipro_city">Днепр</string>
     <string name="city_change">Выберите город</string>
     <string name="Zaporizhzhia">Запорожье</string>
