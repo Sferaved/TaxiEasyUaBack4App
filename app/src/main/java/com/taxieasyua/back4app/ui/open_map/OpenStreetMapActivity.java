@@ -169,14 +169,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        mapController.setZoom(16);
+        mapController.setZoom(19);
         map.setClickable(true);
         List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
         startLat = Double.parseDouble(startList.get(1));
         startLan = Double.parseDouble(startList.get(2));
         FromAdressString = startList.get(3);
 
-        GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
+        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
         map.getController().setCenter(initialGeoPoint);
 
 
@@ -398,102 +398,82 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
-//                startActivity(new Intent(this, OpenStreetMapActivity.class));
                 startActivity(new Intent(OpenStreetMapActivity.this, OpenStreetMapActivity.class));
             }
-//            public void onClick(View v) {
-//                List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, getApplicationContext());
-//                startLat =  Double.parseDouble(startList.get(1));
-//                startLan = Double.parseDouble(startList.get(2));
-//                FromAdressString = startList.get(3);
-//
-//
-//                setMarker(startLat, startLan, FromAdressString);
-//                GeoPoint initialGeoPoint = new GeoPoint(startLat-0.01, startLan);
-//                map.getController().setCenter(initialGeoPoint);
-//
-//                map.invalidate();
-//
-//                bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-//                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//
-//            }
         });
         List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
         startLat = Double.parseDouble(startList.get(1));
         startLan = Double.parseDouble(startList.get(2));
         FromAdressString = startList.get(3);
-        if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
-            GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
-            map.getController().setCenter(initialGeoPoint);
-            setMarker(startLat, startLan, FromAdressString);
+        if (FromAdressString != null) {
+            if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
+                GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+                map.getController().setCenter(initialGeoPoint);
+                setMarker(startLat, startLan, FromAdressString);
 
-            bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-            map.invalidate();
-        } else {
-             Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
-             Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
+                bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                map.invalidate();
+            } else {
+                Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
+                Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
 
-             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-             locationCallback = new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    // Обработка полученных местоположений
-                    stopLocationUpdates();
+                locationCallback = new LocationCallback() {
+                    @Override
+                    public void onLocationResult(LocationResult locationResult) {
+                        // Обработка полученных местоположений
+                        stopLocationUpdates();
 
-                    // Обработка полученных местоположений
-                    List<Location> locations = locationResult.getLocations();
-                    if (!locations.isEmpty()) {
-                        Location firstLocation = locations.get(0);
-                        if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()) {
+                        // Обработка полученных местоположений
+                        List<Location> locations = locationResult.getLocations();
+                        if (!locations.isEmpty()) {
+                            Location firstLocation = locations.get(0);
+                            if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()) {
 
-                            double latitude = firstLocation.getLatitude();
-                            double longitude = firstLocation.getLongitude();
-                            startLat = latitude;
-                            startLan = longitude;
+                                double latitude = firstLocation.getLatitude();
+                                double longitude = firstLocation.getLongitude();
+                                startLat = latitude;
+                                startLan = longitude;
 
+                            }
                         }
+                        String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+                        Map sendUrlFrom = null;
+                        try {
+                            sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+
+                        } catch (MalformedURLException | InterruptedException |
+                                 JSONException e) {
+                            Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                            finish();
+                        }
+                        FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                        updateMyPosition(startLat, startLan, FromAdressString);
+                        bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+                        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        map.getOverlays().add(markerOverlay);
+                        setMarker(startLat, startLan, FromAdressString);
+                        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+                        map.getController().setCenter(initialGeoPoint);
+
+                        setMarker(startLat, startLan, FromAdressString);
+                        map.invalidate();
                     }
-                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-                    Map sendUrlFrom = null;
-                    try {
-                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-
-                    } catch (MalformedURLException | InterruptedException |
-                             JSONException e) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                    FromAdressString = (String) sendUrlFrom.get("route_address_from");
-                    updateMyPosition(startLat, startLan, FromAdressString);
-                    bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                    map.getOverlays().add(markerOverlay);
-                    setMarker(startLat, startLan, FromAdressString);
-                    GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.01, startLan);
-                    map.getController().setCenter(initialGeoPoint);
-
-                    setMarker(startLat, startLan, FromAdressString);
-                    map.invalidate();
+                };
 
 
-
+                if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    startLocationUpdates();
+                } else {
+                    requestLocationPermission();
+                }
             }
-
-            ;
-        };
-
-
-        if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
-        } else {
-            requestLocationPermission();
         }
-    }
+
 
 
         map.onResume();
@@ -575,12 +555,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public static void dialogMarkers(FragmentManager fragmentManager) throws MalformedURLException, JSONException, InterruptedException {
 
             if(endPoint != null) {
-//                String target =  OpenStreetMapActivity.FromAdressString;
-
-//                setMarker(startLat, startLan, target);
-
-//                target = sendUrlMapCost.get("routeto");
-//            setMarker(endPoint.getLatitude(), endPoint.getLongitude(), target);
 
                 GeoPoint startPoint = new GeoPoint(startLat, startLan);
                 showRout(startPoint, endPoint);
@@ -594,21 +568,22 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             String message = sendUrlMapCost.get("message");
             String orderCost = sendUrlMapCost.get("order_cost");
 
-            if (orderCost.equals("0")) {
-                Toast.makeText(map.getContext(), message, Toast.LENGTH_SHORT).show();
+            if (orderCost != null) {
+                    if (orderCost.equals("0")) {
+                        Toast.makeText(map.getContext(), message, Toast.LENGTH_SHORT).show();
 
-            } else {
-                Log.d("TAG", "dialogMarkers: sendUrlMapCost " + sendUrlMapCost.toString());
-                ToAdressString = (String) sendUrlMapCost.get("routeto") + " " + (String) sendUrlMapCost.get("to_number");
-                Log.d("TAG", "dialogMarkers: ToAdressString " + ToAdressString);
-                Log.d("TAG", "dialogMarkers: endPoint " + endPoint.toString());
-                finishLat = endPoint.getLatitude();
-                finishLan = endPoint.getLongitude();
+                    } else {
+                        Log.d("TAG", "dialogMarkers: sendUrlMapCost " + sendUrlMapCost.toString());
+                        ToAdressString = (String) sendUrlMapCost.get("routeto") + " " + (String) sendUrlMapCost.get("to_number");
+                        Log.d("TAG", "dialogMarkers: ToAdressString " + ToAdressString);
+                        Log.d("TAG", "dialogMarkers: endPoint " + endPoint.toString());
+                        finishLat = endPoint.getLatitude();
+                        finishLan = endPoint.getLongitude();
 
-                MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
-                bottomSheet.show(fragmentManager, bottomSheet.getTag());
-            }
-
+                        MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+                        bottomSheet.show(fragmentManager, bottomSheet.getTag());
+                    }
+                }
 
 
         };
