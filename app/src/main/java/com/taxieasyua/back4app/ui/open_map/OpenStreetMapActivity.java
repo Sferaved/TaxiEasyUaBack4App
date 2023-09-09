@@ -331,7 +331,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         }
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
     }
-
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        finish();
+    }
     private void stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
@@ -645,12 +649,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         if(routMaps.size() != 0) {
 
             for (int j = 0; j < routMaps.size(); j++) {
-//                Log.d("TAG", "arrayAdressAdapter routMaps.get(j).get(\"from_lat\"): " + routMaps.get(j).get("from_street"));
-//                Log.d("TAG", "arrayAdressAdapter routMaps.get(j).get(\"to_lat\"): " + routMaps.get(j).get("to_street"));
+                Object toLatObject = routMaps.get(j).get("to_lat");
+                Object fromLatObject = routMaps.get(j).get("from_lat");
 
-                if(!Objects.requireNonNull(routMaps.get(j).get("to_lat")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_lat")).toString())) {
-//                    if (!Objects.requireNonNull(routMaps.get(j).get("from_street")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_lat")).toString()))
-//                        if (!Objects.requireNonNull(routMaps.get(j).get("from_street")).toString().equals("Місце призначення") && !Objects.requireNonNull(routMaps.get(j).get("from_street")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_number")).toString())) {
+                if (toLatObject != null && fromLatObject != null) {
+                    String toLat = toLatObject.toString();
+                    String fromLat = fromLatObject.toString();
+
+                    if (!toLat.equals(fromLat)) {
+                        if(!Objects.requireNonNull(routMaps.get(j).get("to_lat")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_lat")).toString())) {
                             adressMap = new HashMap<>();
                             adressMap.put("street", routMaps.get(j).get("from_street").toString());
                             adressMap.put("number", routMaps.get(j).get("from_number").toString());
@@ -658,20 +665,19 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             adressMap.put("to_lng", routMaps.get(j).get("from_lng").toString());
                             adressArrLoc.add(k++, adressMap);
                         }
-                    if(!routMaps.get(j).get("to_street").toString().equals("Місце призначення")&&
-                            !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_lat").toString()) &&
-                            !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_number").toString()))
-                        {
-                        adressMap = new HashMap<>();
-                        adressMap.put("street", routMaps.get(j).get("to_street").toString());
-                        adressMap.put("number", routMaps.get(j).get("to_number").toString());
-                        adressMap.put("to_lat", routMaps.get(j).get("to_lat").toString());
-                        adressMap.put("to_lng", routMaps.get(j).get("to_lng").toString());
-                        adressArrLoc.add(k++, adressMap);
+                        if(!routMaps.get(j).get("to_street").toString().equals("Місце призначення")&&
+                                !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_lat").toString()) &&
+                                !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_number").toString())) {
+                            adressMap = new HashMap<>();
+                            adressMap.put("street", routMaps.get(j).get("to_street").toString());
+                            adressMap.put("number", routMaps.get(j).get("to_number").toString());
+                            adressMap.put("to_lat", routMaps.get(j).get("to_lat").toString());
+                            adressMap.put("to_lng", routMaps.get(j).get("to_lng").toString());
+                            adressArrLoc.add(k++, adressMap);
+                        }
                     }
+                }
 
-
-//                }
             };
             Log.d("TAG", "arrayAdressAdapter: adressArrLoc " + adressArrLoc.toString());
         } else {
