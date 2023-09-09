@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.780</string>
-    <string name="version">Версія: 2.780</string>
+    <string name="version_code">2.782</string>
+    <string name="version">Версія: 2.782</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -178,4 +178,5 @@
     <string name="on_geo_loc_mes">Для роботи з карткою дозвольте доступ до програми для визначення Вашого розташування</string>
     <string name="OK">Ок</string>
     <string name="to_marker_mes">Позначте маркером на карті місце висадки</string>
+    <string name="set_marker">Відзначити по мапі</string>
 </resources>

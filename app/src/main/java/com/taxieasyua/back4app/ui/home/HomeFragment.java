@@ -111,6 +111,7 @@ public class HomeFragment extends Fragment {
     private String numberFlagFrom = "1", numberFlagTo = "1";
 
     public static String  from_numberCost, toCost, to_numberCost;
+    public static ProgressBar progressBar;
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -139,6 +140,8 @@ public class HomeFragment extends Fragment {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        progressBar = binding.progressBar;
+
         List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
         Log.d("TAG", "onViewCreated: " + stringList);
         if(stringList.size() !=0 ) {
@@ -459,6 +462,7 @@ public class HomeFragment extends Fragment {
         fab_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 if(!verifyOrder(getContext())) {
 
                     MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
@@ -519,6 +523,7 @@ public class HomeFragment extends Fragment {
         on_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 if(!verifyOrder(getContext())) {
 
                     MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
@@ -658,7 +663,7 @@ public class HomeFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                selectesposition = position; // Обновляем выбранную позицию
 //                adapter.notifyDataSetChanged(); // Обновляем вид списка
-                Log.d(TAG, "onItemClick: textViewTo.getText().toString()" + textViewTo.getText().toString());
+                progressBar.setVisibility(View.VISIBLE);
 
                 if (textViewTo.getText().toString().isEmpty()) {
                         to = null;
@@ -716,8 +721,10 @@ public class HomeFragment extends Fragment {
                         default:
                             Log.d(TAG, "onItemClick: " + new IllegalStateException("Unexpected value: " + Objects.requireNonNull(orderCost)));
                     }
+                    progressBar.setVisibility(View.INVISIBLE);
 
                 } else {
+                    progressBar.setVisibility(View.INVISIBLE);
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }

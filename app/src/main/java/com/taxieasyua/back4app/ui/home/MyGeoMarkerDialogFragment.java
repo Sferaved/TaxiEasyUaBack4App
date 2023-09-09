@@ -137,7 +137,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 myLinearLayout.setLayoutParams(layoutParams);
             }
         });
-        setCancelable(false);
+//        setCancelable(false);
 
             List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
         switch (stringList.get(1)){
@@ -214,7 +214,9 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), MainActivity.class));
+                OpenStreetMapActivity.progressBar.setVisibility(View.VISIBLE);
+                geoText.setText("");
+                startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
             }
         });
 
@@ -232,7 +234,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    progressBar.setVisibility(View.VISIBLE);
+                    OpenStreetMapActivity.progressBar.setVisibility(View.VISIBLE);
                     order();
                 }
             }
@@ -290,7 +292,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-
+        OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         String message = sendUrlMapCost.get("message");
         String orderCost = sendUrlMapCost.get("order_cost");
         Log.d("TAG", "startCost: orderCost " + orderCost);
@@ -515,7 +517,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         if (!verifyPhone(getContext())) {
             MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            progressBar.setVisibility(View.INVISIBLE);
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         }
         if(connected()) {
             if (verifyPhone(getContext())) {
@@ -565,7 +567,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
                         MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        progressBar.setVisibility(View.INVISIBLE);
+                        OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
                     }
 
 
@@ -578,7 +580,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            progressBar.setVisibility(View.INVISIBLE);
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         }
     }
 

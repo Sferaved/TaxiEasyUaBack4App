@@ -83,7 +83,7 @@ import java.util.regex.Pattern;
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder;
+    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker;
     public String[] arrayStreet;
     private static String api;
     ArrayList<Map> adressArr;
@@ -210,6 +210,13 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         btn_minus = view.findViewById(R.id.btn_minus);
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);
+        btnMarker = view.findViewById(R.id.btnMarker);
+        btnMarker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
         adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, arrayStreet);
 
         textViewTo.setAdapter(adapter);
@@ -391,6 +398,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                geoText.setText("");
                 Toast.makeText(getActivity(), R.string.check_position, Toast.LENGTH_SHORT).show();
                 Configuration.getInstance().load(getActivity(), PreferenceManager.getDefaultSharedPreferences(getActivity()));
 
@@ -605,25 +613,33 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         if(routMaps.size() != 0) {
 
             for (int j = 0; j < routMaps.size(); j++) {
+                Object toLatObject = routMaps.get(j).get("to_lat");
+                Object fromLatObject = routMaps.get(j).get("from_lat");
 
-                if(!Objects.requireNonNull(routMaps.get(j).get("to_lat")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_lat")).toString())) {
-                    adressMap = new HashMap<>();
-                    adressMap.put("street", routMaps.get(j).get("from_street").toString());
-                    adressMap.put("number", routMaps.get(j).get("from_number").toString());
-                    adressMap.put("to_lat", routMaps.get(j).get("from_lat").toString());
-                    adressMap.put("to_lng", routMaps.get(j).get("from_lng").toString());
-                    adressArrLoc.add(k++, adressMap);
-                }
-                if(!routMaps.get(j).get("to_street").toString().equals("Місце призначення")&&
-                        !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_lat").toString()) &&
-                        !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_number").toString()))
-                {
-                    adressMap = new HashMap<>();
-                    adressMap.put("street", routMaps.get(j).get("to_street").toString());
-                    adressMap.put("number", routMaps.get(j).get("to_number").toString());
-                    adressMap.put("to_lat", routMaps.get(j).get("to_lat").toString());
-                    adressMap.put("to_lng", routMaps.get(j).get("to_lng").toString());
-                    adressArrLoc.add(k++, adressMap);
+                if (toLatObject != null && fromLatObject != null) {
+                    String toLat = toLatObject.toString();
+                    String fromLat = fromLatObject.toString();
+
+                    if (!toLat.equals(fromLat)) {
+                        if (!Objects.requireNonNull(routMaps.get(j).get("to_lat")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_lat")).toString())) {
+                            adressMap = new HashMap<>();
+                            adressMap.put("street", routMaps.get(j).get("from_street").toString());
+                            adressMap.put("number", routMaps.get(j).get("from_number").toString());
+                            adressMap.put("to_lat", routMaps.get(j).get("from_lat").toString());
+                            adressMap.put("to_lng", routMaps.get(j).get("from_lng").toString());
+                            adressArrLoc.add(k++, adressMap);
+                        }
+                        if (!routMaps.get(j).get("to_street").toString().equals("Місце призначення") &&
+                                !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_lat").toString()) &&
+                                !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_number").toString())) {
+                            adressMap = new HashMap<>();
+                            adressMap.put("street", routMaps.get(j).get("to_street").toString());
+                            adressMap.put("number", routMaps.get(j).get("to_number").toString());
+                            adressMap.put("to_lat", routMaps.get(j).get("to_lat").toString());
+                            adressMap.put("to_lng", routMaps.get(j).get("to_lng").toString());
+                            adressArrLoc.add(k++, adressMap);
+                        }
+                    }
                 }
 
             };
@@ -815,7 +831,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-        Toast.makeText(getActivity(), getString(R.string.to_marker_mes), Toast.LENGTH_LONG).show();
+//        Toast.makeText(getActivity(), getString(R.string.to_marker_mes), Toast.LENGTH_LONG).show();
     }
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
@@ -874,7 +890,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(DialogInterface dialog, int which) {
-//                OpenStreetMapActivity.bottomSheetDialogFragment.dismissAllowingStateLoss();
+
                 Double to_lat = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
                 Double to_lng = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
 
