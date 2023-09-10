@@ -11,7 +11,10 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -87,11 +90,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private final String TAG = "TAG";
     private LocationManager locationManager;
 
-    private IMapController mapController;
+    private static IMapController mapController;
     EditText to_number;
     private String to, messageResult, from_geo;
     public String[] arrayStreet;
-    static FloatingActionButton fab, fab_call, fab_open_map;
+    public static FloatingActionButton fab, fab_call, fab_open_map, fab_open_marker;
 
     public static double startLat, startLan, finishLat, finishLan;
     public static MapView map = null;
@@ -105,7 +108,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     ArrayList<Map> adressArr;
 
     public static Polyline roadOverlay;
-    public static Marker m, mStart;
+    public static Marker m, marker;
     public static String FromAdressString, ToAdressString;
     public static String cm, UAH, em, co, fb, vi, fp, ord, onc, tm, tom, ntr, hlp,
             tra, plm, epm, tlm, sbt, cbt, vph, coo;
@@ -252,6 +255,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         fab_call = findViewById(R.id.fab_call);
         fab_open_map = findViewById(R.id.fab_open_map);
+        fab_open_marker = findViewById(R.id.fab_open_marker);
+        fab_open_marker.setVisibility(View.INVISIBLE);
 
         gpsSwitch = findViewById(R.id.gpsSwitch);
 
@@ -284,6 +289,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         });
 
+        fab_open_marker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+                bottomSheet.show(fragmentManager, bottomSheet.getTag());
+            }
+        });
         array = arrayAdressAdapter();
 
     }
@@ -485,21 +497,49 @@ public class OpenStreetMapActivity extends AppCompatActivity {
        map.onPause();
    }
 
-   public static void setMarker(double Lat, double Lan, String title) {
-       m = new Marker(map);
-       m.setPosition(new GeoPoint(Lat, Lan));
-       m.setTextLabelBackgroundColor(
-               Color.TRANSPARENT
-       );
-       m.setTextLabelForegroundColor(
-               Color.RED
-       );
-       m.setTextLabelFontSize(40);
-       m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-       m.setTitle(title);
-       map.getOverlays().add(m);
-       map.invalidate();
-   }
+//   public static void setMarker(double Lat, double Lan, String title) {
+//       m = new Marker(map);
+//       m.setPosition(new GeoPoint(Lat, Lan));
+//       m.setTextLabelBackgroundColor(
+//               Color.TRANSPARENT
+//       );
+//       m.setTextLabelForegroundColor(
+//               Color.RED
+//       );
+//       m.setTextLabelFontSize(40);
+//       m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+//       m.setTitle(title);
+//       map.getOverlays().add(m);
+//       map.invalidate();
+//   }
+    public void setMarker(double Lat, double Lan, String title) {
+        m = new Marker(map);
+        m.setPosition(new GeoPoint(Lat, Lan));
+
+        // Установите название маркера
+        m.setTitle("1. " + title);
+
+        m.setTextLabelBackgroundColor(Color.TRANSPARENT);
+        m.setTextLabelForegroundColor(Color.RED);
+        m.setTextLabelFontSize(40);
+        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+
+        Drawable originalDrawable = getResources().getDrawable(R.drawable.marker_green);
+
+        // Уменьшите размер до 48 пикселей
+        int width = 48;
+        int height = 48;
+        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+
+        // Создайте новый Drawable из уменьшенного изображения
+        Drawable scaledDrawable = new BitmapDrawable(getResources(), bitmap);
+        m.setIcon(scaledDrawable);
+
+
+        m.showInfoWindow();
+        map.getOverlays().add(m);
+        map.invalidate();
+    }
 
 
     public static void showRout(GeoPoint startP, GeoPoint endP) {
@@ -514,8 +554,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             waypoints.add(endP);
             Road road = roadManager.getRoad(waypoints);
             roadOverlay = RoadManager.buildRoadOverlay(road);
+            roadOverlay.setWidth(10); // Измените это значение на желаемую толщину
 
             map.getOverlays().add(roadOverlay);
+//            m.showInfoWindow();
             map.invalidate();
         });
     }
@@ -552,12 +594,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static void dialogMarkers(FragmentManager fragmentManager) throws MalformedURLException, JSONException, InterruptedException {
+    public static void dialogMarkers(FragmentManager fragmentManager, Context context) throws MalformedURLException, JSONException, InterruptedException {
+        if(endPoint != null) {
+            GeoPoint startPoint = new GeoPoint(startLat, startLan);
+            showRout(startPoint, endPoint);
 
-            if(endPoint != null) {
-
-                GeoPoint startPoint = new GeoPoint(startLat, startLan);
-                showRout(startPoint, endPoint);
             Log.d("TAG", "onResume: endPoint" +  endPoint.getLatitude());
 
             String urlCost = getTaxiUrlSearchMarkers(startLat, startLan,
@@ -579,8 +620,46 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         Log.d("TAG", "dialogMarkers: endPoint " + endPoint.toString());
                         finishLat = endPoint.getLatitude();
                         finishLan = endPoint.getLongitude();
+                        if(marker != null) {
+                            map.getOverlays().remove(marker);
+                            map.invalidate();
+                            marker = null;
+                        }
+
+
+                        marker = new Marker(map);
+                        marker.setPosition(new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude()));
+                        marker.setTextLabelBackgroundColor(
+                                Color.TRANSPARENT
+                        );
+                        marker.setTextLabelForegroundColor(
+                                Color.RED
+                        );
+                        marker.setTextLabelFontSize(40);
+                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                        marker.setTitle("2. " + ToAdressString);
+
+                        Drawable originalDrawable = context.getResources().getDrawable(R.drawable.marker_green);
+                        int width = 48;
+                        int height = 48;
+                        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+
+                        // Создайте новый Drawable из уменьшенного изображения
+                        Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
+                        marker.setIcon(scaledDrawable);
+
+                        marker.showInfoWindow();
+
+                        map.getOverlays().add(marker);
+
+                        GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude()-0.01, endPoint.getLongitude());
+                        map.getController().setCenter(initialGeoPoint);
+                        mapController.setZoom(16);
+
+                        map.invalidate();
 
                         MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+
                         bottomSheet.show(fragmentManager, bottomSheet.getTag());
                     }
                 }

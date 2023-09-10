@@ -30,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -111,6 +112,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.geo_marker_layout, container, false);
+        getDialog().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
         final int initialMarginBottom = 0;
 
@@ -475,7 +477,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-
+        OpenStreetMapActivity.fab_open_marker.setVisibility(View.VISIBLE);
 //        startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
     }
     @SuppressLint("Range")
