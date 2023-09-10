@@ -69,7 +69,7 @@ public class MarkerOverlay extends Overlay {
         try {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager);
+                OpenStreetMapActivity.dialogMarkers(OpenStreetMapActivity.fragmentManager, OpenStreetMapActivity.map.getContext());
             }
         } catch (MalformedURLException | JSONException | InterruptedException e) {
             Log.d("TAG", "onCreate:" + new RuntimeException(e));
