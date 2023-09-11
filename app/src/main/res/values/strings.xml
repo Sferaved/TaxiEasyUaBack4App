@@ -180,5 +180,6 @@
     <string name="OK">Ок</string>
     <string name="to_marker_mes">Отметьте маркером на карте место высадки</string>
     <string name="set_marker">Отметить на карте</string>
+    <string name="uid_menu">История поездок</string>
 
 </resources>
