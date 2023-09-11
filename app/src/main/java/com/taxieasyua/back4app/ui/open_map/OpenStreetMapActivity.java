@@ -568,21 +568,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
        map.onPause();
    }
 
-//   public static void setMarker(double Lat, double Lan, String title) {
-//       m = new Marker(map);
-//       m.setPosition(new GeoPoint(Lat, Lan));
-//       m.setTextLabelBackgroundColor(
-//               Color.TRANSPARENT
-//       );
-//       m.setTextLabelForegroundColor(
-//               Color.RED
-//       );
-//       m.setTextLabelFontSize(40);
-//       m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-//       m.setTitle(title);
-//       map.getOverlays().add(m);
-//       map.invalidate();
-//   }
     public void setMarker(double Lat, double Lan, String title) {
         m = new Marker(map);
         m.setPosition(new GeoPoint(Lat, Lan));
