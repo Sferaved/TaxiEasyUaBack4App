@@ -1394,10 +1394,10 @@ public class HomeFragment extends Fragment {
         String date = stringList.get(3);
 
         // Origin of route
-        String str_origin = originLatitude + "/" + originLongitude;
+        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
 
         // Destination of route
-        String str_dest = toLatitude + "/" + toLongitude;
+        String str_dest = String.valueOf(toLatitude) + "/" + String.valueOf(toLongitude);
 
 //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

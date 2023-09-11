@@ -174,16 +174,26 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map.setMultiTouchControls(true);
         mapController.setZoom(19);
         map.setClickable(true);
-        List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
-        startLat = Double.parseDouble(startList.get(1));
-        startLan = Double.parseDouble(startList.get(2));
-        FromAdressString = startList.get(3);
-
-        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
-        map.getController().setCenter(initialGeoPoint);
-
-
-        map.invalidate();
+//        List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
+//        Log.d(TAG, "onCreate: startList"  + startList);
+//        startLat = Double.parseDouble(startList.get(1));
+//        startLan = Double.parseDouble(startList.get(2));
+//
+////        startLat = getFromTablePositionInfo(this, "startLat" );
+////        startLan = getFromTablePositionInfo(this, "startLan" );
+//
+//
+//        FromAdressString = startList.get(3);
+//        Log.d(TAG, "onCreate: startLat 9999999 " + startLat );
+//        Log.d(TAG, "onCreate: startLan 9999999 " + startLan );
+//        Log.d(TAG, "onCreate: FromAdressString 9999999 " + FromAdressString );
+//
+//
+//        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+//        map.getController().setCenter(initialGeoPoint);
+//
+//
+//        map.invalidate();
 
 
 
@@ -414,8 +424,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
         });
         List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
-        startLat = Double.parseDouble(startList.get(1));
-        startLan = Double.parseDouble(startList.get(2));
+//        startLat = Double.parseDouble(startList.get(1));
+//        startLan = Double.parseDouble(startList.get(2));
+
+       startLat = getFromTablePositionInfo(this, "startLat" );
+       startLan = getFromTablePositionInfo(this, "startLan" );
+
         FromAdressString = startList.get(3);
         if (FromAdressString != null) {
             if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
@@ -484,6 +498,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     requestLocationPermission();
                 }
             }
+        } else {
+            GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+            map.getController().setCenter(initialGeoPoint);
+            setMarker(startLat, startLan, FromAdressString);
+
+            bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            map.invalidate();
         }
 
 
@@ -764,7 +786,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         String date = stringList.get(3);
 
         // Origin of route
-        String str_origin = originLatitude + "/" + originLongitude;
+        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
 
         // Destination of route
         String str_dest = to + "/" + to_number;
@@ -859,10 +881,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             String date = stringList.get(3);
 
             // Origin of route
-            String str_origin = originLatitude + "/" + originLongitude;
+            String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
 
             // Destination of route
-            String str_dest = toLatitude + "/" + toLongitude;
+            String str_dest = String.valueOf(toLatitude) + "/" + String.valueOf(toLongitude);
 
     //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
             SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1090,4 +1112,22 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             database.close();
         }
     }
+
+    @SuppressLint("Range")
+    private double getFromTablePositionInfo(Context context, String columnName) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery("SELECT "+ columnName + " FROM " + MainActivity.TABLE_POSITION_INFO + " WHERE id = ?", new String[]{"1"});
+
+        double result = 0.0; // Значение по умолчанию или обработка, если запись не найдена.
+
+        if (cursor != null && cursor.moveToFirst()) {
+            result = cursor.getDouble(cursor.getColumnIndex(columnName));
+            cursor.close();
+        }
+
+        database.close();
+
+        return result;
+    }
+
 }
