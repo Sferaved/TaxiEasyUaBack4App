@@ -400,7 +400,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                geoText.setText("");
+//                geoText.setText("");
                 Toast.makeText(getActivity(), R.string.check_position, Toast.LENGTH_SHORT).show();
                 Configuration.getInstance().load(getActivity(), PreferenceManager.getDefaultSharedPreferences(getActivity()));
 

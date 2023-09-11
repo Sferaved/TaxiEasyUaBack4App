@@ -499,13 +499,62 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 }
             }
         } else {
-            GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
-            map.getController().setCenter(initialGeoPoint);
-            setMarker(startLat, startLan, FromAdressString);
+            Toast.makeText(this, R.string.check_position, Toast.LENGTH_SHORT).show();
+            Configuration.getInstance().load(OpenStreetMapActivity.this, PreferenceManager.getDefaultSharedPreferences(OpenStreetMapActivity.this));
 
-            bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-            map.invalidate();
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    // Обработка полученных местоположений
+                    stopLocationUpdates();
+
+                    // Обработка полученных местоположений
+                    List<Location> locations = locationResult.getLocations();
+                    if (!locations.isEmpty()) {
+                        Location firstLocation = locations.get(0);
+                        if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()) {
+
+                            double latitude = firstLocation.getLatitude();
+                            double longitude = firstLocation.getLongitude();
+                            startLat = latitude;
+                            startLan = longitude;
+
+                        }
+                    }
+                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+                    Map sendUrlFrom = null;
+                    try {
+                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+
+                    } catch (MalformedURLException | InterruptedException |
+                             JSONException e) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                    FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                    updateMyPosition(startLat, startLan, FromAdressString);
+                    bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                    map.getOverlays().add(markerOverlay);
+                    setMarker(startLat, startLan, FromAdressString);
+                    GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+                    map.getController().setCenter(initialGeoPoint);
+
+                    setMarker(startLat, startLan, FromAdressString);
+                    map.invalidate();
+                }
+            };
+
+
+            if (ContextCompat.checkSelfPermission(OpenStreetMapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+            } else {
+                requestLocationPermission();
+            }
         }
 
 
