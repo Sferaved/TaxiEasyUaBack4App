@@ -30,14 +30,14 @@
 
     <ListView
         android:id="@+id/listView"
-        android:layout_width="392dp"
-        android:layout_height="738dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:divider="@color/colorAccent"
         android:dividerHeight="1sp"
         android:fontFamily="@font/regular"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_gallery"></ListView>
+        app:layout_constraintTop_toBottomOf="@+id/text_uid"></ListView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

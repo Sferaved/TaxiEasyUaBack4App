@@ -573,7 +573,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         m.setPosition(new GeoPoint(Lat, Lan));
 
         // Установите название маркера
-        m.setTitle("1. " + title);
+        String unuString = new String(Character.toChars(0x1F449));
+        m.setTitle("1." + unuString + title);
 
         m.setTextLabelBackgroundColor(Color.TRANSPARENT);
         m.setTextLabelForegroundColor(Color.RED);
@@ -693,7 +694,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         );
                         marker.setTextLabelFontSize(40);
                         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-                        marker.setTitle("2. " + ToAdressString);
+                        String unuString = new String(Character.toChars(0x1F449));
+
+                        marker.setTitle("2."+ unuString + ToAdressString);
 
                         Drawable originalDrawable = context.getResources().getDrawable(R.drawable.marker_green);
                         int width = 48;
