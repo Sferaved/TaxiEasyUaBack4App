@@ -219,7 +219,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 dismiss();
             }
         });
-        adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_dropdown_item_1line, arrayStreet);
+        adapter = new ArrayAdapter<>(getActivity(), R.layout.drop_down_layout, arrayStreet);
 
         textViewTo.setAdapter(adapter);
         textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {

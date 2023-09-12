@@ -171,8 +171,9 @@ public class HomeFragment extends Fragment {
                     api = MainActivity.apiKyiv;
                     break;
             };
-            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_dropdown_item_1line, arrayStreet);
+//            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_dropdown_item_1line, arrayStreet);
         }
+        adapter = new ArrayAdapter<>(getActivity(),R.layout.drop_down_layout, arrayStreet);
 
 
         text_view_cost = binding.textViewCost;

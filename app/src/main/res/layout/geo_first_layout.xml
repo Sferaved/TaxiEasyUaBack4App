@@ -23,7 +23,7 @@
 
     <TextView
         android:id="@+id/textGeo"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
 
         android:layout_marginStart="20sp"
@@ -66,10 +66,11 @@
 
     <AutoCompleteTextView
         android:id="@+id/text_to"
-        android:layout_width="200sp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20sp"
-        android:layout_marginTop="4sp"
+        android:layout_marginStart="24sp"
+        android:dropDownWidth="match_parent"
+        android:dropDownHeight="wrap_content"
         android:background="@drawable/input"
         android:ems="10"
         android:fontFamily="@font/light"
