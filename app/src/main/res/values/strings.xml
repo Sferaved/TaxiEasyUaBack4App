@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.785</string>
-    <string name="version">Версия: 2.785</string>
+    <string name="version_code">2.786</string>
+    <string name="version">Версия: 2.786</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -181,5 +181,22 @@
     <string name="to_marker_mes">Отметьте маркером на карте место высадки</string>
     <string name="set_marker">Отметить на карте</string>
     <string name="uid_menu">История поездок</string>
+    <string name="close_resone_def">Уточните у диспетчера</string>
+    <string name="close_resone_in_work">Выполняется</string>
+    <string name="close_resone_0">Выполнен</string>
+    <string name="close_resone_1">Отказ клиента</string>
+    <string name="close_resone_2">Отказ водителя</string>
+    <string name="close_resone_3">Отмена по вине диспетчера</string>
+    <string name="close_resone_4">Нет авто</string>
+    <string name="close_resone_5">Просчет</string>
+    <string name="close_resone_6">Отказ клиента, не устроил тариф</string>
+    <string name="close_resone_7">Отказ клиента, не устроило время</string>
+    <string name="close_resone_8">Перекинут на сервер обмена заказами (выполнен)</string>
+    <string name="close_resone_9">Перекинут на сервер обмена заказами (выполнен)</string>
+    <string name="close_resone_from">"От "</string>
+    <string name="close_resone_to">" до: "</string>
+    <string name="close_resone_cost">", стоимость: "</string>
+    <string name="close_resone_time">", время заказа: "</string>
+    <string name="close_resone_text">", состояние: "</string>
 
 </resources>

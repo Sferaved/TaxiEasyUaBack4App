@@ -180,4 +180,21 @@
     <string name="to_marker_mes">Позначте маркером на карті місце висадки</string>
     <string name="set_marker">Відзначити по мапі</string>
     <string name="uid_menu">Історія поїздок</string>
+    <string name="close_resone_def">Уточнить у диспетчера</string>
+    <string name="close_resone_in_work">Виконюється</string>
+    <string name="close_resone_0">Виконано</string>
+    <string name="close_resone_1">Відказ клієнта</string>
+    <string name="close_resone_2">Відказ водія</string>
+    <string name="close_resone_3">Відміна диспетчером</string>
+    <string name="close_resone_4">Немає авто</string>
+    <string name="close_resone_5">Розрахунок</string>
+    <string name="close_resone_6">Відказ клієнта, не влаштував тариф</string>
+    <string name="close_resone_7">Відказ клієнта, не влаштував час</string>
+    <string name="close_resone_8">Перекинутий на сервер обміну замовленнями (виконано)</string>
+    <string name="close_resone_9">Перекинутий на сервер обміну замовленнями (виконано)</string>
+    <string name="close_resone_from">"Від "</string>
+    <string name="close_resone_to">" до: "</string>
+    <string name="close_resone_cost">", вартість: "</string>
+    <string name="close_resone_time">", время заказу: "</string>
+    <string name="close_resone_text">", стан: "</string>
 </resources>
