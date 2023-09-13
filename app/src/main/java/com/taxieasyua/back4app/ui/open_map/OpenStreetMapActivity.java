@@ -169,34 +169,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
-
+        FromAdressString = getString(R.string.startPoint);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
         mapController.setZoom(19);
         map.setClickable(true);
-//        List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
-//        Log.d(TAG, "onCreate: startList"  + startList);
-//        startLat = Double.parseDouble(startList.get(1));
-//        startLan = Double.parseDouble(startList.get(2));
-//
-////        startLat = getFromTablePositionInfo(this, "startLat" );
-////        startLan = getFromTablePositionInfo(this, "startLan" );
-//
-//
-//        FromAdressString = startList.get(3);
-//        Log.d(TAG, "onCreate: startLat 9999999 " + startLat );
-//        Log.d(TAG, "onCreate: startLan 9999999 " + startLan );
-//        Log.d(TAG, "onCreate: FromAdressString 9999999 " + FromAdressString );
-//
-//
-//        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
-//        map.getController().setCenter(initialGeoPoint);
-//
-//
-//        map.invalidate();
-
-
-
 
         cm = getString(R.string.coastMarkersMessage);
         UAH = getString(R.string.UAH);

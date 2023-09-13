@@ -1,6 +1,9 @@
 package com.taxieasyua.back4app.ui.uid;
 
+import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
+
+import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -31,6 +34,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.taxieasyua.back4app.MainActivity;
+import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
 import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
@@ -73,17 +77,45 @@ public class UIDFragment extends Fragment {
     private @NonNull FragmentUidBinding binding;
     private ListView listView;
     private String[] array;
+    private NetworkChangeReceiver networkChangeReceiver;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         listView = binding.listView;
+        networkChangeReceiver = new NetworkChangeReceiver();
 
-        String displayName = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(4);
-        fetchRoutes(displayName);
-
+        if(connected()) {
+            String displayName = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(4);
+            fetchRoutes(displayName);
+        }
         return root;
+    }
+    private boolean connected() {
+
+        Boolean hasConnect = false;
+
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
+                CONNECTIVITY_SERVICE);
+        NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (wifiNetwork != null && wifiNetwork.isConnected()) {
+            hasConnect = true;
+        }
+        NetworkInfo mobileNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (mobileNetwork != null && mobileNetwork.isConnected()) {
+            hasConnect = true;
+        }
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null && activeNetwork.isConnected()) {
+            hasConnect = true;
+        }
+
+        if (!hasConnect) {
+            Toast.makeText(getActivity(), verify_internet, Toast.LENGTH_LONG).show();
+        }
+        Log.d("TAG", "connected: " + hasConnect);
+        return hasConnect;
     }
 
     String baseUrl = "https://m.easy-order-taxi.site";
