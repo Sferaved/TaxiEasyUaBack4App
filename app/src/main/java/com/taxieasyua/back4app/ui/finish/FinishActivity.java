@@ -24,6 +24,8 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 
 import java.text.ParseException;
@@ -73,6 +75,12 @@ public class FinishActivity extends AppCompatActivity {
                 break;
         }
         String parameterValue = getIntent().getStringExtra("messageResult_key");
+        String parameterCost = getIntent().getStringExtra("messageCost_key");
+
+
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        String bonusAddUrl = email + "/3/" + parameterCost;
+        fetchBonus(bonusAddUrl);
 
         TextView text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(parameterValue);
@@ -163,7 +171,34 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
+    private void fetchBonus(String value) {
+        String url = baseUrl + "/bonus/bonusAdd/" + value;
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+                    String bonus = String.valueOf(bonusResponse.getBonus());
+                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(getString(R.string.add_bonus) + bonus + getString(R.string.bonus));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                    Log.d("TAG", "onResponse: " + bonus);
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
 
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
+    }
 
     private boolean verifyOrder() {
         SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

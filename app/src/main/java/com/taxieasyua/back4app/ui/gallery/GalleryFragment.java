@@ -279,6 +279,7 @@ public class GalleryFragment extends Fragment {
 
                                 Intent intent = new Intent(getActivity(), FinishActivity.class);
                                 intent.putExtra("messageResult_key", messageResult);
+                                intent.putExtra("messageCost_key", orderWeb);
                                 intent.putExtra("UID_key", Objects.requireNonNull(sendUrl.get("dispatching_order_uid")));
                                  startActivity(intent);
 

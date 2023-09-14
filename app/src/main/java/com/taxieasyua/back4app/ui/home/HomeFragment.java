@@ -1062,6 +1062,7 @@ public class HomeFragment extends Fragment {
 
                         Intent intent = new Intent(getActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
+                        intent.putExtra("messageCost_key", orderWeb);
                         intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
                         startActivity(intent);
 

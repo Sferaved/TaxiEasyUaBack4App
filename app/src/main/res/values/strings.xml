@@ -200,5 +200,7 @@
     <string name="close_resone_text">", состояние: "</string>
     <string name="startPoint">Место посадки</string>
     <string name="my_bonus">"Количество бонусов: "</string>
+    <string name="add_bonus">"Вам начислено "</string>
+    <string name="bonus">" бонусов"</string>
 
 </resources>
