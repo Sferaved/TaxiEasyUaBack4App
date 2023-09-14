@@ -443,8 +443,7 @@ public class GalleryFragment extends Fragment {
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
-
+                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
             ContentValues cv = new ContentValues();
 
             cv.put("time", "no_time");

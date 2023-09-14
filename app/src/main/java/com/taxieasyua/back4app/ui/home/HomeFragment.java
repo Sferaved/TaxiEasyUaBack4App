@@ -171,7 +171,7 @@ public class HomeFragment extends Fragment {
                     api = MainActivity.apiKyiv;
                     break;
             };
-            adapter = new ArrayAdapter<>(getActivity(),android.R.layout.simple_dropdown_item_1line, arrayStreet);
+            adapter = new ArrayAdapter<>(getActivity(),R.layout.drop_down_layout, arrayStreet);
         }
 
 
@@ -1283,7 +1283,7 @@ public class HomeFragment extends Fragment {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1428,7 +1428,7 @@ public class HomeFragment extends Fragment {
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 

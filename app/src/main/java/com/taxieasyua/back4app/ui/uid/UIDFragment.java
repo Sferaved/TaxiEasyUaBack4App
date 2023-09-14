@@ -87,8 +87,8 @@ public class UIDFragment extends Fragment {
         networkChangeReceiver = new NetworkChangeReceiver();
 
         if(connected()) {
-            String displayName = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(4);
-            fetchRoutes(displayName);
+            String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+            fetchRoutes(email);
         }
         return root;
     }
@@ -122,7 +122,7 @@ public class UIDFragment extends Fragment {
     private List<RouteResponse> routeList = new ArrayList<>();
 
     private void fetchRoutes(String value) {
-        String url = baseUrl + "/android/UIDStatusShow/" + value;
+        String url = baseUrl + "/android/UIDStatusShowEmail/" + value;
         Call<List<RouteResponse>> call = ApiClient.getApiService().getRoutes(url);
         Log.d("TAG", "fetchRoutes: " + url);
         call.enqueue(new Callback<List<RouteResponse>>() {

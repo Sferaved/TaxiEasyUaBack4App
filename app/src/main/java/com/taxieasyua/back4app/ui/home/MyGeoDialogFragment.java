@@ -737,7 +737,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1298,7 +1298,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
