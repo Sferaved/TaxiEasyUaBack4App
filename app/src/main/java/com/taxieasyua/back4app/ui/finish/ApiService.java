@@ -19,5 +19,7 @@ public interface ApiService {
 
     @GET()
     Call<List<RouteResponse>> getRoutes(@Url String url);
+    @GET()
+    Call<BonusResponse> getBonus(@Url String url);
 }
 

@@ -198,4 +198,5 @@
     <string name="close_resone_time">", время заказу: "</string>
     <string name="close_resone_text">", стан: "</string>
     <string name="startPoint">Місце посадки</string>
+    <string name="my_bonus">"Кількість бонусів: "</string>
 </resources>
