@@ -64,6 +64,8 @@ import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -81,10 +83,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder;
+    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
     public String[] arrayStreet;
     private static String api;
     ArrayList<Map> adressArr;
@@ -243,44 +249,55 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         });
         startCost();
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        buttonBonus = view.findViewById(R.id.btnBonus);
+        buttonBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                fetchBonus(email);
 
+            }
+        });
         return view;
     }
 
-    @SuppressLint("UseRequireInsteadOfGet")
-    private void startLocationUpdates() {
-        LocationRequest locationRequest = createLocationRequest();
-        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
-        updateMyPosition(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString);
-    }
-    public void checkPermission(String permission, int requestCode) {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
+    String baseUrl = "https://m.easy-order-taxi.site";
+    private void fetchBonus(String value) {
+        String url = baseUrl + "/bonus/bonusUserShow/" + value;
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+                    String bonus = String.valueOf(bonusResponse.getBonus());
+                    if(!bonus.equals("0")) {
+                        MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    } else {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.no_bonus));
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
 
-        }
-    }
-    private void updateMyPosition(Double startLat, Double startLan, String position) {
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        ContentValues cv = new ContentValues();
 
-        cv.put("startLat", startLat);
-        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("startLan", startLan);
-        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("position", position);
-        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
+                    Log.d("TAG", "onResponse: " + bonus);
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
 
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
     }
+
     private void startCost() {
         String urlCost = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

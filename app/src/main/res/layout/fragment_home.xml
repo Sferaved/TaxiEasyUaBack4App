@@ -27,14 +27,14 @@
             android:id="@+id/btn_minus"
             android:layout_width="60sp"
             android:layout_height="60sp"
-            android:layout_marginTop="16sp"
+            android:layout_marginTop="16dp"
             android:gravity="center"
             android:text="-"
             android:textSize="30sp"
             app:layout_constraintEnd_toStartOf="@+id/text_view_cost"
-            app:layout_constraintHorizontal_bias="0.813"
+            app:layout_constraintHorizontal_bias="0.837"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
+            app:layout_constraintTop_toBottomOf="@+id/btnBonus" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
@@ -52,32 +52,33 @@
             android:layout_height="60sp"
             android:layout_margin="@dimen/activity_vertical_margin"
 
-            android:layout_marginTop="16sp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/input"
             android:ems="10"
             android:fontFamily="@font/light"
             android:gravity="center"
             android:textColor="@color/white"
             android:textSize="25sp"
+
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintHorizontal_bias="0.546"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnAdd"
+            app:layout_constraintTop_toBottomOf="@+id/btnBonus"
             tools:ignore="MissingConstraints" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_plus"
             android:layout_width="60sp"
             android:layout_height="60sp"
-            android:layout_marginTop="16sp"
+            android:layout_marginTop="16dp"
             android:backgroundTint="@color/colorAccent"
             android:gravity="center"
             android:text="+"
             android:textSize="30sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.149"
+            app:layout_constraintHorizontal_bias="0.275"
             app:layout_constraintStart_toEndOf="@+id/text_view_cost"
-            app:layout_constraintTop_toBottomOf="@+id/btnAdd"
+            app:layout_constraintTop_toBottomOf="@+id/btnBonus"
             tools:ignore="MissingConstraints" />
 
         <TextView
@@ -98,9 +99,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24sp"
+            android:background="@drawable/input"
             android:dropDownWidth="match_parent"
             android:dropDownHeight="wrap_content"
-            android:background="@drawable/input"
             android:ems="10"
             android:fontFamily="@font/light"
             android:hint="@string/Street_hint"
@@ -170,6 +171,7 @@
             android:textColor="#D9D9D9"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.63"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_view_cost" />
 
@@ -220,10 +222,10 @@
             android:layout_marginTop="4sp"
             android:layout_marginEnd="5sp"
             android:fontFamily="@font/regular"
-            android:visibility="invisible"
             android:text="2"
             android:textColor="#D9D9D9"
             android:textSize="16sp"
+            android:visibility="invisible"
             app:layout_constraintEnd_toStartOf="@+id/text_to"
             app:layout_constraintTop_toBottomOf="@+id/textwhere" />
 
@@ -232,9 +234,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24sp"
+            android:background="@drawable/input"
             android:dropDownWidth="match_parent"
             android:dropDownHeight="wrap_content"
-            android:background="@drawable/input"
             android:ems="10"
             android:fontFamily="@font/light"
             android:hint="@string/Street_hint"
@@ -256,11 +258,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="4sp"
             android:layout_marginTop="20sp"
-            android:visibility="invisible"
             android:fontFamily="@font/light"
             android:text="@string/to_text"
             android:textColor="#9DA0A8"
             android:textSize="16sp"
+            android:visibility="invisible"
             app:layout_constraintStart_toStartOf="@+id/text_to"
             app:layout_constraintTop_toBottomOf="@+id/text_from" />
 
@@ -286,11 +288,12 @@
             app:layout_constraintStart_toEndOf="@+id/text_to"
             app:layout_constraintTop_toTopOf="@+id/text_to" />
 
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnAdd"
             android:layout_width="293sp"
             android:layout_height="45sp"
-            android:layout_marginTop="28sp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/buttons"
             android:fontFamily="@font/regular"
             android:text="@string/add_services"
@@ -298,10 +301,25 @@
             android:textColor="#D9D9D9"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.52"
+            app:layout_constraintHorizontal_bias="0.62"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_to" />
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnBonus"
+            android:layout_width="293sp"
+            android:layout_height="45sp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/buttons"
+            android:fontFamily="@font/regular"
+            android:text="@string/btn_bonus"
+            android:textAlignment="center"
+            android:textColor="#D9D9D9"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.62"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_open_map"

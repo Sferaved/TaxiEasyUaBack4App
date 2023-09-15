@@ -78,9 +78,9 @@ public class FinishActivity extends AppCompatActivity {
         String parameterCost = getIntent().getStringExtra("messageCost_key");
 
 
-        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-        String bonusAddUrl = email + "/3/" + parameterCost;
-        fetchBonus(bonusAddUrl);
+//        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+//        String bonusAddUrl = email + "/3/" + parameterCost;
+//        fetchBonus(bonusAddUrl);
 
         TextView text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(parameterValue);

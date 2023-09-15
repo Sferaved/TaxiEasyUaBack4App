@@ -66,6 +66,8 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -86,6 +88,10 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
@@ -102,9 +108,8 @@ public class HomeFragment extends Fragment {
 
     private int selectesposition = -1;
     Button gpsbut;
-    AppCompatButton btn_order, buttonAddServices, btn_minus, btn_plus, btnGeo, on_map;
-    public String FromAddressString, ToAddressString;
-    Integer selectedItem;
+    AppCompatButton btn_order, buttonAddServices, buttonBonus, btn_minus, btn_plus, btnGeo, on_map;
+
     private long firstCost;
     public static long addCost, cost;
     private static String[] arrayStreet;
@@ -191,6 +196,10 @@ public class HomeFragment extends Fragment {
                 checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             }
         });
+
+
+
+
         btn_minus = binding.btnMinus;
         btn_plus= binding.btnPlus;
         btn_minus.setOnClickListener(new View.OnClickListener() {
@@ -620,8 +629,57 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        buttonBonus = binding.btnBonus;
+        buttonBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                fetchBonus(email);
+
+            }
+        });
+
         return root;
     }
+    String baseUrl = "https://m.easy-order-taxi.site";
+    private void fetchBonus(String value) {
+        String url = baseUrl + "/bonus/bonusUserShow/" + value;
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+                    String bonus = String.valueOf(bonusResponse.getBonus());
+                   if(!bonus.equals("0")) {
+                       MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                       bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                   } else {
+                       MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.no_bonus));
+                       bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                   }
+
+
+                    Log.d("TAG", "onResponse: " + bonus);
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
+    }
+
+
+
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
@@ -641,6 +699,7 @@ public class HomeFragment extends Fragment {
             btn_minus.setVisibility(View.INVISIBLE);
             btn_plus.setVisibility(View.INVISIBLE);
             buttonAddServices.setVisibility(View.INVISIBLE);
+            buttonBonus.setVisibility(View.INVISIBLE);
             btn_order.setVisibility(View.INVISIBLE);
             cost = 0;
             addCost = 0;
@@ -905,6 +964,7 @@ public class HomeFragment extends Fragment {
                 btn_plus.setVisibility(View.VISIBLE);
                 buttonAddServices.setVisibility(View.VISIBLE);
                 btn_order.setVisibility(View.VISIBLE);
+                buttonBonus.setVisibility(View.VISIBLE);
 
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);

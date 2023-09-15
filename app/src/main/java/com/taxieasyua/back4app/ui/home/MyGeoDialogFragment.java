@@ -64,6 +64,8 @@ import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -81,10 +83,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker;
+    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
     public String[] arrayStreet;
     private static String api;
     ArrayList<Map> adressArr;
@@ -103,6 +109,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public static long addCost;
     public static String to;
     private ProgressBar progressBar;
+
 
     public static MyGeoDialogFragment newInstance(String fromGeo) {
         fragment = new MyGeoDialogFragment();
@@ -205,7 +212,15 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         });
 
+        buttonBonus = view.findViewById(R.id.btnBonus);
+        buttonBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                fetchBonus(email);
 
+            }
+        });
 
         textViewTo = view.findViewById(R.id.text_to);
         to_number = view.findViewById(R.id.to_number);
@@ -497,6 +512,42 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
 
         return view;
+    }
+    String baseUrl = "https://m.easy-order-taxi.site";
+    private void fetchBonus(String value) {
+        String url = baseUrl + "/bonus/bonusUserShow/" + value;
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+                    String bonus = String.valueOf(bonusResponse.getBonus());
+                    if(!bonus.equals("0")) {
+                        MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    } else {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.no_bonus));
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
+
+
+                    Log.d("TAG", "onResponse: " + bonus);
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
     }
 
     @SuppressLint("UseRequireInsteadOfGet")
