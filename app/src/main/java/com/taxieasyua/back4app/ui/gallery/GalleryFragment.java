@@ -43,8 +43,11 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGalleryFragment;
@@ -61,6 +64,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class GalleryFragment extends Fragment {
 
     private FragmentGalleryBinding binding;
@@ -68,7 +75,7 @@ public class GalleryFragment extends Fragment {
     private String[] array, arraySpinner;
     private static final int CM_DELETE_ID = 1;
     public static TextView textView, text_view_cost;
-    AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd;
+    AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd, buttonBonus;
     Spinner spinner;
     Integer selectedItem;
     String FromAddressString, ToAddressString;
@@ -217,6 +224,7 @@ public class GalleryFragment extends Fragment {
                     btn_minus.setVisibility(View.VISIBLE);
                     btn_plus.setVisibility(View.VISIBLE);
                     btnAdd.setVisibility(View.VISIBLE);
+                    buttonBonus.setVisibility(View.VISIBLE);
                     SparseBooleanArray checkespositions = listView.getCheckedItemPositions();
                     ArrayList<Integer> selectespositions = new ArrayList<>();
 
@@ -294,15 +302,77 @@ public class GalleryFragment extends Fragment {
                 }
             }
         });
+
+        buttonBonus = binding.btnBonus;
+        buttonBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                fetchBonus(email);
+
+            }
+        });
         del_but.setVisibility(View.INVISIBLE);
         text_view_cost.setVisibility(View.INVISIBLE);
         btnRouts.setVisibility(View.INVISIBLE);
         btn_minus.setVisibility(View.INVISIBLE);
         btn_plus.setVisibility(View.INVISIBLE);
         btnAdd.setVisibility(View.INVISIBLE);
+        buttonBonus.setVisibility(View.INVISIBLE);
 
         return root;
     }
+
+    String baseUrl = "https://m.easy-order-taxi.site";
+    private void fetchBonus(String value) {
+        String url = baseUrl + "/bonus/bonusUserShow/" + value;
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+                    String bonus = String.valueOf(bonusResponse.getBonus());
+                    ContentValues cv = new ContentValues();
+                    cv.put("bonus", bonus);
+                    SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+                    if(!bonus.equals("0")) {
+                        Log.d("TAG", "onResponse:  cost" + cost);
+                        if(Integer.valueOf(bonus) >= Integer.valueOf((int) cost) * 100 ){
+                            MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        } else {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.nobonuspayment));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        }
+
+                    } else {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.no_bonus));
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
+
+
+                    Log.d("TAG", "onResponse: " + bonus);
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void dialogFromToOneRout(Map <String, String> rout) throws MalformedURLException, InterruptedException, JSONException {
         if(connected()) {
@@ -337,6 +407,7 @@ public class GalleryFragment extends Fragment {
                 btn_minus.setVisibility(View.INVISIBLE);
                 btn_plus.setVisibility(View.INVISIBLE);
                 btnAdd.setVisibility(View.INVISIBLE);
+                buttonBonus.setVisibility(View.INVISIBLE);
             }
             if (!orderCost.equals("0")) {
 
@@ -444,7 +515,7 @@ public class GalleryFragment extends Fragment {
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
             ContentValues cv = new ContentValues();
 
             cv.put("time", "no_time");
@@ -605,6 +676,7 @@ public class GalleryFragment extends Fragment {
             btn_minus.setVisibility(View.INVISIBLE);
             btn_plus.setVisibility(View.INVISIBLE);
             btnAdd.setVisibility(View.INVISIBLE);
+            buttonBonus.setVisibility(View.INVISIBLE);
 
         }
         del_but.setVisibility(View.INVISIBLE);
@@ -613,6 +685,7 @@ public class GalleryFragment extends Fragment {
         btn_minus.setVisibility(View.INVISIBLE);
         btn_plus.setVisibility(View.INVISIBLE);
         btnAdd.setVisibility(View.INVISIBLE);
+        buttonBonus.setVisibility(View.INVISIBLE);
 
 
     }

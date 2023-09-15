@@ -6,63 +6,10 @@
     android:layout_height="match_parent"
     android:background="@color/new_background_color">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_plus"
-        android:layout_width="40sp"
-        android:layout_height="40sp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/colorAccent"
-        android:gravity="center"
-        android:text="+"
-        android:textSize="15sp"
-        app:layout_constraintStart_toEndOf="@+id/textViewBonus"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/textViewBonus"
-        android:layout_width="120sp"
-        android:layout_height="40sp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/input"
-        android:gravity="center"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_minus"
-        android:layout_width="40sp"
-        android:layout_height="40sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="12dp"
-        android:backgroundTint="@color/colorAccent"
-        android:gravity="center"
-        android:text="-"
-        android:textSize="15sp"
-        app:layout_constraintEnd_toStartOf="@+id/textViewBonus"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_sent"
-        android:layout_width="197sp"
-        android:layout_height="45sp"
-        android:layout_marginTop="16sp"
-        android:layout_marginBottom="16sp"
-        android:backgroundTint="@color/colorAccent"
-        android:fontFamily="@font/regular"
-        android:text="@string/sent_bonus"
-        android:textAlignment="center"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewBonus"
-        app:layout_constraintVertical_bias="0.004" />
+<ListView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/listViewBonus"
+    tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,61 +6,72 @@
     android:background="#434C5E"
     tools:context=".ui.uid.UIDFragment">
 
-
-    <TextView
-        android:id="@+id/text_uid"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8sp"
-        android:layout_marginTop="8sp"
-        android:layout_marginEnd="8sp"
-        android:fontFamily="@font/regular"
-        android:visibility="gone"
-        android:minHeight="30sp"
-        android:textAlignment="center"
-        android:textColor="#D9D9D9"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_uid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8sp"
+                android:layout_marginTop="8sp"
+                android:layout_marginEnd="8sp"
+                android:fontFamily="@font/regular"
+                android:minHeight="30sp"
+                android:textAlignment="center"
+                android:textColor="#D9D9D9"
+                android:textSize="18sp"
 
 
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="RtlCompat" />
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="RtlCompat" />
 
-    <TextView
-        android:id="@+id/text_bonus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8sp"
-        android:layout_marginTop="8sp"
-        android:layout_marginEnd="8sp"
-        android:fontFamily="@font/regular"
-        android:visibility="visible"
-        android:minHeight="30sp"
-        android:textAlignment="center"
-        android:textColor="#D9D9D9"
+            <TextView
+                android:id="@+id/text_bonus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8sp"
+                android:layout_marginTop="8sp"
+                android:layout_marginEnd="8sp"
+                android:fontFamily="@font/regular"
+                android:minHeight="30sp"
+                android:textAlignment="center"
+                android:textColor="#D9D9D9"
+                android:textSize="18sp"
 
 
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="RtlCompat"
-        app:layout_constraintTop_toBottomOf="@+id/text_uid"/>
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_uid"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="RtlCompat" />
 
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="8sp"
-        android:divider="@color/colorAccent"
-        android:dividerHeight="1sp"
-        android:fontFamily="@font/regular"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_bonus"></ListView>
-
+            <ListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="600sp"
+                android:layout_marginTop="8sp"
+                android:divider="@color/colorAccent"
+                android:dividerHeight="1sp"
+                android:fontFamily="@font/regular"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_bonus"></ListView>
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

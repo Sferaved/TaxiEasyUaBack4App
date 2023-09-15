@@ -78,6 +78,7 @@ public class UIDFragment extends Fragment {
     private @NonNull FragmentUidBinding binding;
     private ListView listView;
     private String[] array;
+    private TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -85,6 +86,7 @@ public class UIDFragment extends Fragment {
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         listView = binding.listView;
+        textView = binding.textBonus;
         networkChangeReceiver = new NetworkChangeReceiver();
 
         if(connected()) {
@@ -251,7 +253,14 @@ public class UIDFragment extends Fragment {
                 BonusResponse bonusResponse = response.body();
                 if (response.isSuccessful()) {
                     String bonus = String.valueOf(bonusResponse.getBonus());
-                    binding.textBonus.setText(getString(R.string.my_bonus) + bonus);
+                    ContentValues cv = new ContentValues();
+                    cv.put("bonus", bonus);
+                    SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                    textView.setText(getString(R.string.my_bonus) + bonus);
                     Log.d("TAG", "onResponse: " + bonus);
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));

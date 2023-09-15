@@ -57,8 +57,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
+import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -88,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_12092023_0";
+    public static final String DB_NAME = "data_14092023_0";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 //    public static String  api = "apiPas2";
     public static String  api;
     public static SQLiteDatabase database;
+    public static String bonusPayment;
 
     private final String[] cityList = new String[]{
             "Київ",
@@ -161,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
             NavigationUI.setupWithNavController(navigationView, navController);
             networkChangeReceiver = new NetworkChangeReceiver();
-
+            bonusPayment = "nal_payment";
     }
 
     @Override
@@ -184,7 +187,8 @@ public class MainActivity extends AppCompatActivity {
                 " verifyOrder text," +
                 " phone_number text," +
                 " email text," +
-                " username text);");
+                " username text," +
+                " bonus text);");
 
         cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -280,9 +284,45 @@ public class MainActivity extends AppCompatActivity {
         }
 
         newUser();
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        fetchBonus(email);
 
     }
+    String baseUrl = "https://m.easy-order-taxi.site";
+    private void fetchBonus(String value) {
+        String url = baseUrl + "/bonus/bonusUserShow/" + value;
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+                    String bonus = String.valueOf(bonusResponse.getBonus());
 
+                    ContentValues cv = new ContentValues();
+                    cv.put("bonus", bonus);
+                    SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                    Log.d("TAG", "onResponse: logCursor(TABLE_USER_INFO).get(4)" + logCursor(TABLE_USER_INFO).get(5));
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
+    }
     private void insertFirstSettings(List<String> settings) {
         String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -354,10 +394,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void insertUserInfo() {
 
-
-
-
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -367,6 +404,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(3, "+380");
             statement.bindString(4, "email");
             statement.bindString(5, "username");
+            statement.bindString(6, "1");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -961,122 +999,19 @@ public class MainActivity extends AppCompatActivity {
         if(userEmail.equals("email")) {
 
             startActivity(new Intent(MainActivity.this, FirebaseSignIn.class));
-//            startActivity(new Intent(this, GoogleSignInActivity.class));
       } else {
-//            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                    && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//
-//                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            }
-//            verifyAccess();
             new VerifyUserTask().execute();
         }
 
 
     }
-//    private void verifyAccess() throws MalformedURLException {
-//     LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//     boolean gpsEnabled = false;
-//     try {
-//         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-//     } catch (Exception ignored) {
-//     }
-//
-////                 Если GPS выключен, выводим диалог с предложением его включить
-//     if (!gpsEnabled) {
-//         openGPSSettings();
-//     } else {
-//         // Проверяем состояние Location Service с помощью колбэка
-//         checkLocationServiceEnabled(new FirebaseSignIn.LocationServiceCallback() {
-//             @Override
-//             public void onLocationServiceResult(boolean isEnabled) throws MalformedURLException {
-//                 if (isEnabled) {
-//                     // Проверяем разрешения на местоположение
-//                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                             && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//
-//                         checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                         checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                     }
-//                 }
-//
-//             }
-//         });
-//     }
-// }
+
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
         }
     }
-    private static final int REQUEST_ENABLE_GPS = 1001;
-//    private void openGPSSettings() {
-//        // Проверяем, включен ли GPS
-//        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-//        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-//
-//        if (!isGPSEnabled) {
-//            // Если GPS не включен, открываем окно настроек для GPS
-//            MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
-//            LayoutInflater inflater = this.getLayoutInflater();
-//
-//            View view_cost = inflater.inflate(R.layout.message_layout, null);
-//            builder.setView(view_cost);
-//            TextView message = view_cost.findViewById(R.id.textMessage);
-//            message.setText(R.string.gps_info);
-//            builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-//                            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//                            startActivityForResult(intent, REQUEST_ENABLE_GPS);
-//                        }
-//                    })
-//                    .setNegativeButton(R.string.cancel_button, null)
-//                    .show();
-//
-//        } else {
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-//                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                startActivity(new Intent(this, OpenStreetMapActivity.class));
-//            } else {
-//                startActivity(new Intent(this, MainActivity.class));
-//            }
-//
-//        }
-//    }
-//    private void checkLocationServiceEnabled(FirebaseSignIn.LocationServiceCallback callback) throws MalformedURLException {
-//        Context context = getApplicationContext(); // Получите контекст вашего приложения
-//
-//        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-//
-//        // Проверяем, доступны ли данные о местоположении
-//        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-//                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            callback.onLocationServiceResult(false);
-//            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            return;
-//        }
-//
-//        Task<Location> locationTask = fusedLocationClient.getLastLocation();
-//        locationTask.addOnCompleteListener(task -> {
-//            if (task.isSuccessful() && task.getResult() != null) {
-//                try {
-//                    callback.onLocationServiceResult(true);
-//                } catch (MalformedURLException e) {
-//                    Log.d("TAG", "onCreate:" + new RuntimeException(e));
-//                }
-//            } else {
-//                try {
-//                    callback.onLocationServiceResult(false);
-//                } catch (MalformedURLException e) {
-//                    Log.d("TAG", "onCreate:" + new RuntimeException(e));
-//                }
-//            }
-//        });
-//    }
 
     @SuppressLint("StaticFieldLeak")
     public class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {

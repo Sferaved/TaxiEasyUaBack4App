@@ -11,6 +11,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,10 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 
 import java.text.ParseException;
@@ -78,9 +76,6 @@ public class FinishActivity extends AppCompatActivity {
         String parameterCost = getIntent().getStringExtra("messageCost_key");
 
 
-//        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-//        String bonusAddUrl = email + "/3/" + parameterCost;
-//        fetchBonus(bonusAddUrl);
 
         TextView text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(parameterValue);
@@ -104,6 +99,21 @@ public class FinishActivity extends AppCompatActivity {
         });
 
         Button btn_cancel_order = findViewById(R.id.btn_cancel_order);
+        long delayMillis = 5 * 60 * 1000;
+
+        Handler handler = new Handler();
+        Log.d("TAG", "onCreate: MainActivity.bonusPayment" + MainActivity.bonusPayment);
+
+         if (MainActivity.bonusPayment.equals("bonus_payment")) {
+             handler.postDelayed(new Runnable() {
+                 @Override
+                 public void run() {
+
+                     btn_cancel_order.setVisibility(View.INVISIBLE);
+                 }
+
+             }, delayMillis);
+         }
         btn_cancel_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -171,34 +181,7 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
-    private void fetchBonus(String value) {
-        String url = baseUrl + "/bonus/bonusAdd/" + value;
-        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
-        call.enqueue(new Callback<BonusResponse>() {
-            @Override
-            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
-                BonusResponse bonusResponse = response.body();
-                if (response.isSuccessful()) {
-                    String bonus = String.valueOf(bonusResponse.getBonus());
-                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(getString(R.string.add_bonus) + bonus + getString(R.string.bonus));
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                    Log.d("TAG", "onResponse: " + bonus);
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
 
-            @Override
-            public void onFailure(Call<BonusResponse> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                // Дополнительная обработка ошибки
-            }
-        });
-    }
 
     private boolean verifyOrder() {
         SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -343,20 +326,20 @@ public class FinishActivity extends AppCompatActivity {
                             message = messageBuilder.toString();
                             break;
                         default:
-                            message = getString(R.string.ex_st_0);
+                            message = getString(R.string.def_status);
                             break;
                     }
 
                     text_status.setText(message);
 
                 } else {
-                    text_status.setText(getString(R.string.ex_st_0));
+                    text_status.setText(getString(R.string.def_status));
                 }
             }
 
             @Override
             public void onFailure(Call<OrderResponse> call, Throwable t) {
-                text_status.setText(getString(R.string.ex_st_0));
+                text_status.setText(getString(R.string.def_status));
             }
         });
     }
