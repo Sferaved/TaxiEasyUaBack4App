@@ -224,7 +224,20 @@ public class GalleryFragment extends Fragment {
                     btn_minus.setVisibility(View.VISIBLE);
                     btn_plus.setVisibility(View.VISIBLE);
                     btnAdd.setVisibility(View.VISIBLE);
-                    buttonBonus.setVisibility(View.VISIBLE);
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                    Log.d("TAG", "cost: stringList.get(1) "  + stringList.get(1));
+                    switch (stringList.get(1)){
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            buttonBonus.setVisibility(View.GONE);
+                            break;
+                        case "OdessaTest":
+                            buttonBonus.setVisibility(View.VISIBLE);
+                            break;
+                    }
                     SparseBooleanArray checkespositions = listView.getCheckedItemPositions();
                     ArrayList<Integer> selectespositions = new ArrayList<>();
 

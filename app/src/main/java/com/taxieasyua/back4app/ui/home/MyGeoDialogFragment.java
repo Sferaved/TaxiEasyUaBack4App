@@ -146,8 +146,9 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 myLinearLayout.setLayoutParams(layoutParams);
             }
         });
-
-            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+        buttonBonus = view.findViewById(R.id.btnBonus);
+        buttonBonus.setVisibility(View.GONE);
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
@@ -172,7 +173,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
                 api = MainActivity.apiTest;
-
+                buttonBonus.setVisibility(View.VISIBLE);
                 break;
             default:
                 arrayStreet = KyivCity.arrayStreet();
@@ -212,7 +213,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         });
 
-        buttonBonus = view.findViewById(R.id.btnBonus);
+
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,6 +229,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);
         btnMarker = view.findViewById(R.id.btnMarker);
+
         btnMarker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -320,6 +322,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                               MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                              bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                          } else {
+
                              String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                              long discountInt = Integer.parseInt(discountText);
                              long discount;

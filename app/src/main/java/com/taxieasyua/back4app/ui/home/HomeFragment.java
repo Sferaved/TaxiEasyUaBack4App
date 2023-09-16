@@ -140,12 +140,14 @@ public class HomeFragment extends Fragment {
     long MIN_COST_VALUE, MAX_COST_VALUE;
     AutoCompleteTextView textViewFrom, textViewTo;
     ArrayAdapter<String> adapter;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         progressBar = binding.progressBar;
+        buttonBonus = binding.btnBonus;
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
         Log.d("TAG", "onViewCreated: " + stringList);
@@ -154,18 +156,22 @@ public class HomeFragment extends Fragment {
                 case "Dnipropetrovsk Oblast":
                     arrayStreet = Dnipro.arrayStreet();
                     api = MainActivity.apiDnipro;
+
                     break;
                 case "Zaporizhzhia":
                     arrayStreet = Zaporizhzhia.arrayStreet();
                     api = MainActivity.apiZaporizhzhia;
+
                     break;
                 case "Cherkasy Oblast":
                     arrayStreet = Cherkasy.arrayStreet();
                     api = MainActivity.apiCherkasy;
+
                     break;
                 case "Odessa":
                     arrayStreet = Odessa.arrayStreet();
                     api = MainActivity.apiOdessa;
+
                     break;
                 case "OdessaTest":
                     arrayStreet = OdessaTest.arrayStreet();
@@ -174,6 +180,7 @@ public class HomeFragment extends Fragment {
                 default:
                     arrayStreet = KyivCity.arrayStreet();
                     api = MainActivity.apiKyiv;
+
                     break;
             };
             adapter = new ArrayAdapter<>(getActivity(),R.layout.drop_down_layout, arrayStreet);
@@ -430,7 +437,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        buttonBonus = binding.btnBonus;
+
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -513,7 +520,7 @@ public class HomeFragment extends Fragment {
             btn_minus.setVisibility(View.INVISIBLE);
             btn_plus.setVisibility(View.INVISIBLE);
             buttonAddServices.setVisibility(View.INVISIBLE);
-            buttonBonus.setVisibility(View.INVISIBLE);
+
             btn_order.setVisibility(View.INVISIBLE);
             cost = 0;
             addCost = 0;
@@ -778,7 +785,21 @@ public class HomeFragment extends Fragment {
                 btn_plus.setVisibility(View.VISIBLE);
                 buttonAddServices.setVisibility(View.VISIBLE);
                 btn_order.setVisibility(View.VISIBLE);
-                buttonBonus.setVisibility(View.VISIBLE);
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                Log.d(TAG, "cost: stringList.get(1) "  + stringList.get(1));
+                switch (stringList.get(1)){
+                    case "Kyiv City":
+                    case "Dnipropetrovsk Oblast":
+                    case "Odessa":
+                    case "Zaporizhzhia":
+                    case "Cherkasy Oblast":
+                        buttonBonus.setVisibility(View.GONE);
+                        break;
+                    case "OdessaTest":
+                        buttonBonus.setVisibility(View.VISIBLE);
+                        break;
+                }
+
 
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);

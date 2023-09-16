@@ -247,9 +247,9 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 }
             }
         });
+        buttonBonus = view.findViewById(R.id.btnBonus);
         startCost();
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
-        buttonBonus = view.findViewById(R.id.btnBonus);
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -327,7 +327,20 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
         if (!orderCost.equals("0")) {
+            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
 
+            switch (stringList.get(1)){
+                case "Kyiv City":
+                case "Dnipropetrovsk Oblast":
+                case "Odessa":
+                case "Zaporizhzhia":
+                case "Cherkasy Oblast":
+                    buttonBonus.setVisibility(View.GONE);
+                    break;
+                case "OdessaTest":
+                    buttonBonus.setVisibility(View.VISIBLE);
+                    break;
+            }
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
             long discount;

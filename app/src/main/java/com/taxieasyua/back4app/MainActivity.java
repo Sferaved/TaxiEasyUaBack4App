@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_16092023_11";
+    public static final String DB_NAME = "data_16092023_14";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -450,38 +450,42 @@ public class MainActivity extends AppCompatActivity {
 
     private void getLocalIpAddress() {
         HomeFragment.progressBar.setVisibility(View.VISIBLE);
-        ApiService apiService = ApiClient.getApiService();
+        List<String> city = logCursor(CITY_INFO);
 
-        Call<City> call = apiService.cityOrder();
 
-        call.enqueue(new Callback<City>() {
-            @Override
-            public void onResponse(Call<City> call, Response<City> response) {
-                if (response.isSuccessful()) {
-                    City status = response.body();
-                    if (status != null) {
-                        String result = status.getResponse();
-                        Log.d("TAG", "onResponse:result " + result);
-                        MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
+        if(city.size() != 0) {
+            ApiService apiService = ApiClient.getApiService();
+
+            Call<City> call = apiService.cityOrder();
+
+            call.enqueue(new Callback<City>() {
+                @Override
+                public void onResponse(Call<City> call, Response<City> response) {
+                    if (response.isSuccessful()) {
+                        City status = response.body();
+                        if (status != null) {
+                            String result = status.getResponse();
+                            Log.d("TAG", "onResponse:result " + result);
+                            MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
+                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        }
+                    } else {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-
                     }
                 }
-                else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                @Override
+                public void onFailure(Call<City> call, Throwable t) {
+                    // Обработка ошибок сети или других ошибок
+                    String errorMessage = t.getMessage();
+                    t.printStackTrace();
+                    Log.d("TAG", "onFailure: " + errorMessage);
+
                 }
-            }
-            @Override
-            public void onFailure(Call<City> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
-
-            }
-        });
-
+            });
+        }
 
     }
 //
