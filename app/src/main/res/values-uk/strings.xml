@@ -201,11 +201,11 @@
     <string name="my_bonus">"Кількість бонусів: "</string>
     <string name="add_bonus">"Вам нараховано"</string>
     <string name="bonus">"бонусів"</string>
-    <string name="sent_bonus">Использовать</string>
-    <string name="no_bonus">У Вас нет доступных бонусов</string>
-    <string name="btn_bonus">Способ оплаты</string>
-    <string name="nobonuspayment">Недостаточно бонусов. Оплата наличными.</string>
-    <string name="nal_payment">Наличными</string>
-    <string name="bonus_payment">Использовать бонусы</string>
-    <string name="def_status">Уточните у диспетчера</string>
+    <string name="sent_bonus">Використовувати</string>
+    <string name="no_bonus">У Вас немає доступних бонусів</string>
+    <string name="btn_bonus">Спосіб оплати</string>
+    <string name="nobonuspayment">Недостатньо бонусів. Оплата готівкою.</string>
+    <string name="nal_payment">Готівкою</string>
+    <string name="bonus_payment">Використовувати бонуси</string>
+    <string name="def_status">Уточніть у диспетчера</string>
 </resources>
