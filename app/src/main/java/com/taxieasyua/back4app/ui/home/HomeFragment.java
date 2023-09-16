@@ -188,6 +188,7 @@ public class HomeFragment extends Fragment {
             btnGeo.setVisibility(View.VISIBLE);
         }  else {
             btnGeo.setVisibility(View.INVISIBLE);
+
         }
         btnGeo.setOnClickListener(new View.OnClickListener() {
             @Override

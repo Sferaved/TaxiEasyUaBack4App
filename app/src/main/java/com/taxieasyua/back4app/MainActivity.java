@@ -38,6 +38,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -48,19 +50,27 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
+import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -71,13 +81,25 @@ import com.taxieasyua.back4app.ui.start.StopActivity;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -90,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_14092023_0";
+    public static final String DB_NAME = "data_16092023_11";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -105,16 +127,13 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     NetworkChangeReceiver networkChangeReceiver;
     String  cityNew;
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationCallback locationCallback;
     public static final String  apiTest = "apiTest";
     public static final String  apiKyiv = "apiPas2";
     public static final String  apiDnipro = "apiPas2_Dnipro";
     public static final String  apiOdessa = "apiPas2_Odessa";
     public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
     public static final String  apiCherkasy = "apiPas2_Cherkasy";
-//    public static String  api = "apiPas2";
+
     public static String  api;
     public static SQLiteDatabase database;
     public static String bonusPayment;
@@ -136,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             "OdessaTest"
     };
     String message;
-    private Semaphore semaphore = new Semaphore(0);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -272,16 +291,17 @@ public class MainActivity extends AppCompatActivity {
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
                 " city text);");
-
+        cursorDb = database.query(CITY_INFO, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            insertCity("Kyiv City");
+            api = apiKyiv;
+        }
         cursorDb = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         verifyPhone = cursorDb.getCount() == 1;
         if (cursorDb != null && !cursorDb.isClosed())
             cursorDb.close();
 
-        cursorDb = database.query(CITY_INFO, null, null, null, null, null, null);
-        if (cursorDb.getCount() == 0) {
-            getLocalIpAddress();
-        }
+
 
         newUser();
         String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
@@ -429,69 +449,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getLocalIpAddress() {
+        HomeFragment.progressBar.setVisibility(View.VISIBLE);
+        ApiService apiService = ApiClient.getApiService();
 
-        List<String> city = logCursor(CITY_INFO);
+        Call<City> call = apiService.cityOrder();
 
+        call.enqueue(new Callback<City>() {
+            @Override
+            public void onResponse(Call<City> call, Response<City> response) {
+                if (response.isSuccessful()) {
+                    City status = response.body();
+                    if (status != null) {
+                        String result = status.getResponse();
+                        Log.d("TAG", "onResponse:result " + result);
+                        MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
+                        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
-        if(city.size() == 0) {
-            ApiService apiService = ApiClient.getApiService();
-
-            Call<City> call = apiService.cityOrder();
-
-            call.enqueue(new Callback<City>() {
-                @Override
-                public void onResponse(Call<City> call, Response<City> response) {
-                    if (response.isSuccessful()) {
-                        City status = response.body();
-                        if (status != null) {
-                            String result = status.getResponse();
-                            String message =getString(R.string.your_city);
-
-                            insertCity(result);
-                            List<String> stringList = logCursor(CITY_INFO);
-                            Log.d("TAG", "onCreate: insertCity"  + stringList);
-                            Log.d("TAG", "onResponse: " + result);
-                            switch (result){
-                                case "Kyiv City":
-                                    message += getString(R.string.Kyiv_city);
-                                    break;
-                                case "Dnipropetrovsk Oblast":
-                                    message += getString(R.string.Dnipro_city);
-                                    break;
-                                case "Odessa":
-                                    message += getString(R.string.Odessa);
-                                    break;
-                                case "Zaporizhzhia":
-                                    message += getString(R.string.Zaporizhzhia);
-                                    break;
-                                case "Cherkasy Oblast":
-                                    message += getString(R.string.Cherkasy);
-                                    break;
-                                default:
-                                    message += result;
-                                    break;
-                            }
-                            database.close();
-                            Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-                            finishAffinity();
-                            startActivity(new Intent(MainActivity.this, MainActivity.class));
-                        }
-                    }
-                    else {
-                        Toast.makeText(MainActivity.this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
                     }
                 }
-
-                @Override
-                public void onFailure(Call<City> call, Throwable t) {
-                    // Обработка ошибок сети или других ошибок
-                    String errorMessage = t.getMessage();
-                    t.printStackTrace();
-                    Log.d("TAG", "onFailure: " + errorMessage);
-
+                else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
-            });
-        }
+            }
+            @Override
+            public void onFailure(Call<City> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                Log.d("TAG", "onFailure: " + errorMessage);
+
+            }
+        });
+
 
     }
 //
@@ -997,13 +987,153 @@ public class MainActivity extends AppCompatActivity {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         Log.d("TAG", "newUser: " + userEmail);
         if(userEmail.equals("email")) {
-
-            startActivity(new Intent(MainActivity.this, FirebaseSignIn.class));
+            startFireBase();
       } else {
             new VerifyUserTask().execute();
         }
 
 
+    }
+
+    private void startFireBase() {
+        startSignInInBackground();
+    }
+    private void startSignInInBackground() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Инициализация FirebaseApp
+                FirebaseApp.initializeApp(MainActivity.this);
+
+                // Choose authentication providers
+                List<AuthUI.IdpConfig> providers = Arrays.asList(
+                        new AuthUI.IdpConfig.GoogleBuilder().build());
+
+                // Create and launch sign-in intent
+                Intent signInIntent = AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build();
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            signInLauncher.launch(signInIntent);
+                        }
+                    });
+                } catch (NullPointerException ignored) {
+
+                }
+            }
+        });
+        thread.start();
+    }
+
+
+    private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
+            new FirebaseAuthUIActivityResultContract(),
+            new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
+                @Override
+                public void onActivityResult(FirebaseAuthUIAuthenticationResult result) {
+                    try {
+                        onSignInResult(result);
+                    } catch (MalformedURLException | JSONException | InterruptedException e) {
+                        Log.d("TAG", "onCreate:" + new RuntimeException(e));
+                    }
+                }
+            }
+    );
+
+
+    private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
+        ContentValues cv = new ContentValues();
+        try {
+            if (result.getResultCode() == RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                updateRecordsUserInfo("email", user.getEmail());
+                updateRecordsUserInfo("username", user.getDisplayName());
+
+                addUser(user.getEmail(), user.getDisplayName());
+
+                getLocalIpAddress();
+
+
+                cv.put("verifyOrder", "1");
+                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                database.close();
+
+            } else {
+
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.firebase_error));
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                cv.put("verifyOrder", "0");
+                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+                database.close();
+            }
+        } catch (NullPointerException e) {
+
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.firebase_error));
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            cv.put("verifyOrder", "0");
+            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+            database.close();
+        }
+    }
+
+    private void addUser(String displayName, String userEmail) {
+        String urlString = "https://m.easy-order-taxi.site/" + MainActivity.apiKyiv + "/android/addUser/" + displayName + "/" + userEmail;
+
+        Callable<Void> addUserCallable = () -> {
+            URL url = new URL(urlString);
+            Log.d("TAG", "sendURL: " + urlString);
+
+            HttpsURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpsURLConnection) url.openConnection();
+                urlConnection.setDoInput(true);
+//                urlConnection.getResponseCode();
+                Log.d("TAG", "addUser: urlConnection.getResponseCode(); " + urlConnection.getResponseCode());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+            }
+
+            return null;
+        };
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Void> addUserFuture = executorService.submit(addUserCallable);
+
+        // Дождитесь завершения выполнения задачи с тайм-аутом
+        try {
+            addUserFuture.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            // Обработка ошибок
+            e.printStackTrace();
+        } finally {
+            // Завершите исполнителя
+            executorService.shutdown();
+        }
+    }
+
+    private void updateRecordsUserInfo(String userInfo, String result) {
+        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
+
+        cv.put(userInfo, result);
+
+        // обновляем по id
+        database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
 
     public void checkPermission(String permission, int requestCode) {
