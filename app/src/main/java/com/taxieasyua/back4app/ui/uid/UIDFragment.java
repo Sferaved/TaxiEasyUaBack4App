@@ -65,7 +65,7 @@ public class UIDFragment extends Fragment {
 
         if(connected()) {
             @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
-            fetchBonus(email);
+            fetchBonus(email, getActivity());
             fetchRoutes(email);
         }
         return root;
@@ -217,7 +217,7 @@ public class UIDFragment extends Fragment {
 
         }
     }
-    private void fetchBonus(String value) {
+    private void fetchBonus(String value, Context context) {
         String url = baseUrl + "/bonus/bonusUserShow/" + value;
         Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
         Log.d("TAG", "fetchBonus: " + url);
@@ -229,7 +229,7 @@ public class UIDFragment extends Fragment {
                     String bonus = String.valueOf(bonusResponse.getBonus());
                     ContentValues cv = new ContentValues();
                     cv.put("bonus", bonus);
-                    SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                     database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                             new String[] { "1" });
                     database.close();
