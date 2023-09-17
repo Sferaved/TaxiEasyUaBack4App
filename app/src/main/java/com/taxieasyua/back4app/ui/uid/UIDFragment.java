@@ -2,70 +2,44 @@ package com.taxieasyua.back4app.ui.uid;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
-
 import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.Odessa.Odessa;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
-import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
-import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
 import com.taxieasyua.back4app.databinding.FragmentUidBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
-import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
-import com.taxieasyua.back4app.ui.finish.Status;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetGalleryFragment;
-import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 
-import org.json.JSONException;
-
-import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
 
@@ -90,7 +64,7 @@ public class UIDFragment extends Fragment {
         networkChangeReceiver = new NetworkChangeReceiver();
 
         if(connected()) {
-            String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+            @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
             fetchBonus(email);
             fetchRoutes(email);
         }
@@ -282,7 +256,7 @@ public class UIDFragment extends Fragment {
      @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -298,7 +272,7 @@ public class UIDFragment extends Fragment {
                 } while (c.moveToNext());
             }
         }
-
+        database.close();
         return list;
     }
     @Override
