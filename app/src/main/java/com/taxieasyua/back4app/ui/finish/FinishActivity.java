@@ -24,6 +24,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 
 import java.text.ParseException;
@@ -105,6 +107,13 @@ public class FinishActivity extends AppCompatActivity {
         Log.d("TAG", "onCreate: MainActivity.bonusPayment" + MainActivity.bonusPayment);
 
          if (MainActivity.bonusPayment.equals("bonus_payment")) {
+
+             String baseUrl = "https://m.easy-order-taxi.site";
+             String url = baseUrl + "/bonusBalance/recordsBloke/" + UID_key;
+
+             fetchBonus(url);
+             Log.d("TAG", "onCreate: /bonusBalance/recordsBloke/" + url);
+
              handler.postDelayed(new Runnable() {
                  @Override
                  public void run() {
@@ -181,7 +190,37 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
+    private void fetchBonus(String url) {
 
+        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
+        Log.d("TAG", "fetchBonus: " + url);
+        call.enqueue(new Callback<BonusResponse>() {
+            @Override
+            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+                BonusResponse bonusResponse = response.body();
+                if (response.isSuccessful()) {
+
+                    String bonus = String.valueOf(bonusResponse.getBonus());
+                    String message = getString(R.string.block_mes) + bonus + getString(R.string.bon);
+
+                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BonusResponse> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                // Дополнительная обработка ошибки
+            }
+        });
+    }
 
     private boolean verifyOrder() {
         SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

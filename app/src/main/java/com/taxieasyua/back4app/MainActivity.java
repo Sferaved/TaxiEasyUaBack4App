@@ -1059,7 +1059,7 @@ public class MainActivity extends AppCompatActivity {
                 updateRecordsUserInfo("email", user.getEmail());
                 updateRecordsUserInfo("username", user.getDisplayName());
 
-                addUser(user.getEmail(), user.getDisplayName());
+                addUser(user.getDisplayName(), user.getEmail()) ;
 
                 getLocalIpAddress();
 
@@ -1089,8 +1089,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addUser(String displayName, String userEmail) {
-        String urlString = "https://m.easy-order-taxi.site/" + MainActivity.apiKyiv + "/android/addUser/" + displayName + "/" + userEmail;
+    private void addUser(String displayName , String userEmail) {
+        String urlString = "https://m.easy-order-taxi.site/android/addUser/" + displayName  + "/" + userEmail;
 
         Callable<Void> addUserCallable = () -> {
             URL url = new URL(urlString);
