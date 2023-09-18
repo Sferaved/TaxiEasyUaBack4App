@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.798</string>
-    <string name="version">Версія: 2.798</string>
+    <string name="version_code">2.800</string>
+    <string name="version">Версія: 2.800</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -198,7 +198,7 @@
     <string name="close_resone_time">", время заказу: "</string>
     <string name="close_resone_text">", стан: "</string>
     <string name="startPoint">Місце посадки</string>
-    <string name="my_bonus">"Кількість бонусів: "</string>
+    <string name="my_bonus">"Доступно бонусів: "</string>
     <string name="add_bonus">"Вам нараховано"</string>
     <string name="bonus">"бонусів"</string>
     <string name="sent_bonus">Використовувати</string>
@@ -209,8 +209,15 @@
     <string name="bonus_payment">Використовувати бонуси</string>
     <string name="def_status">Уточніть у диспетчера</string>
     <string name="block_mes">Заблоковано</string>
-    <string name="bon"> бонусів"</string>
+    <string name="bon">бонусів</string>
     <string name="my_bonus_menu">Мої бонуси</string>
     <string name="update_bonus">отримати бонуси</string>
     <string name="upd_bonus_info">Оновіть інформацію про ваші бонуси</string>
+    <string name="bonus_text_1">Правила нарахування бонусів:</string>
+    <string name="bonus_text_2">- Реєстрація в додатку - 1 бонус;</string>
+    <string name="bonus_text_3">- Перше замовлення - 1 бонус;</string>
+    <string name="bonus_text_4">- Виконаний маршрут - 1 бонус за кожну 1 цілу гривню із суми виконання;</string>
+    <string name="bonus_text_5">- Вхід до програми (не більше 1 разу на поточну добу) - 1 бонус за 1 добу календарної.</string>
+    <string name="bonus_text_6">Бонуси можна використовувати при замовленні поїздок за умови можливості такого сервісу у вибраній Вами базі адрес, а також якщо вартість поїздки повністю покривається доступними бонусами з розрахунку 100 бонусів = 1 грн.</string>
+    <string name="bonus_text_7">Для отримання актуальної інформації та нарахування бонусів - натисніть кнопку - ОТРИМАТИ БОНУСИ</string>
 </resources>

@@ -187,27 +187,27 @@ public class UIDFragment extends Fragment {
             }
 
 
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault());
-            SimpleDateFormat outputFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault());
-            TimeZone timeZoneKyiv = TimeZone.getTimeZone("Europe/Kiev");
-            outputFormat.setTimeZone(timeZoneKyiv);
+//            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault());
+//            SimpleDateFormat outputFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", new Locale("uk", "UA"));
+////            TimeZone timeZoneKyiv = TimeZone.getTimeZone("Europe/Kiev");
+//            outputFormat.setTimeZone(timeZoneKyiv);
 
-            try {
-                Date date = inputFormat.parse(createdAt); // Преобразование строки в объект Date
-                assert date != null;
-                String formattedDateTime = outputFormat.format(date); // Форматирование даты в нужный вид
+//            try {
+//                Date date = inputFormat.parse(createdAt); // Преобразование строки в объект Date
+//                assert date != null;
+//                String formattedDateTime = outputFormat.format(date); // Форматирование даты в нужный вид
 
                 String routeInfo = getString(R.string.close_resone_from) + routeFrom + " " + routefromnumber
                         + getString(R.string.close_resone_to) + routeTo + " " + routeTonumber
                         + getString(R.string.close_resone_cost) + webCost + " " + getString(R.string.UAH)
                         + getString(R.string.close_resone_time)
-                        + formattedDateTime + getString(R.string.close_resone_text) + closeReasonText;
+                        + createdAt + getString(R.string.close_resone_text) + closeReasonText;
                 array[i] = routeInfo;
 
                 // Теперь formattedDateTime содержит отформатированную дату и время
-            } catch (ParseException e) {
-                e.printStackTrace(); // Обработка возможных ошибок парсинга
-            }
+//            } catch (ParseException e) {
+//                e.printStackTrace(); // Обработка возможных ошибок парсинга
+//            }
         }
         Log.d("TAG", "processRouteList: array " + Arrays.toString(array));
         if(array != null) {
