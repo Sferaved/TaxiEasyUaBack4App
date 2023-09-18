@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.800</string>
-    <string name="version">Версія: 2.800</string>
+    <string name="version_code">2.801</string>
+    <string name="version">Версія: 2.801</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -220,5 +220,5 @@
     <string name="bonus_text_5">- Вхід до програми (не більше 1 разу на поточну добу) - 1 бонус за 1 добу календарної.</string>
     <string name="bonus_text_6">Бонуси можна використовувати при замовленні поїздок за умови можливості такого сервісу у вибраній Вами базі адрес, а також якщо вартість поїздки повністю покривається доступними бонусами з розрахунку 100 бонусів = 1 грн.</string>
     <string name="bonus_text_7">Для отримання актуальної інформації та нарахування бонусів - натисніть кнопку - ОТРИМАТИ БОНУСИ</string>
-    <string name="payment_type_ok">Применить выбор</string>
+    <string name="payment_type_ok">Застосувати вибір</string>
 </resources>

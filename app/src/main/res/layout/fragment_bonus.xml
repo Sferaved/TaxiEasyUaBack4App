@@ -9,18 +9,18 @@
 
     <TextView
         android:id="@+id/text_bonus"
-        android:layout_width="378dp"
-        android:layout_height="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8sp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
+
         android:minHeight="30sp"
 
         android:textAlignment="center"
-
         android:textColor="@color/white"
-        android:textSize="25sp"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,7 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8sp"
-        android:layout_marginTop="24dp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
         android:minHeight="30sp"
@@ -44,7 +43,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnBonus"
+        app:layout_constraintTop_toBottomOf="@+id/progress_bar"
         tools:ignore="RtlCompat" />
 
     <TextView
@@ -55,12 +54,12 @@
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
 
-        android:layout_marginTop="4sp"
+        android:layout_marginTop="2sp"
         android:text="@string/bonus_text_2"
 
         android:textColor="#D9D9D9"
 
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -73,13 +72,13 @@
         android:layout_marginStart="8sp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
-        android:layout_marginTop="4sp"
+        android:layout_marginTop="2sp"
 
         android:text="@string/bonus_text_3"
 
         android:textColor="#D9D9D9"
 
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,10 +91,10 @@
         android:layout_marginStart="8sp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
-        android:layout_marginTop="4sp"
+        android:layout_marginTop="2sp"
         android:text="@string/bonus_text_4"
         android:textColor="#D9D9D9"
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -108,12 +107,12 @@
         android:layout_marginStart="8sp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
-        android:layout_marginTop="4sp"
+        android:layout_marginTop="2sp"
         android:text="@string/bonus_text_5"
 
         android:textColor="#D9D9D9"
 
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -127,31 +126,30 @@
         android:layout_marginStart="8sp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
-        android:layout_marginTop="4sp"
+        android:layout_marginTop="2sp"
         android:text="@string/bonus_text_6"
 
         android:textColor="#D9D9D9"
 
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_5"
         tools:ignore="RtlCompat" />
-
-    <TextView
+     <TextView
         android:id="@+id/text_7"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8sp"
-        android:layout_marginTop="20dp"
         android:layout_marginEnd="8sp"
         android:fontFamily="@font/regular"
+        android:layout_marginTop="2sp"
         android:text="@string/bonus_text_7"
 
         android:textColor="#D9D9D9"
 
-        android:textSize="16sp"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -162,26 +160,24 @@
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_7"
+        app:layout_constraintTop_toBottomOf="@+id/btnBonus"
         tools:ignore="MissingConstraints" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnBonus"
         android:layout_width="293sp"
         android:layout_height="45sp"
-        android:layout_marginTop="8dp"
         android:background="@drawable/buttons"
         android:fontFamily="@font/regular"
         android:text="@string/update_bonus"
         android:textAlignment="center"
-
         android:textColor="#D9D9D9"
-        android:textSize="16sp"
+
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_bonus" />
