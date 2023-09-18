@@ -43,7 +43,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String bonusMessage;
     ListView listView;
     String[] array;
-
+    AppCompatButton btn_ok;
 
 
     public MyBottomSheetBonusFragment(String bonusMessage) {
@@ -72,6 +72,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 Log.d("TAG", "onItemClick: position" + position);
                 Log.d("TAG", "onItemClick: array  position" + array [position]);
                 MainActivity.bonusPayment = "bonus_payment";
+            }
+        });
+
+        btn_ok = view.findViewById(R.id.btn_ok);
+        btn_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
             }
         });
 

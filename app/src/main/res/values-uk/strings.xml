@@ -206,7 +206,7 @@
     <string name="btn_bonus">Спосіб оплати</string>
     <string name="nobonuspayment">Недостатньо бонусів. Оплата готівкою.</string>
     <string name="nal_payment">Готівкою</string>
-    <string name="bonus_payment">Використовувати бонуси</string>
+    <string name="bonus_payment">Бонуси</string>
     <string name="def_status">Уточніть у диспетчера</string>
     <string name="block_mes">Заблоковано</string>
     <string name="bon">бонусів</string>
@@ -220,4 +220,5 @@
     <string name="bonus_text_5">- Вхід до програми (не більше 1 разу на поточну добу) - 1 бонус за 1 добу календарної.</string>
     <string name="bonus_text_6">Бонуси можна використовувати при замовленні поїздок за умови можливості такого сервісу у вибраній Вами базі адрес, а також якщо вартість поїздки повністю покривається доступними бонусами з розрахунку 100 бонусів = 1 грн.</string>
     <string name="bonus_text_7">Для отримання актуальної інформації та нарахування бонусів - натисніть кнопку - ОТРИМАТИ БОНУСИ</string>
+    <string name="payment_type_ok">Применить выбор</string>
 </resources>
