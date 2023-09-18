@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.widget.AppCompatButton;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
@@ -30,6 +31,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
     ListView listView;
     String city;
+    AppCompatButton btn_ok;
 
     public MyBottomSheetCityFragment(String city) {
         this.city = city;
@@ -51,7 +53,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
     };
 
-
+    int positionFirst;
 
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -65,52 +67,53 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        int position = 0;
-
 
         switch (this.city){
             case "Kyiv City":
-                position = 0;
+                positionFirst = 0;
                 break;
             case "Dnipropetrovsk Oblast":
-                position = 1;
+                positionFirst = 1;
                 break;
             case "Odessa":
-                position = 2;
+                positionFirst = 2;
                 break;
             case "Zaporizhzhia":
-                position = 3;
+                positionFirst = 3;
                 break;
             case "Cherkasy Oblast":
-                position = 4;
+                positionFirst = 4;
                 break;
             default:
-                position = 0;
+                positionFirst = 0;
                 break;
         }
-        listView.setItemChecked(position,true);
+        listView.setItemChecked(positionFirst,true);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("TAG", "onItemClick: position" + position);
-                Log.d("TAG", "onItemClick: array  position" + cityList [position]);
+                positionFirst = position;
+            }
+        });
 
+        btn_ok = view.findViewById(R.id.btn_ok);
+        btn_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
                 ContentValues cv = new ContentValues();
                 SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                cv.put("city", cityCode [position]);
+                cv.put("city", cityCode [positionFirst]);
                 database.update(MainActivity.CITY_INFO, cv, "id = ?",
                         new String[] { "1" });
                 database.close();
                 getActivity().finishAffinity();
-                Toast.makeText(getActivity(), getString(R.string.change_message) + cityList [position]   , Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(getActivity(), MainActivity.class));
-
             }
         });
-
         return view;
     }
 

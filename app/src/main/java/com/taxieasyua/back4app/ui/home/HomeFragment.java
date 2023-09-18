@@ -315,7 +315,12 @@ public class HomeFragment extends Fragment {
                                         getActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                                     }
                                 })
-                                .setNegativeButton(R.string.cancel_button, null)
+                                .setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        progressBar.setVisibility(View.INVISIBLE);
+                                    }
+                                })
                                 .show();
                     }  else  {
                         // Разрешения уже предоставлены, выполнить ваш код
