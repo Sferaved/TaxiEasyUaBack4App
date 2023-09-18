@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,8 +54,9 @@ public class BonusFragment extends Fragment {
 
     private @NonNull FragmentBonusBinding binding;
     private AppCompatButton btnBonus;
-    private TextView textView;
+    private static TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
+    private ProgressBar progressBar;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -62,13 +64,23 @@ public class BonusFragment extends Fragment {
         View root = binding.getRoot();
 
         textView = binding.textBonus;
+        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+        if(bonus == null) {
+            bonus = getString(R.string.upd_bonus_info);
+        }
+        textView.setText(getString(R.string.my_bonus) + bonus);
         networkChangeReceiver = new NetworkChangeReceiver();
+
+        progressBar = binding.progressBar;
+
         btnBonus  = binding.btnBonus;
+
         btnBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(connected()) {
                     @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
+                    progressBar.setVisibility(View.VISIBLE);
                     fetchBonus(email, getActivity());
                 }
             }
@@ -114,6 +126,7 @@ public class BonusFragment extends Fragment {
             public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
                 BonusResponse bonusResponse = response.body();
                 if (response.isSuccessful()) {
+                    progressBar.setVisibility(View.INVISIBLE);
                     String bonus = String.valueOf(bonusResponse.getBonus());
                     ContentValues cv = new ContentValues();
                     cv.put("bonus", bonus);

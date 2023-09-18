@@ -52,7 +52,7 @@ public class UIDFragment extends Fragment {
     private @NonNull FragmentUidBinding binding;
     private ListView listView;
     private String[] array;
-    private TextView textView;
+    private static TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -60,12 +60,11 @@ public class UIDFragment extends Fragment {
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         listView = binding.listView;
-        textView = binding.textBonus;
+
         networkChangeReceiver = new NetworkChangeReceiver();
 
         if(connected()) {
             @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
-            fetchBonus(email, getActivity());
             fetchRoutes(email);
         }
         return root;
@@ -217,41 +216,6 @@ public class UIDFragment extends Fragment {
 
         }
     }
-    private void fetchBonus(String value, Context context) {
-        String url = baseUrl + "/bonus/bonusUserShow/" + value;
-        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
-        call.enqueue(new Callback<BonusResponse>() {
-            @Override
-            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
-                BonusResponse bonusResponse = response.body();
-                if (response.isSuccessful()) {
-                    String bonus = String.valueOf(bonusResponse.getBonus());
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonus", bonus);
-                    SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-
-                    textView.setText(getString(R.string.my_bonus) + bonus);
-                    Log.d("TAG", "onResponse: " + bonus);
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BonusResponse> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                // Дополнительная обработка ошибки
-            }
-        });
-    }
-
 
      @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {

@@ -201,7 +201,7 @@ public class FinishActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
 
                     String bonus = String.valueOf(bonusResponse.getBonus());
-                    String message = getString(R.string.block_mes) + bonus + getString(R.string.bon);
+                    String message = getString(R.string.block_mes) + " " + bonus + " " + getString(R.string.bon);
 
                     MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
