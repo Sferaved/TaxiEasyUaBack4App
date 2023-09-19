@@ -75,6 +75,7 @@ public class GalleryFragment extends Fragment {
     private String[] array, arraySpinner;
     private static final int CM_DELETE_ID = 1;
     public static TextView textView, text_view_cost;
+    String from_mes;
     AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd, buttonBonus;
     Spinner spinner;
     Integer selectedItem;
@@ -710,24 +711,53 @@ public class GalleryFragment extends Fragment {
             for (int i = 0; i < routMaps.size(); i++) {
                 if(!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("to_street").toString())) {
                     if (!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("from_number").toString())) {
-                        arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
+                        if(routMaps.get(i).get("from_street").toString().equals("Місце відправлення")) {
+                            from_mes = getString(R.string.start_point_text);
+                        }
+                        else {
+                            from_mes = routMaps.get(i).get("from_street").toString();
+                        }
+
+                        Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+
+                        arrayRouts[i] = from_mes + " " +
                                 routMaps.get(i).get("from_number").toString() + " -> " +
                                 routMaps.get(i).get("to_street").toString() + " " +
                                 routMaps.get(i).get("to_number").toString();
                     } else if(!routMaps.get(i).get("to_street").toString().equals(routMaps.get(i).get("to_number").toString())) {
+                        Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+
                         arrayRouts[i] = routMaps.get(i).get("from_street").toString() +
                                 getString(R.string.to_message) +
                                 routMaps.get(i).get("to_street").toString() + " " +
                                 routMaps.get(i).get("to_number").toString();
                     } else {
-                        arrayRouts[i] = routMaps.get(i).get("from_street").toString()  +
+                        if(routMaps.get(i).get("from_street").toString().equals("Місце відправлення")) {
+                            from_mes = getString(R.string.start_point_text);
+                        }
+                        else {
+                            from_mes = routMaps.get(i).get("from_street").toString();
+                        }
+
+                        Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+
+                        arrayRouts[i] = from_mes + " " +
                                 getString(R.string.to_message) +
                                 routMaps.get(i).get("to_street").toString();
 
                     }
 
                 } else {
-                    arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
+                    if(routMaps.get(i).get("from_street").toString().equals("Місце відправлення")) {
+                        from_mes = getString(R.string.start_point_text);
+                    }
+                    else {
+                        from_mes = routMaps.get(i).get("from_street").toString();
+                    }
+
+                    Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+
+                    arrayRouts[i] = from_mes + " " +
                             routMaps.get(i).get("from_number").toString() + " -> " +
                             getString(R.string.on_city_tv);
                 }

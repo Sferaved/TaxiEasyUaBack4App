@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.804</string>
-    <string name="version">Версія: 2.804</string>
+    <string name="version_code">2.805</string>
+    <string name="version">Версія: 2.805</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -223,4 +223,5 @@
     <string name="bonus_text_7">Для отримання актуальної інформації та нарахування бонусів - натисніть кнопку - ОТРИМАТИ БОНУСИ</string>
     <string name="payment_type_ok">Застосувати вибір</string>
     <string name="bonus_upd_mes">Інформацію про кількість бонусів оновлено</string>
+    <string name="start_point_text">Місце відправлення</string>
 </resources>
