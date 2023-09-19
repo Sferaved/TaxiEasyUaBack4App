@@ -42,9 +42,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
     String bonusMessage;
     ListView listView;
-    String[] array;
+    String[] array, arrayCode;
     AppCompatButton btn_ok;
-
+    int pos;
 
     public MyBottomSheetBonusFragment(String bonusMessage) {
         this.bonusMessage = bonusMessage;
@@ -61,6 +61,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 getString(R.string.nal_payment),
                 getString(R.string.bonus_payment)
         };
+        arrayCode = new  String[]{
+                "nal_payment",
+                "bonus_payment"
+        };
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, array);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -70,8 +74,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d("TAG", "onItemClick: position" + position);
-                Log.d("TAG", "onItemClick: array  position" + array [position]);
-                MainActivity.bonusPayment = "bonus_payment";
+                Log.d("TAG", "onItemClick: array  position" + arrayCode [position]);
+                pos = position;
+                MainActivity.bonusPayment =  arrayCode [pos];
             }
         });
 
@@ -79,13 +84,12 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                MainActivity.bonusPayment =  arrayCode [pos];
                 dismiss();
             }
         });
 
         return view;
     }
-
-
    }
 

@@ -169,6 +169,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map = findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
+
         FromAdressString = getString(R.string.startPoint);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
@@ -499,6 +500,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             startLan = longitude;
 
                         }
+                    } else {
+                        FromAdressString = getString(R.string.startPoint);
                     }
                     String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
                     Map sendUrlFrom = null;
