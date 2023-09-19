@@ -301,27 +301,8 @@ public class HomeFragment extends Fragment {
                     }
 
                     if(!gps_enabled || !network_enabled) {
-                        // notify user
-                        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                        LayoutInflater inflater = getActivity().getLayoutInflater();
-
-                        View view_cost = inflater.inflate(R.layout.message_layout, null);
-                        builder.setView(view_cost);
-                        TextView message = view_cost.findViewById(R.id.textMessage);
-                        message.setText(R.string.gps_info);
-                        builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                                        getActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                                    }
-                                })
-                                .setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        progressBar.setVisibility(View.INVISIBLE);
-                                    }
-                                })
-                                .show();
+                        MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }  else  {
                         // Разрешения уже предоставлены, выполнить ваш код
                         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -367,23 +348,10 @@ public class HomeFragment extends Fragment {
                     }
 
                     if(!gps_enabled || !network_enabled) {
-                        // notify user
-                        MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
-                        LayoutInflater inflater = getActivity().getLayoutInflater();
-
-                        View view_cost = inflater.inflate(R.layout.message_layout, null);
-                        builder.setView(view_cost);
-                        TextView message = view_cost.findViewById(R.id.textMessage);
-                        message.setText(R.string.gps_info);
-                        builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                                        getActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                                    }
-                                })
-                                .setNegativeButton(R.string.cancel_button, null)
-                                .show();
+                        MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }  else  {
+                        progressBar.setVisibility(View.VISIBLE);
                         // Разрешения уже предоставлены, выполнить ваш код
                         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                                 && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -393,6 +361,7 @@ public class HomeFragment extends Fragment {
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                             btnGeo.setVisibility(View.VISIBLE);
                         }  else {
+                            progressBar.setVisibility(View.INVISIBLE);
                             btnGeo.setVisibility(View.INVISIBLE);
                             Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
                             startActivity(intent);

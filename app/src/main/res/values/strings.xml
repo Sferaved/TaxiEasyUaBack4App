@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.802</string>
-    <string name="version">Версия: 2.802</string>
+    <string name="version_code">2.803</string>
+    <string name="version">Версия: 2.803</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -214,13 +214,15 @@
     <string name="my_bonus_menu">Мои бонусы</string>
     <string name="update_bonus">получить бонусы</string>
     <string name="upd_bonus_info">Обновите информацию о ваших бонусах</string>
+    <string name="bonus_text_0"> Не забудьте забрать бонус за следующие сутки.</string>
     <string name="bonus_text_1">Правила начисления бонусов:</string>
     <string name="bonus_text_2">- Регистрация в приложении - 1 бонус;</string>
     <string name="bonus_text_3">- Первый заказ - 1 бонус;</string>
     <string name="bonus_text_4">- Выполненный маршрут - 1 бонус за каждую 1 целую гривну из суммы выполнения;</string>
-    <string name="bonus_text_5">- Вход в приложение (не более 1 раза в текущие сутки ) - 1 бонус за 1 сутки календарные.</string>
+    <string name="bonus_text_5">- Вход в приложение – 1 бонус начисляется не более 1 раза в сутки.</string>
     <string name="bonus_text_6">Бонусы можно использовать при заказе поездок при условии возможности такого сервиса в выбранной Вами базе адресов, а также если стоимость поездки полностью покрывается доступными бонусами из расчета 100 бонусов = 1 грн.</string>
     <string name="bonus_text_7">Для получения актуальной информации и начисления бонусов - нажмите кнопку - ПОЛУЧИТЬ БОНУСЫ</string>
     <string name="payment_type_ok">Применить выбор</string>
+    <string name="bonus_upd_mes">Информация о количестве бонусов обновлена</string>
 
 </resources>
