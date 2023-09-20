@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.805</string>
-    <string name="version">Версія: 2.805</string>
+    <string name="version_code">2.806</string>
+    <string name="version">Версія: 2.806</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -59,7 +59,7 @@
     <string name="firebase_false_message">грн. Вибачте, без перевірки Google-акаунту замовлення не можливе.</string>
     <string name="UAH">грн</string>
     <string name="order">Замовити</string>
-    <string name="thanks_message">"Дякуємо за замовлення "</string>
+    <string name="thanks_message">"Дякуємо за замовлення від "</string>
     <string name="call_of_order">" Очікуйте дзвінка оператора. Вартість поїздки: "</string>
     <string name="next_try">" Спробуйте ще або зателефонуйте оператору."</string>
     <string name="help">Підтримка</string>
@@ -193,7 +193,7 @@
     <string name="close_resone_8">Виконаний</string>
     <string name="close_resone_9">Знятий клієнтом</string>
     <string name="close_resone_from">"Від "</string>
-    <string name="close_resone_to">" до: "</string>
+    <string name="close_resone_to">" до "</string>
     <string name="close_resone_cost">", вартість: "</string>
     <string name="close_resone_time">", время заказу: "</string>
     <string name="close_resone_text">", стан: "</string>

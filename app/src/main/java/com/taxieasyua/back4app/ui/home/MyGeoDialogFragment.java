@@ -1152,10 +1152,16 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                 );
                             }
                         } else {
-                            to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
+
+                            if(sendUrlMap.get("routeto").equals("Точка на карте")) {
+                                to_name = getActivity().getString(R.string.end_point_marker);
+                            } else {
+                                to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
+                            }
+
                             if (!sendUrlMap.get("lat").equals("0")) {
                                 insertRecordsOrders(
-                                        sendUrlMap.get("routefrom"), sendUrlMap.get("routeto"),
+                                        sendUrlMap.get("routefrom"), to_name,
                                         sendUrlMap.get("routefromnumber"), sendUrlMap.get("to_number"),
                                         Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
                                         sendUrlMap.get("lat"), sendUrlMap.get("lng"), getActivity()

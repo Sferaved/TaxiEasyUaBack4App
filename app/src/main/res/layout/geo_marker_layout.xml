@@ -30,7 +30,7 @@
         android:background="@drawable/input"
         android:ems="10"
         android:fontFamily="@font/light"
-        android:gravity="center"
+
         android:textColor="@color/white"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -74,7 +74,7 @@
 
         android:inputType="textMultiLine"
 
-        android:textColor="#D9D9D9"
+        android:textColor="@color/white"
         android:textColorHint="#ABD9D9D9"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -150,7 +150,7 @@
         android:layout_marginTop="12dp"
         android:background="@drawable/buttons"
         android:text="@string/change"
-        android:textColor="@color/white"
+        android:textColor="#D9D9D9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

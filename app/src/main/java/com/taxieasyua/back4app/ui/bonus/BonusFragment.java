@@ -82,8 +82,10 @@ public class BonusFragment extends Fragment {
                     @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
                     progressBar.setVisibility(View.VISIBLE);
                     textView.setVisibility(View.INVISIBLE);
+                    binding.text0.setVisibility(View.INVISIBLE);
                     binding.text7.setVisibility(View.GONE);
                     btnBonus.setVisibility(View.GONE);
+
                     fetchBonus(email, getActivity());
                 }
             }
@@ -140,6 +142,7 @@ public class BonusFragment extends Fragment {
 
                     textView.setText(getString(R.string.my_bonus) + bonus);
                     textView.setVisibility(View.VISIBLE);
+                    binding.text0.setVisibility(View.VISIBLE);
                     binding.text0.setText(R.string.bonus_upd_mes);
 
                     Log.d("TAG", "onResponse: " + bonus);

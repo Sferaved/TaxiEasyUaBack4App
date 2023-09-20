@@ -409,6 +409,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
        startLan = getFromTablePositionInfo(this, "startLan" );
 
         FromAdressString = startList.get(3);
+       if(FromAdressString.equals("Точка на карте")) {
+           FromAdressString = getString(R.string.startPoint);
+       }
         if (FromAdressString != null) {
             if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
                 GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
@@ -432,6 +435,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                         // Обработка полученных местоположений
                         List<Location> locations = locationResult.getLocations();
+                        Log.d(TAG, "onLocationResult: locations 222222" + locations);
+
                         if (!locations.isEmpty()) {
                             Location firstLocation = locations.get(0);
                             if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()) {
@@ -454,6 +459,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             finish();
                         }
                         FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                        if(FromAdressString.equals("Точка на карте")) {
+                            FromAdressString = getString(R.string.startPoint);
+                        }
                         updateMyPosition(startLat, startLan, FromAdressString);
                         bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -490,6 +498,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                     // Обработка полученных местоположений
                     List<Location> locations = locationResult.getLocations();
+
+
+                    Log.d(TAG, "onLocationResult: locations 666666  " + locations);
                     if (!locations.isEmpty()) {
                         Location firstLocation = locations.get(0);
                         if (startLat != firstLocation.getLatitude() && startLan != firstLocation.getLongitude()) {
@@ -504,6 +515,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         FromAdressString = getString(R.string.startPoint);
                     }
                     String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+
                     Map sendUrlFrom = null;
                     try {
                         sendUrlFrom = FromJSONParser.sendURL(urlFrom);
@@ -514,6 +526,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         finish();
                     }
                     FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                    if(FromAdressString.equals("Точка на карте")) {
+                        FromAdressString = getString(R.string.startPoint);
+                    }
                     updateMyPosition(startLat, startLan, FromAdressString);
                     bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -651,8 +666,13 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         Toast.makeText(map.getContext(), message, Toast.LENGTH_SHORT).show();
 
                     } else {
-                        Log.d("TAG", "dialogMarkers: sendUrlMapCost " + sendUrlMapCost.toString());
-                        ToAdressString = (String) sendUrlMapCost.get("routeto") + " " + (String) sendUrlMapCost.get("to_number");
+                        Log.d("TAG", "11111 dialogMarkers: sendUrlMapCost.get(\"routeto\")" + sendUrlMapCost.get("routeto"));
+                        if(sendUrlMapCost.get("routeto").equals("Точка на карте")) {
+                            ToAdressString = context.getString(R.string.end_point_marker);
+                        } else {
+                            ToAdressString = (String) sendUrlMapCost.get("routeto") + " " + (String) sendUrlMapCost.get("to_number");
+                        }
+
                         Log.d("TAG", "dialogMarkers: ToAdressString " + ToAdressString);
                         Log.d("TAG", "dialogMarkers: endPoint " + endPoint.toString());
                         finishLat = endPoint.getLatitude();
@@ -793,99 +813,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         return arrayRouts;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude, String to, String to_number, String urlAPI, Context context) {
-//    if(hasServer()) {
-        //  Проверка даты и времени
-
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
-
-        // Origin of route
-        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
-
-        // Destination of route
-        String str_dest = to + "/" + to_number;
-
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
-
-
-        // Building the parameters to the web service
-
-        String parameters = null;
-        String phoneNumber = "no phone";
-        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
-
-        if(urlAPI.equals("costSearchGeo")) {
-            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-
-            if (c.getCount() == 1) {
-                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-                c.close();
-            }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
-        }
-
-        if(urlAPI.equals("orderSearchGeo")) {
-            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
-
-            ContentValues cv = new ContentValues();
-
-            cv.put("time", "no_time");
-            cv.put("comment", "no_comment");
-            cv.put("date", "no_date");
-
-            // обновляем по id
-            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                    new String[] { "1" });
-        }
-
-        // Building the url to the web service
-        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
-        List<String> servicesChecked = new ArrayList<>();
-        String result;
-        boolean servicesVer = false;
-        for (int i = 1; i < services.size()-1 ; i++) {
-            if(services.get(i).equals("1")) {
-                servicesVer = true;
-                break;
-            }
-        }
-        if(servicesVer) {
-            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
-                if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
-                }
-            }
-            for (int i = 0; i < servicesChecked.size(); i++) {
-                if(servicesChecked.get(i).equals("CHECK_OUT")) {
-                    servicesChecked.set(i, "CHECK");
-                }
-            }
-            result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
-        } else {
-            result = "no_extra_charge_codes";
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-        Log.d("TAG", "getTaxiUrlSearch services: " + url);
-
-        return url;
-//    } else  {
-//        Toast.makeText(context, context.getString(R.string.server_error_connected), Toast.LENGTH_LONG).show();
-//        return null;
-//    }
-
-    }
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
                                                  double toLatitude, double toLongitude,
                                                  String urlAPI, Context context) {
@@ -1005,91 +932,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         }
         database.close();
         return list;
-    }
-
-    private static void getPhoneNumber() {
-        String mPhoneNumber;
-        TelephonyManager tMgr = (TelephonyManager) map.getContext().getSystemService(Context.TELEPHONY_SERVICE);
-
-        if (ActivityCompat.checkSelfPermission(map.getContext(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(map.getContext(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(map.getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        mPhoneNumber = tMgr.getLine1Number();
-
-        if(mPhoneNumber != null) {
-            String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
-            boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
-            Log.d("TAG", "onClick No validate: " + val);
-            if (val == false) {
-                Toast.makeText(map.getContext(), fp , Toast.LENGTH_SHORT).show();
-                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
-
-            } else {
-                updateRecordsUser(mPhoneNumber, map.getContext());
-            }
-        }
-
-    }
-    public static void updateRecordsUser(String result, Context context) {
-        ContentValues cv = new ContentValues();
-
-        cv.put("phone_number", result);
-
-        // обновляем по id
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        int updCount = database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                new String[] { "1" });
-        Log.d("TAG", "updated rows count = " + updCount);
-
-
-    }
-    private static void insertRecordsOrders( String from, String to,
-                                             String from_number, String to_number,
-                                             String from_lat, String from_lng,
-                                             String to_lat, String to_lng, Context context) {
-
-        String selection = "from_street = ?";
-        String[] selectionArgs = new String[] {from};
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor_from = database.query(MainActivity.TABLE_ORDERS_INFO,
-                null, selection, selectionArgs, null, null, null);
-
-        selection = "to_street = ?";
-        selectionArgs = new String[] {to};
-
-        Cursor cursor_to = database.query(MainActivity.TABLE_ORDERS_INFO,
-                null, selection, selectionArgs, null, null, null);
-
-
-
-        if (cursor_from.getCount() == 0 || cursor_to.getCount() == 0) {
-
-            String sql = "INSERT INTO " + MainActivity.TABLE_ORDERS_INFO + " VALUES(?,?,?,?,?,?,?,?,?);";
-            SQLiteStatement statement = database.compileStatement(sql);
-            database.beginTransaction();
-            try {
-                statement.clearBindings();
-                statement.bindString(2, from);
-                statement.bindString(3, from_number);
-                statement.bindString(4, from_lat);
-                statement.bindString(5, from_lng);
-                statement.bindString(6, to);
-                statement.bindString(7, to_number);
-                statement.bindString(8, to_lat);
-                statement.bindString(9, to_lng);
-
-                statement.execute();
-                database.setTransactionSuccessful();
-
-            } finally {
-                database.endTransaction();
-            }
-
-        }
-
-        cursor_from.close();
-        cursor_to.close();
-
     }
 
     public static class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {
