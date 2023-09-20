@@ -408,9 +408,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
        startLat = getFromTablePositionInfo(this, "startLat" );
        startLan = getFromTablePositionInfo(this, "startLan" );
 
-        FromAdressString = startList.get(3);
-       if(FromAdressString.equals("Точка на карте")) {
-           FromAdressString = getString(R.string.startPoint);
+       FromAdressString = startList.get(3);
+       if(FromAdressString != null) {
+           if (FromAdressString.equals("Точка на карте")) {
+               FromAdressString = getString(R.string.startPoint);
+           }
        }
         if (FromAdressString != null) {
             if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
@@ -459,8 +461,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             finish();
                         }
                         FromAdressString = (String) sendUrlFrom.get("route_address_from");
-                        if(FromAdressString.equals("Точка на карте")) {
-                            FromAdressString = getString(R.string.startPoint);
+                        if(FromAdressString != null) {
+                            if (FromAdressString.equals("Точка на карте")) {
+                                FromAdressString = getString(R.string.startPoint);
+                            }
                         }
                         updateMyPosition(startLat, startLan, FromAdressString);
                         bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
@@ -526,8 +530,10 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         finish();
                     }
                     FromAdressString = (String) sendUrlFrom.get("route_address_from");
-                    if(FromAdressString.equals("Точка на карте")) {
-                        FromAdressString = getString(R.string.startPoint);
+                    if(FromAdressString != null) {
+                        if (FromAdressString.equals("Точка на карте")) {
+                            FromAdressString = getString(R.string.startPoint);
+                        }
                     }
                     updateMyPosition(startLat, startLan, FromAdressString);
                     bottomSheetDialogFragment = MyGeoDialogFragment.newInstance(FromAdressString);
