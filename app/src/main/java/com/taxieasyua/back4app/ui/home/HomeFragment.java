@@ -259,7 +259,8 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(connected()) {
-                   order();
+                    progressBar.setVisibility(View.VISIBLE);
+                    order();
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -415,9 +416,14 @@ public class HomeFragment extends Fragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-                fetchBonus(email);
-
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                if(Long.parseLong(bonus) <  cost * 100 ){
+                    String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                    fetchBonus(email);
+                } else {
+                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
             }
         });
 
@@ -442,7 +448,7 @@ public class HomeFragment extends Fragment {
                     database.close();
                    if(!bonus.equals("0")) {
                        Log.d(TAG, "onResponse:  cost" + cost);
-                       if(Integer.valueOf(bonus) >= Integer.valueOf((int) cost) * 100 ){
+                       if(Long.parseLong(bonus) >=  cost * 100 ){
                            MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                        } else {
@@ -516,8 +522,7 @@ public class HomeFragment extends Fragment {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                selectesposition = position; // Обновляем выбранную позицию
-//                adapter.notifyDataSetChanged(); // Обновляем вид списка
+
                 progressBar.setVisibility(View.VISIBLE);
 
                 if (textViewTo.getText().toString().isEmpty()) {
@@ -932,8 +937,10 @@ public class HomeFragment extends Fragment {
                         Intent intent = new Intent(getActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
                         intent.putExtra("messageCost_key", orderWeb);
+                        intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
                         intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
                         startActivity(intent);
+                        progressBar.setVisibility(View.INVISIBLE);
 
                     } else {
                         MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));

@@ -302,6 +302,7 @@ public class GalleryFragment extends Fragment {
                                 Intent intent = new Intent(getActivity(), FinishActivity.class);
                                 intent.putExtra("messageResult_key", messageResult);
                                 intent.putExtra("messageCost_key", orderWeb);
+                                intent.putExtra("sendUrlMap", new HashMap<>(sendUrl));
                                 intent.putExtra("UID_key", Objects.requireNonNull(sendUrl.get("dispatching_order_uid")));
                                  startActivity(intent);
 
@@ -321,8 +322,14 @@ public class GalleryFragment extends Fragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-                fetchBonus(email);
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                if(Long.parseLong(bonus) <  cost * 100 ){
+                    String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                    fetchBonus(email);
+                } else {
+                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
 
             }
         });

@@ -32,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,11 +40,16 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FinishActivity extends AppCompatActivity {
     private TextView text_status;
     String api;
     String baseUrl = "https://m.easy-order-taxi.site";
+    Map<String, String> receivedMap;
+    String UID_key;
+    Thread thread;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,13 +82,13 @@ public class FinishActivity extends AppCompatActivity {
         }
         String parameterValue = getIntent().getStringExtra("messageResult_key");
         String parameterCost = getIntent().getStringExtra("messageCost_key");
+        receivedMap = (HashMap<String, String>) getIntent().getSerializableExtra("sendUrlMap");
 
-
-
+        Log.d("TAG", "onCreate: receivedMap" + receivedMap.toString());
         TextView text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(parameterValue);
 
-        String UID_key = getIntent().getStringExtra("UID_key");
+        UID_key = getIntent().getStringExtra("UID_key");
 
         text_status = findViewById(R.id.text_status);
         statusOrderWithDifferentValue(UID_key);
@@ -104,23 +110,20 @@ public class FinishActivity extends AppCompatActivity {
         long delayMillis = 5 * 60 * 1000;
 
         Handler handler = new Handler();
-        Log.d("TAG", "onCreate: MainActivity.bonusPayment" + MainActivity.bonusPayment);
+
 
          if (MainActivity.bonusPayment.equals("bonus_payment")) {
-
              String baseUrl = "https://m.easy-order-taxi.site";
              String url = baseUrl + "/bonusBalance/recordsBloke/" + UID_key;
+             Log.d("TAG", "onCreate: doubleOrder):  " +receivedMap.get("doubleOrder") );
+
 
              fetchBonus(url);
-             Log.d("TAG", "onCreate: /bonusBalance/recordsBloke/" + url);
-
              handler.postDelayed(new Runnable() {
                  @Override
                  public void run() {
-
                      btn_cancel_order.setVisibility(View.INVISIBLE);
                  }
-
              }, delayMillis);
          }
         btn_cancel_order.setOnClickListener(new View.OnClickListener() {
@@ -128,6 +131,7 @@ public class FinishActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(connected()){
                     cancelOrderWithDifferentValue(UID_key);
+                    thread.interrupt();
                 } else {
                     text_status.setText(R.string.verify_internet);
                 }
@@ -190,6 +194,22 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (MainActivity.bonusPayment.equals("bonus_payment")) {
+           thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // Здесь вызывайте вашу функцию fetchCarFound()
+                    fetchCarFound();
+                }
+            });
+           thread.start();
+        }
+    }
+
     private void fetchBonus(String url) {
 
         Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
@@ -220,6 +240,42 @@ public class FinishActivity extends AppCompatActivity {
                 // Дополнительная обработка ошибки
             }
         });
+    }
+    private void fetchCarFound() {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl) // Замените BASE_URL на ваш базовый URL сервера
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+// Создайте экземпляр ApiService
+        ApiService apiService = retrofit.create(ApiService.class);
+
+// Вызов метода startNewProcessExecutionStatus с передачей параметров
+        Call<Void> call = apiService.startNewProcessExecutionStatus(
+                receivedMap.get("doubleOrder")
+        );
+        String requestUrl = call.request().url().toString();
+        Log.d("TAG","Request URL" + requestUrl); // Запись URL в логи
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                Log.d("TAG", "onResponse: response.body() " + response.body());
+                if (response.isSuccessful()) {
+                    // Обработайте успешный ответ от сервера
+//                    Log.d("TAG", "onResponse: response.body() " + response.body());
+                } else {
+                    // Обработайте неуспешный ответ от сервера
+                    Log.d("TAG", "onResponse: response.errorBody() " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // Обработайте ошибку при выполнении запроса
+            }
+        });
+
     }
 
     private boolean verifyOrder() {
@@ -406,7 +462,7 @@ public class FinishActivity extends AppCompatActivity {
         protected Map<String, String> doInBackground(Void... voids) {
             String userEmail = logCursor(MainActivity.TABLE_USER_INFO).get(3);
 
-            String url = "https://m.easy-order-taxi.site/" + MainActivity.apiKyiv  + "/android/verifyBlackListUser/" + userEmail;
+            String url = "https://m.easy-order-taxi.site/android/verifyBlackListUser/" + userEmail + "/" + "com.taxieasyua.back4app";
             try {
                 return CostJSONParser.sendURL(url);
             } catch (Exception e) {
