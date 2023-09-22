@@ -87,6 +87,11 @@ public class ToJSONParser {
                         if(jsonarray.has("doubleOrder")) {
                             costMap.put("doubleOrder", jsonarray.getString("doubleOrder"));
                         }
+                        if(jsonarray.has("dispatching_order_uid_Double")) {
+                            costMap.put("dispatching_order_uid_Double", jsonarray.getString("dispatching_order_uid_Double"));
+                        } else {
+                            costMap.put("dispatching_order_uid_Double", " ");
+                        }
 
 
                     } else {

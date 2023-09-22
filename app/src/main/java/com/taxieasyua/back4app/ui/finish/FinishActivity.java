@@ -131,6 +131,10 @@ public class FinishActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(connected()){
                     cancelOrderWithDifferentValue(UID_key);
+                    Log.d("TAG", "onClick: receivedMap.get(\"dispatching_order_uid_Double\")" + receivedMap.get("dispatching_order_uid_Double").toString());
+                    if(!receivedMap.get("dispatching_order_uid_Double").equals(" ")) {
+                        cancelOrderWithDifferentValue(receivedMap.get("dispatching_order_uid_Double"));
+                    }
                     thread.interrupt();
                 } else {
                     text_status.setText(R.string.verify_internet);
@@ -340,7 +344,7 @@ public class FinishActivity extends AppCompatActivity {
 
         String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-//        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {

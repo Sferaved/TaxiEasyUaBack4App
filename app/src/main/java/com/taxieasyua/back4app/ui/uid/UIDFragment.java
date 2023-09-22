@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,13 +55,14 @@ public class UIDFragment extends Fragment {
     private String[] array;
     private static TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
+    ProgressBar progressBar;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         listView = binding.listView;
-
+        progressBar = binding.progressBar;
         networkChangeReceiver = new NetworkChangeReceiver();
 
         if(connected()) {
@@ -105,6 +107,7 @@ public class UIDFragment extends Fragment {
         call.enqueue(new Callback<List<RouteResponse>>() {
             @Override
             public void onResponse(Call<List<RouteResponse>> call, Response<List<RouteResponse>> response) {
+                progressBar.setVisibility(View.INVISIBLE);
                 if (response.isSuccessful()) {
                     List<RouteResponse> routes = response.body();
 
