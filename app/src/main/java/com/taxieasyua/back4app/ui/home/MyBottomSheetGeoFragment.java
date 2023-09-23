@@ -433,7 +433,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         }
 
 
-        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
+        Map<String, String> sendUrl = CostJSONParser.sendURL(url);
 
         String mes = sendUrl.get("message");
         String orderC = sendUrl.get("order_cost");

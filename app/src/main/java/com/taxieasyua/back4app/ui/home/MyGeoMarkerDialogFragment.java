@@ -67,6 +67,7 @@ import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -253,8 +254,14 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-                fetchBonus(email);
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                if(Long.parseLong(bonus) <  cost * 100 ){
+                    String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                    fetchBonus(email);
+                } else {
+                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
 
             }
         });
@@ -313,7 +320,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
         Map<String, String> sendUrlMapCost = null;
         try {
-            sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

@@ -35,6 +35,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -255,6 +256,7 @@ public class HomeFragment extends Fragment {
 
         btn_order = binding.btnOrder;
         btn_order.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("UseRequireInsteadOfGet")
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {

@@ -4,12 +4,14 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -44,21 +46,38 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
                 String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
                 boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
 
                 if (!val) {
-                    Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
+                    String message = getString(R.string.format_phone);
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
                 if (val) {
                     MainActivity.verifyPhone = true;
                     updateRecordsUser(phoneNumber.getText().toString(), getContext());
+
+                    String message = getString(R.string.order_after_phone) + getActivity().getString(R.string.order);
+                    Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+
                     dismiss();
+
                 }
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null && getActivity().getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
     @Override
@@ -80,11 +99,8 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
 
-    }
+
     public static void updateRecordsUser(String result, Context context) {
         ContentValues cv = new ContentValues();
 

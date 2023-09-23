@@ -107,7 +107,7 @@ public class UIDFragment extends Fragment {
         call.enqueue(new Callback<List<RouteResponse>>() {
             @Override
             public void onResponse(Call<List<RouteResponse>> call, Response<List<RouteResponse>> response) {
-                progressBar.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful()) {
                     List<RouteResponse> routes = response.body();
 

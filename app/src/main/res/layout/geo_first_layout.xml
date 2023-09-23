@@ -2,9 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraint"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/constraint"
     android:background="@color/new_background_color">
 
 
@@ -69,9 +69,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24sp"
+        android:background="@drawable/input"
         android:dropDownWidth="match_parent"
         android:dropDownHeight="wrap_content"
-        android:background="@drawable/input"
         android:ems="10"
         android:fontFamily="@font/light"
         android:hint="@string/Street_hint"
@@ -192,6 +192,7 @@
         android:background="@drawable/buttons"
         android:text="@string/routs"
         android:textColor="#D9D9D9"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.542"
         app:layout_constraintStart_toEndOf="@+id/change"
@@ -201,11 +202,13 @@
         android:id="@+id/change"
         android:layout_width="120sp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48sp"
-        android:layout_marginTop="4sp"
+
+        android:layout_marginTop="8dp"
         android:background="@drawable/buttons"
         android:text="@string/change"
         android:textColor="#D9D9D9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textGeo" />
 

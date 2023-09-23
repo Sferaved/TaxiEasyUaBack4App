@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_19092023_2";
+    public static final String DB_NAME = "data_23092023_17";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";

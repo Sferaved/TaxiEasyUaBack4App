@@ -67,6 +67,7 @@ import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -120,32 +121,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.geo_first_layout, container, false);
-        getDialog().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        final int initialMarginBottom = 0;
-
-        final View decorView = requireActivity().getWindow().getDecorView();
-        decorView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                Rect rect = new Rect();
-                decorView.getWindowVisibleDisplayFrame(rect);
-                int screenHeight = decorView.getHeight();
-                int keypadHeight = screenHeight - rect.bottom;
-
-                ConstraintLayout myLinearLayout = view.findViewById(R.id.constraint); // Замените на ваш ID представления
-                ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) myLinearLayout.getLayoutParams();
-
-                if (keypadHeight > screenHeight * 0.15) {
-                    // Клавиатура отображается, установите отступ в зависимости от размера клавиатуры
-                    layoutParams.bottomMargin = keypadHeight + initialMarginBottom;
-                } else {
-                    // Клавиатура скрыта, установите изначальный отступ
-                    layoutParams.bottomMargin = initialMarginBottom;
-                }
-
-                myLinearLayout.setLayoutParams(layoutParams);
-            }
-        });
         buttonBonus = view.findViewById(R.id.btnBonus);
         buttonBonus.setVisibility(View.GONE);
         List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
@@ -217,9 +192,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-                fetchBonus(email);
-
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                if(Long.parseLong(bonus) <  cost * 100 ){
+                    String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
+                    fetchBonus(email);
+                } else {
+                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
             }
         });
 
@@ -288,7 +268,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                  ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
                              }
                              to_numberCost = "1";
-//                             to_number.setText("1");
                          } else {
                              if (numberFlagTo.equals("0")) {
                                  to_numberCost = " ";
@@ -309,7 +288,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                          Log.d("TAG", "onClick urlCost: " + urlCost);
 
                          try {
-                             sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+                             sendUrlMapCost = CostJSONParser.sendURL(urlCost);
                          } catch (MalformedURLException e) {
                              MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                              bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -333,6 +312,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                              text_view_cost.setText(String.valueOf(firstCost));
 
                              Log.d("TAG", "startCost: firstCost " + firstCost);
+
                          }
                     }
                 }
@@ -377,7 +357,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 Log.d("TAG", "onClick urlCost: " + url);
                 Map sendUrlMapCost = null;
                 try {
-                    sendUrlMapCost = ToJSONParser.sendURL(url);
+                    sendUrlMapCost = CostJSONParser.sendURL(url);
                 } catch (MalformedURLException e) {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -609,7 +589,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         Map<String, String> sendUrlMapCost = null;
         try {
-            sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -995,7 +975,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     String urlCost = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
                             to_lat, to_lng, "costSearchMarkers", getActivity());
 
-                    Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
+                    Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlCost);
 
                     String message = sendUrlMapCost.get("message");
                     String orderCost = sendUrlMapCost.get("order_cost");

@@ -131,11 +131,12 @@ public class FinishActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(connected()){
                     cancelOrderWithDifferentValue(UID_key);
-                    Log.d("TAG", "onClick: receivedMap.get(\"dispatching_order_uid_Double\")" + receivedMap.get("dispatching_order_uid_Double").toString());
                     if(!receivedMap.get("dispatching_order_uid_Double").equals(" ")) {
                         cancelOrderWithDifferentValue(receivedMap.get("dispatching_order_uid_Double"));
                     }
-                    thread.interrupt();
+                    if (thread != null && thread.isAlive()) {
+                        thread.interrupt();
+                    }
                 } else {
                     text_status.setText(R.string.verify_internet);
                 }
@@ -259,19 +260,9 @@ public class FinishActivity extends AppCompatActivity {
         Call<Void> call = apiService.startNewProcessExecutionStatus(
                 receivedMap.get("doubleOrder")
         );
-        String requestUrl = call.request().url().toString();
-        Log.d("TAG","Request URL" + requestUrl); // Запись URL в логи
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                Log.d("TAG", "onResponse: response.body() " + response.body());
-                if (response.isSuccessful()) {
-                    // Обработайте успешный ответ от сервера
-//                    Log.d("TAG", "onResponse: response.body() " + response.body());
-                } else {
-                    // Обработайте неуспешный ответ от сервера
-                    Log.d("TAG", "onResponse: response.errorBody() " + response.errorBody());
-                }
             }
 
             @Override
@@ -290,7 +281,7 @@ public class FinishActivity extends AppCompatActivity {
         if (cursor.getCount() == 1) {
 
             if (logCursor(MainActivity.TABLE_USER_INFO).get(1).equals("0")) {
-                verify = false;Log.d("TAG", "verifyOrder:verify " +verify);
+                verify = false;
             }
             cursor.close();
         }
@@ -351,8 +342,10 @@ public class FinishActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Status status = response.body();
                     if (status != null) {
-                        String result = status.getResponse();
+                        String result =  String.valueOf(status.getResponse());
                         text_status.setText(result); // Установите текстовое значение в text_status
+                    } else {
+                        text_status.setText(R.string.verify_internet);
                     }
                 } else {
                     // Обработка неуспешного ответа
