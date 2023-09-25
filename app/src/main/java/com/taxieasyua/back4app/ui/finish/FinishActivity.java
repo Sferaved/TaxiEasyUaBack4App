@@ -101,7 +101,8 @@ public class FinishActivity extends AppCompatActivity {
                 if(connected()){
                     statusOrderWithDifferentValue(UID_key);
                 } else {
-                    Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
             }
         });
@@ -154,7 +155,8 @@ public class FinishActivity extends AppCompatActivity {
                     if(connected()){
                         startActivity(new Intent(getApplicationContext(), MainActivity.class));
                     } else {
-                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
                 }
             }
@@ -260,6 +262,8 @@ public class FinishActivity extends AppCompatActivity {
         Call<Void> call = apiService.startNewProcessExecutionStatus(
                 receivedMap.get("doubleOrder")
         );
+        String url = call.request().url().toString();
+        Log.d("TAG", "URL запроса: " + url);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {

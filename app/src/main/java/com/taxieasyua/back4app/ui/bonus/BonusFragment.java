@@ -54,7 +54,7 @@ public class BonusFragment extends Fragment {
 
     private @NonNull FragmentBonusBinding binding;
     private AppCompatButton btnBonus;
-    private static TextView textView;
+    private TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
     private ProgressBar progressBar;
 
@@ -67,8 +67,10 @@ public class BonusFragment extends Fragment {
         String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
         if(bonus == null) {
             bonus = getString(R.string.upd_bonus_info);
+        } else {
+            textView.setText(getString(R.string.my_bonus) + bonus);
         }
-        textView.setText(getString(R.string.my_bonus) + bonus);
+
         networkChangeReceiver = new NetworkChangeReceiver();
 
         progressBar = binding.progressBar;
@@ -128,10 +130,11 @@ public class BonusFragment extends Fragment {
         Log.d("TAG", "fetchBonus: " + url);
         call.enqueue(new Callback<BonusResponse>() {
             @Override
-            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+            public void onResponse(@NonNull Call<BonusResponse> call, Response<BonusResponse> response) {
                 BonusResponse bonusResponse = response.body();
                 if (response.isSuccessful()) {
                     progressBar.setVisibility(View.INVISIBLE);
+                    assert bonusResponse != null;
                     String bonus = String.valueOf(bonusResponse.getBonus());
                     ContentValues cv = new ContentValues();
                     cv.put("bonus", bonus);
@@ -139,11 +142,12 @@ public class BonusFragment extends Fragment {
                     database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                             new String[] { "1" });
                     database.close();
-
-                    textView.setText(getString(R.string.my_bonus) + bonus);
-                    textView.setVisibility(View.VISIBLE);
-                    binding.text0.setVisibility(View.VISIBLE);
-                    binding.text0.setText(R.string.bonus_upd_mes);
+                    if(bonus != null) {
+                        textView.setText(getString(R.string.my_bonus) + bonus);
+                        textView.setVisibility(View.VISIBLE);
+                        binding.text0.setVisibility(View.VISIBLE);
+                        binding.text0.setText(R.string.bonus_upd_mes);
+                    }
 
                     Log.d("TAG", "onResponse: " + bonus);
                 } else {

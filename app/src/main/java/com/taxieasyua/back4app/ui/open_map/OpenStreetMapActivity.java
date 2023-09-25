@@ -57,6 +57,7 @@ import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoMarkerDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
@@ -457,8 +458,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                         } catch (MalformedURLException | InterruptedException |
                                  JSONException e) {
-                            Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                            finish();
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                         }
                         FromAdressString = (String) sendUrlFrom.get("route_address_from");
                         if(FromAdressString != null) {
@@ -526,8 +527,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                     } catch (MalformedURLException | InterruptedException |
                              JSONException e) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
-                        finish();
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
                     FromAdressString = (String) sendUrlFrom.get("route_address_from");
                     if(FromAdressString != null) {

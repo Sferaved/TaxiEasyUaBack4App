@@ -430,7 +430,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
                                 } catch (MalformedURLException | InterruptedException |
                                          JSONException e) {
-                                    Toast.makeText(getActivity(), getString(R.string.verify_internet), Toast.LENGTH_LONG).show();
+                                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
                                 }
                                 OpenStreetMapActivity.FromAdressString = (String) sendUrlFrom.get("route_address_from");

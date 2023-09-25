@@ -301,11 +301,9 @@ public class MainActivity extends AppCompatActivity {
         if (cursorDb != null && !cursorDb.isClosed())
             cursorDb.close();
 
-
-
         newUser();
-        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-        fetchBonus(email);
+//        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+//        fetchBonus(email);
 
     }
     String baseUrl = "https://m.easy-order-taxi.site";
