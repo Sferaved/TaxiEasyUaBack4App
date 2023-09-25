@@ -82,10 +82,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         }
         if ("bonus_payment".equals(bonusPayment)) {
             listView.setItemChecked(1, true);
+            MainActivity.bonusPayment =  arrayCode[1];
+            pos = 1;
         } else {
             listView.setItemChecked(0, true);
+            MainActivity.bonusPayment =  arrayCode[0];
+            pos = 0;
         }
-
+        Log.d("TAG", "onCreateView: MainActivity.bonusPayment " + MainActivity.bonusPayment);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -102,6 +106,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         new String[] { "1" });
                 database.close();
             }
+
         });
 
         btn_ok = view.findViewById(R.id.btn_ok);
@@ -109,6 +114,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 MainActivity.bonusPayment =  arrayCode [pos];
+                ContentValues cv = new ContentValues();
+                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+                cv.put("bonusPayment", arrayCode [pos]);
+                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
                 dismiss();
             }
         });
