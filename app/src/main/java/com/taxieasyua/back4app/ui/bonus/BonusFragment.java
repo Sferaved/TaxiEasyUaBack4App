@@ -63,6 +63,14 @@ public class BonusFragment extends Fragment {
         binding = FragmentBonusBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        networkChangeReceiver = new NetworkChangeReceiver();
+        progressBar = binding.progressBar;
+        return root;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         textView = binding.textBonus;
         String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
         if(bonus == null) {
@@ -70,13 +78,7 @@ public class BonusFragment extends Fragment {
         } else {
             textView.setText(getString(R.string.my_bonus) + bonus);
         }
-
-        networkChangeReceiver = new NetworkChangeReceiver();
-
-        progressBar = binding.progressBar;
-
         btnBonus  = binding.btnBonus;
-
         btnBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,9 +94,8 @@ public class BonusFragment extends Fragment {
                 }
             }
         });
-
-        return root;
     }
+
     private boolean connected() {
 
         Boolean hasConnect = false;

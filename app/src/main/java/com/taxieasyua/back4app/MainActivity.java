@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_23092023_17";
+    public static final String DB_NAME = "data_25092023_1";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -220,7 +220,8 @@ public class MainActivity extends AppCompatActivity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS_INFO + "(id integer primary key autoincrement," +
                 " type_auto text," +
                 " tarif text," +
-                " discount text);");
+                " discount text," +
+                " bonusPayment text);");
 
         cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -228,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
             settings.add("usually");
             settings.add(" ");
             settings.add("0");
+            settings.add("nal_payment");
             insertFirstSettings(settings);
             if (cursorDb != null && !cursorDb.isClosed())
                 cursorDb.close();
@@ -302,8 +304,8 @@ public class MainActivity extends AppCompatActivity {
             cursorDb.close();
 
         newUser();
-//        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-//        fetchBonus(email);
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        fetchBonus(email);
 
     }
     String baseUrl = "https://m.easy-order-taxi.site";
@@ -342,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void insertFirstSettings(List<String> settings) {
-        String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -351,6 +353,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(2, settings.get(0));
             statement.bindString(3, settings.get(1));
             statement.bindString(4, settings.get(2));
+            statement.bindString(5, settings.get(3));
 
 
             statement.execute();

@@ -110,7 +110,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public static long addCost;
     public static String to;
     private ProgressBar progressBar;
-
+    private static String urlAddress;
 
     public static MyGeoDialogFragment newInstance(String fromGeo) {
         fragment = new MyGeoDialogFragment();
@@ -455,21 +455,19 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         });
         old_address = view.findViewById(R.id.old_address);
+        String[] array = arrayAdressAdapter();
+        if(array.length == 0) {
+            old_address.setVisibility(View.INVISIBLE);
+        }
         old_address.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        String[] array = arrayAdressAdapter();
-                        if(array.length == 0) {
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.make_order_message));
+                        try {
+                            dialogFromToGeoAdress(array);
+                        } catch (MalformedURLException | InterruptedException |
+                                 JSONException e) {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        } else {
-                            try {
-                                dialogFromToGeoAdress(array);
-                            } catch (MalformedURLException | InterruptedException |
-                                     JSONException e) {
-                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                            }
                         }
                     }
                 });
@@ -927,7 +925,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         return result;
     }
 
-
+    Double to_lat;
+    Double to_lng;
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
@@ -963,8 +962,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                Double to_lat = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
-                Double to_lng = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
+                to_lat = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
+                to_lng = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
 
                 OpenStreetMapActivity.finishLat = to_lat;
                 OpenStreetMapActivity.finishLan = to_lng;
@@ -973,15 +972,15 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 Log.d("TAG", "onClick: OpenStreetMapActivity.finishLan " + OpenStreetMapActivity.finishLan);
                 try {
 
-                    String urlCost = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+                    urlAddress = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
                             to_lat, to_lng, "costSearchMarkers", getActivity());
 
-                    Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+                    Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlAddress);
 
                     String message = sendUrlMapCost.get("message");
                     String orderCost = sendUrlMapCost.get("order_cost");
 
-                    Log.d("TAG", "onClick urlCost: " + urlCost);
+                    Log.d("TAG", "onClick urlAddress: " + urlAddress);
 
                     if (orderCost.equals("0")) {
                         MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
@@ -1000,14 +999,13 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                 if (to.indexOf("/") != -1) {
                                     to = to.substring(0,  to.indexOf("/"));
                                 };
-                                String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
+                                String urlCost = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
 
-
-                                Log.d("TAG", "onClick urlCost: " + url);
+                                Log.d("TAG", "onClick urlCost: " + urlCost);
 
                                 try {
-                                    sendUrlMapCost = ResultSONParser.sendURL(url);
-                                } catch (MalformedURLException | InterruptedException | JSONException e) {
+                                    sendUrlMapCost = ResultSONParser.sendURL(urlCost);
+                                } catch (MalformedURLException | InterruptedException | JSONException ignored) {
 
                                 }
 
@@ -1112,8 +1110,19 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         if(connected()) {
             if (verifyPhone(getContext())) {
                 try {
-                    String urlOrder = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+
+                    String urlOrder = null;
+
+                    if(urlAddress == null) {
+                        urlOrder = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
                             toCost, to_numberCost, "orderSearchGeo", getActivity());
+                    } else {
+                        urlOrder = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
+                                to_lat, to_lng, "orderSearchMarkers", getActivity());
+                        Log.d("TAG", "order: urlOrder "  + urlOrder);
+
+                    }
+
                     Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
                     Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
 
@@ -1395,6 +1404,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
 
     }
+
     private void stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }

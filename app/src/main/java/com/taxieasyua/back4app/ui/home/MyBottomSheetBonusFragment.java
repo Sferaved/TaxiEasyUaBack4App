@@ -3,6 +3,7 @@ package com.taxieasyua.back4app.ui.home;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -50,7 +51,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         this.bonusMessage = bonusMessage;
     }
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "Range"})
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
@@ -68,7 +69,23 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, array);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        listView.setItemChecked(0,true);
+
+        String bonusPayment = null;
+        String query = "SELECT bonusPayment FROM " + MainActivity.TABLE_SETTINGS_INFO + " WHERE id = ?";
+        String[] selectionArgs = new String[] { "1" };
+        SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+        Cursor cursor = database.rawQuery(query, selectionArgs);
+
+        if (cursor.moveToFirst()) {
+            bonusPayment = cursor.getString(cursor.getColumnIndex("bonusPayment"));
+        }
+        if ("bonus_payment".equals(bonusPayment)) {
+            listView.setItemChecked(1, true);
+        } else {
+            listView.setItemChecked(0, true);
+        }
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -77,6 +94,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 Log.d("TAG", "onItemClick: array  position" + arrayCode [position]);
                 pos = position;
                 MainActivity.bonusPayment =  arrayCode [pos];
+                ContentValues cv = new ContentValues();
+                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+                cv.put("bonusPayment", arrayCode [pos]);
+                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
             }
         });
 
