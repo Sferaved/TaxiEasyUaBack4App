@@ -89,7 +89,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                 break;
         }
         listView.setItemChecked(positionFirst,true);
-
+        int positionFirstOld = positionFirst;
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -101,17 +101,19 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(positionFirstOld != positionFirst){
+                    ContentValues cv = new ContentValues();
+                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                ContentValues cv = new ContentValues();
-                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-                cv.put("city", cityCode [positionFirst]);
-                database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                        new String[] { "1" });
-                database.close();
-                getActivity().finishAffinity();
-                Toast.makeText(getActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getActivity(), MainActivity.class));
+                    cv.put("city", cityCode [positionFirst]);
+                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+                    getActivity().finishAffinity();
+                    Toast.makeText(getActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getActivity(), MainActivity.class));
+                }
+               dismiss();
             }
         });
         return view;

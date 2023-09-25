@@ -131,8 +131,12 @@ public class BonusFragment extends Fragment {
         Log.d("TAG", "fetchBonus: " + url);
         call.enqueue(new Callback<BonusResponse>() {
             @Override
-            public void onResponse(@NonNull Call<BonusResponse> call, Response<BonusResponse> response) {
-                BonusResponse bonusResponse = response.body();
+            public void onResponse(@NonNull Call<BonusResponse> call, @NonNull Response<BonusResponse> response) {
+                if (getActivity() == null) {
+                    // Фрагмент больше не привязан к активности, выход из метода.
+                    return;
+                }
+                BonusResponse bonusResponse = Objects.requireNonNull(response).body();
                 if (response.isSuccessful()) {
                     progressBar.setVisibility(View.INVISIBLE);
                     assert bonusResponse != null;
@@ -143,12 +147,12 @@ public class BonusFragment extends Fragment {
                     database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                             new String[] { "1" });
                     database.close();
-                    if(bonus != null) {
-                        textView.setText(getString(R.string.my_bonus) + bonus);
-                        textView.setVisibility(View.VISIBLE);
-                        binding.text0.setVisibility(View.VISIBLE);
-                        binding.text0.setText(R.string.bonus_upd_mes);
-                    }
+
+                    textView.setText(getString(R.string.my_bonus) + bonus);
+                    textView.setVisibility(View.VISIBLE);
+                    binding.text0.setVisibility(View.VISIBLE);
+                    binding.text0.setText(R.string.bonus_upd_mes);
+
 
                     Log.d("TAG", "onResponse: " + bonus);
                 } else {

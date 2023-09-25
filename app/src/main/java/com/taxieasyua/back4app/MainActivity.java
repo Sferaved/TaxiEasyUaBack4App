@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_25092023_1";
+    public static final String DB_NAME = "data_25092023_5";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
 
             call.enqueue(new Callback<City>() {
                 @Override
-                public void onResponse(Call<City> call, Response<City> response) {
+                public void onResponse(@NonNull Call<City> call, @NonNull Response<City> response) {
                     if (response.isSuccessful()) {
                         City status = response.body();
                         if (status != null) {
