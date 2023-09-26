@@ -310,8 +310,24 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                              firstCost = firstCost + discount;
                              addCost = discount;
                              text_view_cost.setText(String.valueOf(firstCost));
-
-                             Log.d("TAG", "startCost: firstCost " + firstCost);
+                             String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                             if(Long.parseLong(bonus) >= firstCost * 100 ) {
+                                 List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                                 switch (stringList.get(1)) {
+                                     case "Kyiv City":
+                                     case "Dnipropetrovsk Oblast":
+                                     case "Odessa":
+                                     case "Zaporizhzhia":
+                                     case "Cherkasy Oblast":
+                                         buttonBonus.setVisibility(View.GONE);
+                                         break;
+                                     case "OdessaTest":
+                                         buttonBonus.setVisibility(View.VISIBLE);
+                                         break;
+                                 }
+                             } else {
+                                 buttonBonus.setVisibility(View.GONE);
+                             }
 
                          }
                     }
@@ -633,7 +649,26 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         }
                         Log.d("TAG", "startCost: addCost " + addCost);
                         text_view_cost.setText(String.valueOf(firstCost));
+                        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
 
+                        if(Long.parseLong(bonus) >= firstCost * 100 ) {
+                            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                            switch (stringList.get(1)) {
+                                case "Kyiv City":
+                                case "Dnipropetrovsk Oblast":
+                                case "Odessa":
+                                case "Zaporizhzhia":
+                                case "Cherkasy Oblast":
+                                    buttonBonus.setVisibility(View.GONE);
+                                    break;
+                                case "OdessaTest":
+                                    buttonBonus.setVisibility(View.VISIBLE);
+                                    break;
+                            }
+                        } else {
+                            buttonBonus.setVisibility(View.GONE);
+                        }
                     }
                 });
 
@@ -648,6 +683,27 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         }
                         Log.d("TAG", "startCost: addCost " + addCost);
                         text_view_cost.setText(String.valueOf(firstCost));
+
+                        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+
+                        if(Long.parseLong(bonus) >= firstCost * 100 ) {
+                            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                            switch (stringList.get(1)) {
+                                case "Kyiv City":
+                                case "Dnipropetrovsk Oblast":
+                                case "Odessa":
+                                case "Zaporizhzhia":
+                                case "Cherkasy Oblast":
+                                    buttonBonus.setVisibility(View.GONE);
+                                    break;
+                                case "OdessaTest":
+                                    buttonBonus.setVisibility(View.VISIBLE);
+                                    break;
+                            }
+                        } else {
+                            buttonBonus.setVisibility(View.GONE);
+                        }
                     }
                 });
             }

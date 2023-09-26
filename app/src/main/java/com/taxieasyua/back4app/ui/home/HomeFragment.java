@@ -10,6 +10,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
@@ -134,6 +135,9 @@ public class HomeFragment extends Fragment {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         progressBar = binding.progressBar;
         buttonBonus = binding.btnBonus;
 
@@ -211,6 +215,26 @@ public class HomeFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+
+                if(Long.parseLong(bonus) >= cost * 100 ) {
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                    Log.d(TAG, "cost: stringList.get(1) " + stringList.get(1));
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            buttonBonus.setVisibility(View.GONE);
+                            break;
+                        case "OdessaTest":
+                            buttonBonus.setVisibility(View.VISIBLE);
+                            break;
+                    }
+                } else {
+                    buttonBonus.setVisibility(View.GONE);
+                }
 
             }
         });
@@ -228,6 +252,27 @@ public class HomeFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
+
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+
+                if(Long.parseLong(bonus) >= cost * 100 ) {
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            buttonBonus.setVisibility(View.GONE);
+                            break;
+                        case "OdessaTest":
+                            buttonBonus.setVisibility(View.VISIBLE);
+                            break;
+                    }
+                } else {
+                    buttonBonus.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -413,66 +458,14 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-                if(Long.parseLong(bonus) >=  cost * 100 ){
-                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
+
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
 
         return root;
     }
-    String baseUrl = "https://m.easy-order-taxi.site";
-    private void fetchBonus(String value) {
-        String url = baseUrl + "/bonus/bonusUserShow/" + value;
-        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
-        call.enqueue(new Callback<BonusResponse>() {
-            @Override
-            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
-                BonusResponse bonusResponse = response.body();
-                if (response.isSuccessful()) {
-                    String bonus = String.valueOf(bonusResponse.getBonus());
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonus", bonus);
-                    SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-                   if(!bonus.equals("0")) {
-                       Log.d(TAG, "onResponse:  cost" + cost);
-                       if(Long.parseLong(bonus) >=  cost * 100 ){
-                           MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
-                           bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                       } else {
-                           MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.nobonuspayment));
-                           bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                       }
-
-                   } else {
-                       MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.no_bonus));
-                       bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                   }
-
-
-                    Log.d("TAG", "onResponse: " + bonus);
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BonusResponse> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                // Дополнительная обработка ошибки
-            }
-        });
-    }
-
-
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -757,21 +750,6 @@ public class HomeFragment extends Fragment {
                 btn_plus.setVisibility(View.VISIBLE);
                 buttonAddServices.setVisibility(View.VISIBLE);
                 btn_order.setVisibility(View.VISIBLE);
-                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                Log.d(TAG, "cost: stringList.get(1) "  + stringList.get(1));
-                switch (stringList.get(1)){
-                    case "Kyiv City":
-                    case "Dnipropetrovsk Oblast":
-                    case "Odessa":
-                    case "Zaporizhzhia":
-                    case "Cherkasy Oblast":
-                        buttonBonus.setVisibility(View.GONE);
-                        break;
-                    case "OdessaTest":
-                        buttonBonus.setVisibility(View.VISIBLE);
-                        break;
-                }
-
 
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
@@ -787,6 +765,26 @@ public class HomeFragment extends Fragment {
                 addCost = discount;
                 cost = firstCost + discount;
                 text_view_cost.setText(Long.toString(cost));
+
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                if(Long.parseLong(bonus) >= cost * 100 ) {
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                    Log.d(TAG, "cost: stringList.get(1) " + stringList.get(1));
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            buttonBonus.setVisibility(View.GONE);
+                            break;
+                        case "OdessaTest":
+                            buttonBonus.setVisibility(View.VISIBLE);
+                            break;
+                    }
+                } else {
+                    buttonBonus.setVisibility(View.GONE);
+                }
 
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);

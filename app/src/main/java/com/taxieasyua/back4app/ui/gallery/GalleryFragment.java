@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -116,6 +117,9 @@ public class GalleryFragment extends Fragment {
 
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
 
         if(stringList.size() !=0 ) {
@@ -166,13 +170,33 @@ public class GalleryFragment extends Fragment {
             cost = Long.parseLong(text_view_cost.getText().toString());
             MIN_COST_VALUE = (long) (cost * 0.1);
             MAX_COST_VALUE = cost * 3;
+
+            String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+
+            if(Long.parseLong(bonus) >= cost * 100 ) {
+                List<String> stringL = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                switch (stringL.get(1)) {
+                    case "Kyiv City":
+                    case "Dnipropetrovsk Oblast":
+                    case "Odessa":
+                    case "Zaporizhzhia":
+                    case "Cherkasy Oblast":
+                        buttonBonus.setVisibility(View.GONE);
+                        break;
+                    case "OdessaTest":
+                        buttonBonus.setVisibility(View.VISIBLE);
+                        break;
+                }
+            } else {
+                buttonBonus.setVisibility(View.GONE);
+            }
+
         }
 
         btn_minus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 cost -= 5;
                 addCost -= 5;
                 if (cost <= MIN_COST_VALUE) {
@@ -180,7 +204,26 @@ public class GalleryFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
 
+                if(Long.parseLong(bonus) >= cost * 100 ) {
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            buttonBonus.setVisibility(View.GONE);
+                            break;
+                        case "OdessaTest":
+                            buttonBonus.setVisibility(View.VISIBLE);
+                            break;
+                    }
+                } else {
+                    buttonBonus.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -195,6 +238,26 @@ public class GalleryFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
+                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+
+                if(Long.parseLong(bonus) >= cost * 100 ) {
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            buttonBonus.setVisibility(View.GONE);
+                            break;
+                        case "OdessaTest":
+                            buttonBonus.setVisibility(View.VISIBLE);
+                            break;
+                    }
+                } else {
+                    buttonBonus.setVisibility(View.GONE);
+                }
             }
         });
         btnAdd = binding.btnAdd;

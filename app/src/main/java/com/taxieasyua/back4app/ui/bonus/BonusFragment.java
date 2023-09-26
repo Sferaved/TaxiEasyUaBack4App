@@ -7,6 +7,7 @@ import static com.taxieasyua.back4app.R.string.verify_internet;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -62,6 +63,7 @@ public class BonusFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentBonusBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         networkChangeReceiver = new NetworkChangeReceiver();
         progressBar = binding.progressBar;

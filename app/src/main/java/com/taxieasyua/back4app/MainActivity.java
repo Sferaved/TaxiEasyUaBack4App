@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_26092023_6";
+    public static final String DB_NAME = "data_26092023_11";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -993,12 +993,15 @@ public class MainActivity extends AppCompatActivity {
             startFireBase();
         } else {
             new VerifyUserTask().execute();
-            String bonus = logCursor(MainActivity.TABLE_USER_INFO).get(5);
-            if(bonus.equals("1")) {
-                String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-                fetchBonus(email);
-            }
+
         }
+        String bonus = logCursor(MainActivity.TABLE_USER_INFO).get(5);
+
+        if(bonus.equals("1")) {
+            String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+            fetchBonus(email);
+        }
+        Log.d("TAG", "newUser: bonus " + bonus);
     }
 
     private void startFireBase() {

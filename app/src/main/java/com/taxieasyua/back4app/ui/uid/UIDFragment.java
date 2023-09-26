@@ -7,6 +7,7 @@ import static com.taxieasyua.back4app.R.string.verify_internet;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -61,6 +62,9 @@ public class UIDFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         listView = binding.listView;
         progressBar = binding.progressBar;
         networkChangeReceiver = new NetworkChangeReceiver();

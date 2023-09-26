@@ -42,7 +42,8 @@
             android:exported="false" />
         <activity
             android:name=".ui.finish.FinishActivity"
-            android:exported="false" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar"/>
 
         <meta-data
             android:name="com.parse.SERVER_URL"
