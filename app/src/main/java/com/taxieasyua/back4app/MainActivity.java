@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_25092023_5";
+    public static final String DB_NAME = "data_26092023_6";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -304,8 +304,6 @@ public class MainActivity extends AppCompatActivity {
             cursorDb.close();
 
         newUser();
-        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-        fetchBonus(email);
 
     }
     String baseUrl = "https://m.easy-order-taxi.site";
@@ -993,11 +991,14 @@ public class MainActivity extends AppCompatActivity {
         Log.d("TAG", "newUser: " + userEmail);
         if(userEmail.equals("email")) {
             startFireBase();
-      } else {
+        } else {
             new VerifyUserTask().execute();
+            String bonus = logCursor(MainActivity.TABLE_USER_INFO).get(5);
+            if(bonus.equals("1")) {
+                String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+                fetchBonus(email);
+            }
         }
-
-
     }
 
     private void startFireBase() {
@@ -1063,7 +1064,6 @@ public class MainActivity extends AppCompatActivity {
                 addUser(user.getDisplayName(), user.getEmail()) ;
 
                 getLocalIpAddress();
-
 
                 cv.put("verifyOrder", "1");
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

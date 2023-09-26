@@ -413,10 +413,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-                if(Long.parseLong(bonus) <  cost * 100 ){
-                    String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-                    fetchBonus(email);
-                } else {
+                if(Long.parseLong(bonus) >=  cost * 100 ){
                     MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
