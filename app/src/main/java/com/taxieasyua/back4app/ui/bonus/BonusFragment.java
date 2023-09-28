@@ -26,6 +26,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
@@ -54,7 +56,7 @@ import retrofit2.Response;
 public class BonusFragment extends Fragment {
 
     private @NonNull FragmentBonusBinding binding;
-    private AppCompatButton btnBonus;
+    private AppCompatButton btnBonus, btnOrder;
     private TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
     private ProgressBar progressBar;
@@ -96,6 +98,22 @@ public class BonusFragment extends Fragment {
                 }
             }
         });
+
+        // Ваш текущий фрагмент или активность
+        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+
+// Переход к фрагменту HomeFragment
+
+        btnOrder = binding.btnOrder;
+        btnOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navController.navigate(R.id.nav_home);
+            }
+        });
+
+
+
     }
 
     private boolean connected() {

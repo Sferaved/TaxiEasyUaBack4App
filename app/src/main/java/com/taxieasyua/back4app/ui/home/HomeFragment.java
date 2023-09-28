@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -277,9 +278,15 @@ public class HomeFragment extends Fragment {
         });
 
         textViewFrom =binding.textFrom;
+        int inputType = textViewFrom.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        textViewFrom.setInputType(inputType);
+
         textViewFrom.setAdapter(adapter);
+
         textViewTo =binding.textTo;
         textViewTo.setAdapter(adapter);
+        int inputTypeTo = textViewTo.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        textViewTo.setInputType(inputTypeTo);
 
         from_number = binding.fromNumber;
 

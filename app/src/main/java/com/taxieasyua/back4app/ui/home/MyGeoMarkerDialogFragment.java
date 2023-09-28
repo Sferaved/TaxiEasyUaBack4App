@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -214,6 +215,9 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
         textViewTo = view.findViewById(R.id.text_to);
         textViewTo.setText(OpenStreetMapActivity.ToAdressString);
+        int inputTypeTo = textViewTo.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        textViewTo.setInputType(inputTypeTo);
+
         btn_minus = view.findViewById(R.id.btn_minus);
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);

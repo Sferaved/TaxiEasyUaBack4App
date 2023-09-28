@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -219,6 +220,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         adapter = new ArrayAdapter<>(getActivity(), R.layout.drop_down_layout, arrayStreet);
 
         textViewTo.setAdapter(adapter);
+        int inputTypeTo = textViewTo.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        textViewTo.setInputType(inputTypeTo);
         textViewTo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
