@@ -205,16 +205,16 @@ public class FinishActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (MainActivity.bonusPayment.equals("bonus_payment")) {
-           thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // Здесь вызывайте вашу функцию fetchCarFound()
-                    fetchCarFound();
-                }
-            });
-           thread.start();
-        }
+//        if (MainActivity.bonusPayment.equals("bonus_payment")) {
+//           thread = new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    // Здесь вызывайте вашу функцию fetchCarFound()
+//                    fetchCarFound();
+//                }
+//            });
+//           thread.start();
+//        }
     }
 
     private void fetchBonus(String url) {
