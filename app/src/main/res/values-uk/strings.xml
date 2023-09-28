@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.817</string>
-    <string name="version">Версія: 2.817</string>
+    <string name="version_code">2.818</string>
+    <string name="version">Версія: 2.818</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -88,8 +88,7 @@
     <string name="make_order_message">Здійсніть хоча б одну поїздку</string>
     <string name="to_adress_message">Куди їдемо?</string>
     <string name="coastMarkersMessage">"Вартість подорожі по маршруту "</string>
-    <string name="please_phone_message">Ця програма передає номер Вашого мобільного телефону для увімкнення функції замовлення таксі. Без інформації про номер телефону замовлення таксі неможливе. Введіть номер телефону та натисніть кнопку ЗБЕРІГТИ Ви підтверджуєте згоду на передачу номера Вашого телефону диспетчеру для пошуку автомобіля та збереження його для наступних замовлень таксі.</string>
-    <string name="check_message">Чекайте, йде підключення.</string>
+    <string name="please_phone_message">Додаток передає номер Вашого мобільного телефону для включення функції замовлення таксі. Натиснувши кнопку Зберегти Ви підтверджуєте згоду на передачу номера телефону диспетчеру для пошуку автомобіля та збереження його для наступних замовлень.</string><string name="check_message">Чекайте, йде підключення.</string>
     <string name="find_of_map">Спробуйте знайти на карті</string>
     <string name="end_point_marker">Місце призначення</string>
     <string name="error_firebase_start">Помилка перевірки. Наберіть оператора.</string>
@@ -152,7 +151,7 @@
     <string name="city">Місто</string>
     <string name="change_message">"Зміна бази адрес."</string>
     <string name="server_error_connected">Сервер не прийняв запит, наберіть операторів</string>
-    <string name="GDPR">Користувач погоджується з Правилами конфіденційності Загального регламенту захисту персональних даних (GDPR) ЄС та усвідомлює, що введення інформації про телефон є обов\'язковим для замовлення таксі.</string>
+    <string name="GDPR"></string>
     <string name="ok_GDPR">Погодитись</string>
     <string name="Dnipro_city">Дніпро</string>
     <string name="city_change">Виберіть місто</string>

@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.817</string>
-    <string name="version">Версия: 2.817</string>
+    <string name="version_code">2.818</string>
+    <string name="version">Версия: 2.818</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -89,7 +89,7 @@
     <string name="make_order_message">Совершите хотя бы одну поездку</string>
     <string name="to_adress_message">Куда едем?</string>
     <string name="coastMarkersMessage">"Стоимость поездки по маршруту "</string>
-    <string name="please_phone_message">Это приложение  передает номер Вашего мобильного телефона для включения функции заказа такси. Без информации о номере телефона заказ такси невозможен. Введя номер телефона и нажав кнопку СОХРАНИТЬ Вы подтверждаете согласие на передачу номера Вашего телефона диспетчеру для поиска автомобиля и сохранение его для следующих заказов такси.</string>
+    <string name="please_phone_message">Это приложение  передает номер Вашего мобильного телефона для включения функции заказа такси. Нажав кнопку СОХРАНИТЬ Вы подтверждаете согласие на передачу номера Вашего телефона диспетчеру для поиска автомобиля и сохранение его для следующих заказов.</string>
     <string name="check_message">Ожидайте, идет подключение...</string>
     <string name="find_of_map">Попробуйте найти на карте</string>
     <string name="end_point_marker">Место назначения</string>
@@ -153,7 +153,7 @@
     <string name="city">Город</string>
     <string name="change_message">"Смена базы адресов. "</string>
     <string name="server_error_connected">Сервер не принял запрос, наберите операторов</string>
-    <string name="GDPR">Пользователь соглашается с Правилами конфеденциальности Общего регламента защиты персональных данных (GDPR) ЕС и осознает, что ввод информации о телефоне является обязательным для заказа такси.</string>
+    <string name="GDPR"> </string>
     <string name="ok_GDPR">Согласиться</string>
     <string name="Dnipro_city">Днепр</string>
     <string name="city_change">Выберите город</string>

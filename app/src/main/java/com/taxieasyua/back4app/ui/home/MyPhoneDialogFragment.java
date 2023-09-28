@@ -74,6 +74,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        HomeFragment.progressBar.setVisibility(View.INVISIBLE);
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null && getActivity().getCurrentFocus() != null) {
             imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
