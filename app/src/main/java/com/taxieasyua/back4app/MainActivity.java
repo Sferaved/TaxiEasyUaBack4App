@@ -112,13 +112,16 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_28092023_2";
+    public static final String DB_NAME = "data_29092023_6";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
     public static final String TABLE_SERVICE_INFO = "serviceInfo";
     public static final String TABLE_ADD_SERVICE_INFO = "serviceAddInfo";
     public static final String CITY_INFO = "cityInfo";
+    public static final String ROUT_HOME = "routHome";
+    public static final String ROUT_GEO = "routGeo";
+    public static final String ROUT_MARKER = "routMarker";
 
     public static final String TABLE_POSITION_INFO = "myPosition";
     public static Cursor cursorDb;
@@ -302,6 +305,25 @@ public class MainActivity extends AppCompatActivity {
         verifyPhone = cursorDb.getCount() == 1;
         if (cursorDb != null && !cursorDb.isClosed())
             cursorDb.close();
+
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_HOME + "(id integer primary key autoincrement," +
+                " from_street text," +
+                " from_number text," +
+                " to_street text," +
+                " to_number text);");
+        cursorDb = database.query(ROUT_HOME, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            Log.d("TAG", "initDB: ROUT_HOME");
+            insertRoutHome();
+        }
+        if (cursorDb != null && !cursorDb.isClosed())
+        cursorDb.close();
+
+//        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_GEO + "(id integer primary key autoincrement," +
+//                " city text);");
+//        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_MARKER + "(id integer primary key autoincrement," +
+//                " city text);");
+
 
         newUser();
 
@@ -1141,6 +1163,27 @@ public class MainActivity extends AppCompatActivity {
         // обновляем по id
         database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
+        database.close();
+    }
+    private void insertRoutHome() {
+        String sql = "INSERT INTO " + MainActivity.ROUT_HOME + " VALUES(?,?,?,?,?);";
+        Log.d("TAG", "insertRoutHome: ");
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindString(2, " ");
+            statement.bindString(3, " ");
+            statement.bindString(4, " ");
+            statement.bindString(5, " ");
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
         database.close();
     }
 
