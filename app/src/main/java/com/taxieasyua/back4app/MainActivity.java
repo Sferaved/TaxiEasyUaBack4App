@@ -569,6 +569,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("IntentReset")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.phone_settings) {
@@ -609,8 +610,8 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 startActivity(Intent.createChooser(emailIntent, getString(R.string.share)));
-            } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(this, getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
+            } catch (android.content.ActivityNotFoundException ignored) {
+
             }
 
         }
@@ -634,6 +635,7 @@ public class MainActivity extends AppCompatActivity {
         return randomString.toString();
     }
 
+    @SuppressLint("IntentReset")
     private void sendEmailAdmin () {
         List<String> stringList = logCursor(MainActivity.CITY_INFO);
         String city;
@@ -684,8 +686,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             startActivity(Intent.createChooser(emailIntent, subject));
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(this, getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
+        } catch (android.content.ActivityNotFoundException ignored) {
+
         }
 
 

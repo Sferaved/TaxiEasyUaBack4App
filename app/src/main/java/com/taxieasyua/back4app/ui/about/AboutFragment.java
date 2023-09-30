@@ -1,5 +1,6 @@
 package com.taxieasyua.back4app.ui.about;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ public class AboutFragment extends Fragment {
         View root = binding.getRoot();
 
         binding.fab.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("IntentReset")
             @Override
             public void onClick(View view) {
                 String subject = getString(R.string.android);
@@ -45,8 +47,8 @@ public class AboutFragment extends Fragment {
 
                 try {
                     startActivity(Intent.createChooser(emailIntent, getString(R.string.share)));
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(getActivity(), getString(R.string.no_email_agent), Toast.LENGTH_SHORT).show();
+                } catch (android.content.ActivityNotFoundException ignored) {
+
                 }
 
             }
