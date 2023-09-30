@@ -23,6 +23,7 @@
         android:layout_gravity="bottom|end"
 
         android:layout_marginTop="8sp"
+        android:layout_marginStart="8sp"
         android:contentDescription="@string/make_rout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

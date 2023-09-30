@@ -21,10 +21,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+
+import java.util.Objects;
 
 
 public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
@@ -109,16 +113,33 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     database.update(MainActivity.CITY_INFO, cv, "id = ?",
                             new String[] { "1" });
                     database.close();
-                    getActivity().finishAffinity();
+
+                    NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+                    resetRoutHome();
+                    navController.navigate(R.id.nav_home);
+
                     Toast.makeText(getActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getActivity(), MainActivity.class));
+
                 }
                dismiss();
             }
         });
         return view;
     }
+    public void resetRoutHome() {
+        ContentValues cv = new ContentValues();
 
+        cv.put("from_street", " ");
+        cv.put("from_number", " ");
+        cv.put("to_street", " ");
+        cv.put("to_number", " ");
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_HOME, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
 
    }
 

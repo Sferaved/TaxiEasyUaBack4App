@@ -7,6 +7,7 @@ import static com.taxieasyua.back4app.R.string.version;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -112,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_29092023_6";
+    public static final String DB_NAME = "data_30092023_6";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -122,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ROUT_HOME = "routHome";
     public static final String ROUT_GEO = "routGeo";
     public static final String ROUT_MARKER = "routMarker";
+    String TAG = "TAG";
 
     public static final String TABLE_POSITION_INFO = "myPosition";
     public static Cursor cursorDb;
@@ -445,7 +447,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(3, "+380");
             statement.bindString(4, "email");
             statement.bindString(5, "username");
-            statement.bindString(6, "1");
+            statement.bindString(6, "0");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -743,15 +745,30 @@ public class MainActivity extends AppCompatActivity {
                         database.close();
 
                         Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
-                        finish();
-                        startActivity(new Intent(MainActivity.this, MainActivity.class));
+
+                        NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
+                        resetRoutHome();
+                        navController.navigate(R.id.nav_home);
 
                     }
                 }).setNegativeButton(cancel_button, null)
                 .show();
 
     }
+    public void resetRoutHome() {
+        ContentValues cv = new ContentValues();
 
+        cv.put("from_street", " ");
+        cv.put("from_number", " ");
+        cv.put("to_street", " ");
+        cv.put("to_number", " ");
+
+        // обновляем по id
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_HOME, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
     public void eventGps() {
         LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
         boolean gps_enabled = false;
@@ -1008,7 +1025,7 @@ public class MainActivity extends AppCompatActivity {
         database.close();
         return list;
     }
-    public void newUser() throws MalformedURLException {
+    public void newUser() {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         Log.d("TAG", "newUser: " + userEmail);
         if(userEmail.equals("email")) {
@@ -1017,13 +1034,7 @@ public class MainActivity extends AppCompatActivity {
             new VerifyUserTask().execute();
 
         }
-        String bonus = logCursor(MainActivity.TABLE_USER_INFO).get(5);
 
-        if(bonus.equals("1")) {
-            String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-            fetchBonus(email);
-        }
-        Log.d("TAG", "newUser: bonus " + bonus);
     }
 
     private void startFireBase() {
@@ -1089,6 +1100,8 @@ public class MainActivity extends AppCompatActivity {
                 addUser(user.getDisplayName(), user.getEmail()) ;
 
                 getLocalIpAddress();
+
+                fetchBonus(user.getEmail());
 
                 cv.put("verifyOrder", "1");
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

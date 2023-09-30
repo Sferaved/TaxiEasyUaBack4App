@@ -43,8 +43,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String[] array, arrayCode;
     AppCompatButton btn_ok;
     int pos;
-    private String bonusPaymentDialog;
-
     public MyBottomSheetBonusFragment(String bonusMessage) {
         this.bonusMessage = bonusMessage;
         this.rout = "";
@@ -79,19 +77,22 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         String[] selectionArgs = new String[] { "1" };
         SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        Cursor cursor = database.rawQuery(query, selectionArgs);
+        @SuppressLint("Recycle") Cursor cursor = database.rawQuery(query, selectionArgs);
 
         if (cursor.moveToFirst()) {
             bonusPayment = cursor.getString(cursor.getColumnIndex("bonusPayment"));
         }
+        Log.d("TAG", "onCreateView: bonusPayment " + bonusPayment);
         if ("bonus_payment".equals(bonusPayment)) {
             listView.setItemChecked(1, true);
             MainActivity.bonusPayment = "bonus_payment";
+            pos = 1;
         } else {
             listView.setItemChecked(0, true);
             MainActivity.bonusPayment = "nal_payment";
+            pos = 0;
         }
-        Log.d("TAG", "onCreateView: bonusPaymentDialog " + bonusPaymentDialog);
+        database.close();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -100,7 +101,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 Log.d("TAG", "onItemClick: array  position" + arrayCode [position]);
                 pos = position;
                 MainActivity.bonusPayment =  arrayCode [pos];
-                bonusPaymentDialog = arrayCode[pos];
+
                 ContentValues cv = new ContentValues();
                 SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
@@ -118,33 +119,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             public void onClick(View v) {
                 MainActivity.bonusPayment =  arrayCode [pos];
 
-//                ContentValues cv = new ContentValues();
-//                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-//
-//                cv.put("bonusPayment", arrayCode [pos]);
-//                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-//                        new String[] { "1" });
-//                database.close();
-                if(rout.equals("home")) {
-                    String urlCost = null;
-                    Map<String, String> sendUrlMapCost = null;
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            urlCost = getTaxiUrlSearch("costSearch", getActivity());
-                        }
+                ContentValues cv = new ContentValues();
+                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                        sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-                    } catch (MalformedURLException ignored) {
-
-                    }
-                    String orderCost = (String) sendUrlMapCost.get("order_cost");
-
-                    if (!orderCost.equals("0")) {
-                        HomeFragment.text_view_cost.setText(String.valueOf(Long.parseLong(orderCost) + HomeFragment.addCost));
-                    }
-
-                }
-
+                cv.put("bonusPayment", arrayCode [pos]);
+                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                        new String[] { "1" });
+                database.close();
                 dismiss();
             }
         });
@@ -155,25 +136,26 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-//        if(rout.equals("home")) {
-//            String urlCost = null;
-//            Map<String, String> sendUrlMapCost = null;
-//            try {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    urlCost = getTaxiUrlSearch("costSearch", getActivity());
-//                }
-//
-//                sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-//            } catch (MalformedURLException ignored) {
-//
-//            }
-//            String orderCost = (String) sendUrlMapCost.get("order_cost");
-//
-//            if (!orderCost.equals("0")) {
-//                HomeFragment.text_view_cost.setText(orderCost);
-//            }
-//
-//        }
+        if(rout.equals("home")) {
+            String urlCost = null;
+            Map<String, String> sendUrlMapCost = null;
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    urlCost = getTaxiUrlSearch("costSearch", getActivity());
+                }
+
+                sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+            } catch (MalformedURLException ignored) {
+
+            }
+            String orderCost = (String) sendUrlMapCost.get("order_cost");
+
+            if (!orderCost.equals("0")) {
+                String costUpdate = String.valueOf(HomeFragment.addCost +  Long.parseLong(orderCost));
+                HomeFragment.text_view_cost.setText(costUpdate);
+            }
+
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

@@ -521,7 +521,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 resetRoutHome();
-
                 navController.navigate(R.id.nav_home);
 
             }
@@ -883,6 +882,7 @@ public class HomeFragment extends Fragment {
                 btn_minus.setVisibility(View.INVISIBLE);
                 btn_plus.setVisibility(View.INVISIBLE);
                 buttonAddServices.setVisibility(View.INVISIBLE);
+                btn_order.setVisibility(View.INVISIBLE);
                 btn_clear.setVisibility(View.INVISIBLE);
             }
             if (!orderCost.equals("0")) {
@@ -1039,13 +1039,12 @@ public class HomeFragment extends Fragment {
         if(connected()) {
             if (verifyPhone(getContext())) {
                 try {
-
-
-
                     String urlOrder = getTaxiUrlSearch( "orderSearch", getActivity());
                     Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
-                    String orderWeb = (String) sendUrlMap.get("order_cost");
+                    String orderWeb = sendUrlMap.get("order_cost");
+                    String message = sendUrlMap.get("message");
+
                     if (!orderWeb.equals("0")) {
 
                         String from_name = (String) sendUrlMap.get("routefrom");
@@ -1093,7 +1092,7 @@ public class HomeFragment extends Fragment {
                         progressBar.setVisibility(View.INVISIBLE);
 
                     } else {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
 

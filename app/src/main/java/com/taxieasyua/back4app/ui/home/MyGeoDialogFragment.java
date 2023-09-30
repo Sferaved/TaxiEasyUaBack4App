@@ -1186,7 +1186,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
 
                     String orderWeb = sendUrlMap.get("order_cost");
-
+                    String message = sendUrlMap.get("message");
                     if (!orderWeb.equals("0")) {
                         String to_name;
                         if (Objects.equals(sendUrlMap.get("routefrom"), sendUrlMap.get("routeto"))) {
@@ -1231,7 +1231,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         startActivity(intent);
                     } else {
 
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         progressBar.setVisibility(View.INVISIBLE);
                     }
