@@ -855,7 +855,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                     c.close();
                 }
-                parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
+                parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                        + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
             }
 
             if(urlAPI.equals("orderSearchMarkers")) {

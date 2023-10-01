@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_30092023_6";
+    public static final String DB_NAME = "data_01102023_3";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -200,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         File dbFile = getDatabasePath(dbName);
         return dbFile.exists();
     }
+    @SuppressLint("SuspiciousIndentation")
     public void initDB() throws MalformedURLException, JSONException, InterruptedException {
 //        this.deleteDatabase(DB_NAME);
 
@@ -321,15 +322,38 @@ public class MainActivity extends AppCompatActivity {
         if (cursorDb != null && !cursorDb.isClosed())
         cursorDb.close();
 
-//        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_GEO + "(id integer primary key autoincrement," +
-//                " city text);");
-//        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_MARKER + "(id integer primary key autoincrement," +
-//                " city text);");
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_GEO + "(id integer primary key autoincrement," +
+                " startLat double," +
+                " startLan double," +
+                " toCost text," +
+                " to_numberCost text);");
+        cursorDb = database.query(ROUT_GEO, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            Log.d("TAG", "initDB: ROUT_GEO");
+            insertRoutGeo();
+        }
+        if (cursorDb != null && !cursorDb.isClosed())
+            cursorDb.close();
 
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + ROUT_MARKER + "(id integer primary key autoincrement," +
+                " startLat double," +
+                " startLan double," +
+                " to_lat double," +
+                " to_lng double);");
+        cursorDb = database.query(ROUT_MARKER, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+            Log.d("TAG", "initDB: ROUT_MARKER");
+            insertRoutMarker();
+        }
+        if (cursorDb != null && !cursorDb.isClosed())
+            cursorDb.close();
 
         newUser();
 
     }
+
+
+
     String baseUrl = "https://m.easy-order-taxi.site";
     private void fetchBonus(String value) {
         String url = baseUrl + "/bonus/bonusUserShow/" + value;
@@ -1182,7 +1206,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void insertRoutHome() {
         String sql = "INSERT INTO " + MainActivity.ROUT_HOME + " VALUES(?,?,?,?,?);";
-        Log.d("TAG", "insertRoutHome: ");
+
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -1201,6 +1225,54 @@ public class MainActivity extends AppCompatActivity {
         }
         database.close();
     }
+
+    private void insertRoutGeo() {
+        String sql = "INSERT INTO " + MainActivity.ROUT_GEO + " VALUES(?,?,?,?,?);";
+
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindDouble(2, 0);
+            statement.bindDouble(3, 0);
+            statement.bindString(4, " ");
+            statement.bindString(5, " ");
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+        database.close();
+
+    }
+
+    private void insertRoutMarker() {
+        String sql = "INSERT INTO " + MainActivity.ROUT_MARKER + " VALUES(?,?,?,?,?);";
+
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindDouble(2, 0);
+            statement.bindDouble(3, 0);
+            statement.bindDouble(4, 0);
+            statement.bindDouble(5, 0);
+
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
+        database.close();
+    }
+
+
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted

@@ -174,8 +174,6 @@ public class HomeFragment extends Fragment {
             adapter = new ArrayAdapter<>(getActivity(),R.layout.drop_down_layout, arrayStreet);
         }
 
-
-
         text_view_cost = binding.textViewCost;
         btnGeo = binding.btnGeo;
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -192,9 +190,6 @@ public class HomeFragment extends Fragment {
                 checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             }
         });
-
-
-
 
         btn_minus = binding.btnMinus;
         btn_plus= binding.btnPlus;
@@ -312,53 +307,6 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        fab_call = binding.fabCall;
-//        fab_map = binding.fabOpenMap;
-//        fab_map.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                progressBar.setVisibility(View.VISIBLE);
-//                if(!verifyOrder(getContext())) {
-//
-//                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
-//                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                } else {
-//                    LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-//                    boolean gps_enabled = false;
-//                    boolean network_enabled = false;
-//
-//                    try {
-//                        gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-//                    } catch(Exception ex) {
-//                    }
-//
-//                    try {
-//                        network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-//                    } catch(Exception ex) {
-//                    }
-//
-//                    if(!gps_enabled || !network_enabled) {
-//                        MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-//                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                    }  else  {
-//                        // Разрешения уже предоставлены, выполнить ваш код
-//                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
-//                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                            btnGeo.setVisibility(View.VISIBLE);
-//                        }  else {
-//                            btnGeo.setVisibility(View.INVISIBLE);
-//                            Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
-//                            startActivity(intent);
-//                        }
-//
-//                    }
-//                }
-//            }
-//        });
 
         on_map = binding.btnMap;
         on_map.setOnClickListener(new View.OnClickListener() {
@@ -408,6 +356,7 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+        fab_call = binding.fabCall;
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

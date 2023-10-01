@@ -255,64 +255,33 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         buttonBonus = view.findViewById(R.id.btnBonus);
         startCost();
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+        if(Long.parseLong(bonus) >= cost * 100 ) {
+            List<String> stringListBon = logCursor(MainActivity.CITY_INFO, getActivity());
+
+            switch (stringListBon.get(1)) {
+                case "Kyiv City":
+                case "Dnipropetrovsk Oblast":
+                case "Odessa":
+                case "Zaporizhzhia":
+                case "Cherkasy Oblast":
+                    buttonBonus.setVisibility(View.GONE);
+                    break;
+                case "OdessaTest":
+                    buttonBonus.setVisibility(View.VISIBLE);
+                    break;
+            }
+        } else {
+            buttonBonus.setVisibility(View.GONE);
+        }
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-                if(Long.parseLong(bonus) <  cost * 100 ){
-                    String email = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(3);
-                    fetchBonus(email);
-                } else {
-                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus, "marker", api, text_view_cost, "GeoMarker");
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
         return view;
-    }
-
-    String baseUrl = "https://m.easy-order-taxi.site";
-    private void fetchBonus(String value) {
-        String url = baseUrl + "/bonus/bonusUserShow/" + value;
-        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
-        call.enqueue(new Callback<BonusResponse>() {
-            @Override
-            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
-                BonusResponse bonusResponse = response.body();
-                if (response.isSuccessful()) {
-                    String bonus = String.valueOf(bonusResponse.getBonus());
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonus", bonus);
-                    SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-                    if(!bonus.equals("0")) {
-                        MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus);
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    } else {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.no_bonus));
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-
-
-                    Log.d("TAG", "onResponse: " + bonus);
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BonusResponse> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                // Дополнительная обработка ошибки
-            }
-        });
     }
 
     private void startCost() {
@@ -501,7 +470,8 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
@@ -861,7 +831,8 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/" + displayName + "(" + userEmail + ")";
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
