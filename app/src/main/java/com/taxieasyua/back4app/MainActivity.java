@@ -513,8 +513,12 @@ public class MainActivity extends AppCompatActivity {
                         if (status != null) {
                             String result = status.getResponse();
                             Log.d("TAG", "onResponse:result " + result);
-                            MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
-                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                            if (!isFinishing() && !getSupportFragmentManager().isStateSaved()) {
+                                MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
+                                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                            }
+
 
                         }
                     } else {
