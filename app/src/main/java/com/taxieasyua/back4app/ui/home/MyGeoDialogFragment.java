@@ -1199,8 +1199,11 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         settings.add(to_numberCost);
 
                         updateRoutGeo(settings);
-
-                        urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", getActivity());
+                        if(geo_marker.equals("geo")) {
+                            urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", getActivity());
+                        } else {
+                            urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", getActivity());
+                        }
                     } else {
                         List<String> settings = new ArrayList<>();
                         settings.add(String.valueOf(OpenStreetMapActivity.startLat));
