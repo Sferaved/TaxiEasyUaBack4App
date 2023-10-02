@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.826</string>
-    <string name="version">Версия: 2.826</string>
+    <string name="version_code">2.827</string>
+    <string name="version">Версия: 2.827</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -180,7 +180,7 @@
     <string name="OK">Ок</string>
     <string name="to_marker_mes">Отметьте маркером на карте место высадки</string>
     <string name="set_marker">Отметить на карте</string>
-    <string name="uid_menu">История поездок</string>
+    <string name="uid_menu">История заказов</string>
     <string name="close_resone_def">Уточните у диспетчера</string>
     <string name="close_resone_in_work">В обработке</string>
     <string name="close_resone_0">Выполнен</string>

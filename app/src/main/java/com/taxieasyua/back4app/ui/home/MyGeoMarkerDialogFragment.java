@@ -6,25 +6,19 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.graphics.BlendMode;
 import android.graphics.Rect;
-import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,11 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,16 +37,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
@@ -65,17 +47,10 @@ import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
-import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.start.ResultSONParser;
-
-import org.json.JSONException;
-import org.osmdroid.config.Configuration;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -85,31 +60,24 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 
 public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
+    AppCompatButton button, btn_minus, btn_plus, btnOrder, buttonBonus;
     public String[] arrayStreet;
     private static String api;
-    ArrayList<Map> adressArr;
     long firstCost;
 
     public static TextView text_view_cost, textViewTo;
     public static EditText to_number;
 
     public static String numberFlagTo;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationCallback locationCallback;
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
+
     static MyGeoMarkerDialogFragment fragment;
     public static long cost;
     public static long addCost;
     public static String to;
-    private ProgressBar progressBar;
+    public static ProgressBar progressBar;
 
     public static MyGeoMarkerDialogFragment newInstance(String fromGeo) {
         fragment = new MyGeoMarkerDialogFragment();
@@ -287,8 +255,14 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     private void startCost() {
         String urlCost = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            urlCost = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                    OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan, "costSearchMarkers", getActivity());
+            List<String> settings = new ArrayList<>();
+            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+            settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
+            settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
+
+            updateRoutMarker(settings);
+            urlCost = getTaxiUrlSearchMarkers( "costSearchMarkers", getActivity());
         }
 
         Map<String, String> sendUrlMapCost = null;
@@ -434,11 +408,16 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
-                                                 double toLatitude, double toLongitude,
-                                                 String urlAPI, Context context) {
-        //  Проверка даты и времени
-//        if(hasServer()) {
+    public static String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+
+        List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);
+        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+
+        double originLatitude = Double.parseDouble(stringListRout.get(1));
+        double originLongitude = Double.parseDouble(stringListRout.get(2));
+        double toLatitude = Double.parseDouble(stringListRout.get(3));
+        double toLongitude = Double.parseDouble(stringListRout.get(4));
+
 
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
@@ -597,15 +576,16 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             getPhoneNumber();
         }
         if (!verifyPhone(getContext())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
+            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("marker");
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         }
         if(connected()) {
             if (verifyPhone(getContext())) {
                 try {
-                    String urlOrder = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                            OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan, "orderSearchMarkers", getActivity());
+
+
+                    String urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers", getActivity());
                     Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
                     Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
 
@@ -714,7 +694,6 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             return;
         }
         mPhoneNumber = tMgr.getLine1Number();
-//        mPhoneNumber = null;
         if(mPhoneNumber != null) {
             String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
             boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
@@ -722,8 +701,6 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             if (val == false) {
                 Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
-//                getActivity().finish();
-
             } else {
                 updateRecordsUser(mPhoneNumber, getContext());
             }
@@ -791,124 +768,19 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         cursor_to.close();
 
     }
+    private void updateRoutMarker(List<String> settings) {
+        ContentValues cv = new ContentValues();
 
-     @RequiresApi(api = Build.VERSION_CODES.O)
-    private String getTaxiUrlSearchGeo(double originLatitude, double originLongitude,
-                                              String to, String to_number,
-                                              String urlAPI, Context context) {
-//    if(hasServer()) {
-        //  Проверка даты и времени
+        cv.put("startLat",  Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
 
-         if(to_number.equals("XXX")) {
-             to_number = " ";
-         }
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
-
-        // Origin of route
-        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
-
-        // Destination of route
-        String str_dest = to + "/" + to_number;
-
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
-
-
-        // Building the parameters to the web service
-
-        String parameters = null;
-        String phoneNumber = "no phone";
-        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
-
-        if(urlAPI.equals("costSearchGeo")) {
-            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-
-            if (c.getCount() == 1) {
-                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-                c.close();
-            }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
-        }
-
-        if(urlAPI.equals("orderSearchGeo")) {
-            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
-
-            ContentValues cv = new ContentValues();
-
-            cv.put("time", "no_time");
-            cv.put("comment", "no_comment");
-            cv.put("date", "no_date");
-
-            // обновляем по id
-            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                    new String[] { "1" });
-        }
-
-        // Building the url to the web service
-        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
-        List<String> servicesChecked = new ArrayList<>();
-        String result;
-        boolean servicesVer = false;
-        for (int i = 1; i < services.size()-1 ; i++) {
-            if(services.get(i).equals("1")) {
-                servicesVer = true;
-                break;
-            }
-        }
-        if(servicesVer) {
-            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
-                if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
-                }
-            }
-            for (int i = 0; i < servicesChecked.size(); i++) {
-                if(servicesChecked.get(i).equals("CHECK_OUT")) {
-                    servicesChecked.set(i, "CHECK");
-                }
-            }
-            result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
-        } else {
-            result = "no_extra_charge_codes";
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-        Log.d("TAG", "getTaxiUrlSearch services: " + url);
-
-        return url;
-
-
-    }
-    private void stopLocationUpdates() {
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-    }
-
-    private LocationRequest createLocationRequest() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000); // Интервал обновления местоположения в миллисекундах
-        locationRequest.setFastestInterval(100); // Самый быстрый интервал обновления местоположения в миллисекундах
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // Приоритет точного местоположения
-        return locationRequest;
-    }
-
-    private void requestLocationPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Показываем объяснение пользователю, почему мы запрашиваем разрешение
-            // Можно использовать диалоговое окно или другой пользовательский интерфейс
-        } else {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION);
-        }
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
 }
 

@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_01102023_3";
+    public static final String DB_NAME = "data_02102023_6";
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -876,14 +876,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }).setNegativeButton(cancel_button, null)
                 .show();
-        } else {
-            if (!verifyPhone()) {
-                getPhoneNumber();
-            }
-            if (!verifyPhone()) {
-                MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
-                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-            }
         }
     }
     private void updateRecordsUser(String result) {

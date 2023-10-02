@@ -94,7 +94,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
     AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
     public String[] arrayStreet;
-    private static String api;
+    static String api;
     ArrayList<Map> adressArr;
     long firstCost;
 
@@ -110,9 +110,9 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public static long cost;
     public static long addCost;
     public static String to;
-    private ProgressBar progressBar;
-    private static String urlAddress;
-    private String geo_marker;
+    public static ProgressBar progressBar;
+    static String urlAddress;
+    public static String geo_marker;
     String bonus;
 
     public static MyGeoDialogFragment newInstance(String fromGeo) {
@@ -994,8 +994,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         return result;
     }
 
-    Double to_lat;
-    Double to_lng;
+    static Double to_lat;
+    static Double to_lng;
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
@@ -1123,10 +1123,12 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         builder.show();
 
     }
+    public static String toCost;
+    public static String to_numberCost;
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void order() {
-        if(!verifyOrder(getContext())) {
+        if(!verifyOrder(requireContext())) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             return;
@@ -1159,7 +1161,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         }
 
-        String toCost, to_numberCost;
+
 
         if (TextUtils.isEmpty(textViewTo.getText())) {
             toCost = String.valueOf(OpenStreetMapActivity.startLat);
@@ -1181,7 +1183,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             getPhoneNumber();
         }
         if (!verifyPhone(getContext())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
+            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("geo");
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
@@ -1235,7 +1237,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                         sendUrlMap.get("routefromnumber"), sendUrlMap.get("routefromnumber"),
                                         Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
                                         Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                                        getActivity()
+                                        requireActivity()
                                 );
                             }
                         } else {
@@ -1251,7 +1253,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                         sendUrlMap.get("routefrom"), to_name,
                                         sendUrlMap.get("routefromnumber"), sendUrlMap.get("to_number"),
                                         Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                                        sendUrlMap.get("lat"), sendUrlMap.get("lng"), getActivity()
+                                        sendUrlMap.get("lat"), sendUrlMap.get("lng"),
+                                        requireActivity()
                                 );
                             }
                         }

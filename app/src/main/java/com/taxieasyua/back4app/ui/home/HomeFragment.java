@@ -891,7 +891,7 @@ public class HomeFragment extends Fragment {
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void order() {
-        if(!verifyOrder(getContext())) {
+        if(!verifyOrder(requireContext())) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             return;
@@ -954,7 +954,6 @@ public class HomeFragment extends Fragment {
 
             }
 
-
             String from_numberCost;
             if (from_number.getText().toString().equals(" ")) {
                 from_numberCost = " ";
@@ -978,15 +977,16 @@ public class HomeFragment extends Fragment {
             Log.d(TAG, "order: settings" + settings);
             updateRoutHome(settings);
         }
-        if (!verifyPhone(getContext())) {
+        if (!verifyPhone(requireContext())) {
             getPhoneNumber();
         }
-        if (!verifyPhone(getContext())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment();
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-        }
         if(connected()) {
-            if (verifyPhone(getContext())) {
+            if (!verifyPhone(requireContext())) {
+                MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home");
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+            }
+            if (verifyPhone(requireContext())) {
                 try {
                     String urlOrder = getTaxiUrlSearch( "orderSearch", getActivity());
                     Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
@@ -1019,14 +1019,15 @@ public class HomeFragment extends Fragment {
                                         from_number.getText().toString(), from_number.getText().toString(),
                                         (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
                                         (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                        getContext()
+                                        requireContext()
                                 );
                             } else {
                                 insertRecordsOrders(
                                         from_name, to_name,
                                         from_number.getText().toString(), to_number.getText().toString(),
                                         (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                        (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng"), getContext()
+                                        (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng"),
+                                        requireContext()
                                 );
 
                             }
@@ -1196,7 +1197,7 @@ public class HomeFragment extends Fragment {
     };
     private boolean connected() {
 
-        Boolean hasConnect = false;
+        boolean hasConnect = false;
 
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
@@ -1397,10 +1398,10 @@ public class HomeFragment extends Fragment {
 
     }
 
-    private static void insertRecordsOrders( String from, String to,
-                                            String from_number, String to_number,
-                                            String from_lat, String from_lng,
-                                            String to_lat, String to_lng, Context context) {
+    public static void insertRecordsOrders(String from, String to,
+                                    String from_number, String to_number,
+                                    String from_lat, String from_lng,
+                                    String to_lat, String to_lng, Context context) {
 
         String selection = "from_street = ?";
         String[] selectionArgs = new String[] {from};
