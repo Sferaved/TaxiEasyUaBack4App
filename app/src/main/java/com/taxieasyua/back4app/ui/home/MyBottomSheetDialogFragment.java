@@ -440,8 +440,10 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        String tarif =  logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
         // Building the parameters to the web service
 
         String parameters = null;
@@ -456,7 +458,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
 

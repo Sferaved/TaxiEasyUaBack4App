@@ -112,8 +112,10 @@ public class FinishActivity extends AppCompatActivity {
 
         Handler handler = new Handler();
 
+        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO);
+        String bonusPayment =  stringList.get(4);
 
-         if (MainActivity.bonusPayment.equals("bonus_payment")) {
+         if (bonusPayment.equals("bonus_payment")) {
              String baseUrl = "https://m.easy-order-taxi.site";
              String url = baseUrl + "/bonusBalance/recordsBloke/" + UID_key;
              Log.d("TAG", "onCreate: doubleOrder):  " +receivedMap.get("doubleOrder") );
@@ -205,7 +207,9 @@ public class FinishActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (MainActivity.bonusPayment.equals("bonus_payment")) {
+        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO);
+        String bonusPayment =  stringList.get(4);
+        if (bonusPayment.equals("bonus_payment")) {
            thread = new Thread(new Runnable() {
                 @Override
                 public void run() {

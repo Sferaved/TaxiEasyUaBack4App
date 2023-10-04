@@ -15,8 +15,9 @@ android {
         versionName '2.827'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resourceConfigurations += ['en', 'ru', 'uk', 'fr']
 
-        resConfigs "en", "ru", "uk", "fr"  // порядок элементов списка не имеет значения
+        // порядок элементов списка не имеет значения
     }
 
     buildTypes {
@@ -77,6 +78,13 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
 
     implementation 'com.paypal.sdk:paypal-android-sdk:2.16.0'
-
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {
+            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0") {
+            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
+        }
+    }
 
 }

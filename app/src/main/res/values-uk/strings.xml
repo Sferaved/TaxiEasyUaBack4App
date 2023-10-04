@@ -225,4 +225,5 @@
     <string name="start_point_text">Місце відправлення</string>
     <string name="order_after_phone">"Для замовлення натисніть кнопку "</string>
     <string name="clear_home">Очистити поля</string>
+    <string name="google_payment">Google Pay</string>
 </resources>

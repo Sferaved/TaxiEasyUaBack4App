@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
 
     public static String  api;
     public static SQLiteDatabase database;
-    public static String bonusPayment;
 
     private final String[] cityList = new String[]{
             "Київ",
@@ -188,17 +187,12 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
             NavigationUI.setupWithNavController(navigationView, navController);
             networkChangeReceiver = new NetworkChangeReceiver();
-            bonusPayment = "nal_payment";
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-    }
-    private boolean databaseExists(String dbName) {
-        File dbFile = getDatabasePath(dbName);
-        return dbFile.exists();
     }
     @SuppressLint("SuspiciousIndentation")
     public void initDB() throws MalformedURLException, JSONException, InterruptedException {
@@ -329,7 +323,6 @@ public class MainActivity extends AppCompatActivity {
                 " to_numberCost text);");
         cursorDb = database.query(ROUT_GEO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
-            Log.d("TAG", "initDB: ROUT_GEO");
             insertRoutGeo();
         }
         if (cursorDb != null && !cursorDb.isClosed())
@@ -342,7 +335,6 @@ public class MainActivity extends AppCompatActivity {
                 " to_lng double);");
         cursorDb = database.query(ROUT_MARKER, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
-            Log.d("TAG", "initDB: ROUT_MARKER");
             insertRoutMarker();
         }
         if (cursorDb != null && !cursorDb.isClosed())
@@ -400,8 +392,6 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(3, settings.get(1));
             statement.bindString(4, settings.get(2));
             statement.bindString(5, settings.get(3));
-
-
             statement.execute();
             database.setTransactionSuccessful();
 
@@ -823,8 +813,7 @@ public class MainActivity extends AppCompatActivity {
             builder.setView(view_cost);
             TextView message = view_cost.findViewById(R.id.textMessage);
             message.setText(R.string.gps_info);
-            builder.setMessage(R.string.gps_info)
-                    .setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
+            builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface paramDialogInterface, int paramInt) {
                             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));

@@ -216,6 +216,26 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     OpenStreetMapActivity.progressBar.setVisibility(View.VISIBLE);
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            break;
+                        case "OdessaTest":
+                            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                            String bonusPayment =  stringListInfo.get(4);
+                            if(bonusPayment.equals("bonus_payment")) {
+                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                                if(Long.parseLong(bonus) < cost * 100 ) {
+                                    paymentType("nal_payment");
+                                }
+                            }
+                            break;
+                    }
                     order();
                 }
             }
@@ -223,29 +243,11 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         buttonBonus = view.findViewById(R.id.btnBonus);
         startCost();
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
-        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-        if(Long.parseLong(bonus) >= cost * 100 ) {
-            List<String> stringListBon = logCursor(MainActivity.CITY_INFO, getActivity());
 
-            switch (stringListBon.get(1)) {
-                case "Kyiv City":
-                case "Dnipropetrovsk Oblast":
-                case "Odessa":
-                case "Zaporizhzhia":
-                case "Cherkasy Oblast":
-                    buttonBonus.setVisibility(View.GONE);
-                    break;
-                case "OdessaTest":
-                    buttonBonus.setVisibility(View.VISIBLE);
-                    break;
-            }
-        } else {
-            buttonBonus.setVisibility(View.GONE);
-        }
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus, "marker", api, text_view_cost, "GeoMarker");
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost, "GeoMarker");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -281,21 +283,8 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
         if (!orderCost.equals("0")) {
-            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
 
-            switch (stringList.get(1)){
-                case "Kyiv City":
-                case "Dnipropetrovsk Oblast":
-                case "Odessa":
-                case "Zaporizhzhia":
-                case "Cherkasy Oblast":
-                    buttonBonus.setVisibility(View.GONE);
-                    break;
-                case "OdessaTest":
-                    buttonBonus.setVisibility(View.VISIBLE);
-                    break;
-            }
-            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
             long discount;
             firstCost = Long.parseLong(orderCost);
@@ -305,34 +294,8 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             text_view_cost.setText(String.valueOf(firstCost));
             firstCost = Long.parseLong(text_view_cost.getText().toString());
 
-            String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-            if(Long.parseLong(bonus) >= firstCost * 100 ) {
-                List<String> stringL = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                switch (stringL.get(1)) {
-                    case "Kyiv City":
-                    case "Dnipropetrovsk Oblast":
-                    case "Odessa":
-                    case "Zaporizhzhia":
-                    case "Cherkasy Oblast":
-                        buttonBonus.setVisibility(View.GONE);
-                        break;
-                    case "OdessaTest":
-                        buttonBonus.setVisibility(View.VISIBLE);
-                        break;
-                }
-            } else {
-                buttonBonus.setVisibility(View.GONE);
-            }
-
-
-
-            Log.d("TAG", "startCost: firstCost " + firstCost);
-            Log.d("TAG", "startCost: addCost " + addCost);
             long MIN_COST_VALUE = (long) (firstCost * 0.1);
             long MAX_COST_VALUE = firstCost * 3;
-
 
             btn_minus.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -345,26 +308,6 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                     }
                     Log.d("TAG", "startCost: addCost " + addCost);
                     text_view_cost.setText(String.valueOf(firstCost));
-                    String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                    if(Long.parseLong(bonus) >= firstCost * 100 ) {
-                        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                        switch (stringList.get(1)) {
-                            case "Kyiv City":
-                            case "Dnipropetrovsk Oblast":
-                            case "Odessa":
-                            case "Zaporizhzhia":
-                            case "Cherkasy Oblast":
-                                buttonBonus.setVisibility(View.GONE);
-                                break;
-                            case "OdessaTest":
-                                buttonBonus.setVisibility(View.VISIBLE);
-                                break;
-                        }
-                    } else {
-                        buttonBonus.setVisibility(View.GONE);
-                    }
                 }
             });
 
@@ -379,26 +322,6 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                     }
                     Log.d("TAG", "startCost: addCost " + addCost);
                     text_view_cost.setText(String.valueOf(firstCost));
-                    String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                    if(Long.parseLong(bonus) >= firstCost * 100 ) {
-                        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                        switch (stringList.get(1)) {
-                            case "Kyiv City":
-                            case "Dnipropetrovsk Oblast":
-                            case "Odessa":
-                            case "Zaporizhzhia":
-                            case "Cherkasy Oblast":
-                                buttonBonus.setVisibility(View.GONE);
-                                break;
-                            case "OdessaTest":
-                                buttonBonus.setVisibility(View.VISIBLE);
-                                break;
-                        }
-                    } else {
-                        buttonBonus.setVisibility(View.GONE);
-                    }
                 }
             });
 
@@ -432,8 +355,10 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
         //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -450,14 +375,14 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -779,6 +704,16 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+
+    private void paymentType(String paymentCode) {
+        ContentValues cv = new ContentValues();
+        cv.put("bonusPayment", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
     }

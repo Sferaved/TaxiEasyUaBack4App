@@ -51,7 +51,6 @@ import androidx.navigation.Navigation;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
-import com.taxieasyua.back4app.ui.payment.PayPalActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
@@ -61,8 +60,6 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
-import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -206,26 +203,7 @@ public class HomeFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
 
-                if(Long.parseLong(bonus) >= cost * 100 ) {
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                    Log.d(TAG, "cost: stringList.get(1) " + stringList.get(1));
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                } else {
-                    buttonBonus.setVisibility(View.GONE);
-                }
 
             }
         });
@@ -244,26 +222,6 @@ public class HomeFragment extends Fragment {
                 }
                 text_view_cost.setText(String.valueOf(cost));
 
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                if(Long.parseLong(bonus) >= cost * 100 ) {
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                } else {
-                    buttonBonus.setVisibility(View.GONE);
-                }
             }
         });
 
@@ -291,6 +249,27 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 if(connected()) {
                     progressBar.setVisibility(View.VISIBLE);
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            break;
+                        case "OdessaTest":
+                            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                            String bonusPayment =  stringListInfo.get(4);
+                            if(bonusPayment.equals("bonus_payment")) {
+                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                                if(Long.parseLong(bonus) < cost * 100 ) {
+                                    paymentType("nal_payment");
+                                }
+                            }
+                            break;
+                    }
+
                     order();
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
@@ -390,7 +369,7 @@ public class HomeFragment extends Fragment {
 //        fab_call.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
-//                Intent intent = new Intent(getActivity(), PayPalActivity.class);
+//                Intent intent = new Intent(getActivity(), LiqPayActivity.class);
 //                startActivity(intent);
 //            }
 //        });
@@ -408,9 +387,7 @@ public class HomeFragment extends Fragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus, "home", api);
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "home", api);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -444,6 +421,7 @@ public class HomeFragment extends Fragment {
                 btn_minus.setVisibility(View.INVISIBLE);
                 btn_plus.setVisibility(View.INVISIBLE);
                 buttonAddServices.setVisibility(View.INVISIBLE);
+                buttonBonus.setVisibility(View.INVISIBLE);
                 btn_clear.setVisibility(View.INVISIBLE);
 
                 btn_order.setVisibility(View.INVISIBLE);
@@ -703,7 +681,7 @@ public class HomeFragment extends Fragment {
 
         try {
             String urlCost = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
                 List<String> settings = new ArrayList<>();
                 settings.add(from);
@@ -728,12 +706,14 @@ public class HomeFragment extends Fragment {
                 btn_minus.setVisibility(View.INVISIBLE);
                 btn_plus.setVisibility(View.INVISIBLE);
                 buttonAddServices.setVisibility(View.INVISIBLE);
+                buttonBonus.setVisibility(View.INVISIBLE);
             }
             if (!orderCost.equals("0")) {
                 text_view_cost.setVisibility(View.VISIBLE);
                 btn_minus.setVisibility(View.VISIBLE);
                 btn_plus.setVisibility(View.VISIBLE);
                 buttonAddServices.setVisibility(View.VISIBLE);
+                buttonBonus.setVisibility(View.VISIBLE);
                 btn_order.setVisibility(View.VISIBLE);
 
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
@@ -750,26 +730,6 @@ public class HomeFragment extends Fragment {
                 addCost = discount;
                 cost = firstCost + discount;
                 text_view_cost.setText(Long.toString(cost));
-
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-                if(Long.parseLong(bonus) >= cost * 100 ) {
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                    Log.d(TAG, "cost: stringList.get(1) " + stringList.get(1));
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                } else {
-                    buttonBonus.setVisibility(View.GONE);
-                }
 
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
@@ -810,12 +770,13 @@ public class HomeFragment extends Fragment {
         btn_minus.setVisibility(View.VISIBLE);
         btn_plus.setVisibility(View.VISIBLE);
         buttonAddServices.setVisibility(View.VISIBLE);
+        buttonBonus.setVisibility(View.VISIBLE);
         btn_clear.setVisibility(View.VISIBLE);
 
         btn_order.setVisibility(View.VISIBLE);
         try {
             String urlCost = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 urlCost = getTaxiUrlSearch("costSearch", getActivity());
             }
 
@@ -831,6 +792,7 @@ public class HomeFragment extends Fragment {
                 btn_minus.setVisibility(View.INVISIBLE);
                 btn_plus.setVisibility(View.INVISIBLE);
                 buttonAddServices.setVisibility(View.INVISIBLE);
+                buttonBonus.setVisibility(View.INVISIBLE);
                 btn_order.setVisibility(View.INVISIBLE);
                 btn_clear.setVisibility(View.INVISIBLE);
             }
@@ -839,6 +801,7 @@ public class HomeFragment extends Fragment {
                 btn_minus.setVisibility(View.VISIBLE);
                 btn_plus.setVisibility(View.VISIBLE);
                 buttonAddServices.setVisibility(View.VISIBLE);
+                buttonBonus.setVisibility(View.VISIBLE);
                 btn_order.setVisibility(View.VISIBLE);
                 btn_clear.setVisibility(View.VISIBLE);
 
@@ -857,27 +820,6 @@ public class HomeFragment extends Fragment {
                 addCost = discount;
                 cost = firstCost + discount;
                 text_view_cost.setText(Long.toString(cost));
-
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-                if(Long.parseLong(bonus) >= cost * 100 ) {
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                    Log.d(TAG, "cost: stringList.get(1) " + stringList.get(1));
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                } else {
-                    buttonBonus.setVisibility(View.GONE);
-                }
-
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -1273,7 +1215,9 @@ public class HomeFragment extends Fragment {
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        String tarif =  logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -1290,14 +1234,14 @@ public class HomeFragment extends Fragment {
             }
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1446,5 +1390,13 @@ public class HomeFragment extends Fragment {
         cursor_to.close();
 
     }
-
+    private void paymentType(String paymentCode) {
+        ContentValues cv = new ContentValues();
+        cv.put("bonusPayment", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
 }

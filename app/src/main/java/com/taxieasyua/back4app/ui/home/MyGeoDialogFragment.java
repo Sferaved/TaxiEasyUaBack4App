@@ -14,7 +14,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.BlendMode;
-import android.graphics.Rect;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -30,8 +29,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -45,7 +42,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -65,8 +61,6 @@ import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
-import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
@@ -84,10 +78,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
@@ -125,38 +115,32 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.geo_first_layout, container, false);
         buttonBonus = view.findViewById(R.id.btnBonus);
-        buttonBonus.setVisibility(View.GONE);
+
         List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
                 api = MainActivity.apiDnipro;
-
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
                 api = MainActivity.apiOdessa;
-
                 break;
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
                 api = MainActivity.apiZaporizhzhia;
-
                 break;
             case "Cherkasy Oblast":
                 arrayStreet = Cherkasy.arrayStreet();
                 api = MainActivity.apiCherkasy;
-
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
                 api = MainActivity.apiTest;
-                buttonBonus.setVisibility(View.VISIBLE);
                 break;
             default:
                 arrayStreet = KyivCity.arrayStreet();
                 api = MainActivity.apiKyiv;
-
                 break;
         }
 
@@ -199,29 +183,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             geo_marker = "geo";
         }
 
-        bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-        if(Long.parseLong(bonus) >= cost * 100 ) {
-            List<String> stringListBon = logCursor(MainActivity.CITY_INFO, getActivity());
-
-            switch (stringListBon.get(1)) {
-                case "Kyiv City":
-                case "Dnipropetrovsk Oblast":
-                case "Odessa":
-                case "Zaporizhzhia":
-                case "Cherkasy Oblast":
-                    buttonBonus.setVisibility(View.GONE);
-                    break;
-                case "OdessaTest":
-                    buttonBonus.setVisibility(View.VISIBLE);
-                    break;
-            }
-        } else {
-            buttonBonus.setVisibility(View.GONE);
-        }
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus, geo_marker, api, text_view_cost, "GeoDialog");
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost, "GeoDialog");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -305,7 +270,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
 
                          String urlCost = null;
-                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                              List<String> settings = new ArrayList<>();
                              settings.add(String.valueOf(OpenStreetMapActivity.startLat));
                              settings.add(String.valueOf(OpenStreetMapActivity.startLan));
@@ -342,24 +307,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                              firstCost = firstCost + discount;
                              addCost = discount;
                              text_view_cost.setText(String.valueOf(firstCost));
-                             String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-                             if(Long.parseLong(bonus) >= firstCost * 100 ) {
-                                 List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                                 switch (stringList.get(1)) {
-                                     case "Kyiv City":
-                                     case "Dnipropetrovsk Oblast":
-                                     case "Odessa":
-                                     case "Zaporizhzhia":
-                                     case "Cherkasy Oblast":
-                                         buttonBonus.setVisibility(View.GONE);
-                                         break;
-                                     case "OdessaTest":
-                                         buttonBonus.setVisibility(View.VISIBLE);
-                                         break;
-                                 }
-                             } else {
-                                 buttonBonus.setVisibility(View.GONE);
-                             }
 
                          }
                     }
@@ -397,7 +344,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 }
                 Log.d("TAG", "onTextChanged: charSequence " + charSequence);
                 String url = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
                     List<String> settings = new ArrayList<>();
                     settings.add(String.valueOf(OpenStreetMapActivity.startLat));
@@ -542,6 +489,26 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             public void onClick(View v) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     progressBar.setVisibility(View.VISIBLE);
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            break;
+                        case "OdessaTest":
+                            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                            String bonusPayment =  stringListInfo.get(4);
+                            if(bonusPayment.equals("bonus_payment")) {
+                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                                if(Long.parseLong(bonus) < cost * 100 ) {
+                                    paymentType("nal_payment");
+                                }
+                            }
+                            break;
+                    }
                     order();
                 }
             }
@@ -596,7 +563,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     private void startCost() {
         String urlCost = null;
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             List<String> settings = new ArrayList<>();
             settings.add(String.valueOf(OpenStreetMapActivity.startLat));
             settings.add(String.valueOf(OpenStreetMapActivity.startLan));
@@ -655,26 +622,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         }
                         Log.d("TAG", "startCost: addCost " + addCost);
                         text_view_cost.setText(String.valueOf(firstCost));
-                        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                        if(Long.parseLong(bonus) >= firstCost * 100 ) {
-                            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                            switch (stringList.get(1)) {
-                                case "Kyiv City":
-                                case "Dnipropetrovsk Oblast":
-                                case "Odessa":
-                                case "Zaporizhzhia":
-                                case "Cherkasy Oblast":
-                                    buttonBonus.setVisibility(View.GONE);
-                                    break;
-                                case "OdessaTest":
-                                    buttonBonus.setVisibility(View.VISIBLE);
-                                    break;
-                            }
-                        } else {
-                            buttonBonus.setVisibility(View.GONE);
-                        }
                     }
                 });
 
@@ -689,27 +636,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         }
                         Log.d("TAG", "startCost: addCost " + addCost);
                         text_view_cost.setText(String.valueOf(firstCost));
-
-                        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                        if(Long.parseLong(bonus) >= firstCost * 100 ) {
-                            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                            switch (stringList.get(1)) {
-                                case "Kyiv City":
-                                case "Dnipropetrovsk Oblast":
-                                case "Odessa":
-                                case "Zaporizhzhia":
-                                case "Cherkasy Oblast":
-                                    buttonBonus.setVisibility(View.GONE);
-                                    break;
-                                case "OdessaTest":
-                                    buttonBonus.setVisibility(View.VISIBLE);
-                                    break;
-                            }
-                        } else {
-                            buttonBonus.setVisibility(View.GONE);
-                        }
                     }
                 });
             }
@@ -820,8 +746,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -838,14 +766,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -889,16 +817,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
-
         database.close();
 
-
         return url;
-
     }
-
-
-
     private boolean connected() {
 
         Boolean hasConnect = false;
@@ -1467,8 +1389,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         String str_dest = to + "/" + to_number;
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -1485,14 +1409,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1563,6 +1487,15 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
+    }
+    private void paymentType(String paymentCode) {
+        ContentValues cv = new ContentValues();
+        cv.put("bonusPayment", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
 }
 

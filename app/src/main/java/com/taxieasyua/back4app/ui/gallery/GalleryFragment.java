@@ -31,12 +31,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.Odessa.Odessa;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
-import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
@@ -167,26 +161,6 @@ public class GalleryFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-
-                if(Long.parseLong(bonus) >= cost * 100 ) {
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                } else {
-                    buttonBonus.setVisibility(View.GONE);
-                }
             }
         });
 
@@ -201,26 +175,7 @@ public class GalleryFragment extends Fragment {
                     addCost = MIN_COST_VALUE - cost;
                 }
                 text_view_cost.setText(String.valueOf(cost));
-                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
 
-                if(Long.parseLong(bonus) >= cost * 100 ) {
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
-                } else {
-                    buttonBonus.setVisibility(View.GONE);
-                }
             }
         });
         btnAdd = binding.btnAdd;
@@ -251,20 +206,7 @@ public class GalleryFragment extends Fragment {
                     btn_minus.setVisibility(View.VISIBLE);
                     btn_plus.setVisibility(View.VISIBLE);
                     btnAdd.setVisibility(View.VISIBLE);
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                    Log.d("TAG", "cost: stringList.get(1) "  + stringList.get(1));
-                    switch (stringList.get(1)){
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            buttonBonus.setVisibility(View.GONE);
-                            break;
-                        case "OdessaTest":
-                            buttonBonus.setVisibility(View.VISIBLE);
-                            break;
-                    }
+
                     SparseBooleanArray checkespositions = listView.getCheckedItemPositions();
                     ArrayList<Integer> selectespositions = new ArrayList<>();
 
@@ -300,8 +242,29 @@ public class GalleryFragment extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+                switch (stringList.get(1)) {
+                    case "Kyiv City":
+                    case "Dnipropetrovsk Oblast":
+                    case "Odessa":
+                    case "Zaporizhzhia":
+                    case "Cherkasy Oblast":
+                        break;
+                    case "OdessaTest":
+                        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                        String bonusPayment =  stringListInfo.get(4);
+                        if(bonusPayment.equals("bonus_payment")) {
+                            String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                            if(Long.parseLong(bonus) < Long.parseLong(text_view_cost.getText().toString()) * 100 ) {
+                                paymentType("nal_payment");
+                            }
+                        }
+                        break;
+                }
+
                 if (connected()) {
-                    if(!verifyOrder(getContext())) {
+                    if(!verifyOrder(requireContext())) {
 
                         MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -321,8 +284,8 @@ public class GalleryFragment extends Fragment {
                             Log.d("TAG", "onClick 55555555585: " + url);
                             Map<String, String> sendUrl = ToJSONParser.sendURL(url);
 
-                            String mes = (String) sendUrl.get("message");
-                            String orderC = (String) sendUrl.get("order_cost");
+                            String mes = sendUrl.get("message");
+                            String orderC = sendUrl.get("order_cost");
 
                             if (orderC.equals("0")) {
                                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
@@ -356,30 +319,11 @@ public class GalleryFragment extends Fragment {
         });
 
         buttonBonus = binding.btnBonus;
-        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-        if(Long.parseLong(bonus) >= cost * 100 ) {
-            List<String> stringListBon = logCursor(MainActivity.CITY_INFO, getActivity());
-
-            switch (stringListBon.get(1)) {
-                case "Kyiv City":
-                case "Dnipropetrovsk Oblast":
-                case "Odessa":
-                case "Zaporizhzhia":
-                case "Cherkasy Oblast":
-                    buttonBonus.setVisibility(View.GONE);
-                    break;
-                case "OdessaTest":
-                    buttonBonus.setVisibility(View.VISIBLE);
-                    break;
-            }
-        } else {
-            buttonBonus.setVisibility(View.GONE);
-        }
 
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(bonus, "marker", api, text_view_cost, "Gallery") ;
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost, "Gallery") ;
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -393,6 +337,17 @@ public class GalleryFragment extends Fragment {
 
         return root;
     }
+
+    private void paymentType(String paymentCode) {
+        ContentValues cv = new ContentValues();
+        cv.put("bonusPayment", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+
     private void updateRoutMarker(List<String> settings) {
 
         Log.d("TAG", "updateRoutMarker: settings - " + settings);
@@ -548,8 +503,10 @@ public class GalleryFragment extends Fragment {
 
         //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -567,14 +524,14 @@ public class GalleryFragment extends Fragment {
             }
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 

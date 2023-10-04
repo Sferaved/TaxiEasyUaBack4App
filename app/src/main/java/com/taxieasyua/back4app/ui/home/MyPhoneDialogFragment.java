@@ -421,8 +421,10 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        String tarif =  logCursor(MainActivity.TABLE_SETTINGS_INFO).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
         // Building the parameters to the web service
 
         String parameters = null;
@@ -438,14 +440,14 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             }
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + HomeFragment.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + HomeFragment.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -517,8 +519,10 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         String str_dest = to + "/" + to_number;
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -535,14 +539,14 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + MyGeoDialogFragment.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + MyGeoDialogFragment.addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -614,8 +618,10 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(2);
 
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -632,14 +638,14 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 

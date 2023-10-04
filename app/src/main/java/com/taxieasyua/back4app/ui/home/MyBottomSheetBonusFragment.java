@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -33,13 +32,14 @@ import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 
 public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
-    String bonusMessage;
+    long cost;
     String rout;
     String api;
     TextView textView;
@@ -48,18 +48,15 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String[] array, arrayCode;
     AppCompatButton btn_ok;
     int pos;
-    public MyBottomSheetBonusFragment(String bonusMessage) {
-        this.bonusMessage = bonusMessage;
-        this.rout = "";
-    }
-    public MyBottomSheetBonusFragment(String bonusMessage, String rout, String api) {
-        this.bonusMessage = bonusMessage;
+
+    public MyBottomSheetBonusFragment(long cost, String rout, String api) {
+        this.cost = cost;
         this.rout = rout;
         this.api = api;
 
     }
-    public MyBottomSheetBonusFragment(String bonusMessage, String rout, String api, TextView textView, String fragment) {
-        this.bonusMessage = bonusMessage;
+    public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView, String fragment) {
+        this.cost = cost;
         this.rout = rout;
         this.api = api;
         this.textView = textView;
@@ -73,55 +70,47 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
         listView = view.findViewById(R.id.listViewBonus);
-        array = new  String[]{
+         array = new  String[]{
                 getString(R.string.nal_payment),
-                getString(R.string.bonus_payment)
+                getString(R.string.bonus_payment),
+                getString(R.string.google_payment)
         };
-        arrayCode = new  String[]{
+         arrayCode = new  String[]{
                 "nal_payment",
-                "bonus_payment"
+                "bonus_payment",
+                "google_payment"
         };
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, array);
+
+        CustomArrayAdapter adapter = new CustomArrayAdapter(getActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        String bonusPayment = null;
-        String query = "SELECT bonusPayment FROM " + MainActivity.TABLE_SETTINGS_INFO + " WHERE id = ?";
-        String[] selectionArgs = new String[] { "1" };
-        SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        fistItem();
 
-        @SuppressLint("Recycle") Cursor cursor = database.rawQuery(query, selectionArgs);
+        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
 
-        if (cursor.moveToFirst()) {
-            bonusPayment = cursor.getString(cursor.getColumnIndex("bonusPayment"));
-        }
-        Log.d("TAG", "onCreateView: bonusPayment " + bonusPayment);
-        if ("bonus_payment".equals(bonusPayment)) {
-            listView.setItemChecked(1, true);
-            MainActivity.bonusPayment = "bonus_payment";
-            pos = 1;
+        if(Long.parseLong(bonus) >= cost * 100 ) {
+            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+
+            switch (stringList.get(1)) {
+                case "Kyiv City":
+                case "Dnipropetrovsk Oblast":
+                case "Odessa":
+                case "Zaporizhzhia":
+                case "Cherkasy Oblast":
+                    adapter.setItemEnabled(1, false);
+                    listView.setItemChecked(0, true);
+                    break;
+            }
         } else {
-            listView.setItemChecked(0, true);
-            MainActivity.bonusPayment = "nal_payment";
-            pos = 0;
+            adapter.setItemEnabled(1, false);
         }
-        database.close();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("TAG", "onItemClick: position" + position);
-                Log.d("TAG", "onItemClick: array  position" + arrayCode [position]);
                 pos = position;
-                MainActivity.bonusPayment =  arrayCode [pos];
-
-                ContentValues cv = new ContentValues();
-                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-                cv.put("bonusPayment", arrayCode [pos]);
-                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                        new String[] { "1" });
-                database.close();
+                paymentType(arrayCode [pos]);
             }
 
         });
@@ -130,20 +119,52 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MainActivity.bonusPayment =  arrayCode [pos];
-
-                ContentValues cv = new ContentValues();
-                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-                cv.put("bonusPayment", arrayCode [pos]);
-                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                        new String[] { "1" });
-                database.close();
+                paymentType(arrayCode [pos]);
                 dismiss();
             }
         });
 
         return view;
+    }
+
+    private void paymentType(String paymentCode) {
+        ContentValues cv = new ContentValues();
+        cv.put("bonusPayment", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+
+    @SuppressLint("Range")
+    private void fistItem() {
+        String bonusPayment = null;
+        String query = "SELECT bonusPayment FROM " + MainActivity.TABLE_SETTINGS_INFO + " WHERE id = ?";
+        String[] selectionArgs = new String[] { "1" };
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+        @SuppressLint("Recycle") Cursor cursor = database.rawQuery(query, selectionArgs);
+
+        if (cursor.moveToFirst()) {
+            bonusPayment = cursor.getString(cursor.getColumnIndex("bonusPayment"));
+        }
+
+        switch (bonusPayment) {
+            case "nal_payment":
+                listView.setItemChecked(0, true);
+                pos = 0;
+                break;
+            case "bonus_payment":
+                listView.setItemChecked(1, true);
+                pos = 1;
+                break;
+            case "google_payment":
+                listView.setItemChecked(2, true);
+                pos = 2;
+                break;
+        }
+        database.close();
     }
 
     @Override
@@ -262,9 +283,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        String tarif =  logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
+        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringList.get(2);
+        String bonusPayment =  stringList.get(4);
 
-        // Building the parameters to the web service
 
         String parameters = null;
         String phoneNumber = "no phone";
@@ -278,7 +300,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         // Building the url to the web service
@@ -340,8 +362,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         String str_dest = to + "/" + to_number;
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringList.get(2);
+        String bonusPayment =  stringList.get(4);
 
         // Building the parameters to the web service
 
@@ -358,7 +382,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         // Building the url to the web service
@@ -415,8 +439,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        String tarif = logCursor(MainActivity.TABLE_SETTINGS_INFO, context).get(2);
 
+        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringList.get(2);
+        String bonusPayment =  stringList.get(4);
 
         // Building the parameters to the web service
 
@@ -433,7 +459,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + MainActivity.bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
         }
 
         // Building the url to the web service
