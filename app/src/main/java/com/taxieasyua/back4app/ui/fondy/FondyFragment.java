@@ -7,6 +7,7 @@ import static com.taxieasyua.back4app.R.string.verify_internet;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -31,6 +32,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentBonusBinding;
+import com.taxieasyua.back4app.databinding.FragmentFondyBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
@@ -46,15 +48,16 @@ import retrofit2.Response;
 
 public class FondyFragment extends Fragment {
 
-    private @NonNull FragmentBonusBinding binding;
-    private AppCompatButton btnBonus, btnOrder;
+    private @NonNull
+    FragmentFondyBinding binding;
+    private AppCompatButton btnSum, btnPay, btnOrder;
     private TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
     private ProgressBar progressBar;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentBonusBinding.inflate(inflater, container, false);
+        binding = FragmentFondyBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -66,27 +69,30 @@ public class FondyFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        textView = binding.textBonus;
-        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
-        if(bonus == null) {
-            bonus = getString(R.string.upd_bonus_info);
-        } else {
-            textView.setText(getString(R.string.my_bonus) + bonus);
-        }
-        btnBonus  = binding.btnBonus;
-        btnBonus.setOnClickListener(new View.OnClickListener() {
+//        textView = binding.textBonus;
+//        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+//        if(bonus == null) {
+//            bonus = getString(R.string.upd_bonus_info);
+//        } else {
+//            textView.setText(getString(R.string.my_bonus) + bonus);
+//        }
+        btnSum  = binding.btnSum;
+        btnSum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(connected()) {
                     @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
                     progressBar.setVisibility(View.VISIBLE);
-                    textView.setVisibility(View.INVISIBLE);
-                    binding.text0.setVisibility(View.INVISIBLE);
-                    binding.text7.setVisibility(View.GONE);
-                    btnBonus.setVisibility(View.GONE);
 
-                    fetchBonus(email, getActivity());
                 }
+            }
+        });
+
+        btnPay  = binding.btnPay;
+        btnPay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               startActivity(new Intent(requireActivity(), SimpleExampleActivity.class));
             }
         });
 
@@ -136,51 +142,7 @@ public class FondyFragment extends Fragment {
     String baseUrl = "https://m.easy-order-taxi.site";
     private List<RouteResponse> routeList = new ArrayList<>();
 
-    private void fetchBonus(String value, Context context) {
-        String url = baseUrl + "/bonus/bonusUserShow/" + value;
-        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
-        call.enqueue(new Callback<BonusResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<BonusResponse> call, @NonNull Response<BonusResponse> response) {
-                if (getActivity() == null) {
-                    // Фрагмент больше не привязан к активности, выход из метода.
-                    return;
-                }
-                BonusResponse bonusResponse = Objects.requireNonNull(response).body();
-                if (response.isSuccessful()) {
-                    progressBar.setVisibility(View.INVISIBLE);
-                    assert bonusResponse != null;
-                    String bonus = String.valueOf(bonusResponse.getBonus());
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonus", bonus);
-                    SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
 
-                    textView.setText(getString(R.string.my_bonus) + bonus);
-                    textView.setVisibility(View.VISIBLE);
-                    binding.text0.setVisibility(View.VISIBLE);
-                    binding.text0.setText(R.string.bonus_upd_mes);
-
-
-                    Log.d("TAG", "onResponse: " + bonus);
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BonusResponse> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                // Дополнительная обработка ошибки
-            }
-        });
-    }
 
 
      @SuppressLint("Range")

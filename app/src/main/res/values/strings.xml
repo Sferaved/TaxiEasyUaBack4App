@@ -246,10 +246,13 @@
     <string name="lbl_email">Электронная почта:</string>
     <string name="lbl_description">Описание:</string>
     <string name="btn_pay_google">GooglePay</string>
-    <string name="btn_pay_card">Оплата картой</string>
+    <string name="btn_pay_card">Картой</string>
     <string name="e_invalid_amount">Неверная сумма</string>
     <string name="e_invalid_email">Неверный адрес электронной почты</string>
     <string name="e_invalid_description">Введите описание</string>
     <string name="e_google_pay_unsupported">GooglePay не поддерживается</string>
     <string name="e_google_pay_canceled">GooglePay отменен</string>
+    <string name="update_count">Проверить баланс</string>
+    <string name="pay_count">Пополнить счет</string>
+    <string name="my_card_pay">Пополнить счет</string>
 </resources>

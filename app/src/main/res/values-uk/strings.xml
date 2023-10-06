@@ -243,11 +243,14 @@
     <string name="lbl_email">Електронна адреса:</string>
     <string name="lbl_description">Опис:</string>
     <string name="btn_pay_google">GooglePay</string>
-    <string name="btn_pay_card">Оплата карткою</string>
+    <string name="btn_pay_card">Карткою</string>
     <string name="e_invalid_amount">Недійсна сума</string>
     <string name="e_invalid_email">Недійсна електронна адреса</string>
     <string name="e_invalid_description">Введіть опис</string>
     <string name="e_google_pay_unsupported">GooglePay не підтримується</string>
     <string name="e_google_pay_canceled">GooglePay скасовано</string>
+    <string name="update_count">Перевірити баланс</string>
+    <string name="pay_count">Поповнити рахунок</string>
+    <string name="my_card_pay">Поповнити рахунок</string>
 
 </resources>
