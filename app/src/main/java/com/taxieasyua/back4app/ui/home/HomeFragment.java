@@ -61,6 +61,8 @@ import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.fondy.FlexibleExampleActivity;
+import com.taxieasyua.back4app.ui.fondy.SimpleExampleActivity;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -87,7 +89,7 @@ public class HomeFragment extends Fragment {
 
     public  static String api;
 
-    FloatingActionButton fab_call, fab_map;
+    FloatingActionButton fab_call, fab_map, fab_new;
     private final String TAG = "TAG";
     Button gpsbut;
     AppCompatButton btn_order, buttonAddServices, buttonBonus, btn_minus, btn_plus, btnGeo, on_map, btn_clear;
@@ -336,43 +338,51 @@ public class HomeFragment extends Fragment {
             }
         });
         fab_call = binding.fabCall;
-        fab_call.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                String phone;
-                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                switch (stringList.get(1)){
-                    case "Kyiv City":
-                        phone = "tel:0674443804";
-                        break;
-                    case "Dnipropetrovsk Oblast":
-                        phone = "tel:0667257070";
-                        break;
-                    case "Odessa":
-                        phone = "tel:0737257070";
-                        break;
-                    case "Zaporizhzhia":
-                        phone = "tel:0687257070";
-                        break;
-                    case "Cherkasy Oblast":
-                        phone = "tel:0962294243";
-                        break;
-                    default:
-                        phone = "tel:0674443804";
-                        break;
-                }
-                intent.setData(Uri.parse(phone));
-                startActivity(intent);
-            }
-        });
 //        fab_call.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
-//                Intent intent = new Intent(getActivity(), LiqPayActivity.class);
+//                Intent intent = new Intent(Intent.ACTION_DIAL);
+//                String phone;
+//                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+//                switch (stringList.get(1)){
+//                    case "Kyiv City":
+//                        phone = "tel:0674443804";
+//                        break;
+//                    case "Dnipropetrovsk Oblast":
+//                        phone = "tel:0667257070";
+//                        break;
+//                    case "Odessa":
+//                        phone = "tel:0737257070";
+//                        break;
+//                    case "Zaporizhzhia":
+//                        phone = "tel:0687257070";
+//                        break;
+//                    case "Cherkasy Oblast":
+//                        phone = "tel:0962294243";
+//                        break;
+//                    default:
+//                        phone = "tel:0674443804";
+//                        break;
+//                }
+//                intent.setData(Uri.parse(phone));
 //                startActivity(intent);
 //            }
 //        });
+        fab_call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), FlexibleExampleActivity.class);
+                startActivity(intent);
+            }
+        });
+        fab_new = binding.fab;
+        fab_new.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), SimpleExampleActivity.class);
+                startActivity(intent);
+            }
+        });
 
         buttonAddServices = binding.btnAdd;
         buttonAddServices.setOnClickListener(new View.OnClickListener() {

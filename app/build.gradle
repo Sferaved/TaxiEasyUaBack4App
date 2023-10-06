@@ -33,6 +33,7 @@ android {
     buildFeatures {
         dataBinding = true
         viewBinding = true
+        buildConfig true
     }
 }
 
@@ -86,5 +87,7 @@ dependencies {
             because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
         }
     }
-
+    implementation 'com.google.android.gms:play-services-base:18.2.0'
+    implementation 'com.google.android.gms:play-services-wallet:19.2.1'
+    implementation project(':library')
 }

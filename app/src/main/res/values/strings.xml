@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.827</string>
-    <string name="version">Версия: 2.827</string>
+    <string name="version_code">2.828</string>
+    <string name="version">Версия: 2.828</string>
 
     <string name="app_name">Такси Украина 2</string>
 
@@ -229,4 +229,27 @@
     <string name="clear_home">Очистить поля</string>
     <string name="google_payment">Google Pay</string>
 
+    <string name="lbl_card_number">Номер карты:</string>
+    <string name="lbl_expd">Срок действия:</string>
+    <string name="hint_mm">ММ</string>
+    <string name="hint_yy">ГГ</string>
+    <string name="lbl_cvv">CVV:</string>
+    <string name="e_invalid_card_number">Неверный номер карты</string>
+    <string name="e_invalid_yy">Неверный год</string>
+    <string name="e_invalid_mm">Неверный месяц</string>
+    <string name="e_invalid_date">Неверный срок действия</string>
+    <string name="e_invalid_cvv">Неверный cvv</string>
+
+
+    <string name="lbl_amount">Сумма:</string>
+    <string name="lbl_ccy">Валюта:</string>
+    <string name="lbl_email">Электронная почта:</string>
+    <string name="lbl_description">Описание:</string>
+    <string name="btn_pay_google">GooglePay</string>
+    <string name="btn_pay_card">Оплата картой</string>
+    <string name="e_invalid_amount">Неверная сумма</string>
+    <string name="e_invalid_email">Неверный адрес электронной почты</string>
+    <string name="e_invalid_description">Введите описание</string>
+    <string name="e_google_pay_unsupported">GooglePay не поддерживается</string>
+    <string name="e_google_pay_canceled">GooglePay отменен</string>
 </resources>

@@ -34,6 +34,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TaxiEasyUaBack4App"
         tools:targetApi="31">
+
         <activity
             android:name=".ui.payment.MonoBankActivity"
             android:exported="false" />
@@ -43,7 +44,10 @@
         <activity
             android:name=".ui.finish.FinishActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar"/>
+            android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar" />
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
 
         <meta-data
             android:name="com.parse.SERVER_URL"
@@ -92,8 +96,18 @@
         <activity
             android:name=".ui.start.GoogleSignInActivity"
             android:screenOrientation="portrait" />
+        <activity android:name="com.taxieasyua.back4app.ui.fondy.BaseExampleActivity" />
+        <activity android:name="com.taxieasyua.back4app.ui.fondy.FlexibleExampleActivity" />
+        <activity android:name="com.taxieasyua.back4app.ui.fondy.SimpleExampleActivity" />
 
         <receiver android:name=".NetworkChangeReceiver" />
+
+
+
+        <meta-data
+            android:name="com.google.android.gms.wallet.api.enabled"
+            android:value="true" />
+
     </application>
 
 </manifest>

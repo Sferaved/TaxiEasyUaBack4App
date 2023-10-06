@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.827</string>
-    <string name="version">Версія: 2.827</string>
+    <string name="version_code">2.828</string>
+    <string name="version">Версія: 2.828</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -226,4 +226,28 @@
     <string name="order_after_phone">"Для замовлення натисніть кнопку "</string>
     <string name="clear_home">Очистити поля</string>
     <string name="google_payment">Google Pay</string>
+
+    <string name="lbl_card_number">Номер картки:</string>
+    <string name="lbl_expd">Термін дії:</string>
+    <string name="hint_mm">ММ</string>
+    <string name="hint_yy">ГГ</string>
+    <string name="lbl_cvv">CVV:</string>
+    <string name="e_invalid_card_number">Неправильний номер картки</string>
+    <string name="e_invalid_yy">Невірний рік</string>
+    <string name="e_invalid_mm">Невірний місяць</string>
+    <string name="e_invalid_date">Неправильний термін дії</string>
+    <string name="e_invalid_cvv">Неправильний cvv</string>
+
+    <string name="lbl_amount">Сума:</string>
+    <string name="lbl_ccy">Валюта:</string>
+    <string name="lbl_email">Електронна адреса:</string>
+    <string name="lbl_description">Опис:</string>
+    <string name="btn_pay_google">GooglePay</string>
+    <string name="btn_pay_card">Оплата карткою</string>
+    <string name="e_invalid_amount">Недійсна сума</string>
+    <string name="e_invalid_email">Недійсна електронна адреса</string>
+    <string name="e_invalid_description">Введіть опис</string>
+    <string name="e_google_pay_unsupported">GooglePay не підтримується</string>
+    <string name="e_google_pay_canceled">GooglePay скасовано</string>
+
 </resources>
