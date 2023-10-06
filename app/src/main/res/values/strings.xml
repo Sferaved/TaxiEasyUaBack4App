@@ -227,7 +227,7 @@
     <string name="start_point_text">Точка посадки</string>
     <string name="order_after_phone">"Для заказа нажмите кнопку "</string>
     <string name="clear_home">Очистить поля</string>
-    <string name="google_payment">Google Pay</string>
+    <string name="google_payment">Картой</string>
 
     <string name="lbl_card_number">Номер карты:</string>
     <string name="lbl_expd">Срок действия:</string>

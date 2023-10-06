@@ -225,7 +225,7 @@
     <string name="start_point_text">Місце відправлення</string>
     <string name="order_after_phone">"Для замовлення натисніть кнопку "</string>
     <string name="clear_home">Очистити поля</string>
-    <string name="google_payment">Google Pay</string>
+    <string name="google_payment">Карткою</string>
 
     <string name="lbl_card_number">Номер картки:</string>
     <string name="lbl_expd">Термін дії:</string>
