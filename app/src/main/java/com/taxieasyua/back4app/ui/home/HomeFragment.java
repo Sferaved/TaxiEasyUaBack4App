@@ -252,7 +252,8 @@ public class HomeFragment extends Fragment {
                 if(connected()) {
                     progressBar.setVisibility(View.VISIBLE);
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-
+                    List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                    String bonusPayment =  stringListInfo.get(4);
                     switch (stringList.get(1)) {
                         case "Kyiv City":
                         case "Dnipropetrovsk Oblast":
@@ -261,18 +262,25 @@ public class HomeFragment extends Fragment {
                         case "Cherkasy Oblast":
                             break;
                         case "OdessaTest":
-                            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                            String bonusPayment =  stringListInfo.get(4);
+
                             if(bonusPayment.equals("bonus_payment")) {
                                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
                                 }
                             }
+
+
                             break;
                     }
-
-                    order();
+                    Log.d(TAG, "onClick: bonusPayment" + bonusPayment);
+                    if(bonusPayment.equals("google_payment")) {
+                        Intent intent = new Intent(requireActivity(), SimpleExampleActivity.class);
+                        intent.putExtra("cost", text_view_cost.getText().toString());
+                        startActivity(intent);
+                    } else {
+                        order();
+                    }
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());

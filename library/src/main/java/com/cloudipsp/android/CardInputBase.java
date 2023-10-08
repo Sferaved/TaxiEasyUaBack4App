@@ -1,5 +1,6 @@
 package com.cloudipsp.android;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -11,6 +12,7 @@ import android.widget.EditText;
  * Created by vberegovoy on 6/20/17.
  */
 
+@SuppressLint("AppCompatCustomView")
 abstract class CardInputBase extends EditText {
     public CardInputBase(Context context) {
         super(context);

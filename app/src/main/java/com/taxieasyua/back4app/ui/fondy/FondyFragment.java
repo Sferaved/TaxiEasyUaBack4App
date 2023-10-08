@@ -35,6 +35,7 @@ import com.taxieasyua.back4app.databinding.FragmentBonusBinding;
 import com.taxieasyua.back4app.databinding.FragmentFondyBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
+import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 
@@ -92,7 +93,10 @@ public class FondyFragment extends Fragment {
         btnPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               startActivity(new Intent(requireActivity(), SimpleExampleActivity.class));
+
+                Intent intent = new Intent(requireActivity(), SimpleExampleActivity.class);
+                intent.putExtra("cost", "160");
+                startActivity(intent);
             }
         });
 

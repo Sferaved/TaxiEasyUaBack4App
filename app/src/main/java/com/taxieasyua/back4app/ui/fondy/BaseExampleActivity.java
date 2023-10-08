@@ -1,9 +1,14 @@
 package com.taxieasyua.back4app.ui.fondy;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,7 +23,11 @@ import com.cloudipsp.android.Currency;
 import com.cloudipsp.android.GooglePayCall;
 import com.cloudipsp.android.Order;
 import com.cloudipsp.android.Receipt;
+import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by vberegovoy on 6/20/17.
@@ -54,10 +63,19 @@ abstract public class BaseExampleActivity extends Activity implements
                 fillTest();
             }
         });
+        String cost = getIntent().getStringExtra("cost");
+
         editAmount = findViewById(R.id.edit_amount);
+        editAmount.setText(cost);
+
         spinnerCcy = findViewById(R.id.spinner_ccy);
         editEmail = findViewById(R.id.edit_email);
+
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, getApplicationContext()).get(3);
+        editEmail.setText(userEmail);
+        editEmail.setVisibility(View.INVISIBLE);
         editDescription = findViewById(R.id.edit_description);
+        editDescription.setText("Оплата за поездку по маршруту (Сплата прослуг таксі)");
         findViewById(R.id.btn_pay_card).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -144,7 +162,7 @@ abstract public class BaseExampleActivity extends Activity implements
 
         final int amount;
         try {
-            amount = Integer.valueOf(editAmount.getText().toString());
+            amount = Integer.valueOf(editAmount.getText().toString())*100;
         } catch (Exception e) {
             editAmount.setError(getString(R.string.e_invalid_amount));
             return null;
@@ -160,6 +178,7 @@ abstract public class BaseExampleActivity extends Activity implements
             return null;
         }
         final Currency currency = (Currency) spinnerCcy.getSelectedItem();
+        Log.d("TAG", "createOrder: currency" + currency);
         final Order order = new Order(amount, currency, "vb_" + System.currentTimeMillis(), description, email);
         order.setLang(Order.Lang.ru);
         return order;
@@ -193,4 +212,27 @@ abstract public class BaseExampleActivity extends Activity implements
     public void onGooglePayInitialized(GooglePayCall result) {
         this.googlePayCall = result;
     }
+    @SuppressLint("Range")
+    private List<String> logCursor(String table, Context context) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(table, null, null, null, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                String str;
+                do {
+                    str = "";
+                    for (String cn : c.getColumnNames()) {
+                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
+                        list.add(c.getString(c.getColumnIndex(cn)));
+
+                    }
+
+                } while (c.moveToNext());
+            }
+        }
+        database.close();
+        return list;
+    }
+
 }
