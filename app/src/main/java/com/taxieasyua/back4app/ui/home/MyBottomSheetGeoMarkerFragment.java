@@ -401,7 +401,7 @@ public class MyBottomSheetGeoMarkerFragment extends BottomSheetDialogFragment {
         String newCost = "0";
 
         String url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan, "costSearchMarkers", getActivity());
+                OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan, "costSearchMarkers", requireActivity());
 
         Map<String, String> sendUrl = ToJSONParser.sendURL(url);
 

@@ -85,27 +85,31 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
     public String[] arrayStreet;
     static String api;
-    ArrayList<Map> adressArr;
+    private ArrayList<Map> adressArr = new ArrayList<>();
     long firstCost;
 
+    @SuppressLint("StaticFieldLeak")
     public static TextView text_view_cost;
+    @SuppressLint("StaticFieldLeak")
     public static AutoCompleteTextView textViewTo;
+    @SuppressLint("StaticFieldLeak")
     public static EditText to_number;
     ArrayAdapter<String> adapter;
     public static String numberFlagTo;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
     private static final int REQUEST_LOCATION_PERMISSION = 1;
+    @SuppressLint("StaticFieldLeak")
     static MyGeoDialogFragment fragment;
     public static long cost;
     public static long addCost;
     public static String to;
+    @SuppressLint("StaticFieldLeak")
     public static ProgressBar progressBar;
     static String urlAddress;
     public static String geo_marker;
-    String bonus;
 
-    public static MyGeoDialogFragment newInstance(String fromGeo) {
+    public static MyGeoDialogFragment newInstance() {
         fragment = new MyGeoDialogFragment();
         return fragment;
     }
@@ -116,31 +120,26 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.geo_first_layout, container, false);
         buttonBonus = view.findViewById(R.id.btnBonus);
 
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        api =  stringList.get(2);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
-                api = MainActivity.apiDnipro;
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
-                api = MainActivity.apiOdessa;
                 break;
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
-                api = MainActivity.apiZaporizhzhia;
                 break;
             case "Cherkasy Oblast":
                 arrayStreet = Cherkasy.arrayStreet();
-                api = MainActivity.apiCherkasy;
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
-                api = MainActivity.apiTest;
                 break;
             default:
                 arrayStreet = KyivCity.arrayStreet();
-                api = MainActivity.apiKyiv;
                 break;
         }
 
@@ -175,8 +174,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         });
 
-        List<String> stringListRoutGeo = logCursor(MainActivity.ROUT_GEO, getActivity());
-        Log.d("TAG", "onViewCreated: stringListRoutHome " + stringListRoutGeo);
+        List<String> stringListRoutGeo = logCursor(MainActivity.ROUT_GEO, requireActivity());
         if (!stringListRoutGeo.get(1).equals(" ")) {
             geo_marker = "marker";
         } else {
@@ -204,7 +202,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 dismiss();
             }
         });
-        adapter = new ArrayAdapter<>(getActivity(), R.layout.drop_down_layout, arrayStreet);
+        adapter = new ArrayAdapter<>(requireActivity(), R.layout.drop_down_layout, arrayStreet);
 
         textViewTo.setAdapter(adapter);
         int inputTypeTo = textViewTo.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
@@ -243,7 +241,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         numberFlagTo = "0";
                     }
 
-                     if (!verifyOrder(getActivity())) {
+                     if (!verifyOrder(requireActivity())) {
                          MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                          bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                      } else {
@@ -279,7 +277,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
                              updateRoutGeo(settings);
 
-                             urlCost = getTaxiUrlSearchGeo("costSearchGeo", getActivity());
+                             urlCost = getTaxiUrlSearchGeo("costSearchGeo", requireActivity());
                          }
 
                          Log.d("TAG", "onClick urlCost: " + urlCost);
@@ -354,7 +352,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
                     updateRoutGeo(settings);
 
-                    url = getTaxiUrlSearchGeo("costSearchGeo", getActivity());
+                    url = getTaxiUrlSearchGeo("costSearchGeo", requireActivity());
                 }
 
                 Log.d("TAG", "onClick urlCost: " + url);
@@ -402,11 +400,11 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
 //                geoText.setText("");
-                Toast.makeText(getActivity(), R.string.check_position, Toast.LENGTH_SHORT).show();
-                Configuration.getInstance().load(getActivity(), PreferenceManager.getDefaultSharedPreferences(getActivity()));
+                Toast.makeText(requireActivity(), R.string.check_position, Toast.LENGTH_SHORT).show();
+                Configuration.getInstance().load(requireActivity(), PreferenceManager.getDefaultSharedPreferences(requireActivity()));
 
 
-                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
 
                 locationCallback = new LocationCallback() {
@@ -441,14 +439,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                 Log.d("TAG", "onLocationResult: OpenStreetMapActivity.startLat111111111" + OpenStreetMapActivity.startLat);
                                 Log.d("TAG", "onLocationResult: OpenStreetMapActivity.startLan111111111" + OpenStreetMapActivity.startLan);
                                 updateMyPosition(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString);
-                                    getActivity().finish();
-                                 startActivity(new Intent(getActivity(), OpenStreetMapActivity.class));
+                                    requireActivity().finish();
+                                 startActivity(new Intent(requireActivity(), OpenStreetMapActivity.class));
                             }
                         }
 
                     };
                 };
-                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {
                     startLocationUpdates();
                 } else {
@@ -502,7 +500,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
                             String bonusPayment =  stringListInfo.get(4);
                             if(bonusPayment.equals("bonus_payment")) {
-                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
                                 }
@@ -534,13 +532,13 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     }
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
+        if (ContextCompat.checkSelfPermission(requireActivity(), permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{permission}, requestCode);
 
         }
     }
     private void updateMyPosition(Double startLat, Double startLan, String position) {
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
         Log.d("TAG", "updateMyPosition: startLat" + startLat);
         Log.d("TAG", "updateMyPosition: startLan" + startLan);
@@ -556,8 +554,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         database.close();
 
 
-        Log.d("TAG", "updateMyPosition: logCursor(MainActivity.TABLE_POSITION_INFO " + logCursor(MainActivity.TABLE_POSITION_INFO, getActivity()));
-        Log.d("TAG", "updateMyPosition: getFromTablePositionInfo(getActivity(), \"startLat\" ) " + getFromTablePositionInfo(getActivity(), "startLat" ));
+        Log.d("TAG", "updateMyPosition: logCursor(MainActivity.TABLE_POSITION_INFO " + logCursor(MainActivity.TABLE_POSITION_INFO, requireActivity()));
+        Log.d("TAG", "updateMyPosition: getFromTablePositionInfo(requireActivity(), \"startLat\" ) " + getFromTablePositionInfo(requireActivity(), "startLat" ));
     }
 
     private void startCost() {
@@ -571,7 +569,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             settings.add(String.valueOf(OpenStreetMapActivity.startLan));
 
             updateRoutMarker(settings);
-            urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getActivity());
+            urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
         }
 
         Map<String, String> sendUrlMapCost = null;
@@ -825,7 +823,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         Boolean hasConnect = false;
 
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
+        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {
@@ -845,7 +843,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     ArrayList<Map> routMaps() {
         Map <String, String> routs;
         ArrayList<Map> routsArr = new ArrayList<>();
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         int i = 0;
         if (c != null) {
@@ -874,7 +872,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-//        Toast.makeText(getActivity(), getString(R.string.to_marker_mes), Toast.LENGTH_LONG).show();
+//        Toast.makeText(requireActivity(), getString(R.string.to_marker_mes), Toast.LENGTH_LONG).show();
     }
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
@@ -920,13 +918,13 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     static Double to_lng;
     private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
 
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity(), R.style.AlertDialogTheme);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity(), R.style.AlertDialogTheme);
         LayoutInflater inflater = this.getLayoutInflater();
         View view = inflater.inflate(R.layout.from_to_geo_adress_layout, null);
         builder.setView(view);
 
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.custom_list_item, array);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, array);
         ListView listView = view.findViewById(R.id.listAddress);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -973,7 +971,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
                 try {
 
-                    urlAddress = getTaxiUrlSearchMarkers("costSearchMarkers", getActivity());
+                    urlAddress = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
 
                     Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlAddress);
 
@@ -987,7 +985,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
                     if (!orderCost.equals("0")) {
-                        if (!verifyOrder(getActivity())) {
+                        if (!verifyOrder(requireActivity())) {
                             MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         } else {
@@ -1124,9 +1122,9 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
                         updateRoutGeo(settings);
                         if(geo_marker.equals("geo")) {
-                            urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", getActivity());
+                            urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", requireActivity());
                         } else {
-                            urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", getActivity());
+                            urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
                         }
                     } else {
                         List<String> settings = new ArrayList<>();
@@ -1139,7 +1137,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
 
 
-                        urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", getActivity());
+                        urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
                         Log.d("TAG", "order: urlOrder "  + urlOrder);
 
                     }
@@ -1165,7 +1163,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         } else {
 
                             if(sendUrlMap.get("routeto").equals("Точка на карте")) {
-                                to_name = getActivity().getString(R.string.end_point_marker);
+                                to_name = requireActivity().getString(R.string.end_point_marker);
                             } else {
                                 to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
                             }
@@ -1186,7 +1184,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                 getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
 
-                        Intent intent = new Intent(getActivity(), FinishActivity.class);
+                        Intent intent = new Intent(requireActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
                         intent.putExtra("messageCost_key", orderWeb);
                         intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
@@ -1277,11 +1275,11 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     }
     private void getPhoneNumber () {
         String mPhoneNumber;
-        TelephonyManager tMgr = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager tMgr = (TelephonyManager) requireActivity().getSystemService(Context.TELEPHONY_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("TAG", "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_NUMBERS));
-            Log.d("TAG", "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_STATE));
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("TAG", "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS));
+            Log.d("TAG", "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE));
             return;
         }
         mPhoneNumber = tMgr.getLine1Number();
@@ -1291,9 +1289,9 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
             Log.d("TAG", "onClick No validate: " + val);
             if (val == false) {
-                Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
-//                getActivity().finish();
+//                requireActivity().finish();
 
             } else {
                 updateRecordsUser(mPhoneNumber, getContext());
@@ -1478,12 +1476,12 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     }
 
     private void requestLocationPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION)) {
             // Показываем объяснение пользователю, почему мы запрашиваем разрешение
             // Можно использовать диалоговое окно или другой пользовательский интерфейс
         } else {
-            ActivityCompat.requestPermissions(getActivity(),
+            ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }

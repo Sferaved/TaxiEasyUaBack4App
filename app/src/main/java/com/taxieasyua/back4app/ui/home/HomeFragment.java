@@ -86,9 +86,6 @@ public class HomeFragment extends Fragment {
     public static EditText from_number, to_number;
     String messageResult;
 
-
-    public  static String api;
-
     FloatingActionButton fab_call;
     private final String TAG = "TAG";
     Button gpsbut;
@@ -131,52 +128,41 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         progressBar = binding.progressBar;
         buttonBonus = binding.btnBonus;
 
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         Log.d("TAG", "onViewCreated: " + stringList);
         if(stringList.size() !=0 ) {
             switch (stringList.get(1)){
                 case "Dnipropetrovsk Oblast":
                     arrayStreet = Dnipro.arrayStreet();
-                    api = MainActivity.apiDnipro;
-
                     break;
                 case "Zaporizhzhia":
                     arrayStreet = Zaporizhzhia.arrayStreet();
-                    api = MainActivity.apiZaporizhzhia;
-
                     break;
                 case "Cherkasy Oblast":
                     arrayStreet = Cherkasy.arrayStreet();
-                    api = MainActivity.apiCherkasy;
-
                     break;
                 case "Odessa":
                     arrayStreet = Odessa.arrayStreet();
-                    api = MainActivity.apiOdessa;
-
                     break;
                 case "OdessaTest":
                     arrayStreet = OdessaTest.arrayStreet();
-                    api = MainActivity.apiTest;
                     break;
                 default:
                     arrayStreet = KyivCity.arrayStreet();
-                    api = MainActivity.apiKyiv;
-
                     break;
             };
-            adapter = new ArrayAdapter<>(getActivity(),R.layout.drop_down_layout, arrayStreet);
+            adapter = new ArrayAdapter<>(requireActivity(),R.layout.drop_down_layout, arrayStreet);
         }
 
         text_view_cost = binding.textViewCost;
         btnGeo = binding.btnGeo;
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             btnGeo.setVisibility(View.VISIBLE);
         }  else {
             btnGeo.setVisibility(View.INVISIBLE);
@@ -251,7 +237,7 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 if(connected()) {
                     progressBar.setVisibility(View.VISIBLE);
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                     List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
                     String bonusPayment =  stringListInfo.get(4);
                     switch (stringList.get(1)) {
@@ -264,7 +250,7 @@ public class HomeFragment extends Fragment {
                         case "OdessaTest":
 
                             if(bonusPayment.equals("bonus_payment")) {
-                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
                                 }
@@ -307,7 +293,7 @@ public class HomeFragment extends Fragment {
                     MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 } else {
-                    LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                    LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
                     boolean gps_enabled = false;
                     boolean network_enabled = false;
 
@@ -327,8 +313,8 @@ public class HomeFragment extends Fragment {
                     }  else  {
                         progressBar.setVisibility(View.VISIBLE);
                         // Разрешения уже предоставлены, выполнить ваш код
-                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                                && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                             checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                             checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
@@ -337,7 +323,7 @@ public class HomeFragment extends Fragment {
                         }  else {
                             progressBar.setVisibility(View.INVISIBLE);
                             btnGeo.setVisibility(View.INVISIBLE);
-                            Intent intent = new Intent(getActivity(), OpenStreetMapActivity.class);
+                            Intent intent = new Intent(requireActivity(), OpenStreetMapActivity.class);
                             startActivity(intent);
                         }
 
@@ -350,40 +336,12 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_DIAL);
-                String phone;
-                List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-                switch (stringList.get(1)){
-                    case "Kyiv City":
-                        phone = "tel:0674443804";
-                        break;
-                    case "Dnipropetrovsk Oblast":
-                        phone = "tel:0667257070";
-                        break;
-                    case "Odessa":
-                        phone = "tel:0737257070";
-                        break;
-                    case "Zaporizhzhia":
-                        phone = "tel:0687257070";
-                        break;
-                    case "Cherkasy Oblast":
-                        phone = "tel:0962294243";
-                        break;
-                    default:
-                        phone = "tel:0674443804";
-                        break;
-                }
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                String phone = stringList.get(3);
                 intent.setData(Uri.parse(phone));
                 startActivity(intent);
             }
         });
-//        fab_call.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(getActivity(), FlexibleExampleActivity.class);
-//                startActivity(intent);
-//            }
-//        });
-//
 
         buttonAddServices = binding.btnAdd;
         buttonAddServices.setOnClickListener(new View.OnClickListener() {
@@ -398,6 +356,8 @@ public class HomeFragment extends Fragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                String api =  stringList.get(2);
                 MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "home", api);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
@@ -409,8 +369,8 @@ public class HomeFragment extends Fragment {
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{permission}, requestCode);
+        if (ContextCompat.checkSelfPermission(requireActivity(), permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{permission}, requestCode);
 
         }
     }
@@ -420,40 +380,30 @@ public class HomeFragment extends Fragment {
 
         btn_clear = binding.btnClear;
 
-//        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
-//        Log.d("TAG", "onViewCreated: " + stringList);
-//
-//        if (stringList.size() != 0) {
-            rout();
-            List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, getActivity());
-            Log.d("TAG", "onViewCreated: stringListRoutHome " + stringListRoutHome);
-            if (stringListRoutHome.get(1).equals(" ")) {
-                text_view_cost.setVisibility(View.INVISIBLE);
-                btn_minus.setVisibility(View.INVISIBLE);
-                btn_plus.setVisibility(View.INVISIBLE);
-                buttonAddServices.setVisibility(View.INVISIBLE);
-                buttonBonus.setVisibility(View.INVISIBLE);
-                btn_clear.setVisibility(View.INVISIBLE);
+        rout();
+        List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
+        if (stringListRoutHome.get(1).equals(" ")) {
+            text_view_cost.setVisibility(View.INVISIBLE);
+            btn_minus.setVisibility(View.INVISIBLE);
+            btn_plus.setVisibility(View.INVISIBLE);
+            buttonAddServices.setVisibility(View.INVISIBLE);
+            buttonBonus.setVisibility(View.INVISIBLE);
+            btn_clear.setVisibility(View.INVISIBLE);
 
-                btn_order.setVisibility(View.INVISIBLE);
-                cost = 0;
-                addCost = 0;
-                from = null;
-                to = null;
-                text_view_cost.setText("");
-                textViewFrom.setText("");
-                from_number.setText("");
-                textViewTo.setText("");
-                to_number.setText("");
-            } else {
-                costRoutHome(stringListRoutHome);
-            }
-
-
-//        }
-
-
-        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+            btn_order.setVisibility(View.INVISIBLE);
+            cost = 0;
+            addCost = 0;
+            from = null;
+            to = null;
+            text_view_cost.setText("");
+            textViewFrom.setText("");
+            from_number.setText("");
+            textViewTo.setText("");
+            to_number.setText("");
+        } else {
+            costRoutHome(stringListRoutHome);
+        }    
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
 
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -489,7 +439,8 @@ public class HomeFragment extends Fragment {
                     if (from.indexOf("/") != -1) {
                         from = from.substring(0,  from.indexOf("/"));
                     };
-
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                    String api =  stringList.get(2);
 
                     String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
 
@@ -577,13 +528,15 @@ public class HomeFragment extends Fragment {
                         if (to.indexOf("/") != -1) {
                             to = to.substring(0, to.indexOf("/"));
                         }
+                        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                        String api =  stringList.get(2);
                          String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
 
                         Map sendUrlMapCost = null;
                         try {
                             sendUrlMapCost = ResultSONParser.sendURL(url);
                         } catch (MalformedURLException | InterruptedException | JSONException e) {
-                            Toast.makeText(getActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireActivity(), R.string.error_firebase_start, Toast.LENGTH_SHORT).show();
                         }
 
                         String orderCost = (String) sendUrlMapCost.get("message");
@@ -702,7 +655,7 @@ public class HomeFragment extends Fragment {
 
                 updateRoutHome(settings);
 
-                urlCost = getTaxiUrlSearch("costSearch", getActivity());
+                urlCost = getTaxiUrlSearch("costSearch", requireActivity());
             }
 
             Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -788,7 +741,7 @@ public class HomeFragment extends Fragment {
         try {
             String urlCost = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                urlCost = getTaxiUrlSearch("costSearch", getActivity());
+                urlCost = getTaxiUrlSearch("costSearch", requireActivity());
             }
 
             Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -849,9 +802,8 @@ public class HomeFragment extends Fragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             return;
         }
-        List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, getActivity());
-        Log.d("TAG", "onViewCreated: stringListRoutHome " + stringListRoutHome);
-        Log.d("TAG", "onViewCreated: textViewTo.getText( " + "/" + textViewTo.getText() + "/");
+        List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
+        
         if (stringListRoutHome.get(1).equals(" ") && !textViewTo.getText().equals("")) {
             boolean stop = false;
             if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
@@ -941,7 +893,7 @@ public class HomeFragment extends Fragment {
             }
             if (verifyPhone(requireContext())) {
                 try {
-                    String urlOrder = getTaxiUrlSearch( "orderSearch", getActivity());
+                    String urlOrder = getTaxiUrlSearch( "orderSearch", requireActivity());
                     Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
                     String orderWeb = sendUrlMap.get("order_cost");
@@ -986,7 +938,7 @@ public class HomeFragment extends Fragment {
                             }
                         }
 
-                        Intent intent = new Intent(getActivity(), FinishActivity.class);
+                        Intent intent = new Intent(requireActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
                         intent.putExtra("messageCost_key", orderWeb);
                         intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
@@ -1152,7 +1104,7 @@ public class HomeFragment extends Fragment {
 
         boolean hasConnect = false;
 
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
+        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {
@@ -1294,7 +1246,8 @@ public class HomeFragment extends Fragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String api =  stringListCity.get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
@@ -1307,7 +1260,7 @@ public class HomeFragment extends Fragment {
     @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -1328,11 +1281,11 @@ public class HomeFragment extends Fragment {
     }
     private void getPhoneNumber () {
         String mPhoneNumber;
-        TelephonyManager tMgr = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        TelephonyManager tMgr = (TelephonyManager) requireActivity().getSystemService(Context.TELEPHONY_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("TAG", "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_NUMBERS));
-            Log.d("TAG", "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_PHONE_STATE));
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("TAG", "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS));
+            Log.d("TAG", "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE));
             return;
         }
         mPhoneNumber = tMgr.getLine1Number();
@@ -1342,9 +1295,9 @@ public class HomeFragment extends Fragment {
             boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
             Log.d("TAG", "onClick No validate: " + val);
             if (val == false) {
-                Toast.makeText(getActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
-//                getActivity().finish();
+//                requireActivity().finish();
 
             } else {
                 updateRecordsUser(mPhoneNumber, getContext());

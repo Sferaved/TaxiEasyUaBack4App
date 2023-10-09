@@ -81,16 +81,16 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 "google_payment"
         };
 
-        CustomArrayAdapter adapter = new CustomArrayAdapter(getActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
+        CustomArrayAdapter adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
         fistItem();
 
-        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+        String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
 
         if(Long.parseLong(bonus) >= cost * 100 ) {
-            List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
+            List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
 
             switch (stringList.get(1)) {
                 case "Kyiv City":
@@ -176,7 +176,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             Map<String, String> sendUrlMapCost = null;
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    urlCost = getTaxiUrlSearch("costSearch", getActivity());
+                    urlCost = getTaxiUrlSearch("costSearch", requireActivity());
                 }
 
                 sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -205,7 +205,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 Map<String, String> sendUrlMapCost = null;
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        urlCost = getTaxiUrlSearchGeo("costSearchGeo", getActivity());
+                        urlCost = getTaxiUrlSearchGeo("costSearchGeo", requireActivity());
                     }
 
                     sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -232,7 +232,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 Map<String, String> sendUrlMapCost = null;
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getActivity());
+                        urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
                     }
 
                     sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -522,7 +522,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @SuppressLint("Range")
     private List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {

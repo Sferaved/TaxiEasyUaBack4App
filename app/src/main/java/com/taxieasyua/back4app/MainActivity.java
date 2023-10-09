@@ -3,11 +3,9 @@ package com.taxieasyua.back4app;
 import static com.taxieasyua.back4app.R.string.cancel_button;
 import static com.taxieasyua.back4app.R.string.format_phone;
 import static com.taxieasyua.back4app.R.string.verify_internet;
-import static com.taxieasyua.back4app.R.string.version;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,7 +16,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -54,10 +51,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
@@ -71,17 +64,10 @@ import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
-import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.start.FirebaseSignIn;
-import com.taxieasyua.back4app.ui.start.GoogleSignInActivity;
-import com.taxieasyua.back4app.ui.start.StopActivity;
 
 import org.json.JSONException;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -95,7 +81,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
@@ -113,7 +98,11 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_02102023_6";
+    public static final String DB_NAME = "data_09102023_0";
+
+    /**
+     * Table section
+     */
     public static final String TABLE_USER_INFO = "userInfo";
     public static final String TABLE_SETTINGS_INFO = "settingsInfo";
     public static final String TABLE_ORDERS_INFO = "ordersInfo";
@@ -123,25 +112,35 @@ public class MainActivity extends AppCompatActivity {
     public static final String ROUT_HOME = "routHome";
     public static final String ROUT_GEO = "routGeo";
     public static final String ROUT_MARKER = "routMarker";
-    String TAG = "TAG";
 
     public static final String TABLE_POSITION_INFO = "myPosition";
     public static Cursor cursorDb;
     public static boolean verifyPhone;
     private AppBarConfiguration mAppBarConfiguration;
-    private ActivityMainBinding binding;
-    NetworkChangeReceiver networkChangeReceiver;
+    private NetworkChangeReceiver networkChangeReceiver;
     String  cityNew;
+    /**
+     * Api section
+     */
     public static final String  apiTest = "apiTest";
     public static final String  apiKyiv = "apiPas2";
     public static final String  apiDnipro = "apiPas2_Dnipro";
     public static final String  apiOdessa = "apiPas2_Odessa";
     public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
     public static final String  apiCherkasy = "apiPas2_Cherkasy";
+    /**
+     * Phone section
+     */
+    public static final String Kyiv_City_phone = "tel:0674443804";
+    public static final String Dnipropetrovsk_Oblast_phone = "tel:0667257070";
+    public static final String Odessa_phone = "tel:0737257070";
+    public static final String Zaporizhzhia_phone = "tel:0687257070";
+    public static final String Cherkasy_Oblast_phone = "tel:0962294243";
 
-    public static String  api;
     public static SQLiteDatabase database;
-
+    /**
+     * City section
+     */
     private final String[] cityList = new String[]{
             "Київ",
             "Дніпро",
@@ -169,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        com.taxieasyua.back4app.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
 
             setSupportActionBar(binding.appBarMain.toolbar);
@@ -292,11 +291,16 @@ public class MainActivity extends AppCompatActivity {
             cursorDb.close();
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
-                " city text);");
+                " city text," +
+                " api text," +
+                " phone text);");
         cursorDb = database.query(CITY_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
-            insertCity("Kyiv City");
-            api = apiKyiv;
+            List<String> settings = new ArrayList<>();
+            settings.add("Kyiv City"); //1
+            settings.add(apiKyiv); //2
+            settings.add(Kyiv_City_phone); //3
+            insertCity(settings);
         }
         cursorDb = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         verifyPhone = cursorDb.getCount() == 1;
@@ -530,14 +534,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 //
-    private void insertCity(String city) {
-        String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?);";
+    private void insertCity(List<String> settings) {
+        String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
         try {
             statement.clearBindings();
-            statement.bindString(2, city);
+            statement.bindString(2, settings.get(0));
+            statement.bindString(3, settings.get(1));
+            statement.bindString(4, settings.get(2));
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -737,14 +743,6 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 cityNew =  cityCode[position];
                 message = getString(R.string.your_city) + cityList[position];
-                ContentValues cv = new ContentValues();
-                SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-                cv.put("tarif", " ");
-                database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                        new String[] { "1" });
-                database.close();
-
             }
 
             @Override
@@ -752,26 +750,58 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        builder.setPositiveButton(R.string.cheng, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ContentValues cv = new ContentValues();
+        builder.setPositiveButton(R.string.cheng, (dialog, which) -> {
+            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                        cv.put("city", cityNew);
-                        // обновляем по id
-                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
+            String api, phone;
+            switch (cityNew) {
+                case "Kyiv City":
+                    api = apiKyiv;
+                    phone = Kyiv_City_phone;
+                    break;
+                case "Dnipropetrovsk Oblast":
+                    api = apiDnipro;
+                    phone = Dnipropetrovsk_Oblast_phone;
+                    break;
+                case "Odessa":
+                    api = apiOdessa;
+                    phone = Odessa_phone;
+                    break;
+                case "Zaporizhzhia":
+                    api = apiZaporizhzhia;
+                    phone = Zaporizhzhia_phone;
+                    break;
+                case "Cherkasy Oblast":
+                    api = apiCherkasy;
+                    phone = Cherkasy_Oblast_phone;
+                    break;
+                default:
+                    api = apiTest;
+                    phone = Kyiv_City_phone;
+            }
 
-                        Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
+            ContentValues cv = new ContentValues();
+            cv.put("city", cityNew);
+            cv.put("api", api);
+            cv.put("phone", phone);
+            database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                new String[] { "1" });
 
-                        NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
-                        resetRoutHome();
-                        navController.navigate(R.id.nav_home);
+            Log.d("TAG", "cityChange: " + logCursor(MainActivity.CITY_INFO).toString());
+            cv = new ContentValues();
+            cv.put("tarif", " ");
+            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                    new String[] { "1" });
 
-                    }
-                }).setNegativeButton(cancel_button, null)
+            database.close();
+
+            Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
+
+            NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
+            resetRoutHome();
+            navController.navigate(R.id.nav_home);
+
+        }).setNegativeButton(cancel_button, null)
                 .show();
 
     }
@@ -911,7 +941,7 @@ public class MainActivity extends AppCompatActivity {
             if (val == false) {
                 Toast.makeText(this, format_phone , Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
-//                getActivity().finish();
+//                requireActivity().finish();
 
             } else {
                  insertRecordsUser(mPhoneNumber);
@@ -974,39 +1004,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Регистрация BroadcastReceiver с фильтром намерений
         registerReceiver(networkChangeReceiver, filter);
-
-
-        List<String> stringList = logCursor(MainActivity.CITY_INFO);
-        if(stringList.size()!=0) {
-            switch (stringList.get(1)) {
-                case "Dnipropetrovsk Oblast":
-
-                    api = MainActivity.apiDnipro;
-                    break;
-                case "Odessa":
-
-                    api = MainActivity.apiOdessa;
-                    break;
-                case "Zaporizhzhia":
-
-                    api = MainActivity.apiZaporizhzhia;
-                    break;
-                case "Cherkasy Oblast":
-
-                    api = MainActivity.apiCherkasy;
-                    break;
-                case "OdessaTest":
-
-                    api = MainActivity.apiTest;
-                    break;
-                default:
-
-                    api = MainActivity.apiKyiv;
-                    break;
-            }
-
-
-        }
     }
 
     @Override

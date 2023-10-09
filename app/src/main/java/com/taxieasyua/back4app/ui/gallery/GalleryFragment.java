@@ -85,7 +85,7 @@ public class GalleryFragment extends Fragment {
         };
     }
 
-    public  static String api;
+
     String bonus;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -96,38 +96,11 @@ public class GalleryFragment extends Fragment {
         binding = FragmentGalleryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, getActivity());
 
-        if(stringList.size() !=0 ) {
-            switch (stringList.get(1)){
-                case "Dnipropetrovsk Oblast":
 
-                    api = MainActivity.apiDnipro;
-                    break;
-                case "Zaporizhzhia":
 
-                    api = MainActivity.apiZaporizhzhia;
-                    break;
-                case "Cherkasy Oblast":
-
-                    api = MainActivity.apiCherkasy;
-                    break;
-                case "Odessa":
-
-                    api = MainActivity.apiOdessa;
-                    break;
-                case "OdessaTest":
-
-                    api = MainActivity.apiTest;
-                    break;
-                default:
-
-                    api = MainActivity.apiKyiv;
-                    break;
-            };
-        }
         textView = binding.textGallery;
         textView.setText(R.string.my_routs);
 
@@ -191,7 +164,7 @@ public class GalleryFragment extends Fragment {
 
         array = arrayToRoutsAdapter ();
         if(array != null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, array);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, array);
             listView.setAdapter(adapter);
             listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -256,7 +229,7 @@ public class GalleryFragment extends Fragment {
                         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
                         String bonusPayment =  stringListInfo.get(4);
                         if(bonusPayment.equals("bonus_payment")) {
-                            String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+                            String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                             if(Long.parseLong(bonus) < Long.parseLong(text_view_cost.getText().toString()) * 100 ) {
                                 paymentType("nal_payment");
                             }
@@ -298,7 +271,7 @@ public class GalleryFragment extends Fragment {
                                        FromAddressString + getString(R.string.to_message) + ToAddressString +
                                        getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
-                                Intent intent = new Intent(getActivity(), FinishActivity.class);
+                                Intent intent = new Intent(requireActivity(), FinishActivity.class);
                                 intent.putExtra("messageResult_key", messageResult);
                                 intent.putExtra("messageCost_key", orderWeb);
                                 intent.putExtra("sendUrlMap", new HashMap<>(sendUrl));
@@ -324,6 +297,8 @@ public class GalleryFragment extends Fragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                String api =  stringList.get(2);
                 MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost, "Gallery") ;
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
@@ -461,7 +436,7 @@ public class GalleryFragment extends Fragment {
 
         Boolean hasConnect = false;
 
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
+        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {
@@ -572,7 +547,8 @@ public class GalleryFragment extends Fragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String api =  stringListCity.get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
 
@@ -600,7 +576,7 @@ public class GalleryFragment extends Fragment {
     @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -620,7 +596,7 @@ public class GalleryFragment extends Fragment {
         return list;
     }
     private void reIndexOrders() {
-        SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.execSQL("CREATE TABLE  temp_table" + "(id integer primary key autoincrement," +
                 " from_street text," +
                 " from_number text," +
@@ -672,7 +648,7 @@ public class GalleryFragment extends Fragment {
             int i = position + 1;
 
             String deleteQuery = "DELETE FROM " + MainActivity.TABLE_ORDERS_INFO + " WHERE id = " + i  + ";";
-            SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
             database.execSQL(deleteQuery);
             database.close();
@@ -680,11 +656,11 @@ public class GalleryFragment extends Fragment {
         reIndexOrders();
         array = arrayToRoutsAdapter();
         if (array != null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, array);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, array);
             listView.setAdapter(adapter);
         } else {
             // Если массив пустой, отобразите текст "no_routs" вместо списка
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, new String[]{});
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, new String[]{});
             listView.setAdapter(adapter);
             textView.setText(R.string.no_routs);
 

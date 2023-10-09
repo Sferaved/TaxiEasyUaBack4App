@@ -397,7 +397,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     }
     private String changeCost() throws MalformedURLException {
         String newCost = "0";
-        String url = getTaxiUrlSearch("costSearch", getActivity());
+        String url = getTaxiUrlSearch("costSearch", requireActivity());
 
         Map<String, String> sendUrl = CostJSONParser.sendURL(url);
 
@@ -490,8 +490,9 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
-        String url = "https://m.easy-order-taxi.site/" + HomeFragment.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String api =  stringList.get(2);
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
 

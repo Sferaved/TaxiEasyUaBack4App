@@ -410,7 +410,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         String  url;
         if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
             url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", getActivity());
+                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", requireActivity());
         } else {
             toCost = String.valueOf(MyGeoDialogFragment.textViewTo.getText());
             if (toCost.indexOf("/") != -1) {
@@ -429,7 +429,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 
 
             url = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                    toCost, to_numberCost, "costSearchGeo", getActivity());
+                    toCost, to_numberCost, "costSearchGeo", requireActivity());
         }
 
 
@@ -467,7 +467,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 //        String  url;
 //        if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
 //            url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-//                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", getActivity());
+//                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", requireActivity());
 //        } else {
 //            toCost = String.valueOf(MyGeoDialogFragment.textViewTo.getText());
 //            Log.d("TAG", "changeCost: MyGeoDialogFragment.to_number.getText()" + MyGeoDialogFragment.to_number.getText());
@@ -475,7 +475,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 ////            to_numberCost = "1";
 //
 //            url = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-//                    toCost, to_numberCost, "costSearchGeo", getActivity());
+//                    toCost, to_numberCost, "costSearchGeo", requireActivity());
 //        }
 //
 //
@@ -502,7 +502,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 //            ContentValues cv = new ContentValues();
 //
 //            cv.put("cost", newCost);
-//            SQLiteDatabase database = getActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 //            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
 //                    new String[] { "1" });
 //

@@ -109,7 +109,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             try {
                 String urlOrder = null;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    urlOrder = getTaxiUrlSearch("orderSearch", getActivity());
+                    urlOrder = getTaxiUrlSearch("orderSearch", requireActivity());
                 }
                 Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
@@ -154,7 +154,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                         }
                     }
 
-                    Intent intent = new Intent(getActivity(), FinishActivity.class);
+                    Intent intent = new Intent(requireActivity(), FinishActivity.class);
                     intent.putExtra("messageResult_key", messageResult);
                     intent.putExtra("messageCost_key", orderWeb);
                     intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
@@ -194,7 +194,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
                     updateRoutGeo(settings);
                     if(MyGeoDialogFragment.geo_marker.equals("geo")) {
-                        urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", getActivity());
+                        urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", requireActivity());
                     } else {
                         urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity(), MyGeoDialogFragment.addCost);
                     }
@@ -231,7 +231,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     } else {
 
                         if(sendUrlMap.get("routeto").equals("Точка на карте")) {
-                            to_name = getActivity().getString(R.string.end_point_marker);
+                            to_name = requireActivity().getString(R.string.end_point_marker);
                         } else {
                             to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
                         }
@@ -241,7 +241,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                     sendUrlMap.get("routefrom"), to_name,
                                     sendUrlMap.get("routefromnumber"), sendUrlMap.get("to_number"),
                                     Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                                    sendUrlMap.get("lat"), sendUrlMap.get("lng"), getActivity()
+                                    sendUrlMap.get("lat"), sendUrlMap.get("lng"), requireActivity()
                             );
                         }
                     }
@@ -251,7 +251,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
 
-                    Intent intent = new Intent(getActivity(), FinishActivity.class);
+                    Intent intent = new Intent(requireActivity(), FinishActivity.class);
                     intent.putExtra("messageResult_key", messageResult);
                     intent.putExtra("messageCost_key", orderWeb);
                     intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
@@ -300,7 +300,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                         }
                     } else {
                         if(sendUrlMap.get("routeto").equals("Точка на карте")) {
-                            to_name = getActivity().getString(R.string.end_point_marker);
+                            to_name = requireActivity().getString(R.string.end_point_marker);
                         } else {
                             to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
                         }
@@ -321,7 +321,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                             getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
 
 
-                    Intent intent = new Intent(getActivity(), FinishActivity.class);
+                    Intent intent = new Intent(requireActivity(), FinishActivity.class);
                     intent.putExtra("messageResult_key", messageResult);
                     intent.putExtra("messageCost_key", orderWeb);
                     intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
@@ -380,7 +380,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         Boolean hasConnect = false;
 
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
+        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {
@@ -488,8 +488,9 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
-        String url = "https://m.easy-order-taxi.site/" + HomeFragment.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO);
+        String api =  stringListCity.get(2);
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
         return url;
@@ -772,8 +773,8 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         super.onDismiss(dialog);
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && getActivity().getCurrentFocus() != null) {
-            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+        if (imm != null && requireActivity().getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(requireActivity().getCurrentFocus().getWindowToken(), 0);
         }
     }
 

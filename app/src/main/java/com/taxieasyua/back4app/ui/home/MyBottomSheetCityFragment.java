@@ -67,7 +67,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
         listView = view.findViewById(R.id.listViewBonus);
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.services_adapter_layout, cityList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, cityList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
@@ -114,11 +114,11 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                             new String[] { "1" });
                     database.close();
 
-                    NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
                     resetRoutHome();
                     navController.navigate(R.id.nav_home);
 
-                    Toast.makeText(getActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
 
                 }
                dismiss();

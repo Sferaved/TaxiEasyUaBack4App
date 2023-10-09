@@ -493,8 +493,9 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
-        String url = "https://m.easy-order-taxi.site/" + GalleryFragment.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String api =  stringList.get(2);
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
         database.close();

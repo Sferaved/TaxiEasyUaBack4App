@@ -60,7 +60,7 @@ public class FondyFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentFondyBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         networkChangeReceiver = new NetworkChangeReceiver();
         progressBar = binding.progressBar;
@@ -71,7 +71,7 @@ public class FondyFragment extends Fragment {
     public void onResume() {
         super.onResume();
 //        textView = binding.textBonus;
-//        String bonus = logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(5);
+//        String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
 //        if(bonus == null) {
 //            bonus = getString(R.string.upd_bonus_info);
 //        } else {
@@ -82,7 +82,7 @@ public class FondyFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(connected()) {
-                    @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(getActivity())).get(3);
+                    @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
                     progressBar.setVisibility(View.VISIBLE);
 
                 }
@@ -101,7 +101,7 @@ public class FondyFragment extends Fragment {
         });
 
         // Ваш текущий фрагмент или активность
-        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
 
 // Переход к фрагменту HomeFragment
 
@@ -121,7 +121,7 @@ public class FondyFragment extends Fragment {
 
         Boolean hasConnect = false;
 
-        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(
+        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 CONNECTIVITY_SERVICE);
         NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         if (wifiNetwork != null && wifiNetwork.isConnected()) {
@@ -137,7 +137,7 @@ public class FondyFragment extends Fragment {
         }
 
         if (!hasConnect) {
-            Toast.makeText(getActivity(), verify_internet, Toast.LENGTH_LONG).show();
+            Toast.makeText(requireActivity(), verify_internet, Toast.LENGTH_LONG).show();
         }
         Log.d("TAG", "connected: " + hasConnect);
         return hasConnect;
