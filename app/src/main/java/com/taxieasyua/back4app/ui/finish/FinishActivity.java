@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -333,6 +332,9 @@ public class FinishActivity extends AppCompatActivity {
                     if (status != null) {
                         String result =  String.valueOf(status.getResponse());
                         text_status.setText(result); // Установите текстовое значение в text_status
+
+                        /////////
+//                        fondyReverse();
                     } else {
                         text_status.setText(R.string.verify_internet);
                     }
@@ -474,4 +476,5 @@ public class FinishActivity extends AppCompatActivity {
             database.close();
         }
     }
+
 }

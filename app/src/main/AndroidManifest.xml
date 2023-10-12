@@ -45,10 +45,10 @@
             android:name=".ui.finish.FinishActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar" />
+
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
-
         <meta-data
             android:name="com.parse.SERVER_URL"
             android:value="@string/back4app_server_url" />
@@ -96,18 +96,16 @@
         <activity
             android:name=".ui.start.GoogleSignInActivity"
             android:screenOrientation="portrait" />
-        <activity android:name="com.taxieasyua.back4app.ui.fondy.BaseExampleActivity" />
-        <activity android:name="com.taxieasyua.back4app.ui.fondy.FlexibleExampleActivity" />
-        <activity android:name="com.taxieasyua.back4app.ui.fondy.SimpleExampleActivity" />
+        <activity android:name=".ui.fondy.BaseExampleActivity" />
+        <activity android:name=".ui.fondy.FlexibleExampleActivity" />
+        <activity android:name=".ui.fondy.SimpleExampleActivity" />
+        <activity android:name="com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity" />
 
         <receiver android:name=".NetworkChangeReceiver" />
-
-
 
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
-
     </application>
 
 </manifest>

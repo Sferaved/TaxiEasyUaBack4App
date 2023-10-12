@@ -6,10 +6,10 @@
 
     <string name="back4app_server_url" tools:ignore="MissingTranslation">https://parseapi.back4app.com/</string>
     <string name="back4app_app_id" tools:ignore="MissingTranslation">01YGF894m3NJRXT1BlH6qPo9pUfDlG9sqi9K9mIL</string>
-    <string name="back4app_client_key"  tools:ignore="MissingTranslation">T5f5GuT1UCmaiJn8Dek3sVmayGuJa2jfelQR6V6f</string>
+    <string name="back4app_client_key" tools:ignore="MissingTranslation">T5f5GuT1UCmaiJn8Dek3sVmayGuJa2jfelQR6V6f</string>
 
 
-    <string name="navigation_drawer_open"  tools:ignore="MissingTranslation">Open navigation drawer</string>
+    <string name="navigation_drawer_open" tools:ignore="MissingTranslation">Open navigation drawer</string>
     <string name="navigation_drawer_close" tools:ignore="MissingTranslation">Close navigation drawer</string>
     <string name="nav_header_title" tools:ignore="MissingTranslation">Попутчик такси Украина дешево</string>
     <string name="nav_header_subtitle" tools:ignore="MissingTranslation">Быстрые поездки по городам Украины</string>
@@ -140,26 +140,26 @@
     <string name="btn_again_text" tools:ignore="MissingTranslation">Заказать еще</string>
     <string name="textStatus" tools:ignore="MissingTranslation">Статус заказа</string>
     <string name="cancel_order" tools:ignore="MissingTranslation">Отменить заказ</string>
-    <string name="ex_st_1"  tools:ignore="MissingTranslation">Ожидается поиск машины (для предварительного заказа)</string>
-    <string name="ex_st_2"  tools:ignore="MissingTranslation">Машина найдена.</string>
-    <string name="ex_st_3"  tools:ignore="MissingTranslation">" Номер авто: "</string>
-    <string name="ex_st_4"  tools:ignore="MissingTranslation">" Телефон водителя: "</string>
-    <string name="ex_st_5"  tools:ignore="MissingTranslation">" Ожидаемое время подачи: "</string>
-    <string name="ex_st_0"  tools:ignore="MissingTranslation">Выполняется поиск машины</string>
-    <string name="your_city"  tools:ignore="MissingTranslation">"Ваш город "</string>
-    <string name="Kyiv_city"  tools:ignore="MissingTranslation">Киев</string>
-    <string name="Odessa"  tools:ignore="MissingTranslation">Одесса</string>
-    <string name="gps_message"  tools:ignore="MissingTranslation">Для использовния карты включите GPS</string>
-    <string name="city"  tools:ignore="MissingTranslation">Город</string>
-    <string name="change_message"  tools:ignore="MissingTranslation">"Смена базы адресов. "</string>
-    <string name="server_error_connected"  tools:ignore="MissingTranslation">Сервер не принял запрос, наберите операторов</string>
-    <string name="GDPR"  tools:ignore="MissingTranslation"> </string>
-    <string name="ok_GDPR"  tools:ignore="MissingTranslation">Согласиться</string>
-    <string name="Dnipro_city"  tools:ignore="MissingTranslation">Днепр</string>
-    <string name="city_change"  tools:ignore="MissingTranslation">Выберите город</string>
-    <string name="Zaporizhzhia"  tools:ignore="MissingTranslation">Запорожье</string>
-    <string name="Cherkasy"  tools:ignore="MissingTranslation">Черкассы</string>
-    <string name="OdessaTest"  tools:ignore="MissingTranslation">Одесса (Тест)</string>
+    <string name="ex_st_1" tools:ignore="MissingTranslation">Ожидается поиск машины (для предварительного заказа)</string>
+    <string name="ex_st_2" tools:ignore="MissingTranslation">Машина найдена.</string>
+    <string name="ex_st_3" tools:ignore="MissingTranslation">" Номер авто: "</string>
+    <string name="ex_st_4" tools:ignore="MissingTranslation">" Телефон водителя: "</string>
+    <string name="ex_st_5" tools:ignore="MissingTranslation">" Ожидаемое время подачи: "</string>
+    <string name="ex_st_0" tools:ignore="MissingTranslation">Выполняется поиск машины</string>
+    <string name="your_city" tools:ignore="MissingTranslation">"Ваш город "</string>
+    <string name="Kyiv_city" tools:ignore="MissingTranslation">Киев</string>
+    <string name="Odessa" tools:ignore="MissingTranslation">Одесса</string>
+    <string name="gps_message" tools:ignore="MissingTranslation">Для использовния карты включите GPS</string>
+    <string name="city" tools:ignore="MissingTranslation">Город</string>
+    <string name="change_message" tools:ignore="MissingTranslation">"Смена базы адресов. "</string>
+    <string name="server_error_connected" tools:ignore="MissingTranslation">Сервер не принял запрос, наберите операторов</string>
+    <string name="GDPR" tools:ignore="MissingTranslation">" GDPR"</string>
+    <string name="ok_GDPR" tools:ignore="MissingTranslation">Согласиться</string>
+    <string name="Dnipro_city" tools:ignore="MissingTranslation">Днепр</string>
+    <string name="city_change" tools:ignore="MissingTranslation">Выберите город</string>
+    <string name="Zaporizhzhia" tools:ignore="MissingTranslation">Запорожье</string>
+    <string name="Cherkasy" tools:ignore="MissingTranslation">Черкассы</string>
+    <string name="OdessaTest" tools:ignore="MissingTranslation">Одесса (Тест)</string>
     <string name="disc_text" tools:ignore="MissingTranslation">Изменить стоимость на</string>
     <string name="email_sent" tools:ignore="MissingTranslation">Сообщение отправлено</string>
     <string name="send_like" tools:ignore="MissingTranslation">Оценить приложение</string>
@@ -255,5 +255,50 @@
     <string name="update_count" tools:ignore="MissingTranslation">Проверить баланс</string>
     <string name="pay_count" tools:ignore="MissingTranslation">Пополнить счет</string>
     <string name="my_card_pay" tools:ignore="MissingTranslation">Пополнить счет</string>
-    <string name="my_site">Посетите наш сайт</string>
+    <string name="my_site" translatable="false">Посетите наш сайт</string>
+    <string name="title_activity_payment_fondy">PaymentFondyActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="lorem_ipsum">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
+        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
+        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
+        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
+        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
+        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
+        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
+        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
+        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
+        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
+        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
+        bibendum, vel congue leo egestas.\n\n
+        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
+        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
+        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
+        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
+        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
+        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
+        est.\n\n
+        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
+        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
+        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
+        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
+        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
+        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
+        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
+        convallis.\n\n
+        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
+        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
+        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
+        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
+        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
+        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
+        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
+    </string>
+
+
 </resources>

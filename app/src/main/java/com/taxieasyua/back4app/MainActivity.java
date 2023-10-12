@@ -343,9 +343,8 @@ public class MainActivity extends AppCompatActivity {
         }
         if (cursorDb != null && !cursorDb.isClosed())
             cursorDb.close();
-
+        database.close();
         newUser();
-
     }
 
 
@@ -908,67 +907,9 @@ public class MainActivity extends AppCompatActivity {
                 new String[] { "1" });
         database.close();
     }
-    private boolean verifyPhone() {
-        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-        boolean verify = true;
-        if (cursor.getCount() == 1) {
-
-            if (logCursor(MainActivity.TABLE_USER_INFO).get(2).equals("+380")) {
-                verify = false;
-            }
-            cursor.close();
-        }
-
-        return verify;
-    }
-
-    private void getPhoneNumber () {
-        String mPhoneNumber;
-        TelephonyManager tMgr = (TelephonyManager) this.getSystemService(TELEPHONY_SERVICE);
-
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("TAG", "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS));
-            Log.d("TAG", "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE));
-            return;
-        }
-        mPhoneNumber = tMgr.getLine1Number();
-//        mPhoneNumber = null;
-        if(mPhoneNumber != null) {
-            String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
-            boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
-            Log.d("TAG", "onClick No validate: " + val);
-            if (val == false) {
-                Toast.makeText(this, format_phone , Toast.LENGTH_SHORT).show();
-                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
-//                requireActivity().finish();
-
-            } else {
-                 insertRecordsUser(mPhoneNumber);
-            }
-        }
-
-    }
-    private void insertRecordsUser(String phoneNumber) {
-        String sql = "INSERT INTO " + MainActivity.TABLE_USER_INFO + " VALUES(?,?,?);";
-        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        SQLiteStatement statement = database.compileStatement(sql);
-        database.beginTransaction();
-        try {
-            statement.clearBindings();
-            statement.bindString(3, phoneNumber);
-
-            statement.execute();
-            database.setTransactionSuccessful();
-
-        } finally {
-            database.endTransaction();
-        }
-        database.close();
-    }
     private boolean connected() {
 
-        Boolean hasConnect = false;
+        boolean hasConnect = false;
 
         ConnectivityManager cm = (ConnectivityManager) this.getSystemService(
                 CONNECTIVITY_SERVICE);

@@ -75,10 +75,12 @@ abstract public class BaseExampleActivity extends Activity implements
         editEmail.setText(userEmail);
         editEmail.setVisibility(View.INVISIBLE);
         editDescription = findViewById(R.id.edit_description);
-        editDescription.setText("Оплата за поездку по маршруту (Сплата прослуг таксі)");
+//        editDescription.setText("Оплата за поездку по маршруту (Сплата прослуг таксі)");
+        editDescription.setText("Сплата за допоміжну діяльність у сфері транспорту");
         findViewById(R.id.btn_pay_card).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.i("Cloudipsp", "onClick: btn_pay_card ");
                 processPayCard();
             }
         });
@@ -90,7 +92,8 @@ abstract public class BaseExampleActivity extends Activity implements
         });
 
         webView = findViewById(R.id.web_view);
-        cloudipsp = new Cloudipsp(1396424, webView);
+//        cloudipsp = new Cloudipsp(1396424, webView);
+        cloudipsp = new Cloudipsp(1534178, webView);
 
         spinnerCcy.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Currency.values()));
 
@@ -135,9 +138,12 @@ abstract public class BaseExampleActivity extends Activity implements
 
     private void processPayCard() {
         final Order order = createOrder();
+        Log.i("Cloudipsp", "processPayCard11111111111: ");
         if (order != null) {
             final Card card = getCard();
+            Log.i("Cloudipsp", "card: " + card.toString());
             if (card != null) {
+                Log.i("Cloudipsp", "processPayCard22222: ");
                 cloudipsp.pay(card, order, this);
             }
         }
@@ -147,6 +153,7 @@ abstract public class BaseExampleActivity extends Activity implements
         if (Cloudipsp.supportsGooglePay(this)) {
             final Order googlePayOrder = createOrder();
             if (googlePayOrder != null) {
+                Log.i("Cloudipsp", "processGooglePay: ");
                 cloudipsp.googlePayInitialize(googlePayOrder, this, RC_GOOGLE_PAY, this);
             }
         } else {
@@ -178,9 +185,9 @@ abstract public class BaseExampleActivity extends Activity implements
             return null;
         }
         final Currency currency = (Currency) spinnerCcy.getSelectedItem();
-        Log.d("TAG", "createOrder: currency" + currency);
         final Order order = new Order(amount, currency, "vb_" + System.currentTimeMillis(), description, email);
         order.setLang(Order.Lang.ru);
+        Log.d("Cloudipsp", "createOrder: order" + order.toString());
         return order;
     }
 

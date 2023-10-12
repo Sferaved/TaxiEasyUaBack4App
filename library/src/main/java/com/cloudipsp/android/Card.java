@@ -22,6 +22,18 @@ public final class Card implements Parcelable {
     };
 
     static final int INVALID_VALUE = -1;
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "cardNumber='" + cardNumber + '\'' +
+                ", mm=" + mm +
+                ", yy=" + yy +
+                ", cvv='" + cvv + '\'' +
+                ", source=" + source +
+                '}';
+    }
+
     public static final int SOURCE_FORM = 0;
     public static final int SOURCE_NFC = 1;
 

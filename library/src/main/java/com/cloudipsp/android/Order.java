@@ -24,6 +24,34 @@ public class Order implements Parcelable {
         }
     };
 
+    @Override
+    public String toString() {
+        return "Order{" +
+                "amount=" + amount +
+                ", currency='" + currency + '\'' +
+                ", id='" + id + '\'' +
+                ", description='" + description + '\'' +
+                ", email='" + email + '\'' +
+                ", productId='" + productId + '\'' +
+                ", paymentSystems='" + paymentSystems + '\'' +
+                ", defaultPaymentSystem='" + defaultPaymentSystem + '\'' +
+                ", lifetime=" + lifetime +
+                ", merchantData='" + merchantData + '\'' +
+                ", preauth=" + preauth +
+                ", requiredRecToken=" + requiredRecToken +
+                ", verification=" + verification +
+                ", verificationType=" + verificationType +
+                ", recToken='" + recToken + '\'' +
+                ", version='" + version + '\'' +
+                ", lang=" + lang +
+                ", serverCallbackUrl='" + serverCallbackUrl + '\'' +
+                ", reservationData='" + reservationData + '\'' +
+                ", paymentSystem='" + paymentSystem + '\'' +
+                ", delayed=" + delayed +
+                ", arguments=" + arguments +
+                '}';
+    }
+
     public enum Verification {
         amount,
         code

@@ -94,17 +94,21 @@ public final class Cloudipsp {
 
     public void pay(final Card card, final Order order, PayCallback callback) {
         if (!card.isValidCard()) {
+            Log.i("Cloudipsp", "runInTry:  Card should be valid");
             throw new IllegalArgumentException("Card should be valid");
         }
+        Log.i("Cloudipsp", "runInTry44444: ");
 
         new PayTask(callback) {
             @Override
             public void runInTry() throws java.lang.Exception {
                 final String token = getToken(order, card);
                 final Checkout checkout = checkout(card, token, order.email, URL_CALLBACK);
+
                 payContinue(token, checkout, callback);
             }
         }.start();
+        Log.i("Cloudipsp", "pay 1111111111111111111" );
     }
 
     public void payToken(final Card card, final String token, PayCallback callback) {
@@ -330,6 +334,7 @@ public final class Cloudipsp {
     }
 
     private static void runInTry(RunInTry runInTry, Callback callback) {
+        Log.i("Cloudipsp", "runInTry: 9999999");
         try {
             runInTry.runInTry();
         } catch (CertPathValidatorException | SSLHandshakeException e) {
@@ -437,6 +442,7 @@ public final class Cloudipsp {
 
         final JSONObject response = call("/api/checkout/token", request);
         final String token = response.getString("token");
+        Log.i("Cloudipsp", "getToken: token" + token);
         return token;
     }
 
@@ -454,6 +460,16 @@ public final class Cloudipsp {
             this.url = url;
             this.action = action;
             this.callbackUrl = callbackUrl;
+        }
+
+        @Override
+        public String toString() {
+            return "Checkout{" +
+                    "sendData=" + sendData +
+                    ", url='" + url + '\'' +
+                    ", action=" + action +
+                    ", callbackUrl='" + callbackUrl + '\'' +
+                    '}';
         }
 
         private static class SendData {
@@ -481,6 +497,7 @@ public final class Cloudipsp {
         if (email != null) {
             request.put("email", email);
         }
+        Log.i("TAG", "checkout: request" + request.toString());
         return checkoutContinue(request, callbackUrl);
     }
 
@@ -522,6 +539,7 @@ public final class Cloudipsp {
     }
 
     private void payContinue(final String token, final Checkout checkout, final PayCallback callback) throws java.lang.Exception {
+        Log.i("Cloudipsp", "payContinue: Начало выполнения метода");
         final RunInTry orderChecker = new RunInTry() {
             @Override
             public void runInTry() throws java.lang.Exception {
@@ -535,6 +553,7 @@ public final class Cloudipsp {
         } else {
             url3ds(token, checkout, callback);
         }
+        Log.i("Cloudipsp", "payContinue: Конец выполнения метода");
     }
 
     private static Receipt order(String token) throws java.lang.Exception {
@@ -578,7 +597,7 @@ public final class Cloudipsp {
         } else {
             verificationStatusEnum = Receipt.VerificationStatus.valueOf(verificationStatus);
         }
-
+        Log.d("TAG", "parseOrder: " + orderData.toString());
         return new Receipt
                 (
                         orderData.getString("masked_card"),
@@ -634,6 +653,7 @@ public final class Cloudipsp {
     }
 
     private static void checkResponse(JSONObject response) throws java.lang.Exception {
+        Log.i("Cloudipsp", "token: " + response.getString("token") );
         if (!response.getString("response_status").equals("success")) {
             handleResponseError(response);
         }

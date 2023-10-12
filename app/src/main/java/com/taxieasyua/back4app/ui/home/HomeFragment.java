@@ -50,6 +50,9 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
@@ -61,8 +64,22 @@ import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
-import com.taxieasyua.back4app.ui.fondy.FlexibleExampleActivity;
 import com.taxieasyua.back4app.ui.fondy.SimpleExampleActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
+import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentRequest;
+import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
+import com.taxieasyua.back4app.ui.fondy.payment.ResponseBodyPay;
+import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
+import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
+import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
+import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
+import com.taxieasyua.back4app.ui.fondy.status.StatusCallback;
+import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
+import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
+import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -70,6 +87,7 @@ import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +97,15 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class HomeFragment extends Fragment {
+    private String merchantId = "1534178";
+    private static String orderStatus;
 
     private FragmentHomeBinding binding;
     public static String from, to;
@@ -235,6 +261,7 @@ public class HomeFragment extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
+
                 if(connected()) {
                     progressBar.setVisibility(View.VISIBLE);
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -261,9 +288,15 @@ public class HomeFragment extends Fragment {
                     }
                     Log.d(TAG, "onClick: bonusPayment" + bonusPayment);
                     if(bonusPayment.equals("google_payment")) {
-                        Intent intent = new Intent(requireActivity(), SimpleExampleActivity.class);
-                        intent.putExtra("cost", text_view_cost.getText().toString());
-                        startActivity(intent);
+
+                        String order_id = UniqueNumberGenerator.generateUniqueNumber(requireActivity());
+
+                        Log.d("TAG1", "onClick: order_id" + order_id);
+                        String orderDescription = "Сплата за допоміжну діяльність у сфері транспорту";
+                        String amount = "100";
+
+                        getUrlToPayment(order_id, orderDescription, amount);
+
                     } else {
                         order();
                     }
@@ -278,6 +311,7 @@ public class HomeFragment extends Fragment {
         gpsbut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
@@ -366,6 +400,165 @@ public class HomeFragment extends Fragment {
 
         return root;
     }
+    private void getStatus(String orderId) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        FondyApiService apiService = retrofit.create(FondyApiService.class);
+        String merchantPassword = requireActivity().getString(R.string.fondy_key_storage);
+
+        StatusRequestBody requestBody = new StatusRequestBody(
+                orderId,
+                merchantId,
+                merchantPassword
+        );
+        StatusRequest statusRequest = new StatusRequest(requestBody);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponse<SuccessfulResponseData>> call = apiService.checkOrderStatus(statusRequest);
+
+        call.enqueue(new Callback<ApiResponse<SuccessfulResponseData>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
+
+                if (response.isSuccessful()) {
+                    ApiResponse<SuccessfulResponseData> apiResponse = response.body();
+                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        SuccessfulResponseData responseData = apiResponse.getResponse();
+                        Log.d(TAG, "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+                            Log.d("TAG", "getMerchantId: " + responseData.getMerchantId());
+                            Log.d("TAG", "getOrderStatus: " + responseData.getOrderStatus());
+                            Log.d("TAG", "getResponse_description: " + responseData.getResponseDescription());
+                            String orderStatus = responseData.getOrderStatus();
+                            statusCallback.onStatusReceived(orderStatus);
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
+    private StatusCallback statusCallback = new StatusCallback() {
+        @Override
+        public void onStatusReceived(String orderStatus) {
+            Log.d("TAG1", "onClick: orderStatus " + orderStatus);
+            if(orderStatus.equals("approved")){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    order();
+                }
+            };
+        }
+
+        @Override
+        public void onError(String errorMessage) {
+            // Обработка ошибки
+        }
+    };
+
+
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = requireActivity().getString(R.string.fondy_key_storage);
+
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                merchantId,
+                merchantPassword
+        );
+
+
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyPay для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                startActivity(paymentIntent);
+                                getStatus(order_id);
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+//                                String errorResponseMessage = responseBody.getError_message();
+//                                String errorResponseCode = responseBody.getError_code();
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e(TAG, "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d(TAG, "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d(TAG, "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+
+
+
+
+
+
+
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -997,7 +1190,7 @@ public class HomeFragment extends Fragment {
             }
             cursor.close();
         }
-
+        database.close();
         return verify;
     }
     private void updateRecordsUser(String result, Context context) {
@@ -1010,7 +1203,7 @@ public class HomeFragment extends Fragment {
         int updCount = database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
         Log.d("TAG", "updated rows count = " + updCount);
-
+        database.close();
 
     }
 
@@ -1252,7 +1445,7 @@ public class HomeFragment extends Fragment {
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
 
-
+        database.close();
 
         return url;
     }
@@ -1276,7 +1469,7 @@ public class HomeFragment extends Fragment {
                 } while (c.moveToNext());
             }
         }
-
+        database.close();
         return list;
     }
     private void getPhoneNumber () {
@@ -1349,7 +1542,7 @@ public class HomeFragment extends Fragment {
             }
 
         }
-
+        database.close();
         cursor_from.close();
         cursor_to.close();
 
@@ -1363,4 +1556,8 @@ public class HomeFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
+
+
+
+
 }
