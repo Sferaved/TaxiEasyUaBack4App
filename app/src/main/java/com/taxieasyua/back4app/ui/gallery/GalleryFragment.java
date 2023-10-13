@@ -270,9 +270,11 @@ public class GalleryFragment extends Fragment {
                                 String messageResult = getString(R.string.thanks_message) +
                                        FromAddressString + getString(R.string.to_message) + ToAddressString +
                                        getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
-
+                                String messageFondy = getString(R.string.fondy_message) +
+                                        FromAddressString + getString(R.string.to_message) + ToAddressString + ".";
                                 Intent intent = new Intent(requireActivity(), FinishActivity.class);
                                 intent.putExtra("messageResult_key", messageResult);
+                                intent.putExtra("messageFondy_key", messageFondy);
                                 intent.putExtra("messageCost_key", orderWeb);
                                 intent.putExtra("sendUrlMap", new HashMap<>(sendUrl));
                                 intent.putExtra("UID_key", Objects.requireNonNull(sendUrl.get("dispatching_order_uid")));

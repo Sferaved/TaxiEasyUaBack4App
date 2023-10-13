@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="fondy_message">"Оплата услуг такси по машруту "</string>
-    <string name="fondy_revers_message">"Повернення платежу: "</string>
-    <string name="fondy_pay">Оплатить</string>
-</resources>

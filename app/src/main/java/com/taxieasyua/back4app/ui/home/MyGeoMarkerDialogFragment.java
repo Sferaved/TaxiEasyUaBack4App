@@ -515,10 +515,13 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                                 OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
                                 to_name + "." +
                                 getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
-
+                        String messageFondy = getString(R.string.fondy_message) + " " +
+                                OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                                to_name + ".";
 
                         Intent intent = new Intent(requireActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
+                        intent.putExtra("messageFondy_key", messageFondy);
                         intent.putExtra("messageCost_key", orderWeb);
                         intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
                         intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
