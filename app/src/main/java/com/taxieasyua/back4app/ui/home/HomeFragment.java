@@ -74,6 +74,13 @@ import com.taxieasyua.back4app.ui.fondy.payment.ResponseBodyPay;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
 import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
 import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
+import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
+import com.taxieasyua.back4app.ui.fondy.revers.ResponseBodyRev;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequest;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
+import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
 import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
 import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
 import com.taxieasyua.back4app.ui.fondy.status.StatusCallback;
@@ -104,7 +111,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeFragment extends Fragment {
-    private String merchantId = "1534178";
+
     private static String orderStatus;
 
     private FragmentHomeBinding binding;
@@ -286,20 +293,7 @@ public class HomeFragment extends Fragment {
 
                             break;
                     }
-                    Log.d(TAG, "onClick: bonusPayment" + bonusPayment);
-                    if(bonusPayment.equals("google_payment")) {
-
-                        String order_id = UniqueNumberGenerator.generateUniqueNumber(requireActivity());
-
-                        Log.d("TAG1", "onClick: order_id" + order_id);
-                        String orderDescription = "Сплата за допоміжну діяльність у сфері транспорту";
-                        String amount = "100";
-
-                        getUrlToPayment(order_id, orderDescription, amount);
-
-                    } else {
-                        order();
-                    }
+                    order();
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -412,7 +406,7 @@ public class HomeFragment extends Fragment {
 
         StatusRequestBody requestBody = new StatusRequestBody(
                 orderId,
-                merchantId,
+                MainActivity.MERCHANT_ID,
                 merchantPassword
         );
         StatusRequest statusRequest = new StatusRequest(requestBody);
@@ -475,90 +469,6 @@ public class HomeFragment extends Fragment {
             // Обработка ошибки
         }
     };
-
-
-    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = requireActivity().getString(R.string.fondy_key_storage);
-
-        RequestData paymentRequest = new RequestData(
-                order_id,
-                orderDescription,
-                amount,
-                merchantId,
-                merchantPassword
-        );
-
-
-        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataPay responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyPay для обработки
-                        if (responseBody != null) {
-                            String responseStatus = responseBody.getResponseStatus();
-                            String checkoutUrl = responseBody.getCheckoutUrl();
-                            if ("success".equals(responseStatus)) {
-                                // Обработка успешного ответа
-                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-                                startActivity(paymentIntent);
-                                getStatus(order_id);
-                            } else if ("failure".equals(responseStatus)) {
-                                // Обработка ответа об ошибке
-//                                String errorResponseMessage = responseBody.getError_message();
-//                                String errorResponseCode = responseBody.getError_code();
-                                // Отобразить сообщение об ошибке пользователю
-                            } else {
-                                // Обработка других возможных статусов ответа
-                            }
-                        } else {
-                            // Обработка пустого тела ответа
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e(TAG, "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d(TAG, "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
-                Log.d(TAG, "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
-
-
-
-
-
-
-
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -1091,22 +1001,28 @@ public class HomeFragment extends Fragment {
 
                     String orderWeb = sendUrlMap.get("order_cost");
                     String message = sendUrlMap.get("message");
+                    String messageFondy;
 
                     if (!orderWeb.equals("0")) {
 
-                        String from_name = (String) sendUrlMap.get("routefrom");
-                        String to_name = (String) sendUrlMap.get("routeto");
+                        String from_name = sendUrlMap.get("routefrom");
+                        String to_name = sendUrlMap.get("routeto");
                         if (from_name.equals(to_name)) {
                             messageResult = getString(R.string.thanks_message) +
-                                    from_name + " " + from_number.getText() + " " +  getString(R.string.on_city) +
+                                    from_name + " " + from_number.getText() + getString(R.string.on_city) +
                                     getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
 
+                            messageFondy = getString(R.string.fondy_message) + " " +
+                                    from_name + " " + from_number.getText() + getString(R.string.on_city);
 
                         } else {
                             messageResult =  getString(R.string.thanks_message) +
                                     from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
                                     to_name + " " + to_number.getText() + "." +
                                     getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                            messageFondy = getString(R.string.fondy_message) +
+                                    from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
+                                    to_name + " " + to_number.getText() + ".";
                         }
                         Log.d(TAG, "order: sendUrlMap.get(\"from_lat\")" + sendUrlMap.get("from_lat"));
                         Log.d(TAG, "order: sendUrlMap.get(\"lat\")" + sendUrlMap.get("lat"));
@@ -1115,16 +1031,16 @@ public class HomeFragment extends Fragment {
                                 insertRecordsOrders(
                                         from_name, from_name,
                                         from_number.getText().toString(), from_number.getText().toString(),
-                                        (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                        (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
+                                        sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                        sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
                                         requireContext()
                                 );
                             } else {
                                 insertRecordsOrders(
                                         from_name, to_name,
                                         from_number.getText().toString(), to_number.getText().toString(),
-                                        (String) sendUrlMap.get("from_lat"), (String) sendUrlMap.get("from_lng"),
-                                        (String) sendUrlMap.get("lat"), (String) sendUrlMap.get("lng"),
+                                        sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                        sendUrlMap.get("lat"), sendUrlMap.get("lng"),
                                         requireContext()
                                 );
 
@@ -1133,6 +1049,7 @@ public class HomeFragment extends Fragment {
 
                         Intent intent = new Intent(requireActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
+                        intent.putExtra("messageFondy_key", messageFondy);
                         intent.putExtra("messageCost_key", orderWeb);
                         intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
                         intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
@@ -1154,14 +1071,7 @@ public class HomeFragment extends Fragment {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
-
-
-
-
-
-
     }
-
 
     private boolean verifyOrder(Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

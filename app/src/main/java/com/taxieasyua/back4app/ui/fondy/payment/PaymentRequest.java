@@ -12,7 +12,7 @@ public class PaymentRequest {
 
     @Override
     public String toString() {
-        return "PaymentRequest{" +
+        return "ReversRequest{" +
                 "request=" + request +
                 '}';
     }

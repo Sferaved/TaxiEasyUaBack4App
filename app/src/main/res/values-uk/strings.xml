@@ -253,5 +253,9 @@
     <string name="pay_count">Поповнити рахунок</string>
     <string name="my_card_pay">Поповнити рахунок</string>
     <string name="my_site">Відвідайте наш сайт</string>
+    <string name="fondy_message">Сплата за послугі таксі за машрутом </string>
+    <string name="fondy_revers_message">"Повернення платежу: "</string>
+    <string name="fondy_pay">Сплатити картою</string>
+    <string name="cost_of_road_fondy">Вартість поїздки: </string>
 
 </resources>

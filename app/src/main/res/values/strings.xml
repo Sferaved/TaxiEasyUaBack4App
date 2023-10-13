@@ -256,14 +256,14 @@
     <string name="pay_count" tools:ignore="MissingTranslation">Пополнить счет</string>
     <string name="my_card_pay" tools:ignore="MissingTranslation">Пополнить счет</string>
     <string name="my_site" translatable="false">Посетите наш сайт</string>
-    <string name="title_activity_payment_fondy">PaymentFondyActivity</string>
+    <string name="title_activity_payment_fondy" tools:ignore="MissingTranslation">PaymentFondyActivity</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="first_fragment_label" tools:ignore="MissingTranslation">First Fragment</string>
+    <string name="second_fragment_label" tools:ignore="MissingTranslation">Second Fragment</string>
+    <string name="next" tools:ignore="MissingTranslation">Next</string>
+    <string name="previous" tools:ignore="MissingTranslation">Previous</string>
 
-    <string name="lorem_ipsum">
+    <string name="lorem_ipsum" tools:ignore="MissingTranslation">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
         dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
@@ -299,6 +299,9 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-
+    <string name="fondy_message" tools:ignore="MissingTranslation">"Оплата услуг такси по машруту "</string>
+    <string name="fondy_revers_message" tools:ignore="MissingTranslation">"Возврат платежа: "</string>
+    <string name="fondy_pay" tools:ignore="MissingTranslation">Оплатить картой</string>
+    <string name="cost_of_road_fondy" tools:ignore="MissingTranslation">Стоимость поездки: </string>
 
 </resources>

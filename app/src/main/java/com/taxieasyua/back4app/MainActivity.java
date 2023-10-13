@@ -92,6 +92,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String MERCHANT_ID ="1534178";
+
     @Override
     protected void onRestart() {
         super.onRestart();

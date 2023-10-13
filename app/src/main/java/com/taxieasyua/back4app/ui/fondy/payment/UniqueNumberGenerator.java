@@ -13,15 +13,29 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 public class UniqueNumberGenerator {
     public static String generateUniqueNumber(Context context) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // Паттерн для метки времени
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // Паттерн для метки времени
         String timestamp = sdf.format(new Date()); // Получаем метку времени
-        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
-
-        return "V_" + timestamp;
+        // Генерируем случайное значение из 4 знаков
+        String randomValue = generateRandomValue(4);
+        return "V_" + timestamp + "_" + randomValue;
     }
+    private static String generateRandomValue(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder randomValue = new StringBuilder();
+
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            char randomChar = characters.charAt(random.nextInt(characters.length()));
+            randomValue.append(randomChar);
+        }
+
+        return randomValue.toString();
+    }
+
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();

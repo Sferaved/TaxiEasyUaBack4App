@@ -27,8 +27,8 @@ public class RequestData {
         this.order_desc = orderDescription; // Используйте поле order_desc, а не orderDescription
         this.currency = "UAH"; // Установите значение валюты
         this.amount = amount;
-        this.signature = generateSignature(merchantPassword, createParameterMap());
         this.merchant_id = merchantId; // Используйте поле merchant_id, а не merchantId
+        this.signature = generateSignature(merchantPassword, createParameterMap());
     }
 
     private Map<String, String> createParameterMap() {
@@ -37,7 +37,7 @@ public class RequestData {
         params.put("order_desc", order_desc);
         params.put("currency", currency);
         params.put("amount", amount);
-        params.put("merchant_id", "1534178");
+        params.put("merchant_id", merchant_id);
         // Добавьте другие параметры, если необходимо
 
         return params;
@@ -49,7 +49,7 @@ public class RequestData {
 
     @Override
     public String toString() {
-        return "RequestData{" +
+        return "ReversRequestData{" +
                 "order_id='" + order_id + '\'' +
                 ", order_desc='" + order_desc + '\'' +
                 ", currency='" + currency + '\'' +

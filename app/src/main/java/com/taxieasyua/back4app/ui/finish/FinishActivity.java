@@ -17,16 +17,33 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
+import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
+import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
+import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
+import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
+import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
+import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetFondyPayFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,12 +60,19 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FinishActivity extends AppCompatActivity {
-    private TextView text_status;
+    public static TextView text_status;
+
     String api;
     String baseUrl = "https://m.easy-order-taxi.site";
     Map<String, String> receivedMap;
     String UID_key;
     Thread thread;
+    String pay_method;
+    String order_id;
+    String amount;
+    TextView text_full_message;
+    String messageResult, messageFondy;
+    Button btn_pay;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,19 +103,36 @@ public class FinishActivity extends AppCompatActivity {
                 api = MainActivity.apiKyiv;
                 break;
         }
-        String parameterValue = getIntent().getStringExtra("messageResult_key");
+        messageResult = getIntent().getStringExtra("messageResult_key");
+        messageFondy = getIntent().getStringExtra("messageFondy_key");
 
         receivedMap = (HashMap<String, String>) getIntent().getSerializableExtra("sendUrlMap");
+        amount = receivedMap.get("order_cost") + "00";
+
+
 
         Log.d("TAG", "onCreate: receivedMap" + receivedMap.toString());
-        TextView text_full_message = findViewById(R.id.text_full_message);
-        text_full_message.setText(parameterValue);
+        text_full_message = findViewById(R.id.text_full_message);
+        text_full_message.setText(messageResult);
 
         UID_key = getIntent().getStringExtra("UID_key");
 
         text_status = findViewById(R.id.text_status);
         statusOrderWithDifferentValue(UID_key);
 
+        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+        btn_pay = findViewById(R.id.btn_pay);
+        if (pay_method.equals("google_payment")) {
+           btn_pay.setVisibility(View.VISIBLE);
+        }
+        btn_pay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                order_id = UniqueNumberGenerator.generateUniqueNumber(getApplication());
+                getUrlToPayment(order_id, messageFondy, amount);
+                btn_pay.setVisibility(View.GONE);
+            }
+        });
 
         Button btn_reset_status = findViewById(R.id.btn_reset_status);
         btn_reset_status.setOnClickListener(new View.OnClickListener() {
@@ -111,14 +152,9 @@ public class FinishActivity extends AppCompatActivity {
 
         Handler handler = new Handler();
 
-        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO);
-        String bonusPayment =  stringList.get(4);
-
-         if (bonusPayment.equals("bonus_payment")) {
+        if (pay_method.equals("bonus_payment")) {
              String baseUrl = "https://m.easy-order-taxi.site";
              String url = baseUrl + "/bonusBalance/recordsBloke/" + UID_key;
-             Log.d("TAG", "onCreate: doubleOrder):  " +receivedMap.get("doubleOrder") );
-
 
              fetchBonus(url);
              handler.postDelayed(new Runnable() {
@@ -128,11 +164,20 @@ public class FinishActivity extends AppCompatActivity {
                  }
              }, delayMillis);
          }
+        if (pay_method.equals("google_payment")) {
+
+             handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    btn_cancel_order.setVisibility(View.INVISIBLE);
+                }
+            }, delayMillis);
+        }
         btn_cancel_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(connected()){
-                    cancelOrderWithDifferentValue(UID_key);
+                    cancelOrder(UID_key);
                     if(!receivedMap.get("dispatching_order_uid_Double").equals(" ")) {
                         cancelOrderWithDifferentValue(receivedMap.get("dispatching_order_uid_Double"));
                     }
@@ -187,9 +232,8 @@ public class FinishActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO);
-        String bonusPayment =  stringList.get(4);
-        if (bonusPayment.equals("bonus_payment")) {
+
+        if (pay_method.equals("bonus_payment") || pay_method.equals("google_payment")) {
            thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -261,6 +305,7 @@ public class FinishActivity extends AppCompatActivity {
 
     }
 
+
     private boolean verifyOrder() {
         SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -319,7 +364,7 @@ public class FinishActivity extends AppCompatActivity {
         database.close();
         return list;
     }
-    private void cancelOrderWithDifferentValue(String value) {
+    private void cancelOrder(String value) {
 
         String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
@@ -331,10 +376,19 @@ public class FinishActivity extends AppCompatActivity {
                     Status status = response.body();
                     if (status != null) {
                         String result =  String.valueOf(status.getResponse());
-                        text_status.setText(result); // Установите текстовое значение в text_status
+                        text_status.setText(result);
 
-                        /////////
-//                        fondyReverse();
+                        if (pay_method.equals("google_payment")) {
+                            String orderId = order_id;
+                            String comment = getString(R.string.fondy_revers_message) + messageFondy;
+
+                            Log.d("TAG1", "onResponse: orderId" + orderId);
+                            Log.d("TAG1", "onResponse: comment " + comment);
+                            Log.d("TAG1", "onResponse: amount " + amount);
+
+                            getRevers(orderId, comment, amount);
+                        }
+
                     } else {
                         text_status.setText(R.string.verify_internet);
                     }
@@ -354,7 +408,173 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
+    private void cancelOrderWithDifferentValue(String value) {
 
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
+        Call<Status> call = ApiClient.getApiService().cancelOrder(url);
+        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        call.enqueue(new Callback<Status>() {
+            @Override
+            public void onResponse(Call<Status> call, Response<Status> response) {
+                if (response.isSuccessful()) {
+                    Status status = response.body();
+                    if (status != null) {
+                        String result =  String.valueOf(status.getResponse());
+                        text_status.setText(result);
+                    } else {
+                        text_status.setText(R.string.verify_internet);
+                    }
+                } else {
+                    // Обработка неуспешного ответа
+                    text_status.setText(R.string.verify_internet);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Status> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                Log.d("TAG", "onFailure: " + errorMessage);
+                text_status.setText(R.string.verify_internet);
+            }
+        });
+    }
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+
+
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+                                Intent paymentIntent = new Intent(FinishActivity.this, FondyPaymentActivity.class);
+                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                startActivity(paymentIntent);
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+    private void getRevers(String orderId, String comment, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ReversApi apiService = retrofit.create(ReversApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        ReversRequestData reversRequestData = new ReversRequestData(
+                orderId,
+                comment,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+        Log.d("TAG1", "getRevers: " + reversRequestData.toString());
+        ReversRequestSent reversRequestSent = new ReversRequestSent(reversRequestData);
+
+
+        Call<ApiResponseRev<SuccessResponseDataRevers>> call = apiService.makeRevers(reversRequestSent);
+
+        call.enqueue(new Callback<ApiResponseRev<SuccessResponseDataRevers>>() {
+            @Override
+            public void onResponse(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Response<ApiResponseRev<SuccessResponseDataRevers>> response) {
+
+                if (response.isSuccessful()) {
+                    ApiResponseRev<SuccessResponseDataRevers> apiResponse = response.body();
+                    Log.d("TAG1", "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        SuccessResponseDataRevers responseData = apiResponse.getResponse();
+                        Log.d("TAG1", "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+                            Log.d("TAG1", "onResponse: " + responseData.toString());
+
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
     private void statusOrderWithDifferentValue(String value) {
         String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value;
 

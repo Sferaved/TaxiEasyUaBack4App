@@ -19,7 +19,7 @@ public class ResponseBodyPay {
 
     @Override
     public String toString() {
-        return "ResponseBodyPay{" +
+        return "ResponseBodyRev{" +
                 "successResponse=" + successResponse +
                 ", errorResponse=" + errorResponse +
                 '}';
