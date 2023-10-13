@@ -160,7 +160,7 @@ public class FinishActivity extends AppCompatActivity {
              handler.postDelayed(new Runnable() {
                  @Override
                  public void run() {
-                     btn_cancel_order.setVisibility(View.INVISIBLE);
+                     btn_cancel_order.setVisibility(View.GONE);
                  }
              }, delayMillis);
          }
@@ -169,7 +169,7 @@ public class FinishActivity extends AppCompatActivity {
              handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    btn_cancel_order.setVisibility(View.INVISIBLE);
+                    btn_cancel_order.setVisibility(View.GONE);
                 }
             }, delayMillis);
         }
