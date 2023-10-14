@@ -21,12 +21,15 @@ public class RequestData {
     private String signature; // Это поле не нужно аннотировать, так как имя совпадает
     @SerializedName("merchant_id")
     private String merchant_id; // Имя поля должно соответствовать JSON-запросу
+    @SerializedName("preauth")
+    private String preauth; // Имя поля должно соответствовать JSON-запросу
 
     public RequestData(String orderId, String orderDescription, String amount, String merchantId, String merchantPassword) {
         this.order_id = orderId; // Используйте поле order_id, а не orderId
         this.order_desc = orderDescription; // Используйте поле order_desc, а не orderDescription
         this.currency = "UAH"; // Установите значение валюты
         this.amount = amount;
+        this.preauth = "Y";
         this.merchant_id = merchantId; // Используйте поле merchant_id, а не merchantId
         this.signature = generateSignature(merchantPassword, createParameterMap());
     }
@@ -37,6 +40,7 @@ public class RequestData {
         params.put("order_desc", order_desc);
         params.put("currency", currency);
         params.put("amount", amount);
+        params.put("preauth", preauth);
         params.put("merchant_id", merchant_id);
         // Добавьте другие параметры, если необходимо
 
@@ -55,6 +59,7 @@ public class RequestData {
                 ", currency='" + currency + '\'' +
                 ", amount='" + amount + '\'' +
                 ", signature='" + signature + '\'' +
+                ", preauth='" + preauth + '\'' +
                 ", merchant_id='" + merchant_id + '\'' +
                 '}';
     }
