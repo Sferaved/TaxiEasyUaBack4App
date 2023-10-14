@@ -31,5 +31,11 @@ public interface ApiService {
     Call<Void> startNewProcessExecutionStatus(
             @Path("doubleOrder") String doubleOrder
     );
+    @GET("/fondy/orderIdMemory/{fondy_order_id}/{uid}")
+    Call<Void> orderIdMemory(
+            @Path("fondy_order_id") String fondy_order_id,
+            @Path("uid") String uid
+    );
+
 }
 

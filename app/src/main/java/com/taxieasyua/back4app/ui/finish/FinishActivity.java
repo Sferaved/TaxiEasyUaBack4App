@@ -1,5 +1,7 @@
 package com.taxieasyua.back4app.ui.finish;
 
+import static com.taxieasyua.back4app.ui.finish.ApiClient.BASE_URL;
+
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -129,6 +131,7 @@ public class FinishActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 order_id = UniqueNumberGenerator.generateUniqueNumber(getApplication());
+                callOrderIdMemory(order_id, UID_key);
                 getUrlToPayment(order_id, messageFondy, amount);
                 btn_pay.setVisibility(View.GONE);
             }
@@ -153,7 +156,7 @@ public class FinishActivity extends AppCompatActivity {
         Handler handler = new Handler();
 
         if (pay_method.equals("bonus_payment")) {
-             String baseUrl = "https://m.easy-order-taxi.site";
+
              String url = baseUrl + "/bonusBalance/recordsBloke/" + UID_key;
 
              fetchBonus(url);
@@ -305,7 +308,31 @@ public class FinishActivity extends AppCompatActivity {
 
     }
 
+    public void callOrderIdMemory(String fondyOrderId, String uid) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
+        ApiService apiService = retrofit.create(ApiService.class);
+        Call<Void> call = apiService.orderIdMemory(fondyOrderId, uid);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                } else {
+                    // Обработка неуспешного ответа
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                // Обработка ошибки
+            }
+        });
+    }
     private boolean verifyOrder() {
         SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
