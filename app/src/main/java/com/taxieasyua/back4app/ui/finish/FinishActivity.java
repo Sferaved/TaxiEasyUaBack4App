@@ -70,17 +70,18 @@ public class FinishActivity extends AppCompatActivity {
     String UID_key;
     Thread thread;
     String pay_method;
-    String order_id;
+
     String amount;
     TextView text_full_message;
-    String messageResult, messageFondy;
-    Button btn_pay;
+    String messageResult;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finish);
         new VerifyUserTask().execute();
+        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
         List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
@@ -106,7 +107,6 @@ public class FinishActivity extends AppCompatActivity {
                 break;
         }
         messageResult = getIntent().getStringExtra("messageResult_key");
-        messageFondy = getIntent().getStringExtra("messageFondy_key");
 
         receivedMap = (HashMap<String, String>) getIntent().getSerializableExtra("sendUrlMap");
         amount = receivedMap.get("order_cost") + "00";
@@ -122,20 +122,6 @@ public class FinishActivity extends AppCompatActivity {
         text_status = findViewById(R.id.text_status);
         statusOrderWithDifferentValue(UID_key);
 
-        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
-        btn_pay = findViewById(R.id.btn_pay);
-        if (pay_method.equals("google_payment")) {
-           btn_pay.setVisibility(View.VISIBLE);
-        }
-        btn_pay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                order_id = UniqueNumberGenerator.generateUniqueNumber(getApplication());
-                callOrderIdMemory(order_id, UID_key);
-                getUrlToPayment(order_id, messageFondy, amount);
-                btn_pay.setVisibility(View.GONE);
-            }
-        });
 
         Button btn_reset_status = findViewById(R.id.btn_reset_status);
         btn_reset_status.setOnClickListener(new View.OnClickListener() {
@@ -168,21 +154,24 @@ public class FinishActivity extends AppCompatActivity {
              }, delayMillis);
          }
         if (pay_method.equals("google_payment")) {
-
-             handler.postDelayed(new Runnable() {
+            callOrderIdMemory(MainActivity.order_id, UID_key);
+            handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    MainActivity.order_id = null;
                     btn_cancel_order.setVisibility(View.GONE);
                 }
             }, delayMillis);
         }
+
+
         btn_cancel_order.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(connected()){
                     cancelOrder(UID_key);
                     if(!receivedMap.get("dispatching_order_uid_Double").equals(" ")) {
-                        cancelOrderWithDifferentValue(receivedMap.get("dispatching_order_uid_Double"));
+                        cancelOrder(receivedMap.get("dispatching_order_uid_Double"));
                     }
                     if (thread != null && thread.isAlive()) {
                         thread.interrupt();
@@ -197,6 +186,7 @@ public class FinishActivity extends AppCompatActivity {
         btn_again.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                MainActivity.order_id = null;
                 if(!verifyOrder()) {
                     MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -215,6 +205,7 @@ public class FinishActivity extends AppCompatActivity {
         btn_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                MainActivity.order_id = null;
                 finishAffinity();
             }
         });
@@ -392,10 +383,10 @@ public class FinishActivity extends AppCompatActivity {
         return list;
     }
     private void cancelOrder(String value) {
-
         String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {
@@ -403,25 +394,19 @@ public class FinishActivity extends AppCompatActivity {
                     Status status = response.body();
                     if (status != null) {
                         String result =  String.valueOf(status.getResponse());
+                        Log.d("TAG", "onResponse: result" + result);
                         text_status.setText(result);
 
                         if (pay_method.equals("google_payment")) {
-                            String orderId = order_id;
-                            String comment = getString(R.string.fondy_revers_message) + messageFondy;
-
-                            Log.d("TAG1", "onResponse: orderId" + orderId);
-                            Log.d("TAG1", "onResponse: comment " + comment);
-                            Log.d("TAG1", "onResponse: amount " + amount);
-
-                            getRevers(orderId, comment, amount);
+                            String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+                            getRevers(MainActivity.order_id, comment, amount);
                         }
-
-                    } else {
-                        text_status.setText(R.string.verify_internet);
                     }
                 } else {
                     // Обработка неуспешного ответа
-                    text_status.setText(R.string.verify_internet);
+                    if (pay_method.equals("nal_payment")) {
+                        text_status.setText(R.string.verify_internet);
+                    }
                 }
             }
 
@@ -433,114 +418,6 @@ public class FinishActivity extends AppCompatActivity {
                 Log.d("TAG", "onFailure: " + errorMessage);
                 text_status.setText(R.string.verify_internet);
             }
-        });
-    }
-    private void cancelOrderWithDifferentValue(String value) {
-
-        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
-        Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
-        call.enqueue(new Callback<Status>() {
-            @Override
-            public void onResponse(Call<Status> call, Response<Status> response) {
-                if (response.isSuccessful()) {
-                    Status status = response.body();
-                    if (status != null) {
-                        String result =  String.valueOf(status.getResponse());
-                        text_status.setText(result);
-                    } else {
-                        text_status.setText(R.string.verify_internet);
-                    }
-                } else {
-                    // Обработка неуспешного ответа
-                    text_status.setText(R.string.verify_internet);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Status> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
-                text_status.setText(R.string.verify_internet);
-            }
-        });
-    }
-    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-
-        RequestData paymentRequest = new RequestData(
-                order_id,
-                orderDescription,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword
-        );
-
-
-        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataPay responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (responseBody != null) {
-                            String responseStatus = responseBody.getResponseStatus();
-                            String checkoutUrl = responseBody.getCheckoutUrl();
-                            if ("success".equals(responseStatus)) {
-                                // Обработка успешного ответа
-                                Intent paymentIntent = new Intent(FinishActivity.this, FondyPaymentActivity.class);
-                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-                                startActivity(paymentIntent);
-                            } else if ("failure".equals(responseStatus)) {
-                                // Обработка ответа об ошибке
-                                String errorResponseMessage = responseBody.getErrorMessage();
-                                String errorResponseCode = responseBody.getErrorCode();
-                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
-                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
-                                // Отобразить сообщение об ошибке пользователю
-                            } else {
-                                // Обработка других возможных статусов ответа
-                            }
-                        } else {
-                            // Обработка пустого тела ответа
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
         });
     }
     private void getRevers(String orderId, String comment, String amount) {

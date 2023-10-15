@@ -401,8 +401,9 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
         Map<String, String> sendUrl = CostJSONParser.sendURL(url);
 
-        String mes = (String) sendUrl.get("message");
-        String orderC = (String) sendUrl.get("order_cost");
+        String mes = sendUrl.get("message");
+        String orderC = sendUrl.get("order_cost");
+
         Log.d("TAG", "onPausedawdddddddwdadwdawdaw orderC : " + orderC );
         if (orderC.equals("0")) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
@@ -410,18 +411,18 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         }
         if (!orderC.equals("0")) {
 
-            Long  firstCost = Long.parseLong(orderC);
+            long firstCost = Long.parseLong(orderC);
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
             long discount;
 
             discount = firstCost * discountInt / 100;
-            newCost = Long.toString(firstCost + discount);
 
-            HomeFragment.cost = firstCost + discount;
-            HomeFragment.addCost = discount;
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
 
+            String addCost = stringListInfo.get(5);
+            newCost = String.valueOf(firstCost + discount + Long.parseLong(addCost));
         }
         return newCost;
     }

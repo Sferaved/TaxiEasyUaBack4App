@@ -93,6 +93,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MERCHANT_ID ="1534178";
+    public static String order_id;
 
     @Override
     protected void onRestart() {
@@ -100,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_09102023_0";
+    public static final String DB_NAME = "data_15102023_1";
 
     /**
      * Table section
@@ -222,7 +223,8 @@ public class MainActivity extends AppCompatActivity {
                 " type_auto text," +
                 " tarif text," +
                 " discount text," +
-                " bonusPayment text);");
+                " bonusPayment text," +
+                " addCost text);");
 
         cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -231,6 +233,7 @@ public class MainActivity extends AppCompatActivity {
             settings.add(" ");
             settings.add("0");
             settings.add("nal_payment");
+            settings.add("0");
             insertFirstSettings(settings);
             if (cursorDb != null && !cursorDb.isClosed())
                 cursorDb.close();
@@ -387,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void insertFirstSettings(List<String> settings) {
-        String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -397,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(3, settings.get(1));
             statement.bindString(4, settings.get(2));
             statement.bindString(5, settings.get(3));
+            statement.bindString(6, settings.get(4));
             statement.execute();
             database.setTransactionSuccessful();
 

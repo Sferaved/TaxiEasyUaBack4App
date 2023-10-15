@@ -29,10 +29,24 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
+import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
+import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
+import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
+import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
+import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
+import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
+import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
+import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
+import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
@@ -42,6 +56,7 @@ import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,15 +64,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class GalleryFragment extends Fragment {
 
+    private static final String TAG = "TAG";
     private FragmentGalleryBinding binding;
     private ListView listView;
     private String[] array;
     public static TextView textView, text_view_cost;
     String from_mes, to_mes;
-    AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd, buttonBonus;
-    Integer selectedItem;
+    public static AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd, buttonBonus;
+    int selectedItem;
     String FromAddressString, ToAddressString;
     private long firstCost;
     public static long  addCost, cost;
@@ -65,7 +87,12 @@ public class GalleryFragment extends Fragment {
     public static Double from_lng;
     public static Double to_lat;
     public static Double to_lng;
-    long MIN_COST_VALUE, MAX_COST_VALUE;
+    long MIN_COST_VALUE;
+    private String pay_method;
+    private long costFirstForMin;
+    private ArrayAdapter<String> listAdapter;
+    private String messageFondy;
+
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -85,9 +112,6 @@ public class GalleryFragment extends Fragment {
         };
     }
 
-
-    String bonus;
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         GalleryViewModel galleryViewModel =
@@ -97,7 +121,8 @@ public class GalleryFragment extends Fragment {
         View root = binding.getRoot();
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+        addCost = 0;
+        updateAddCost(String.valueOf(addCost));
 
 
 
@@ -117,11 +142,8 @@ public class GalleryFragment extends Fragment {
         text_view_cost = binding.textViewCost;
         btn_minus = binding.btnMinus;
         btn_plus = binding.btnPlus;
-        if(!text_view_cost.getText().toString().isEmpty()) {
-            cost = Long.parseLong(text_view_cost.getText().toString());
-            MIN_COST_VALUE = (long) (cost * 0.1);
-            MAX_COST_VALUE = cost * 3;
-        }
+
+
 
         btn_minus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,8 +153,9 @@ public class GalleryFragment extends Fragment {
                 addCost -= 5;
                 if (cost <= MIN_COST_VALUE) {
                     cost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - cost;
+                    addCost = MIN_COST_VALUE - costFirstForMin;
                 }
+                updateAddCost(String.valueOf(addCost));
                 text_view_cost.setText(String.valueOf(cost));
             }
         });
@@ -143,12 +166,8 @@ public class GalleryFragment extends Fragment {
                 cost = Long.parseLong(text_view_cost.getText().toString());
                 cost += 5;
                 addCost += 5;
-                if (cost <= MIN_COST_VALUE) {
-                    cost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - cost;
-                }
+                updateAddCost(String.valueOf(addCost));
                 text_view_cost.setText(String.valueOf(cost));
-
             }
         });
         btnAdd = binding.btnAdd;
@@ -164,8 +183,8 @@ public class GalleryFragment extends Fragment {
 
         array = arrayToRoutsAdapter ();
         if(array != null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, array);
-            listView.setAdapter(adapter);
+            listAdapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, array);
+            listView.setAdapter(listAdapter);
             listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
             registerForContextMenu(listView);
@@ -179,23 +198,7 @@ public class GalleryFragment extends Fragment {
                     btn_minus.setVisibility(View.VISIBLE);
                     btn_plus.setVisibility(View.VISIBLE);
                     btnAdd.setVisibility(View.VISIBLE);
-
-
-                    SparseBooleanArray checkespositions = listView.getCheckedItemPositions();
-                    ArrayList<Integer> selectespositions = new ArrayList<>();
-
-                    for (int i = 0; i < checkespositions.size(); i++) {
-                        int pos = checkespositions.keyAt(i);
-                        if (checkespositions.get(pos)) {
-                            selectespositions.add(pos);
-                        }
-                    }
-
-                    for (int posit : selectespositions) {
-                        selectedItem = posit + 1;
-                    }
-
-
+                    selectedItem = position + 1;
 
                     try {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -216,6 +219,7 @@ public class GalleryFragment extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
+                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
 
                 switch (stringList.get(1)) {
@@ -236,61 +240,18 @@ public class GalleryFragment extends Fragment {
                         }
                         break;
                 }
-
-                if (connected()) {
-                    if(!verifyOrder(requireContext())) {
-
-                        MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                if (pay_method.equals("google_payment")) {
+                    if(MainActivity.order_id != null) {
+                        getStatus(MainActivity.order_id);
                     } else {
-                        try {
-                            List<String> settings = new ArrayList<>();
-
-                            settings.add(Double.toString(from_lat));
-                            settings.add(Double.toString(from_lng));
-                            settings.add(Double.toString(to_lat));
-                            settings.add(Double.toString(to_lng));
-
-                            updateRoutMarker(settings);
-
-
-                            String url = getTaxiUrlSearchMarkers("orderSearchMarkers", getContext());
-                            Log.d("TAG", "onClick 55555555585: " + url);
-                            Map<String, String> sendUrl = ToJSONParser.sendURL(url);
-
-                            String mes = sendUrl.get("message");
-                            String orderC = sendUrl.get("order_cost");
-
-                            if (orderC.equals("0")) {
-                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                            }
-                            if (!orderC.equals("0")) {
-                                String orderWeb = orderC;
-                                String messageResult = getString(R.string.thanks_message) +
-                                       FromAddressString + getString(R.string.to_message) + ToAddressString +
-                                       getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
-                                String messageFondy = getString(R.string.fondy_message) +
-                                        FromAddressString + getString(R.string.to_message) + ToAddressString + ".";
-                                Intent intent = new Intent(requireActivity(), FinishActivity.class);
-                                intent.putExtra("messageResult_key", messageResult);
-                                intent.putExtra("messageFondy_key", messageFondy);
-                                intent.putExtra("messageCost_key", orderWeb);
-                                intent.putExtra("sendUrlMap", new HashMap<>(sendUrl));
-                                intent.putExtra("UID_key", Objects.requireNonNull(sendUrl.get("dispatching_order_uid")));
-                                 startActivity(intent);
-
-                            }
-
-                        } catch (MalformedURLException e) {
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        }
+                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                        messageFondy = getString(R.string.fondy_message);
+                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
                     }
                 } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    order();
                 }
+
             }
         });
 
@@ -315,7 +276,59 @@ public class GalleryFragment extends Fragment {
 
         return root;
     }
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        public void order(){
+            if (connected()) {
+                if(!verifyOrder(requireContext())) {
 
+                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                } else {
+                    try {
+                        List<String> settings = new ArrayList<>();
+
+                        settings.add(Double.toString(from_lat));
+                        settings.add(Double.toString(from_lng));
+                        settings.add(Double.toString(to_lat));
+                        settings.add(Double.toString(to_lng));
+
+                        updateRoutMarker(settings);
+
+
+                        String url = getTaxiUrlSearchMarkers("orderSearchMarkers", getContext());
+                        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
+
+                        String mes = sendUrl.get("message");
+                        String orderC = sendUrl.get("order_cost");
+
+                        if (orderC.equals("0")) {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        }
+                        if (!orderC.equals("0")) {
+                            String orderWeb = orderC;
+                            String messageResult = getString(R.string.thanks_message) +
+                                    FromAddressString + getString(R.string.to_message) + ToAddressString +
+                                    getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
+                            Intent intent = new Intent(requireActivity(), FinishActivity.class);
+                            intent.putExtra("messageResult_key", messageResult);
+                            intent.putExtra("messageCost_key", orderWeb);
+                            intent.putExtra("sendUrlMap", new HashMap<>(sendUrl));
+                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrl.get("dispatching_order_uid")));
+                            startActivity(intent);
+
+                        }
+
+                    } catch (MalformedURLException e) {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
+                }
+            } else {
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        }
     private void paymentType(String paymentCode) {
         ContentValues cv = new ContentValues();
         cv.put("bonusPayment", paymentCode);
@@ -325,7 +338,145 @@ public class GalleryFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
 
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("fragment_key", "gallery");
+                                startActivity(paymentIntent);
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+    private void getStatus(String orderId) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        FondyApiService apiService = retrofit.create(FondyApiService.class);
+        String merchantPassword = requireActivity().getString(R.string.fondy_key_storage);
+
+        StatusRequestBody requestBody = new StatusRequestBody(
+                orderId,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+        StatusRequest statusRequest = new StatusRequest(requestBody);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponse<SuccessfulResponseData>> call = apiService.checkOrderStatus(statusRequest);
+
+        call.enqueue(new Callback<ApiResponse<SuccessfulResponseData>>() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onResponse(Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
+
+                if (response.isSuccessful()) {
+                    ApiResponse<SuccessfulResponseData> apiResponse = response.body();
+                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        SuccessfulResponseData responseData = apiResponse.getResponse();
+                        Log.d(TAG, "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+                            Log.d("TAG", "getMerchantId: " + responseData.getMerchantId());
+                            Log.d("TAG", "getOrderStatus: " + responseData.getOrderStatus());
+                            Log.d("TAG", "getResponse_description: " + responseData.getResponseDescription());
+                            String orderStatus = responseData.getOrderStatus();
+                            if(orderStatus.equals("approved")){
+                                order();
+                            }
+                            else {
+                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                                messageFondy = getString(R.string.fondy_message);
+                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
+                            }
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
     private void updateRoutMarker(List<String> settings) {
 
         Log.d("TAG", "updateRoutMarker: settings - " + settings);
@@ -377,11 +528,34 @@ public class GalleryFragment extends Fragment {
 
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
-            String message = (String) sendUrlMapCost.get("message");
-            String orderCost = (String) sendUrlMapCost.get("order_cost");
+            String message = sendUrlMapCost.get("message");
+            String orderCostStr = sendUrlMapCost.get("order_cost");
 
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+            long addCost = Long.parseLong(stringListInfo.get(5));
 
-            if (orderCost.equals("0")) {
+            assert orderCostStr != null;
+            long orderCostLong =  Long.parseLong(orderCostStr);
+
+            String orderCost = String.valueOf(orderCostLong + addCost);
+
+            if (!orderCost.equals("0")) {
+                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                long discountInt = Integer.parseInt(discountText);
+                long discount;
+
+                cost = Long.parseLong(orderCost);
+                discount = cost * discountInt / 100;
+
+                addCost += discount;
+                updateAddCost(String.valueOf(addCost));
+
+                cost += discount;
+                text_view_cost.setText(String.valueOf(cost));
+
+                costFirstForMin = cost;
+                MIN_COST_VALUE = (long) (cost * 0.1);
+            } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
@@ -392,25 +566,6 @@ public class GalleryFragment extends Fragment {
                 btnAdd.setVisibility(View.INVISIBLE);
                 buttonBonus.setVisibility(View.INVISIBLE);
             }
-            if (!orderCost.equals("0")) {
-
-
-                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-                long discountInt = Integer.parseInt(discountText);
-                long discount;
-                firstCost = Long.parseLong(orderCost);
-                discount = firstCost * discountInt / 100;
-                cost = firstCost + discount;
-                addCost = discount;
-                text_view_cost.setText(String.valueOf(cost));
-//                    addCost = discount;
-                    Log.d("TAG", "dialogFromToOneRout: cost " + cost);
-                    Log.d("TAG", "dialogFromToOneRout: addCost " + addCost);
-                    Log.d("TAG", "dialogFromToOneRout: cost " + cost);
-
-
-
-                }
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -484,7 +639,7 @@ public class GalleryFragment extends Fragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-
+        String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
         String parameters = null;
@@ -771,9 +926,38 @@ public class GalleryFragment extends Fragment {
         Log.d("TAG", "routMaps: " + routsArr);
         return routsArr;
     }
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d(TAG, "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: selectedItem " + selectedItem);
+        listView.clearChoices();
+        listView.requestLayout(); // Обновляем визуальное состояние списка
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged(); // Обновляем адаптер
+        }
+        del_but.setVisibility(View.INVISIBLE);
+        text_view_cost.setVisibility(View.INVISIBLE);
+        btnRouts.setVisibility(View.INVISIBLE);
+        btn_minus.setVisibility(View.INVISIBLE);
+        btn_plus.setVisibility(View.INVISIBLE);
+        btnAdd.setVisibility(View.INVISIBLE);
+        buttonBonus.setVisibility(View.INVISIBLE);
     }
 }

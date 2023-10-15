@@ -51,6 +51,7 @@ import androidx.navigation.Navigation;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ServerConnection;
@@ -62,9 +63,20 @@ import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
+import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
+import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
+import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
+import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
+import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
+import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
+import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
 import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
 import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
-import com.taxieasyua.back4app.ui.fondy.status.StatusCallback;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
 import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
@@ -93,7 +105,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeFragment extends Fragment {
 
-    private static String orderStatus;
+    private static String messageFondy;;
 
     private FragmentHomeBinding binding;
     public static String from, to;
@@ -103,15 +115,23 @@ public class HomeFragment extends Fragment {
     FloatingActionButton fab_call;
     private final String TAG = "TAG";
     Button gpsbut;
-    AppCompatButton btn_order, buttonAddServices, buttonBonus, btn_minus, btn_plus, btnGeo, on_map, btn_clear;
+    public static AppCompatButton btn_order;
+    public static AppCompatButton buttonAddServices;
+    public AppCompatButton buttonBonus;
+    public AppCompatButton btn_minus;
+    public AppCompatButton btn_plus;
+    public AppCompatButton btnGeo;
+    public AppCompatButton on_map;
+    public AppCompatButton btn_clear;
 
-    private long firstCost;
-    public static long addCost, cost;
+    public static long addCost, cost, costFirst;
     private static String[] arrayStreet;
     private String numberFlagFrom = "1", numberFlagTo = "1";
 
     public static String  from_numberCost, toCost, to_numberCost;
     public static ProgressBar progressBar;
+    String pay_method;
+    private long costFirstForMin;
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -132,7 +152,7 @@ public class HomeFragment extends Fragment {
     }
     public static TextView text_view_cost;
 
-    long MIN_COST_VALUE, MAX_COST_VALUE;
+    long MIN_COST_VALUE;
     AutoCompleteTextView textViewFrom, textViewTo;
     ArrayAdapter<String> adapter;
 
@@ -147,6 +167,8 @@ public class HomeFragment extends Fragment {
         progressBar = binding.progressBar;
         buttonBonus = binding.btnBonus;
 
+        addCost = 0;
+        updateAddCost(String.valueOf(addCost));
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         Log.d("TAG", "onViewCreated: " + stringList);
         if(stringList.size() !=0 ) {
@@ -189,41 +211,38 @@ public class HomeFragment extends Fragment {
                 checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             }
         });
+        if(!text_view_cost.getText().toString().isEmpty()) {
+            costFirst = Long.parseLong(text_view_cost.getText().toString());
+            cost = Long.parseLong(text_view_cost.getText().toString());
+        }
+
+        MIN_COST_VALUE = (long) (cost * 0.1);
 
         btn_minus = binding.btnMinus;
         btn_plus= binding.btnPlus;
         btn_minus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MIN_COST_VALUE = (long) (cost * 0.1);
-                MAX_COST_VALUE = cost * 3;
-
+                cost = Long.parseLong(text_view_cost.getText().toString());
                 cost -= 5;
                 addCost -= 5;
                 if (cost <= MIN_COST_VALUE) {
                     cost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - cost;
+                    addCost = MIN_COST_VALUE - costFirstForMin;
                 }
+                updateAddCost(String.valueOf(addCost));
                 text_view_cost.setText(String.valueOf(cost));
-
-
             }
         });
 
         btn_plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MIN_COST_VALUE = (long) (cost * 0.1);
-                MAX_COST_VALUE = cost * 3;
-
+                cost = Long.parseLong(text_view_cost.getText().toString());
                 cost += 5;
                 addCost += 5;
-                if (cost <= MIN_COST_VALUE) {
-                    cost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - cost;
-                }
+                updateAddCost(String.valueOf(addCost));
                 text_view_cost.setText(String.valueOf(cost));
-
             }
         });
 
@@ -237,10 +256,7 @@ public class HomeFragment extends Fragment {
         textViewTo.setAdapter(adapter);
         int inputTypeTo = textViewTo.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         textViewTo.setInputType(inputTypeTo);
-
         from_number = binding.fromNumber;
-
-
         to_number = binding.toNumber;
 
         btn_order = binding.btnOrder;
@@ -249,9 +265,9 @@ public class HomeFragment extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-
+                progressBar.setVisibility(View.VISIBLE);
+                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
                 if(connected()) {
-                    progressBar.setVisibility(View.VISIBLE);
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                     List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
                     String bonusPayment =  stringListInfo.get(4);
@@ -263,18 +279,25 @@ public class HomeFragment extends Fragment {
                         case "Cherkasy Oblast":
                             break;
                         case "OdessaTest":
-
                             if(bonusPayment.equals("bonus_payment")) {
                                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
                                 }
                             }
-
-
                             break;
                     }
-                    order();
+                    if (pay_method.equals("google_payment")) {
+                        if(MainActivity.order_id != null) {
+                            getStatus(MainActivity.order_id);
+                        } else {
+                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                            messageFondy = getString(R.string.fondy_message);
+                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
+                        }
+                    } else {
+                        order();
+                    }
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -283,60 +306,49 @@ public class HomeFragment extends Fragment {
         });
 
         gpsbut = binding.gpsbut;
-        gpsbut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            }
-        });
-
-
+        gpsbut.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)));
         on_map = binding.btnMap;
-        on_map.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                if(!verifyOrder(getContext())) {
+        on_map.setOnClickListener(v -> {
+            progressBar.setVisibility(View.VISIBLE);
+            if(!verifyOrder(getContext())) {
 
-                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
+                MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            } else {
+                LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
+                boolean gps_enabled = false;
+                boolean network_enabled = false;
+
+                try {
+                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                } catch(Exception ex) {
+                }
+
+                try {
+                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                } catch(Exception ex) {
+                }
+
+                if(!gps_enabled || !network_enabled) {
+                    MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                } else {
-                    LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
-                    boolean gps_enabled = false;
-                    boolean network_enabled = false;
-
-                    try {
-                        gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                    } catch(Exception ex) {
-                    }
-
-                    try {
-                        network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                    } catch(Exception ex) {
-                    }
-
-                    if(!gps_enabled || !network_enabled) {
-                        MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+                }  else  {
+                    progressBar.setVisibility(View.VISIBLE);
+                    // Разрешения уже предоставлены, выполнить ваш код
+                    if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                        checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }  else  {
-                        progressBar.setVisibility(View.VISIBLE);
-                        // Разрешения уже предоставлены, выполнить ваш код
-                        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                                && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                            btnGeo.setVisibility(View.VISIBLE);
-                        }  else {
-                            progressBar.setVisibility(View.INVISIBLE);
-                            btnGeo.setVisibility(View.INVISIBLE);
-                            Intent intent = new Intent(requireActivity(), OpenStreetMapActivity.class);
-                            startActivity(intent);
-                        }
-
+                        btnGeo.setVisibility(View.VISIBLE);
+                    }  else {
+                        progressBar.setVisibility(View.INVISIBLE);
+                        btnGeo.setVisibility(View.INVISIBLE);
+                        Intent intent = new Intent(requireActivity(), OpenStreetMapActivity.class);
+                        startActivity(intent);
                     }
+
                 }
             }
         });
@@ -344,6 +356,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getRevers("V_20231015104430885_W4W2", "повернення замовлення", "1000");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String phone = stringList.get(3);
@@ -360,8 +373,6 @@ public class HomeFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-
-
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -371,9 +382,155 @@ public class HomeFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-
-
         return root;
+    }
+
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d(TAG, "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+    private void getRevers(String orderId, String comment, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ReversApi apiService = retrofit.create(ReversApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        ReversRequestData reversRequestData = new ReversRequestData(
+                orderId,
+                comment,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+        Log.d("TAG1", "getRevers: " + reversRequestData.toString());
+        ReversRequestSent reversRequestSent = new ReversRequestSent(reversRequestData);
+
+
+        Call<ApiResponseRev<SuccessResponseDataRevers>> call = apiService.makeRevers(reversRequestSent);
+
+        call.enqueue(new Callback<ApiResponseRev<SuccessResponseDataRevers>>() {
+            @Override
+            public void onResponse(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Response<ApiResponseRev<SuccessResponseDataRevers>> response) {
+
+                if (response.isSuccessful()) {
+                    ApiResponseRev<SuccessResponseDataRevers> apiResponse = response.body();
+                    Log.d("TAG1", "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        SuccessResponseDataRevers responseData = apiResponse.getResponse();
+                        Log.d("TAG1", "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+                            Log.d("TAG1", "onResponse: " + responseData.toString());
+
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+
+
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("fragment_key", "home");
+                                startActivity(paymentIntent);
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
     }
     private void getStatus(String orderId) {
 
@@ -396,9 +553,9 @@ public class HomeFragment extends Fragment {
         Call<ApiResponse<SuccessfulResponseData>> call = apiService.checkOrderStatus(statusRequest);
 
         call.enqueue(new Callback<ApiResponse<SuccessfulResponseData>>() {
+            @SuppressLint("NewApi")
             @Override
             public void onResponse(Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
-
                 if (response.isSuccessful()) {
                     ApiResponse<SuccessfulResponseData> apiResponse = response.body();
                     Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
@@ -411,7 +568,13 @@ public class HomeFragment extends Fragment {
                             Log.d("TAG", "getOrderStatus: " + responseData.getOrderStatus());
                             Log.d("TAG", "getResponse_description: " + responseData.getResponseDescription());
                             String orderStatus = responseData.getOrderStatus();
-                            statusCallback.onStatusReceived(orderStatus);
+                            if(orderStatus.equals("approved")){
+                                order();
+                            } else {
+                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                                messageFondy = getString(R.string.fondy_message);
+                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
+                            }
                         }
                     }
                 } else {
@@ -434,22 +597,7 @@ public class HomeFragment extends Fragment {
         });
 
     }
-    private StatusCallback statusCallback = new StatusCallback() {
-        @Override
-        public void onStatusReceived(String orderStatus) {
-            Log.d("TAG1", "onClick: orderStatus " + orderStatus);
-            if(orderStatus.equals("approved")){
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    order();
-                }
-            };
-        }
 
-        @Override
-        public void onError(String errorMessage) {
-            // Обработка ошибки
-        }
-    };
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -463,10 +611,12 @@ public class HomeFragment extends Fragment {
         super.onResume();
 
         btn_clear = binding.btnClear;
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+        addCost = Long.parseLong(stringListInfo.get(5));
 
-        rout();
         List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
         if (stringListRoutHome.get(1).equals(" ")) {
+            rout();
             text_view_cost.setVisibility(View.INVISIBLE);
             btn_minus.setVisibility(View.INVISIBLE);
             btn_plus.setVisibility(View.INVISIBLE);
@@ -475,8 +625,7 @@ public class HomeFragment extends Fragment {
             btn_clear.setVisibility(View.INVISIBLE);
 
             btn_order.setVisibility(View.INVISIBLE);
-            cost = 0;
-            addCost = 0;
+
             from = null;
             to = null;
             text_view_cost.setText("");
@@ -742,21 +891,21 @@ public class HomeFragment extends Fragment {
                 urlCost = getTaxiUrlSearch("costSearch", requireActivity());
             }
 
-            Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-            String orderCost = (String) sendUrlMapCost.get("order_cost");
-            String message = (String) sendUrlMapCost.get("message");
+            Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlCost);
 
-            if (orderCost.equals("0")) {
-                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            String message = sendUrlMapCost.get("message");
+            String orderCostStr = sendUrlMapCost.get("order_cost");
 
-                text_view_cost.setVisibility(View.INVISIBLE);
-                btn_minus.setVisibility(View.INVISIBLE);
-                btn_plus.setVisibility(View.INVISIBLE);
-                buttonAddServices.setVisibility(View.INVISIBLE);
-                buttonBonus.setVisibility(View.INVISIBLE);
-            }
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+            long addCost = Long.parseLong(stringListInfo.get(5));
+
+            assert orderCostStr != null;
+            long orderCostLong =  Long.parseLong(orderCostStr);
+
+            String orderCost = String.valueOf(orderCostLong + addCost);
+
             if (!orderCost.equals("0")) {
+
                 text_view_cost.setVisibility(View.VISIBLE);
                 btn_minus.setVisibility(View.VISIBLE);
                 btn_plus.setVisibility(View.VISIBLE);
@@ -770,18 +919,24 @@ public class HomeFragment extends Fragment {
 
                 cost = Long.parseLong(orderCost);
 
-                MIN_COST_VALUE = (long) ((long) cost * 0.1);
-                MAX_COST_VALUE = cost * 3;
-                firstCost = cost;
+                discount = cost * discountInt / 100;
+                addCost += discount;
+                updateAddCost(String.valueOf(addCost));
 
-                discount = firstCost * discountInt / 100;
-                addCost = discount;
-                cost = firstCost + discount;
+                cost += discount;
                 text_view_cost.setText(Long.toString(cost));
 
+                costFirstForMin = cost;
+                MIN_COST_VALUE = (long) (cost * 0.1);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                text_view_cost.setVisibility(View.INVISIBLE);
+                btn_minus.setVisibility(View.INVISIBLE);
+                btn_plus.setVisibility(View.INVISIBLE);
+                buttonAddServices.setVisibility(View.INVISIBLE);
+                buttonBonus.setVisibility(View.INVISIBLE);
             }
 
         } catch (MalformedURLException e) {
@@ -790,7 +945,8 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void costRoutHome( List<String> stringListRoutHome ){
+    @SuppressLint("SetTextI18n")
+    private void costRoutHome(List<String> stringListRoutHome ){
 
         textViewFrom.setText(stringListRoutHome.get(1));
         if(!stringListRoutHome.get(2).equals(" ")) {
@@ -829,7 +985,17 @@ public class HomeFragment extends Fragment {
             }
 
             Map sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-            String orderCost = (String) sendUrlMapCost.get("order_cost");
+            String orderCostStr = (String) sendUrlMapCost.get("order_cost");
+
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+            long addCost = Long.parseLong(stringListInfo.get(5));
+            Log.d(TAG, "cost: addCost " + addCost);
+            assert orderCostStr != null;
+            long orderCostLong =  Long.parseLong(orderCostStr);
+            Log.d(TAG, "cost: orderCostLong " + orderCostLong);
+            String orderCost = String.valueOf(orderCostLong + addCost);
+            Log.d(TAG, "cost: orderCost " + orderCost);
+
             String message = (String) sendUrlMapCost.get("message");
 
             if (orderCost.equals("0")) {
@@ -860,14 +1026,15 @@ public class HomeFragment extends Fragment {
 
                 cost = Long.parseLong(orderCost);
 
-                MIN_COST_VALUE = (long) ((long) cost * 0.1);
-                MAX_COST_VALUE = cost * 3;
-                firstCost = cost;
+                discount = cost * discountInt / 100;
+                addCost += discount;
+                updateAddCost(String.valueOf(addCost));
 
-                discount = firstCost * discountInt / 100;
-                addCost = discount;
-                cost = firstCost + discount;
+                cost = cost + discount;
                 text_view_cost.setText(Long.toString(cost));
+
+                costFirstForMin = cost;
+                MIN_COST_VALUE = (long) (cost * 0.1);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -982,7 +1149,7 @@ public class HomeFragment extends Fragment {
 
                     String orderWeb = sendUrlMap.get("order_cost");
                     String message = sendUrlMap.get("message");
-                    String messageFondy;
+
 
                     if (!orderWeb.equals("0")) {
 
@@ -992,18 +1159,11 @@ public class HomeFragment extends Fragment {
                             messageResult = getString(R.string.thanks_message) +
                                     from_name + " " + from_number.getText() + getString(R.string.on_city) +
                                     getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-
-                            messageFondy = getString(R.string.fondy_message) + " " +
-                                    from_name + " " + from_number.getText() + getString(R.string.on_city);
-
                         } else {
                             messageResult =  getString(R.string.thanks_message) +
                                     from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
                                     to_name + " " + to_number.getText() + "." +
                                     getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-                            messageFondy = getString(R.string.fondy_message) +
-                                    from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
-                                    to_name + " " + to_number.getText() + ".";
                         }
                         Log.d(TAG, "order: sendUrlMap.get(\"from_lat\")" + sendUrlMap.get("from_lat"));
                         Log.d(TAG, "order: sendUrlMap.get(\"lat\")" + sendUrlMap.get("lat"));
@@ -1024,13 +1184,11 @@ public class HomeFragment extends Fragment {
                                         sendUrlMap.get("lat"), sendUrlMap.get("lng"),
                                         requireContext()
                                 );
-
                             }
                         }
 
                         Intent intent = new Intent(requireActivity(), FinishActivity.class);
                         intent.putExtra("messageResult_key", messageResult);
-                        intent.putExtra("messageFondy_key", messageFondy);
                         intent.putExtra("messageCost_key", orderWeb);
                         intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
                         intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
@@ -1252,7 +1410,6 @@ public class HomeFragment extends Fragment {
         String comment = stringList.get(2);
         String date = stringList.get(3);
 
-        Log.d(TAG, "getTaxiUrlSearch: addCost" + addCost);
 
         // Origin of route
         String str_origin = from + "/" + from_number;
@@ -1263,9 +1420,12 @@ public class HomeFragment extends Fragment {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
+        String addCost = stringListInfo.get(5);
 
+        Log.d(TAG, "getTaxiUrlSearch: addCost" + addCost);
         // Building the parameters to the web service
 
         String parameters = null;

@@ -62,7 +62,7 @@ import java.util.regex.Pattern;
 
 public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-    AppCompatButton button, btn_minus, btn_plus, btnOrder, buttonBonus;
+    public static AppCompatButton button, btn_minus, btn_plus, btnOrder, buttonBonus;
     public String[] arrayStreet;
     private static String api;
     long firstCost;

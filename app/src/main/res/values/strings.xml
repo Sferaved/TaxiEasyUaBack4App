@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code" tools:ignore="MissingTranslation">2.833</string>
-    <string name="version" tools:ignore="MissingTranslation">Версия: 2.833</string>
+    <string name="version_code" tools:ignore="MissingTranslation">2.835</string>
+    <string name="version" tools:ignore="MissingTranslation">Версия: 2.835</string>
 
     <string name="app_name" tools:ignore="MissingTranslation">Такси Украина 2</string>
 
@@ -299,7 +299,7 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-    <string name="fondy_message" tools:ignore="MissingTranslation">"Оплата услуг такси по машруту "</string>
+    <string name="fondy_message" tools:ignore="MissingTranslation">"Оплата услуг такси."</string>
     <string name="fondy_revers_message" tools:ignore="MissingTranslation">"Возврат платежа: "</string>
     <string name="fondy_pay" tools:ignore="MissingTranslation">Оплатить картой</string>
     <string name="cost_of_road_fondy" tools:ignore="MissingTranslation">Стоимость поездки: </string>

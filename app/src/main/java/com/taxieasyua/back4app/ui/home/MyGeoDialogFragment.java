@@ -82,7 +82,7 @@ import java.util.regex.Pattern;
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public TextView geoText;
-    AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
+    public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
     public String[] arrayStreet;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
