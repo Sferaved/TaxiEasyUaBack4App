@@ -169,6 +169,7 @@ public class HomeFragment extends Fragment {
 
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
+
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         Log.d("TAG", "onViewCreated: " + stringList);
         if(stringList.size() !=0 ) {
@@ -356,7 +357,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231015104430885_W4W2", "повернення замовлення", "1000");
+                getRevers("V_20231016123801944_KIWX", "повернення замовлення", "700");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String phone = stringList.get(3);
@@ -499,6 +500,7 @@ public class HomeFragment extends Fragment {
                                 // Обработка успешного ответа
                                 Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
                                 paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
                                 paymentIntent.putExtra("fragment_key", "home");
                                 startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
@@ -611,8 +613,8 @@ public class HomeFragment extends Fragment {
         super.onResume();
 
         btn_clear = binding.btnClear;
-        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
-        addCost = Long.parseLong(stringListInfo.get(5));
+
+
 
         List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
         if (stringListRoutHome.get(1).equals(" ")) {
@@ -625,9 +627,11 @@ public class HomeFragment extends Fragment {
             btn_clear.setVisibility(View.INVISIBLE);
 
             btn_order.setVisibility(View.INVISIBLE);
-
+            addCost = 0;
+            updateAddCost(String.valueOf(addCost));
             from = null;
             to = null;
+
             text_view_cost.setText("");
             textViewFrom.setText("");
             from_number.setText("");

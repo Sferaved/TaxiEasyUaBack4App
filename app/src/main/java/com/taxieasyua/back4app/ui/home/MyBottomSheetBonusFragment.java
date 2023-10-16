@@ -119,7 +119,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                paymentType(arrayCode [pos]);
                 dismiss();
             }
         });
@@ -154,14 +153,17 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             case "nal_payment":
                 listView.setItemChecked(0, true);
                 pos = 0;
+                paymentType(arrayCode [pos]);
                 break;
             case "bonus_payment":
                 listView.setItemChecked(1, true);
                 pos = 1;
+                paymentType(arrayCode [pos]);
                 break;
             case "google_payment":
                 listView.setItemChecked(2, true);
                 pos = 2;
+                paymentType(arrayCode [pos]);
                 break;
         }
         database.close();

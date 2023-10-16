@@ -34,7 +34,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TaxiEasyUaBack4App"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ui.finish.ErrorPayActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.payment.MonoBankActivity"
             android:exported="false" />
@@ -99,7 +101,7 @@
         <activity android:name=".ui.fondy.BaseExampleActivity" />
         <activity android:name=".ui.fondy.FlexibleExampleActivity" />
         <activity android:name=".ui.fondy.SimpleExampleActivity" />
-        <activity android:name="com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity" />
+        <activity android:name=".ui.fondy.payment.FondyPaymentActivity" />
 
         <receiver android:name=".NetworkChangeReceiver" />
 

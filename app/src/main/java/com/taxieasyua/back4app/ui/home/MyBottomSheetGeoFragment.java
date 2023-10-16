@@ -451,8 +451,10 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             long discount;
 
             discount = firstCost * discountInt / 100;
-            newCost = Long.toString(firstCost + discount);
-            MyGeoDialogFragment.addCost = discount;
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+
+            String addCost = stringListInfo.get(5);
+            newCost = String.valueOf(firstCost + discount + Long.parseLong(addCost));
 
         }
 

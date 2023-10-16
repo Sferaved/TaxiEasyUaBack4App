@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -73,6 +74,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class GalleryFragment extends Fragment {
 
     private static final String TAG = "TAG";
+    public static ProgressBar progressbar;
     private FragmentGalleryBinding binding;
     private ListView listView;
     private String[] array;
@@ -124,7 +126,7 @@ public class GalleryFragment extends Fragment {
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
 
-
+        progressbar = binding.progressBar;
 
         textView = binding.textGallery;
         textView.setText(R.string.my_routs);
@@ -377,6 +379,7 @@ public class GalleryFragment extends Fragment {
                                 // Обработка успешного ответа
                                 Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
                                 paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
                                 paymentIntent.putExtra("fragment_key", "gallery");
                                 startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
