@@ -123,7 +123,9 @@ public class GalleryFragment extends Fragment {
         View root = binding.getRoot();
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        addCost = 0;
+
+        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+        addCost = Integer.parseInt(discountText);
         updateAddCost(String.valueOf(addCost));
 
         progressbar = binding.progressBar;

@@ -612,8 +612,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             Log.d("TAG", "onResume: endPoint" +  endPoint.getLatitude());
 
-            String urlCost = getTaxiUrlSearchMarkers(startLat, startLan,
-                    endPoint.getLatitude(), endPoint.getLongitude(), "costSearchMarkers", map.getContext());
+            List<String> settings = new ArrayList<>();
+            settings.add(String.valueOf(startLat));
+            settings.add(String.valueOf(startLan));
+            settings.add(String.valueOf(endPoint.getLatitude()));
+            settings.add(String.valueOf(endPoint.getLongitude()));
+
+            updateRoutMarker(settings, context);
+
+            String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", map.getContext());
 
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
@@ -684,101 +691,120 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         }
     }
 
+    private static void updateRoutMarker(List<String> settings, Context context) {
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat",  Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
+
+        // обновляем по id
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
-                                                 double toLatitude, double toLongitude,
-                                                 String urlAPI, Context context) {
-            List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-            String time = stringList.get(1);
-            String comment = stringList.get(2);
-            String date = stringList.get(3);
+    @SuppressLint("Range")
+    public static String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
 
-            // Origin of route
-            String str_origin = originLatitude + "/" + originLongitude;
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-            // Destination of route
-            String str_dest = toLatitude + "/" + toLongitude;
-            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        cursor.moveToFirst();
 
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
-            String tarif =  stringListInfo.get(2);
-            String bonusPayment =  stringListInfo.get(4);
+        // Получите значения полей из первой записи
 
-            // Building the parameters to the web service
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+        // Origin of route
+        String str_origin = originLatitude + "/" + originLongitude;
 
-            String parameters = null;
-            String phoneNumber = "no phone";
-            String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
-            String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
-            if(urlAPI.equals("costSearchMarkers")) {
-                Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+        // Destination of route
+        String str_dest = toLatitude + "/" + toLongitude;
 
-                if (c.getCount() == 1) {
-                    phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-                    c.close();
-                }
-                parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                        + displayName + "*" + userEmail  + "*" + bonusPayment;
-            }
+        cursor.close();
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
 
-            if(urlAPI.equals("orderSearchMarkers")) {
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
+        String tarif =  stringListInfo.get(2);
+        String bonusPayment =  stringListInfo.get(4);
+        String addCost = stringListInfo.get(5);
+        // Building the parameters to the web service
+
+        String parameters = null;
+        String phoneNumber = "no phone";
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
+        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
+        if(urlAPI.equals("costSearchMarkers")) {
+            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+
+            if (c.getCount() == 1) {
                 phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-
-
-                parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                        + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
-
-                ContentValues cv = new ContentValues();
-
-                cv.put("time", "no_time");
-                cv.put("comment", "no_comment");
-                cv.put("date", "no_date");
-
-                // обновляем по id
-                database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                        new String[] { "1" });
-
+                c.close();
             }
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+        }
 
-            // Building the url to the web service
-            List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
-            List<String> servicesChecked = new ArrayList<>();
-            String result;
-            boolean servicesVer = false;
-            for (int i = 1; i < services.size()-1 ; i++) {
-                if(services.get(i).equals("1")) {
-                    servicesVer = true;
-                    break;
+        if(urlAPI.equals("orderSearchMarkers")) {
+            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
+
+
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("comment", "no_comment");
+            cv.put("date", "no_date");
+
+            // обновляем по id
+            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
+
+        }
+
+        // Building the url to the web service
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i < services.size()-1 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
                 }
             }
-            if(servicesVer) {
-                for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
-                    if(services.get(i+1).equals("1")) {
-                        servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
-                    }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
                 }
-                for (int i = 0; i < servicesChecked.size(); i++) {
-                    if(servicesChecked.get(i).equals("CHECK_OUT")) {
-                        servicesChecked.set(i, "CHECK");
-                    }
-                }
-                result = String.join("*", servicesChecked);
-                Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
-            } else {
-                result = "no_extra_charge_codes";
             }
+            result = String.join("*", servicesChecked);
+            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_extra_charge_codes";
+        }
 
-            String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-
-
-            database.close();
-
-
-            return url;
-//        } else  {
-//            Toast.makeText(context, context.getString(R.string.server_error_connected), Toast.LENGTH_LONG).show();
-//            return null;
-//        }
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        database.close();
+        return url;
     }
 
     @SuppressLint("Range")

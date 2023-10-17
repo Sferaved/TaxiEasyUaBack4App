@@ -415,16 +415,24 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            long discount;
+            long discount = firstCost * discountInt / 100;
+            HomeFragment.addCost = discountInt;
+            updateAddCost(String.valueOf(discount));
 
-            discount = firstCost * discountInt / 100;
-
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
-
-            String addCost = stringListInfo.get(5);
-            newCost = String.valueOf(firstCost + discount + Long.parseLong(addCost));
+            newCost = String.valueOf(firstCost + discount);
         }
         return newCost;
+    }
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
     private String getTaxiUrlSearch(String urlAPI, Context context) {
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);
@@ -445,6 +453,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
+
         // Building the parameters to the web service
 
         String parameters = null;

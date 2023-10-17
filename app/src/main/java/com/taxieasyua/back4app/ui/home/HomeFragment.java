@@ -357,7 +357,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231016123801944_KIWX", "повернення замовлення", "700");
+                getRevers("V_20231017091528399_CSNX", "повернення замовлення", "2400");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String phone = stringList.get(3);
@@ -627,8 +627,11 @@ public class HomeFragment extends Fragment {
             btn_clear.setVisibility(View.INVISIBLE);
 
             btn_order.setVisibility(View.INVISIBLE);
-            addCost = 0;
+
+            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+            addCost = Integer.parseInt(discountText);
             updateAddCost(String.valueOf(addCost));
+
             from = null;
             to = null;
 

@@ -343,15 +343,23 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("Range")
     private String getTaxiUrlSearchGeo(String urlAPI, Context context) {
 
-        List<String> stringListRout = logCursor(MainActivity.ROUT_GEO, context);
-        Log.d("TAG", "getTaxiUrlSearch: Bonus stringListRout" + stringListRout);
+        String query = "SELECT * FROM " + MainActivity.ROUT_GEO + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-        double originLatitude = Double.parseDouble(stringListRout.get(1));
-        double originLongitude = Double.parseDouble(stringListRout.get(2));
-        String to = stringListRout.get(3);
-        String to_number = stringListRout.get(4);
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        String to = cursor.getString(cursor.getColumnIndex("toCost"));
+        String to_number = cursor.getString(cursor.getColumnIndex("to_numberCost"));
+
+        cursor.close();
 
         if(to_number.equals("XXX")) {
             to_number = " ";
@@ -362,8 +370,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         // Destination of route
         String str_dest = to + "/" + to_number;
-
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);

@@ -399,9 +399,16 @@ public class MyBottomSheetGeoMarkerFragment extends BottomSheetDialogFragment {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private String changeCost() throws MalformedURLException {
         String newCost = "0";
+        List<String> settings = new ArrayList<>();
+        settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+        settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+        settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
+        settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
 
-        String url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan, "costSearchMarkers", requireActivity());
+        updateRoutMarker(settings);
+
+        String url = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+
 
         Map<String, String> sendUrl = ToJSONParser.sendURL(url);
 
@@ -418,110 +425,64 @@ public class MyBottomSheetGeoMarkerFragment extends BottomSheetDialogFragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            long discount;
+            long discount = firstCost * discountInt / 100;
+            MyGeoMarkerDialogFragment.addCost = discountInt;
+            updateAddCost(String.valueOf(discount));
 
-            discount = firstCost * discountInt / 100;
-            newCost = Long.toString(firstCost + discount);
-            MyGeoMarkerDialogFragment.addCost = discount;
-
+            newCost = String.valueOf(firstCost + discount);
         }
-
-
         return newCost;
     }
 
+    private void updateRoutMarker(List<String> settings) {
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat",  Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude,
-                                              String to, String to_number,
-                                              String urlAPI, Context context) {
+    @SuppressLint("Range")
+    private String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
 
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
 
         // Destination of route
-        String str_dest = to + "/" + to_number;
+        String str_dest = toLatitude + "/" + toLongitude;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
-        String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
-
-        // Building the parameters to the web service
-
-        String parameters = null;
-        String phoneNumber = "no phone";
-        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
-
-        if(urlAPI.equals("costSearchGeo")) {
-            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-
-            if (c.getCount() == 1) {
-                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-                c.close();
-            }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
-        }
-
-        // Building the url to the web service
-        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
-        List<String> servicesChecked = new ArrayList<>();
-        String result;
-        boolean servicesVer = false;
-        for (int i = 1; i < services.size()-1 ; i++) {
-            if(services.get(i).equals("1")) {
-                servicesVer = true;
-                break;
-            }
-        }
-        if(servicesVer) {
-            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
-                if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
-                }
-            }
-            for (int i = 0; i < servicesChecked.size(); i++) {
-                if(servicesChecked.get(i).equals("CHECK_OUT")) {
-                    servicesChecked.set(i, "CHECK");
-                }
-            }
-            result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
-        } else {
-            result = "no_extra_charge_codes";
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + OpenStreetMapActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-        Log.d("TAG", "getTaxiUrlSearch services: " + url);
-
-        return url;
-
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
-                                                 double toLatitude, double toLongitude,
-                                                 String urlAPI, Context context) {
-        //  Проверка даты и времени
-//        if(hasServer()) {
-
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
-
-        // Origin of route
-        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
-
-        // Destination of route
-        String str_dest = String.valueOf(toLatitude) + "/" + String.valueOf(toLongitude);
-
-        //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        cursor.close();
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
@@ -575,12 +536,9 @@ public class MyBottomSheetGeoMarkerFragment extends BottomSheetDialogFragment {
 
         String url = "https://m.easy-order-taxi.site/" + OpenStreetMapActivity.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
-
         database.close();
 
-
         return url;
-
     }
     private void showTimePickerDialog() {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);

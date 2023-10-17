@@ -174,7 +174,12 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         if (!routMaps().isEmpty()) {
             adressArr = new ArrayList<>(routMaps().size());
         }
-        addCost = 0;
+
+        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+
+        addCost = Integer.parseInt(discountText);
+        updateAddCost(String.valueOf(addCost));
+
         numberFlagTo = "2";
         progressBar = view.findViewById(R.id.progress_bar);
         geoText = view.findViewById(R.id.textGeo);
@@ -402,6 +407,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     discount = firstCost * discountInt / 100;
                     firstCost = firstCost + discount;
                     addCost = discount;
+                    updateAddCost(String.valueOf(addCost));
                     text_view_cost.setText(String.valueOf(firstCost));
 
                     Log.d("TAG", "startCost: firstCost " + firstCost);
@@ -538,11 +544,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         messageFondy = getString(R.string.fondy_message);
                         getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
                     } else {
-
-                        try {
+                        if (verifyPhone(requireActivity())) {
+                            try {
                             orderFinished();
-                        } catch (MalformedURLException ignored) {
-
+                             } catch (MalformedURLException ignored) {
+                            }
+                        } else {
+                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("geo");
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         }
                     }
                 }
@@ -679,12 +688,21 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             List<String> settings = new ArrayList<>();
-            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-
+            settings.add(Double.toString(OpenStreetMapActivity.startLat));
+            settings.add(Double.toString(OpenStreetMapActivity.startLan));
+            settings.add(Double.toString(OpenStreetMapActivity.startLat));
+            settings.add(Double.toString(OpenStreetMapActivity.startLan));
+            Log.d(TAG, "startCost: marker " + settings);
             updateRoutMarker(settings);
+
+            settings = new ArrayList<>();
+            settings.add(Double.toString(OpenStreetMapActivity.startLat));
+            settings.add(Double.toString(OpenStreetMapActivity.startLan));
+            settings.add(Double.toString(OpenStreetMapActivity.startLat));
+            settings.add(" ");
+
+            Log.d(TAG, "startCost: Geo" + settings);
+            updateRoutGeo(settings);
             urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
         }
 
@@ -721,30 +739,24 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             firstCost = Long.parseLong(text_view_cost.getText().toString());
             Log.d("TAG", "startCost: firstCost " + firstCost);
             Log.d("TAG", "startCost: addCost " + addCost);
-                 btn_minus.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        firstCost -= 5;
-                        addCost -= 5;
-                        if (firstCost <= MIN_COST_VALUE) {
-                            firstCost = MIN_COST_VALUE;
-                            addCost = MIN_COST_VALUE - firstCostForMin;
-                        }
-                        updateAddCost(String.valueOf(addCost));
-                        Log.d("TAG", "startCost: addCost " + addCost);
-                        text_view_cost.setText(String.valueOf(firstCost));
-                    }
-                });
+                 btn_minus.setOnClickListener(v -> {
+                     firstCost -= 5;
+                     addCost -= 5;
+                     if (firstCost <= MIN_COST_VALUE) {
+                         firstCost = MIN_COST_VALUE;
+                         addCost = MIN_COST_VALUE - firstCostForMin;
+                     }
+                     updateAddCost(String.valueOf(addCost));
+                     Log.d("TAG", "startCost: addCost " + addCost);
+                     text_view_cost.setText(String.valueOf(firstCost));
+                 });
 
-                btn_plus.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        firstCost += 5;
-                        addCost += 5;
-                        updateAddCost(String.valueOf(addCost));
-                        Log.d("TAG", "startCost: addCost " + addCost);
-                        text_view_cost.setText(String.valueOf(firstCost));
-                    }
+                btn_plus.setOnClickListener(v -> {
+                    firstCost += 5;
+                    addCost += 5;
+                    updateAddCost(String.valueOf(addCost));
+                    Log.d("TAG", "startCost: addCost " + addCost);
+                    text_view_cost.setText(String.valueOf(firstCost));
                 });
             }
     }
@@ -840,15 +852,38 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         return arrayRouts;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("Range")
     public static String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
 
-        List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);
-        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-        double originLatitude = Double.parseDouble(stringListRout.get(1));
-        double originLongitude = Double.parseDouble(stringListRout.get(2));
-        double toLatitude = Double.parseDouble(stringListRout.get(3));
-        double toLongitude = Double.parseDouble(stringListRout.get(4));
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+        // Origin of route
+        String str_origin = originLatitude + "/" + originLongitude;
+
+        // Destination of route
+        String str_dest = toLatitude + "/" + toLongitude;
+
+        cursor.close();
+
+
+
+//        List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);уууу
+//        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+//
+//        double originLatitude = Double.parseDouble(stringListRout.get(1));
+//        double originLongitude = Double.parseDouble(stringListRout.get(2));
+//        double toLatitude = Double.parseDouble(stringListRout.get(3));
+//        double toLongitude = Double.parseDouble(stringListRout.get(4));
 
 
 
@@ -857,14 +892,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         String comment = stringList.get(2);
         String date = stringList.get(3);
 
-        // Origin of route
-        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
 
-        // Destination of route
-        String str_dest = toLatitude + "/" + toLongitude;
-
-        //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
@@ -1189,7 +1217,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         }
         if(stop) {return;}
 
-
         if (numberFlagTo.equals("1") && !to_number.getText().toString().equals(" ")) {
             to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -1198,11 +1225,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             } else {
                 ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
             }
-
-
         }
-
-
 
         if (TextUtils.isEmpty(textViewTo.getText())) {
             toCost = String.valueOf(OpenStreetMapActivity.startLat);
@@ -1231,8 +1254,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         if(connected()) {
             if (verifyPhone(requireActivity())) {
 
-
-
                 if(urlAddress == null) {
                     List<String> settings = new ArrayList<>();
                     settings.add(String.valueOf(OpenStreetMapActivity.startLat));
@@ -1257,10 +1278,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
                     urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
                     Log.d("TAG", "order: urlOrder "  + urlOrder);
-
                 }
-
-
             }
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
@@ -1488,16 +1506,24 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
     }
 
-     @RequiresApi(api = Build.VERSION_CODES.O)
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("Range")
     private String getTaxiUrlSearchGeo(String urlAPI, Context context) {
 
-        List<String> stringListRout = logCursor(MainActivity.ROUT_GEO, context);
-        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+        String query = "SELECT * FROM " + MainActivity.ROUT_GEO + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-        double originLatitude = Double.parseDouble(stringListRout.get(1));
-        double originLongitude = Double.parseDouble(stringListRout.get(2));
-        String to = stringListRout.get(3);
-        String to_number = stringListRout.get(4);
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        String to = cursor.getString(cursor.getColumnIndex("toCost"));
+        String to_number = cursor.getString(cursor.getColumnIndex("to_numberCost"));
+
+        cursor.close();
 
          if(to_number.equals("XXX")) {
              to_number = " ";
@@ -1513,7 +1539,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         // Destination of route
         String str_dest = to + "/" + to_number;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);

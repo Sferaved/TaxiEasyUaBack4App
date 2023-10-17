@@ -416,18 +416,27 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            long discount;
+            long discount = firstCost * discountInt / 100;
 
-            discount = firstCost * discountInt / 100;
+            GalleryFragment.addCost = discountInt;
+            updateAddCost(String.valueOf(discount));
 
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
-
-            String addCost = stringListInfo.get(5);
-            newCost = String.valueOf(firstCost + discount + Long.parseLong(addCost));
+            newCost = String.valueOf(firstCost + discount);
         }
 
 
         return newCost;
+    }
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
     private String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
                                            double toLatitude, double toLongitude,

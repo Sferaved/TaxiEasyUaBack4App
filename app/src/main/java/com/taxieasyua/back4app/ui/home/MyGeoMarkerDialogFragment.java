@@ -38,6 +38,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
@@ -47,6 +49,13 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
+import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
+import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
+import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
+import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -58,6 +67,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
@@ -79,6 +94,11 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     public static String to;
     @SuppressLint("StaticFieldLeak")
     public static ProgressBar progressBar;
+    private String TAG = "TAG";
+    private String pay_method;
+    private String messageFondy;
+    private static String urlOrder;
+    private long firstCostForMin;
 
     @Nullable
     @Override
@@ -131,8 +151,11 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 break;
         }
 
+        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
 
-        addCost = 0;
+        addCost = Integer.parseInt(discountText);
+        updateAddCost(String.valueOf(addCost));
+
         numberFlagTo = "2";
         progressBar = view.findViewById(R.id.progress_bar);
         geoText = view.findViewById(R.id.textGeo);
@@ -158,8 +181,6 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 firstCost = Long.parseLong(newText);
             }
         });
-
-
 
         textViewTo = view.findViewById(R.id.text_to);
         textViewTo.setText(OpenStreetMapActivity.ToAdressString);
@@ -189,6 +210,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 OpenStreetMapActivity.progressBar.setVisibility(View.VISIBLE);
                 List<String> stringList1 = logCursor(MainActivity.CITY_INFO, requireActivity());
+                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
 
                 switch (stringList1.get(1)) {
                     case "Kyiv City":
@@ -208,7 +230,19 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                         }
                         break;
                 }
-                order();
+                orderRout();
+                if (pay_method.equals("google_payment")) {
+                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                    messageFondy = getString(R.string.fondy_message);
+                    getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
+                } else {
+                    if (verifyPhone(requireActivity())) {
+                    orderFinished();
+                    } else {
+                        MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("marker");
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
+                }
             }
         });
         buttonBonus = view.findViewById(R.id.btnBonus);
@@ -220,6 +254,191 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         });
         return view;
+    }
+
+
+
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+
+
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("urlOrder", urlOrder);
+                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
+                                paymentIntent.putExtra("fragment_key", "geo");
+                                startActivity(paymentIntent);
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+
+    @SuppressLint("ResourceAsColor")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void orderRout() {
+        if(!verifyOrder(requireContext())) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            return;
+        }
+
+        if (!verifyPhone(requireActivity())) {
+            getPhoneNumber();
+        }
+        if (!verifyPhone(requireActivity())) {
+            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("marker");
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        }
+        if(connected()) {
+            if (verifyPhone(requireActivity())) {
+                urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers", requireActivity());
+            }
+        } else {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+    private void orderFinished() {
+        try {
+            Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
+            Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
+
+            String orderWeb = sendUrlMap.get("order_cost");
+
+            assert orderWeb != null;
+            if (!orderWeb.equals("0")) {
+                String to_name;
+                if (Objects.equals(sendUrlMap.get("routefrom"), sendUrlMap.get("routeto"))) {
+                    to_name = getString(R.string.on_city_tv);
+                    if (!Objects.requireNonNull(sendUrlMap.get("lat")).equals("0")) {
+                        insertRecordsOrders(
+                                sendUrlMap.get("routefrom"), sendUrlMap.get("routefrom"),
+                                sendUrlMap.get("routefromnumber"), sendUrlMap.get("routefromnumber"),
+                                Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                                Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                                requireActivity()
+                        );
+                    }
+                } else {
+                    if(Objects.equals(sendUrlMap.get("routeto"), "Точка на карте")) {
+                        to_name = requireActivity().getString(R.string.end_point_marker);
+                    } else {
+                        to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
+                    }
+
+                    if (!Objects.requireNonNull(sendUrlMap.get("lat")).equals("0")) {
+                        insertRecordsOrders(
+                                sendUrlMap.get("routefrom"), to_name,
+                                sendUrlMap.get("routefromnumber"), sendUrlMap.get("to_number"),
+                                Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                                sendUrlMap.get("lat"), sendUrlMap.get("lng"), requireActivity()
+                        );
+                    }
+                }
+                String messageResult = getString(R.string.thanks_message) +
+                        OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                        to_name + "." +
+                        getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
+                String messageFondy = getString(R.string.fondy_message) + " " +
+                        OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                        to_name + ".";
+
+                Intent intent = new Intent(requireActivity(), FinishActivity.class);
+                intent.putExtra("messageResult_key", messageResult);
+                intent.putExtra("messageFondy_key", messageFondy);
+                intent.putExtra("messageCost_key", orderWeb);
+                intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
+                intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
+                startActivity(intent);
+            } else {
+
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+            }
+
+
+        } catch (MalformedURLException ignored) {
+
+        }
+    }
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d(TAG, "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
 
     private void startCost() {
@@ -260,19 +479,20 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             discount = firstCost * discountInt / 100;
             firstCost = firstCost + discount;
             addCost = discount;
+            updateAddCost(String.valueOf(addCost));
             text_view_cost.setText(String.valueOf(firstCost));
             firstCost = Long.parseLong(text_view_cost.getText().toString());
-
+            firstCostForMin = firstCost;
             long MIN_COST_VALUE = (long) (firstCost * 0.1);
-            long MAX_COST_VALUE = firstCost * 3;
 
             btn_minus.setOnClickListener(v -> {
                 firstCost -= 5;
                 addCost -= 5;
                 if (firstCost <= MIN_COST_VALUE) {
                     firstCost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - firstCost;
+                    addCost = MIN_COST_VALUE - firstCostForMin;
                 }
+                updateAddCost(String.valueOf(addCost));
                 Log.d("TAG", "startCost: addCost " + addCost);
                 text_view_cost.setText(String.valueOf(firstCost));
             });
@@ -280,49 +500,47 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             btn_plus.setOnClickListener(v -> {
                 firstCost += 5;
                 addCost += 5;
-                if (firstCost >= MAX_COST_VALUE) {
-                    firstCost = MAX_COST_VALUE;
-                    addCost = MAX_COST_VALUE - firstCost;
-                }
+                updateAddCost(String.valueOf(addCost));
                 Log.d("TAG", "startCost: addCost " + addCost);
                 text_view_cost.setText(String.valueOf(firstCost));
             });
-
         }
-
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+    @SuppressLint("Range")
+    private String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
 
-        List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);
-        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-        double originLatitude = Double.parseDouble(stringListRout.get(1));
-        double originLongitude = Double.parseDouble(stringListRout.get(2));
-        double toLatitude = Double.parseDouble(stringListRout.get(3));
-        double toLongitude = Double.parseDouble(stringListRout.get(4));
+        cursor.moveToFirst();
 
+        // Получите значения полей из первой записи
 
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
-
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
 
         // Destination of route
         String str_dest = toLatitude + "/" + toLongitude;
 
-        //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        cursor.close();
+
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
+
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-
+        String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
         String parameters = null;

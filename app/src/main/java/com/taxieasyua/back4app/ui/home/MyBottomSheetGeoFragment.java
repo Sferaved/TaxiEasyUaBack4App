@@ -409,8 +409,15 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         String toCost, to_numberCost;
         String  url;
         if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
-            url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", requireActivity());
+            List<String> settings = new ArrayList<>();
+            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+
+            updateRoutMarker(settings);
+
+            url = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
         } else {
             toCost = String.valueOf(MyGeoDialogFragment.textViewTo.getText());
             if (toCost.indexOf("/") != -1) {
@@ -448,89 +455,50 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            long discount;
+            long discount = firstCost * discountInt / 100;
 
-            discount = firstCost * discountInt / 100;
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+            MyGeoDialogFragment.addCost = discountInt;
+            updateAddCost(String.valueOf(discount));
 
-            String addCost = stringListInfo.get(5);
-            newCost = String.valueOf(firstCost + discount + Long.parseLong(addCost));
+            newCost = String.valueOf(firstCost + discount);
 
         }
-
-
         return newCost;
     }
-//    @RequiresApi(api = Build.VERSION_CODES.O)
-//    private String changeCost() throws MalformedURLException {
-//        String newCost = "0";
-//
-//        String toCost, to_numberCost;
-//        String  url;
-//        if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
-//            url = getTaxiUrlSearchMarkers(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-//                    OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, "costSearchMarkers", requireActivity());
-//        } else {
-//            toCost = String.valueOf(MyGeoDialogFragment.textViewTo.getText());
-//            Log.d("TAG", "changeCost: MyGeoDialogFragment.to_number.getText()" + MyGeoDialogFragment.to_number.getText());
-//            to_numberCost = MyGeoDialogFragment.to_number.getText().toString();
-////            to_numberCost = "1";
-//
-//            url = getTaxiUrlSearchGeo(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan,
-//                    toCost, to_numberCost, "costSearchGeo", requireActivity());
-//        }
-//
-//
-//        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
-//
-//        String mes = sendUrl.get("message");
-//        String orderC = sendUrl.get("order_cost");
-//
-//        if (orderC.equals("0")) {
-//            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
-//            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//        }
-//        if (!orderC.equals("0")) {
-//
-//            Long  firstCost = Long.parseLong(orderC);
-//
-//            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-//            long discountInt = Integer.parseInt(discountText);
-//            long discount;
-//
-//            discount = firstCost * discountInt / 100;
-//            newCost = Long.toString(firstCost + discount);
-//
-//            ContentValues cv = new ContentValues();
-//
-//            cv.put("cost", newCost);
-//            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-//            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-//                    new String[] { "1" });
-//
-//            cv.put("addCost", Long.toString(discount));
-//            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-//                    new String[] { "1" });
-//            database.close();
-//        }
-//
-//
-//        return newCost;
-//    }
+
+    private void updateRoutMarker(List<String> settings) {
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat",  Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
+
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
     @RequiresApi(api = Build.VERSION_CODES.O)
     private static String getTaxiUrlSearchGeo(double originLatitude, double originLongitude,
                                               String to, String to_number,
                                               String urlAPI, Context context) {
-//    if(hasServer()) {
-        //  Проверка даты и времени
-
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
 
         // Origin of route
-        String str_origin = String.valueOf(originLatitude) + "/" + String.valueOf(originLongitude);
+        String str_origin = originLatitude + "/" + originLongitude;
 
         // Destination of route
         String str_dest = to + "/" + to_number;
@@ -596,16 +564,28 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String getTaxiUrlSearchMarkers(double originLatitude, double originLongitude,
-                                                 double toLatitude, double toLongitude,
-                                                 String urlAPI, Context context) {
+    @SuppressLint("Range")
+    private String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
+
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
 
         // Destination of route
         String str_dest = toLatitude + "/" + toLongitude;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        cursor.close();
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);

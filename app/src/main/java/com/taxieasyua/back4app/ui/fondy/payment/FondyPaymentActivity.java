@@ -137,16 +137,13 @@ public class FondyPaymentActivity extends AppCompatActivity {
                                     GalleryFragment.btnRouts.performClick();
                                     break;
                                 case "geo":
+                                case "marker":
+                                    HomeFragment.progressBar.setVisibility(View.VISIBLE);
                                     try {
                                         orderFinished();
                                     } catch (MalformedURLException ignored) {
 
                                     }
-                                    break;
-                                case "marker":
-                                    MyGeoMarkerDialogFragment.progressBar.setVisibility(View.VISIBLE);
-                                    MyGeoMarkerDialogFragment.btnOrder.setVisibility(View.INVISIBLE);
-                                    MyGeoMarkerDialogFragment.btnOrder.performClick();
                                     break;
                             }
                         } else {
