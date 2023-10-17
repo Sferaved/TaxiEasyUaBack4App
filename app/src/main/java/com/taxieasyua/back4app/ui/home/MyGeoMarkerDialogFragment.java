@@ -474,9 +474,9 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            long discount;
+            long discount= firstCost * discountInt / 100;
             firstCost = Long.parseLong(orderCost);
-            discount = firstCost * discountInt / 100;
+
             firstCost = firstCost + discount;
             addCost = discount;
             updateAddCost(String.valueOf(addCost));

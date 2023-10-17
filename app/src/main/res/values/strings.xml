@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code" tools:ignore="MissingTranslation">2.837</string>
-    <string name="version" tools:ignore="MissingTranslation">Версия: 2.837</string>
+    <string name="version_code" tools:ignore="MissingTranslation">2.838</string>
+    <string name="version" tools:ignore="MissingTranslation">Версия: 2.838</string>
 
     <string name="app_name" tools:ignore="MissingTranslation">Такси Украина 2</string>
 
@@ -308,6 +308,8 @@
     <string name="return_pay_error" tools:ignore="MissingTranslation">Ошибка возврата платежа.</string>
     <string name="btn_pay_return" tools:ignore="MissingTranslation">Вернуть оплату</string>
     <string name="check_pay_return">Ожидайте возврата платежа</string>
+    <string name="btn_return">Вернуться в приложение</string>
+    <string name="fondy_back">Для заказа поездки после успешной оплаты или для выбора другого способа платежа - нажмите кнопку на своем телефоне  \"Вернуться\" (стрелочка \"Назад\").</string>
 
 
 </resources>

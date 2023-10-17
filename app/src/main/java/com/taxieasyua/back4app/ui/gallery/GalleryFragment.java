@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -28,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
@@ -52,6 +54,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGalleryFragment;
+import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
@@ -94,6 +97,7 @@ public class GalleryFragment extends Fragment {
     private long costFirstForMin;
     private ArrayAdapter<String> listAdapter;
     private String messageFondy;
+    private String urlOrder;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -244,16 +248,14 @@ public class GalleryFragment extends Fragment {
                         }
                         break;
                 }
+                orderRout();
                 if (pay_method.equals("google_payment")) {
-                    if(MainActivity.order_id != null) {
-                        getStatus(MainActivity.order_id);
-                    } else {
-                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                        messageFondy = getString(R.string.fondy_message);
-                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
-                    }
+                    progressbar.setVisibility(View.VISIBLE);
+                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                    messageFondy = getString(R.string.fondy_message);
+                    getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
                 } else {
-                    order();
+                   orderFinished();
                 }
 
             }
@@ -280,7 +282,66 @@ public class GalleryFragment extends Fragment {
 
         return root;
     }
-        @RequiresApi(api = Build.VERSION_CODES.O)
+
+    @SuppressLint("ResourceAsColor")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void orderRout() {
+
+        if(connected()) {
+            urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers", requireActivity());
+        } else {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+    private void orderFinished() {
+        try {
+            Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
+            Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
+
+            String orderWeb = sendUrlMap.get("order_cost");
+
+            assert orderWeb != null;
+            if (!orderWeb.equals("0")) {
+                String to_name;
+                if (Objects.equals(sendUrlMap.get("routefrom"), sendUrlMap.get("routeto"))) {
+                    to_name = getString(R.string.on_city_tv);
+                } else {
+                    if(Objects.equals(sendUrlMap.get("routeto"), "Точка на карте")) {
+                        to_name = requireActivity().getString(R.string.end_point_marker);
+                    } else {
+                        to_name = sendUrlMap.get("routeto") + " " + sendUrlMap.get("to_number");
+                    }
+                }
+                String messageResult = getString(R.string.thanks_message) +
+                        OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                        to_name + "." +
+                        getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
+                String messageFondy = getString(R.string.fondy_message) + " " +
+                        OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                        to_name + ".";
+
+                Intent intent = new Intent(requireActivity(), FinishActivity.class);
+                intent.putExtra("messageResult_key", messageResult);
+                intent.putExtra("messageFondy_key", messageFondy);
+                intent.putExtra("messageCost_key", orderWeb);
+                intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
+                intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
+                startActivity(intent);
+            } else {
+
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+            }
+
+
+        } catch (MalformedURLException ignored) {
+
+        }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
         public void order(){
             if (connected()) {
                 if(!verifyOrder(requireContext())) {
@@ -381,6 +442,7 @@ public class GalleryFragment extends Fragment {
                                 // Обработка успешного ответа
                                 Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
                                 paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("urlOrder", urlOrder);
                                 paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
                                 paymentIntent.putExtra("fragment_key", "gallery");
                                 startActivity(paymentIntent);
@@ -415,74 +477,7 @@ public class GalleryFragment extends Fragment {
 
         });
     }
-    private void getStatus(String orderId) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        FondyApiService apiService = retrofit.create(FondyApiService.class);
-        String merchantPassword = requireActivity().getString(R.string.fondy_key_storage);
-
-        StatusRequestBody requestBody = new StatusRequestBody(
-                orderId,
-                MainActivity.MERCHANT_ID,
-                merchantPassword
-        );
-        StatusRequest statusRequest = new StatusRequest(requestBody);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponse<SuccessfulResponseData>> call = apiService.checkOrderStatus(statusRequest);
-
-        call.enqueue(new Callback<ApiResponse<SuccessfulResponseData>>() {
-            @SuppressLint("NewApi")
-            @Override
-            public void onResponse(Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
-
-                if (response.isSuccessful()) {
-                    ApiResponse<SuccessfulResponseData> apiResponse = response.body();
-                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
-                    if (apiResponse != null) {
-                        SuccessfulResponseData responseData = apiResponse.getResponse();
-                        Log.d(TAG, "onResponse: " + responseData.toString());
-                        if (responseData != null) {
-                            // Обработка успешного ответа
-                            Log.d("TAG", "getMerchantId: " + responseData.getMerchantId());
-                            Log.d("TAG", "getOrderStatus: " + responseData.getOrderStatus());
-                            Log.d("TAG", "getResponse_description: " + responseData.getResponseDescription());
-                            String orderStatus = responseData.getOrderStatus();
-                            if(orderStatus.equals("approved")){
-                                order();
-                            }
-                            else {
-                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                                messageFondy = getString(R.string.fondy_message);
-                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-                            }
-                        }
-                    }
-                } else {
-                    // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
-                // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
-            }
-        });
-
-    }
-    private void updateRoutMarker(List<String> settings) {
+     private void updateRoutMarker(List<String> settings) {
 
         Log.d("TAG", "updateRoutMarker: settings - " + settings);
 

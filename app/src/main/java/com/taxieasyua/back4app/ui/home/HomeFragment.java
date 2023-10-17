@@ -54,7 +54,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ServerConnection;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
 import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
@@ -75,11 +74,6 @@ import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
 import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
-import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
-import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
-import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -94,7 +88,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 import retrofit2.Call;
@@ -132,6 +125,8 @@ public class HomeFragment extends Fragment {
     public static ProgressBar progressBar;
     String pay_method;
     private long costFirstForMin;
+    private String urlOrder;
+
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -288,17 +283,21 @@ public class HomeFragment extends Fragment {
                             }
                             break;
                     }
+                    progressBar.setVisibility(View.VISIBLE);
+                    orderRout();
                     if (pay_method.equals("google_payment")) {
-                        if(MainActivity.order_id != null) {
-                            getStatus(MainActivity.order_id);
-                        } else {
-                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                            messageFondy = getString(R.string.fondy_message);
-                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-                        }
+                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                        messageFondy = getString(R.string.fondy_message);
+                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
                     } else {
-                        order();
+                        if (verifyPhone(requireActivity())) {
+                            orderFinished();
+                        } else {
+                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home");
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        }
                     }
+
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -357,7 +356,8 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                getRevers("V_20231017091528399_CSNX", "повернення замовлення", "2400");
+                getRevers("V_20231017113615688_EF6E", "повернення замовлення", "3100");
+//                getRevers("V_20231017113030583_DF70", "повернення замовлення", "2800");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String phone = stringList.get(3);
@@ -386,6 +386,165 @@ public class HomeFragment extends Fragment {
         return root;
     }
 
+    private void orderFinished() {
+        try {
+
+            Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
+
+            String orderWeb = sendUrlMap.get("order_cost");
+            String message = sendUrlMap.get("message");
+
+
+            if (!orderWeb.equals("0")) {
+
+                String from_name = sendUrlMap.get("routefrom");
+                String to_name = sendUrlMap.get("routeto");
+                if (from_name.equals(to_name)) {
+                    messageResult = getString(R.string.thanks_message) +
+                            from_name + " " + from_number.getText() + getString(R.string.on_city) +
+                            getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                } else {
+                    messageResult =  getString(R.string.thanks_message) +
+                            from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
+                            to_name + " " + to_number.getText() + "." +
+                            getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                }
+                Log.d(TAG, "order: sendUrlMap.get(\"from_lat\")" + sendUrlMap.get("from_lat"));
+                Log.d(TAG, "order: sendUrlMap.get(\"lat\")" + sendUrlMap.get("lat"));
+                if(!sendUrlMap.get("from_lat").equals("0") && !sendUrlMap.get("lat").equals("0")) {
+                    if(from_name.equals(to_name)) {
+                        insertRecordsOrders(
+                                from_name, from_name,
+                                from_number.getText().toString(), from_number.getText().toString(),
+                                sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                requireContext()
+                        );
+                    } else {
+                        insertRecordsOrders(
+                                from_name, to_name,
+                                from_number.getText().toString(), to_number.getText().toString(),
+                                sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                sendUrlMap.get("lat"), sendUrlMap.get("lng"),
+                                requireContext()
+                        );
+                    }
+                }
+
+                Intent intent = new Intent(requireActivity(), FinishActivity.class);
+                intent.putExtra("messageResult_key", messageResult);
+                intent.putExtra("messageCost_key", orderWeb);
+                intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
+                intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
+                startActivity(intent);
+                progressBar.setVisibility(View.INVISIBLE);
+
+            } else {
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+
+
+        } catch (MalformedURLException e) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+        }
+
+    }
+    @SuppressLint("ResourceAsColor")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void orderRout() {
+        if(!verifyOrder(requireContext())) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            return;
+        }
+        List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
+
+        if (stringListRoutHome.get(1).equals(" ") && !textViewTo.getText().equals("")) {
+            boolean stop = false;
+            if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                    from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+                    from_number.requestFocus();
+                } else {
+                    ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                    from_number.requestFocus();
+                }
+                stop = true;
+            }
+            if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
+                to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                    to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+                    to_number.requestFocus();
+                } else {
+                    ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
+                    to_number.requestFocus();
+                }
+                stop = true;
+
+            }
+            if (stop) {
+                return;
+            }
+
+            if (numberFlagFrom.equals("1") && !from_number.getText().toString().equals(" ")) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                    from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+                    from_number.requestFocus();
+                } else {
+                    ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                    from_number.requestFocus();
+                }
+
+            }
+            if (numberFlagTo.equals("1") && !to_number.getText().toString().equals(" ")) {
+                to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                    to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+                    to_number.requestFocus();
+                } else {
+                    ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
+                    to_number.requestFocus();
+                }
+
+
+            }
+
+            String from_numberCost;
+            if (from_number.getText().toString().equals(" ")) {
+                from_numberCost = " ";
+            } else {
+
+                from_numberCost = from_number.getText().toString();
+            }
+            String toCost, to_numberCost;
+            if (to == null) {
+                toCost = from;
+                to_numberCost = from_number.getText().toString();
+            } else {
+                toCost = to;
+                to_numberCost = to_number.getText().toString();
+            }
+            List<String> settings = new ArrayList<>();
+            settings.add(from);
+            settings.add(from_numberCost);
+            settings.add(toCost);
+            settings.add(to_numberCost);
+            Log.d(TAG, "order: settings" + settings);
+            updateRoutHome(settings);
+        }
+        if (!verifyPhone(requireContext())) {
+            getPhoneNumber();
+        }
+
+        urlOrder = getTaxiUrlSearch( "orderSearch", requireActivity());
+    }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d(TAG, "updateAddCost: addCost" + addCost);
@@ -500,6 +659,7 @@ public class HomeFragment extends Fragment {
                                 // Обработка успешного ответа
                                 Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
                                 paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("urlOrder", urlOrder);
                                 paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
                                 paymentIntent.putExtra("fragment_key", "home");
                                 startActivity(paymentIntent);
@@ -534,72 +694,6 @@ public class HomeFragment extends Fragment {
 
         });
     }
-    private void getStatus(String orderId) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        FondyApiService apiService = retrofit.create(FondyApiService.class);
-        String merchantPassword = requireActivity().getString(R.string.fondy_key_storage);
-
-        StatusRequestBody requestBody = new StatusRequestBody(
-                orderId,
-                MainActivity.MERCHANT_ID,
-                merchantPassword
-        );
-        StatusRequest statusRequest = new StatusRequest(requestBody);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponse<SuccessfulResponseData>> call = apiService.checkOrderStatus(statusRequest);
-
-        call.enqueue(new Callback<ApiResponse<SuccessfulResponseData>>() {
-            @SuppressLint("NewApi")
-            @Override
-            public void onResponse(Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
-                if (response.isSuccessful()) {
-                    ApiResponse<SuccessfulResponseData> apiResponse = response.body();
-                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
-                    if (apiResponse != null) {
-                        SuccessfulResponseData responseData = apiResponse.getResponse();
-                        Log.d(TAG, "onResponse: " + responseData.toString());
-                        if (responseData != null) {
-                            // Обработка успешного ответа
-                            Log.d("TAG", "getMerchantId: " + responseData.getMerchantId());
-                            Log.d("TAG", "getOrderStatus: " + responseData.getOrderStatus());
-                            Log.d("TAG", "getResponse_description: " + responseData.getResponseDescription());
-                            String orderStatus = responseData.getOrderStatus();
-                            if(orderStatus.equals("approved")){
-                                order();
-                            } else {
-                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                                messageFondy = getString(R.string.fondy_message);
-                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-                            }
-                        }
-                    }
-                } else {
-                    // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
-                // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
-            }
-        });
-
-    }
-
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -611,10 +705,9 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
+        addCost = 0;
+        updateAddCost(String.valueOf(addCost));
         btn_clear = binding.btnClear;
-
-
 
         List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
         if (stringListRoutHome.get(1).equals(" ")) {
@@ -627,10 +720,6 @@ public class HomeFragment extends Fragment {
             btn_clear.setVisibility(View.INVISIBLE);
 
             btn_order.setVisibility(View.INVISIBLE);
-
-            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-            addCost = Integer.parseInt(discountText);
-            updateAddCost(String.valueOf(addCost));
 
             from = null;
             to = null;
@@ -1052,172 +1141,6 @@ public class HomeFragment extends Fragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
-    @SuppressLint("ResourceAsColor")
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void order() {
-        if(!verifyOrder(requireContext())) {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            return;
-        }
-        List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
-        
-        if (stringListRoutHome.get(1).equals(" ") && !textViewTo.getText().equals("")) {
-            boolean stop = false;
-            if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                    from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-                    from_number.requestFocus();
-                } else {
-                    ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                    from_number.requestFocus();
-                }
-                stop = true;
-            }
-            if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
-                to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                    to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-                    to_number.requestFocus();
-                } else {
-                    ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                    to_number.requestFocus();
-                }
-                stop = true;
-
-            }
-            if (stop) {
-                return;
-            }
-
-            if (numberFlagFrom.equals("1") && !from_number.getText().toString().equals(" ")) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
-                    from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-                    from_number.requestFocus();
-                } else {
-                    ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
-                    from_number.requestFocus();
-                }
-
-            }
-            if (numberFlagTo.equals("1") && !to_number.getText().toString().equals(" ")) {
-                to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
-                    to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-                    to_number.requestFocus();
-                } else {
-                    ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
-                    to_number.requestFocus();
-                }
-
-
-            }
-
-            String from_numberCost;
-            if (from_number.getText().toString().equals(" ")) {
-                from_numberCost = " ";
-            } else {
-
-                from_numberCost = from_number.getText().toString();
-            }
-            String toCost, to_numberCost;
-            if (to == null) {
-                toCost = from;
-                to_numberCost = from_number.getText().toString();
-            } else {
-                toCost = to;
-                to_numberCost = to_number.getText().toString();
-            }
-            List<String> settings = new ArrayList<>();
-            settings.add(from);
-            settings.add(from_numberCost);
-            settings.add(toCost);
-            settings.add(to_numberCost);
-            Log.d(TAG, "order: settings" + settings);
-            updateRoutHome(settings);
-        }
-        if (!verifyPhone(requireContext())) {
-            getPhoneNumber();
-        }
-        if(connected()) {
-            if (!verifyPhone(requireContext())) {
-                MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home");
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-            }
-            if (verifyPhone(requireContext())) {
-                try {
-                    String urlOrder = getTaxiUrlSearch( "orderSearch", requireActivity());
-                    Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
-
-                    String orderWeb = sendUrlMap.get("order_cost");
-                    String message = sendUrlMap.get("message");
-
-
-                    if (!orderWeb.equals("0")) {
-
-                        String from_name = sendUrlMap.get("routefrom");
-                        String to_name = sendUrlMap.get("routeto");
-                        if (from_name.equals(to_name)) {
-                            messageResult = getString(R.string.thanks_message) +
-                                    from_name + " " + from_number.getText() + getString(R.string.on_city) +
-                                    getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-                        } else {
-                            messageResult =  getString(R.string.thanks_message) +
-                                    from_name + " " + from_number.getText() + " " + getString(R.string.to_message) +
-                                    to_name + " " + to_number.getText() + "." +
-                                    getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
-                        }
-                        Log.d(TAG, "order: sendUrlMap.get(\"from_lat\")" + sendUrlMap.get("from_lat"));
-                        Log.d(TAG, "order: sendUrlMap.get(\"lat\")" + sendUrlMap.get("lat"));
-                        if(!sendUrlMap.get("from_lat").equals("0") && !sendUrlMap.get("lat").equals("0")) {
-                            if(from_name.equals(to_name)) {
-                                insertRecordsOrders(
-                                        from_name, from_name,
-                                        from_number.getText().toString(), from_number.getText().toString(),
-                                        sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
-                                        sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
-                                        requireContext()
-                                );
-                            } else {
-                                insertRecordsOrders(
-                                        from_name, to_name,
-                                        from_number.getText().toString(), to_number.getText().toString(),
-                                        sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
-                                        sendUrlMap.get("lat"), sendUrlMap.get("lng"),
-                                        requireContext()
-                                );
-                            }
-                        }
-
-                        Intent intent = new Intent(requireActivity(), FinishActivity.class);
-                        intent.putExtra("messageResult_key", messageResult);
-                        intent.putExtra("messageCost_key", orderWeb);
-                        intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
-                        intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
-                        startActivity(intent);
-                        progressBar.setVisibility(View.INVISIBLE);
-
-                    } else {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-
-
-                } catch (MalformedURLException e) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        } else {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-        }
-    }
 
     private boolean verifyOrder(Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1291,64 +1214,7 @@ public class HomeFragment extends Fragment {
         Log.d("TAG", "routMaps: " + routsArr);
         return routsArr;
     }
-    private String[] arrayToRoutsAdapter () {
-        ArrayList<Map>  routMaps = routMaps(getContext());
-        String[] arrayRouts;
-        if(routMaps.size() != 0) {
-            arrayRouts = new String[routMaps.size()];
-            for (int i = 0; i < routMaps.size(); i++) {
-                if(!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("to_street").toString())) {
-                   if (!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("from_number").toString())) {
-                       arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
-                               routMaps.get(i).get("from_number").toString() + " -> " +
-                               routMaps.get(i).get("to_street").toString() + " " +
-                               routMaps.get(i).get("to_number").toString();
-                   } else if(!routMaps.get(i).get("to_street").toString().equals(routMaps.get(i).get("to_number").toString())) {
-                       arrayRouts[i] = routMaps.get(i).get("from_street").toString() +
-                               OpenStreetMapActivity.tom +
-                               routMaps.get(i).get("to_street").toString() + " " +
-                               routMaps.get(i).get("to_number").toString();
-                   } else {
-                       arrayRouts[i] = routMaps.get(i).get("from_street").toString()  +
-                               OpenStreetMapActivity.tom +
-                               routMaps.get(i).get("to_street").toString();
 
-                   }
-
-                } else {
-                    arrayRouts[i] = routMaps.get(i).get("from_street").toString() + " " +
-                            routMaps.get(i).get("from_number").toString() + " -> " +
-                            getString(R.string.on_city_tv);
-                }
-
-            }
-        } else {
-            arrayRouts = null;
-        }
-        return arrayRouts;
-    }
-    public CompletableFuture<Boolean> checkConnectionAsync() {
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
-
-        ServerConnection.checkConnection("https://m.easy-order-taxi.site/", new ServerConnection.ConnectionCallback() {
-            @Override
-            public void onConnectionResult(boolean isConnected) {
-                future.complete(isConnected);
-            }
-        });
-
-        return future;
-    }
-    private boolean hasServer() {
-        CompletableFuture<Boolean> connectionFuture = checkConnectionAsync();
-        boolean isConnected = false;
-        try {
-            isConnected = connectionFuture.get();
-        } catch (Exception e) {
-
-        }
-        return  isConnected;
-    };
     private boolean connected() {
 
         boolean hasConnect = false;

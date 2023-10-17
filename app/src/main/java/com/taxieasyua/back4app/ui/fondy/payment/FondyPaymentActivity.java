@@ -2,6 +2,7 @@ package com.taxieasyua.back4app.ui.fondy.payment;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
@@ -59,7 +60,8 @@ public class FondyPaymentActivity extends AppCompatActivity {
     private WebView webView;
     private String TAG = "TAG";
 
-    @SuppressLint("SetJavaScriptEnabled")
+
+    @SuppressLint({"SetJavaScriptEnabled", "MissingInflatedId"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,8 +77,8 @@ public class FondyPaymentActivity extends AppCompatActivity {
         String checkoutUrl = getIntent().getStringExtra("checkoutUrl");
         // Загрузка URL в WebView
         webView.loadUrl(Objects.requireNonNull(checkoutUrl));
-        String orderCost = getIntent().getStringExtra("orderCost");
-        Log.d(TAG, "onCreate: Fondy orderCost " + orderCost);
+        MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(getString(R.string.fondy_back));
+        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
     }
     @Override
     public void onBackPressed() {
@@ -128,19 +130,18 @@ public class FondyPaymentActivity extends AppCompatActivity {
                             switch (Objects.requireNonNull(fragment_key)){
                                 case "home":
                                     HomeFragment.progressBar.setVisibility(View.VISIBLE);
-                                    HomeFragment.btn_order.setVisibility(View.INVISIBLE);
-                                    HomeFragment.btn_order.performClick();
+                                    try {
+                                        orderHome();
+                                    } catch (MalformedURLException ignored) {
+
+                                    }
                                     break;
                                 case "gallery":
-                                    GalleryFragment.progressbar.setVisibility(View.VISIBLE);
-                                    GalleryFragment.btnRouts.setVisibility(View.INVISIBLE);
-                                    GalleryFragment.btnRouts.performClick();
-                                    break;
                                 case "geo":
                                 case "marker":
                                     HomeFragment.progressBar.setVisibility(View.VISIBLE);
                                     try {
-                                        orderFinished();
+                                        orderGeoMarker();
                                     } catch (MalformedURLException ignored) {
 
                                     }
@@ -179,7 +180,7 @@ public class FondyPaymentActivity extends AppCompatActivity {
 
     }
 
-    public void orderFinished() throws MalformedURLException {
+    public void orderGeoMarker() throws MalformedURLException {
         String urlOrder = getIntent().getStringExtra("urlOrder");
         Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
         Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
@@ -240,6 +241,74 @@ public class FondyPaymentActivity extends AppCompatActivity {
             startActivity(intent);
 
         }
+    }
+
+    private void orderHome() throws MalformedURLException {
+
+        String urlOrder = getIntent().getStringExtra("urlOrder");
+        Log.d(TAG, "orderHome: " + urlOrder);
+        Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
+
+            String orderWeb = sendUrlMap.get("order_cost");
+            String message = sendUrlMap.get("message");
+
+
+            if (!orderWeb.equals("0")) {
+
+                String from_name = sendUrlMap.get("routefrom");
+                String from_number = sendUrlMap.get("routefromnumber");
+                String to_name = sendUrlMap.get("routeto");
+                String to_number = sendUrlMap.get("to_number");
+                String messageResult;
+                if (from_name.equals(to_name)) {
+                    messageResult = getString(R.string.thanks_message) +
+                            from_name + " " + from_number + getString(R.string.on_city) +
+                            getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                } else {
+                    messageResult =  getString(R.string.thanks_message) +
+                            from_name + " " + from_number + " " + getString(R.string.to_message) +
+                            to_name + " " + to_number + "." +
+                            getString(R.string.cost_of_order) + orderWeb + getString(R.string.UAH);
+                }
+                Log.d(TAG, "order: sendUrlMap.get(\"from_lat\")" + sendUrlMap.get("from_lat"));
+                Log.d(TAG, "order: sendUrlMap.get(\"lat\")" + sendUrlMap.get("lat"));
+                if(!sendUrlMap.get("from_lat").equals("0") && !sendUrlMap.get("lat").equals("0")) {
+                    if(from_name.equals(to_name)) {
+                        insertRecordsOrders(
+                                from_name, from_name,
+                                from_number, from_number,
+                                sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                getApplicationContext()
+                        );
+                    } else {
+                        insertRecordsOrders(
+                                from_name, to_name,
+                                from_number, to_number,
+                                sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                                sendUrlMap.get("lat"), sendUrlMap.get("lng"),
+                                getApplicationContext()
+                        );
+                    }
+                }
+                String messageFondy = getString(R.string.fondy_message);
+
+                Intent intent = new Intent(getApplicationContext(), FinishActivity.class);
+                intent.putExtra("messageResult_key", messageResult);
+                intent.putExtra("messageFondy_key", messageFondy);
+                intent.putExtra("messageCost_key", orderWeb);
+                intent.putExtra("sendUrlMap", new HashMap<>(sendUrlMap));
+                intent.putExtra("UID_key", String.valueOf(sendUrlMap.get("dispatching_order_uid")));
+                startActivity(intent);
+
+            } else {
+                Intent intent = new Intent(getApplicationContext(), ErrorPayActivity.class);
+                intent.putExtra("messageError", message);
+                intent.putExtra("urlOrder", urlOrder);
+                String orderCost = getIntent().getStringExtra("orderCost");
+                intent.putExtra("orderCost", orderCost);
+                startActivity(intent);
+            }
     }
     private static void insertRecordsOrders( String from, String to,
                                              String from_number, String to_number,
