@@ -408,7 +408,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
 
         String toCost, to_numberCost;
         String  url;
-        if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText())) {
+        if(MyGeoDialogFragment.geo_marker.equals("marker")){
+            url = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+        } else if (TextUtils.isEmpty(MyGeoDialogFragment.textViewTo.getText()) || MyGeoDialogFragment.geo_marker.equals("marker")) {
             List<String> settings = new ArrayList<>();
             settings.add(String.valueOf(OpenStreetMapActivity.startLat));
             settings.add(String.valueOf(OpenStreetMapActivity.startLan));
@@ -457,8 +459,8 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             long discountInt = Integer.parseInt(discountText);
             long discount = firstCost * discountInt / 100;
 
-            MyGeoDialogFragment.addCost = discountInt;
-            updateAddCost(String.valueOf(discount));
+            MyGeoDialogFragment.addCost = 0;
+            updateAddCost(String.valueOf(0));
 
             newCost = String.valueOf(firstCost + discount);
 

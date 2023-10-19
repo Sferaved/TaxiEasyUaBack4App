@@ -126,6 +126,7 @@ public class HomeFragment extends Fragment {
     String pay_method;
     private long costFirstForMin;
     private String urlOrder;
+    private long discount;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -158,7 +159,7 @@ public class HomeFragment extends Fragment {
         View root = binding.getRoot();
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+        NavController navController;
         progressBar = binding.progressBar;
         buttonBonus = binding.btnBonus;
 
@@ -708,10 +709,38 @@ public class HomeFragment extends Fragment {
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
         btn_clear = binding.btnClear;
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
 
+        textViewTo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    // Фокус установлен на TextView, очищаем его
+                    textViewTo.setText("");
+                    to_number.setText("");
+                    to_number.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
         List<String> stringListRoutHome = logCursor(MainActivity.ROUT_HOME, requireActivity());
-        if (stringListRoutHome.get(1).equals(" ")) {
-            rout();
+        String valueAtIndex1 = stringListRoutHome.get(1);
+        rout();
+
+
+        if (valueAtIndex1 != null && !valueAtIndex1.equals(" ")) {
+            textViewFrom.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        // Фокус установлен на TextView, очищаем его
+                        resetRoutHome();
+                        navController.navigate(R.id.nav_home);
+                    }
+                }
+            });
+            costRoutHome(stringListRoutHome);
+        } else {
+
             text_view_cost.setVisibility(View.INVISIBLE);
             btn_minus.setVisibility(View.INVISIBLE);
             btn_plus.setVisibility(View.INVISIBLE);
@@ -729,10 +758,8 @@ public class HomeFragment extends Fragment {
             from_number.setText("");
             textViewTo.setText("");
             to_number.setText("");
-        } else {
-            costRoutHome(stringListRoutHome);
-        }    
-        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        }
+
 
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -752,7 +779,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                progressBar.setVisibility(View.VISIBLE);
 
                 if (textViewTo.getText().toString().isEmpty()) {
                         to = null;
@@ -923,7 +949,7 @@ public class HomeFragment extends Fragment {
         binding.textwhere.setVisibility(View.VISIBLE);
         binding.num2.setVisibility(View.VISIBLE);
         btn_clear.setVisibility(View.VISIBLE);
-
+        from = textViewFrom.getText().toString();
 
         if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -1011,19 +1037,17 @@ public class HomeFragment extends Fragment {
 
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
-                long discount;
-
+                Log.d("TAG2", "discountInt: " + discountInt);
                 cost = Long.parseLong(orderCost);
-
+                Log.d("TAG2", "cost: " + cost);
                 discount = cost * discountInt / 100;
-                addCost += discount;
-                updateAddCost(String.valueOf(addCost));
-
+                Log.d("TAG2", "discount: " + discount);
                 cost += discount;
                 text_view_cost.setText(Long.toString(cost));
 
                 costFirstForMin = cost;
                 MIN_COST_VALUE = (long) (cost * 0.1);
+                Log.d(TAG, "cost: MIN_COST_VALUE "  + MIN_COST_VALUE);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -1043,22 +1067,24 @@ public class HomeFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void costRoutHome(List<String> stringListRoutHome ){
-
+        Log.d(TAG, "costRoutHome: " + stringListRoutHome);
         textViewFrom.setText(stringListRoutHome.get(1));
         if(!stringListRoutHome.get(2).equals(" ")) {
             from_number.setVisibility(View.VISIBLE);
             from_number.setText(stringListRoutHome.get(2));
+        }if(!stringListRoutHome.get(4).equals(" ")) {
+            to_number.setText(stringListRoutHome.get(4));
+            to_number.setVisibility(View.VISIBLE);
         }
         if(!stringListRoutHome.get(1).equals(stringListRoutHome.get(3))) {
             textViewTo.setText(stringListRoutHome.get(3));
             textViewTo.setVisibility(View.VISIBLE);
             binding.textwhere.setVisibility(View.VISIBLE);
             binding.num2.setVisibility(View.VISIBLE);
+        } else {
+            to_number.setVisibility(View.INVISIBLE);
         }
-        if(!stringListRoutHome.get(4).equals(" ")) {
-            to_number.setText(stringListRoutHome.get(4));
-            to_number.setVisibility(View.VISIBLE);
-        }
+
         textViewTo.setVisibility(View.VISIBLE);
 
         binding.textwhere.setVisibility(View.VISIBLE);
@@ -1115,16 +1141,15 @@ public class HomeFragment extends Fragment {
                 btn_order.setVisibility(View.VISIBLE);
                 btn_clear.setVisibility(View.VISIBLE);
 
-
+///////////////////////////////////////////////////////////////////////////////////
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
-                long discount;
+                Log.d(TAG, "costRoutHome:discountInt " + discountInt);
 
                 cost = Long.parseLong(orderCost);
 
                 discount = cost * discountInt / 100;
-                addCost += discount;
-                updateAddCost(String.valueOf(addCost));
+
 
                 cost = cost + discount;
                 text_view_cost.setText(Long.toString(cost));
@@ -1269,6 +1294,7 @@ public class HomeFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private String getTaxiUrlSearch(String urlAPI, Context context) {
+        Log.d("TAG2", "startCost: discountText" + logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).toString());
 
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);
         Log.d(TAG, "getTaxiUrlSearch: stringListRout" + stringListRout);
@@ -1296,9 +1322,12 @@ public class HomeFragment extends Fragment {
 
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
 
-        Log.d(TAG, "getTaxiUrlSearch: addCost" + addCost);
+        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
+
+        Log.d("TAG2", "startCost: discountText" + discount);
+
+        Log.d("TAG2", "getTaxiUrlSearch: addCost11111" + addCost);
         // Building the parameters to the web service
 
         String parameters = null;

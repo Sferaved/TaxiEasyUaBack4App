@@ -179,7 +179,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         discount.setText(logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3));
         String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
         discountFist =  Integer.parseInt(discountText);
-
+        Log.d("TAG", "discountFist" + discountFist);
 
         btn_min = view.findViewById(R.id.btn_minus);
         btn_min.setOnClickListener(new View.OnClickListener() {
@@ -416,8 +416,8 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
             long discount = firstCost * discountInt / 100;
-            HomeFragment.addCost = discountInt;
-            updateAddCost(String.valueOf(discount));
+            HomeFragment.addCost = 0;
+            updateAddCost(String.valueOf(0));
 
             newCost = String.valueOf(firstCost + discount);
         }

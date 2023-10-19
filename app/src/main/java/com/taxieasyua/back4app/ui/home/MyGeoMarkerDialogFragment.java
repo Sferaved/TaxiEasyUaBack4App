@@ -99,6 +99,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     private String messageFondy;
     private static String urlOrder;
     private long firstCostForMin;
+    private long discount;
 
     @Nullable
     @Override
@@ -151,9 +152,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 break;
         }
 
-        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-
-        addCost = Integer.parseInt(discountText);
+        addCost = 0;
         updateAddCost(String.valueOf(addCost));
 
         numberFlagTo = "2";
@@ -472,16 +471,16 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         }
         if (!orderCost.equals("0")) {
 
-            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
-            long discountInt = Integer.parseInt(discountText);
-            long discount= firstCost * discountInt / 100;
+            String discountTextM = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+            Log.d(TAG, "startCost: discountText" + logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).toString());
+            int discountInt = Integer.parseInt(discountTextM);
             firstCost = Long.parseLong(orderCost);
+            discount = firstCost * discountInt / 100;
 
             firstCost = firstCost + discount;
-            addCost = discount;
-            updateAddCost(String.valueOf(addCost));
+             
             text_view_cost.setText(String.valueOf(firstCost));
-            firstCost = Long.parseLong(text_view_cost.getText().toString());
+
             firstCostForMin = firstCost;
             long MIN_COST_VALUE = (long) (firstCost * 0.1);
 
@@ -540,7 +539,8 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
+        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
+
         // Building the parameters to the web service
 
         String parameters = null;

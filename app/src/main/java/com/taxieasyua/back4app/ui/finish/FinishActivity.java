@@ -187,6 +187,7 @@ public class FinishActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 MainActivity.order_id = null;
+                updateAddCost(String.valueOf(0));
                 if(!verifyOrder()) {
                     MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -223,6 +224,17 @@ public class FinishActivity extends AppCompatActivity {
         });
     }
 
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
     @Override
     protected void onResume() {
         super.onResume();

@@ -135,6 +135,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     private static String urlOrder;
     private long MIN_COST_VALUE;
     private long firstCostForMin;
+    private static long discount;
 
     public static MyGeoDialogFragment newInstance() {
         fragment = new MyGeoDialogFragment();
@@ -175,9 +176,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             adressArr = new ArrayList<>(routMaps().size());
         }
 
-        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-
-        addCost = Integer.parseInt(discountText);
+        addCost = 0;
         updateAddCost(String.valueOf(addCost));
 
         numberFlagTo = "2";
@@ -330,8 +329,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                              firstCost = Long.parseLong(orderCost);
                              discount = firstCost * discountInt / 100;
                              firstCost = firstCost + discount;
-                             addCost = discount;
-                             updateAddCost(String.valueOf(addCost));
+
                              firstCostForMin = firstCost;
                              text_view_cost.setText(String.valueOf(firstCost));
 
@@ -402,12 +400,11 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 } else {
                     String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                     long discountInt = Integer.parseInt(discountText);
-                    long discount;
+
                     firstCost = Long.parseLong(orderCost);
                     discount = firstCost * discountInt / 100;
                     firstCost = firstCost + discount;
-                    addCost = discount;
-                    updateAddCost(String.valueOf(addCost));
+
                     text_view_cost.setText(String.valueOf(firstCost));
 
                     Log.d("TAG", "startCost: firstCost " + firstCost);
@@ -511,7 +508,25 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
+        btn_minus.setOnClickListener(v -> {
+            firstCost -= 5;
+            addCost -= 5;
+            if (firstCost <= MIN_COST_VALUE) {
+                firstCost = MIN_COST_VALUE;
+                addCost = MIN_COST_VALUE - firstCostForMin;
+            }
+            updateAddCost(String.valueOf(addCost));
+            Log.d("TAG", "startCost: addCost " + addCost);
+            text_view_cost.setText(String.valueOf(firstCost));
+        });
 
+        btn_plus.setOnClickListener(v -> {
+            firstCost += 5;
+            addCost += 5;
+            updateAddCost(String.valueOf(addCost));
+            Log.d("TAG", "startCost: addCost " + addCost);
+            text_view_cost.setText(String.valueOf(firstCost));
+        });
         btnOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -725,12 +740,11 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            long discount;
+
             firstCost = Long.parseLong(orderCost);
             discount = firstCost * discountInt / 100;
             firstCost = firstCost + discount;
-            addCost = discount;
-            updateAddCost(String.valueOf(addCost));
+
             text_view_cost.setText(String.valueOf(firstCost));
             MIN_COST_VALUE = (long) (firstCost * 0.1);
             firstCostForMin = firstCost;
@@ -739,25 +753,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             firstCost = Long.parseLong(text_view_cost.getText().toString());
             Log.d("TAG", "startCost: firstCost " + firstCost);
             Log.d("TAG", "startCost: addCost " + addCost);
-                 btn_minus.setOnClickListener(v -> {
-                     firstCost -= 5;
-                     addCost -= 5;
-                     if (firstCost <= MIN_COST_VALUE) {
-                         firstCost = MIN_COST_VALUE;
-                         addCost = MIN_COST_VALUE - firstCostForMin;
-                     }
-                     updateAddCost(String.valueOf(addCost));
-                     Log.d("TAG", "startCost: addCost " + addCost);
-                     text_view_cost.setText(String.valueOf(firstCost));
-                 });
 
-                btn_plus.setOnClickListener(v -> {
-                    firstCost += 5;
-                    addCost += 5;
-                    updateAddCost(String.valueOf(addCost));
-                    Log.d("TAG", "startCost: addCost " + addCost);
-                    text_view_cost.setText(String.valueOf(firstCost));
-                });
             }
     }
     private void updateAddCost(String addCost) {
@@ -874,18 +870,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         String str_dest = toLatitude + "/" + toLongitude;
 
         cursor.close();
-
-
-
-//        List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);уууу
-//        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
-//
-//        double originLatitude = Double.parseDouble(stringListRout.get(1));
-//        double originLongitude = Double.parseDouble(stringListRout.get(2));
-//        double toLatitude = Double.parseDouble(stringListRout.get(3));
-//        double toLongitude = Double.parseDouble(stringListRout.get(4));
-
-
+ 
 
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
@@ -897,7 +882,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
+        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
         // Building the parameters to the web service
 
         String parameters = null;
@@ -1138,8 +1123,17 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         } else {
-                            text_view_cost.setText(orderCost);
-                            firstCost = Long.parseLong(text_view_cost.getText().toString());
+                            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
+
+
+                            long discountInt = Integer.parseInt(discountText);
+                            firstCost = Long.parseLong(orderCost);
+                            discount= firstCost * discountInt / 100;
+
+                            firstCost = firstCost + discount;
+                            text_view_cost.setText(String.valueOf(firstCost));
+                            MIN_COST_VALUE = (long) (firstCost*0.1);
+                            firstCostForMin = firstCost;
                             to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
                             textViewTo.setText(to);
                             if(connected()) {
@@ -1544,7 +1538,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
+        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
         // Building the parameters to the web service
 
         String parameters = null;

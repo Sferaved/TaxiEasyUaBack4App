@@ -98,6 +98,7 @@ public class GalleryFragment extends Fragment {
     private ArrayAdapter<String> listAdapter;
     private String messageFondy;
     private String urlOrder;
+    private long discount;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -128,8 +129,8 @@ public class GalleryFragment extends Fragment {
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-        addCost = Integer.parseInt(discountText);
+//        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+        addCost = 0;
         updateAddCost(String.valueOf(addCost));
 
         progressbar = binding.progressBar;
@@ -315,11 +316,11 @@ public class GalleryFragment extends Fragment {
                     }
                 }
                 String messageResult = getString(R.string.thanks_message) +
-                        OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                        sendUrlMap.get("routefrom") + sendUrlMap.get("routefromnumber") + " " + getString(R.string.to_message) +
                         to_name + "." +
                         getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
                 String messageFondy = getString(R.string.fondy_message) + " " +
-                        OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                        sendUrlMap.get("routefrom") + sendUrlMap.get("routefromnumber") + " " + getString(R.string.to_message) +
                         to_name + ".";
 
                 Intent intent = new Intent(requireActivity(), FinishActivity.class);
@@ -341,59 +342,7 @@ public class GalleryFragment extends Fragment {
 
         }
     }
-    @RequiresApi(api = Build.VERSION_CODES.O)
-        public void order(){
-            if (connected()) {
-                if(!verifyOrder(requireContext())) {
 
-                    MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                } else {
-                    try {
-                        List<String> settings = new ArrayList<>();
-
-                        settings.add(Double.toString(from_lat));
-                        settings.add(Double.toString(from_lng));
-                        settings.add(Double.toString(to_lat));
-                        settings.add(Double.toString(to_lng));
-
-                        updateRoutMarker(settings);
-
-
-                        String url = getTaxiUrlSearchMarkers("orderSearchMarkers", getContext());
-                        Map<String, String> sendUrl = ToJSONParser.sendURL(url);
-
-                        String mes = sendUrl.get("message");
-                        String orderC = sendUrl.get("order_cost");
-
-                        if (orderC.equals("0")) {
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        }
-                        if (!orderC.equals("0")) {
-                            String orderWeb = orderC;
-                            String messageResult = getString(R.string.thanks_message) +
-                                    FromAddressString + getString(R.string.to_message) + ToAddressString +
-                                    getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
-                            Intent intent = new Intent(requireActivity(), FinishActivity.class);
-                            intent.putExtra("messageResult_key", messageResult);
-                            intent.putExtra("messageCost_key", orderWeb);
-                            intent.putExtra("sendUrlMap", new HashMap<>(sendUrl));
-                            intent.putExtra("UID_key", Objects.requireNonNull(sendUrl.get("dispatching_order_uid")));
-                            startActivity(intent);
-
-                        }
-
-                    } catch (MalformedURLException e) {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-                }
-            } else {
-                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            }
-        }
     private void paymentType(String paymentCode) {
         ContentValues cv = new ContentValues();
         cv.put("bonusPayment", paymentCode);
@@ -529,26 +478,15 @@ public class GalleryFragment extends Fragment {
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
             String message = sendUrlMapCost.get("message");
-            String orderCostStr = sendUrlMapCost.get("order_cost");
+            String orderCost = sendUrlMapCost.get("order_cost");
+            Log.d(TAG, "dialogFromToOneRout:orderCost " + orderCost);
 
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
-            long addCost = Long.parseLong(stringListInfo.get(5));
-
-            assert orderCostStr != null;
-            long orderCostLong =  Long.parseLong(orderCostStr);
-
-            String orderCost = String.valueOf(orderCostLong + addCost);
 
             if (!orderCost.equals("0")) {
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
-                long discount;
-
                 cost = Long.parseLong(orderCost);
                 discount = cost * discountInt / 100;
-
-                addCost += discount;
-                updateAddCost(String.valueOf(addCost));
 
                 cost += discount;
                 text_view_cost.setText(String.valueOf(cost));
@@ -639,7 +577,7 @@ public class GalleryFragment extends Fragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
+        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
         // Building the parameters to the web service
 
         String parameters = null;

@@ -1254,6 +1254,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "MyPrefsFile";
     private static final String LAST_NOTIFICATION_TIME_KEY = "lastNotificationTime";
+//    private static final long ONE_DAY_IN_MILLISECONDS = 0; // 24 часа в миллисекундах
     private static final long ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
 
     private void version(String versionApi) throws MalformedURLException {

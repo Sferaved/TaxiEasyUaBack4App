@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code" tools:ignore="MissingTranslation">2.838</string>
-    <string name="version" tools:ignore="MissingTranslation">Версия: 2.838</string>
+    <string name="version_code" tools:ignore="MissingTranslation">2.839</string>
+    <string name="version" tools:ignore="MissingTranslation">Версия: 2.839</string>
 
     <string name="app_name" tools:ignore="MissingTranslation">Такси Украина 2</string>
 
@@ -299,7 +299,8 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-    <string name="fondy_message" tools:ignore="MissingTranslation">"Оплата услуг такси."</string>
+<!--    <string name="fondy_message" tools:ignore="MissingTranslation">"Оплата услуг такси."</string>-->
+    <string name="fondy_message" tools:ignore="MissingTranslation">Інша допоміжна діяльність у сфері транспорту</string>
     <string name="fondy_revers_message" tools:ignore="MissingTranslation">"Возврат платежа: "</string>
     <string name="fondy_pay" tools:ignore="MissingTranslation">Оплатить картой</string>
     <string name="cost_of_road_fondy" tools:ignore="MissingTranslation">Стоимость поездки: </string>
@@ -307,9 +308,9 @@
     <string name="return_pay" tools:ignore="MissingTranslation">Повернення замовлення.</string>
     <string name="return_pay_error" tools:ignore="MissingTranslation">Ошибка возврата платежа.</string>
     <string name="btn_pay_return" tools:ignore="MissingTranslation">Вернуть оплату</string>
-    <string name="check_pay_return">Ожидайте возврата платежа</string>
-    <string name="btn_return">Вернуться в приложение</string>
-    <string name="fondy_back">Для заказа поездки после успешной оплаты или для выбора другого способа платежа - нажмите кнопку на своем телефоне  \"Вернуться\" (стрелочка \"Назад\").</string>
+    <string name="check_pay_return" tools:ignore="MissingTranslation">Ожидайте возврата платежа</string>
+    <string name="btn_return" tools:ignore="MissingTranslation">Вернуться в приложение</string>
+    <string name="fondy_back" tools:ignore="MissingTranslation">Для заказа поездки после успешной оплаты или для выбора другого способа платежа - нажмите кнопку на своем телефоне  \"Вернуться\" (стрелочка \"Назад\").</string>
 
 
 </resources>
