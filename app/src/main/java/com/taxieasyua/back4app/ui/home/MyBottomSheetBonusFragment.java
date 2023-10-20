@@ -196,8 +196,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 long firstCost = Long.parseLong(orderCost);
                 discount = firstCost * discountInt / 100;
 
-                HomeFragment.addCost = discount;
-                firstCost = firstCost + HomeFragment.addCost;
+                HomeFragment.addCost = 0;
+                updateAddCost(String.valueOf(0));
+                firstCost = firstCost + discount;
                 String costUpdate = String.valueOf(firstCost);
                 HomeFragment.text_view_cost.setText(costUpdate);
             }
@@ -223,8 +224,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 long discount;
                 long firstCost = Long.parseLong(orderCost);
                 discount = firstCost * discountInt / 100;
-                MyGeoDialogFragment.addCost = discount;
-                firstCost = firstCost + MyGeoDialogFragment.addCost;
+                MyGeoDialogFragment.addCost = 0;
+                updateAddCost(String.valueOf(0));
+                firstCost = firstCost + discount;
                 String costUpdate = String.valueOf(firstCost);
                 textView.setText(costUpdate);
                 }
@@ -255,17 +257,30 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
 
                 if (fragment.equals("Gallery")) {
-                    GalleryFragment.addCost = discount;
-                    firstCost = firstCost + GalleryFragment.addCost;
+                    GalleryFragment.addCost = 0;
                 } else {
-                    MyGeoMarkerDialogFragment.addCost = discount;
-                    firstCost = firstCost + MyGeoMarkerDialogFragment.addCost;
+                    MyGeoMarkerDialogFragment.addCost = 0;
+
                 }
+                firstCost = firstCost + discount;
+                updateAddCost(String.valueOf(0));
                 costUpdate = String.valueOf(firstCost);
                 textView.setText(costUpdate);
             }
             }
         }
+
+    private void updateAddCost(String addCost) {
+        ContentValues cv = new ContentValues();
+        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        cv.put("addCost", addCost);
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private String getTaxiUrlSearch(String urlAPI, Context context) {
