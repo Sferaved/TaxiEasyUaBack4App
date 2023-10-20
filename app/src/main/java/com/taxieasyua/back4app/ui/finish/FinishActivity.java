@@ -409,10 +409,10 @@ public class FinishActivity extends AppCompatActivity {
                         Log.d("TAG", "onResponse: result" + result);
                         text_status.setText(result);
 
-//                        if (pay_method.equals("google_payment")) {
-//                            String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
-//                            getRevers(MainActivity.order_id, comment, amount);
-//                        }
+                        if (pay_method.equals("google_payment")) {
+                            String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+                            getRevers(MainActivity.order_id, comment, amount);
+                        }
                     }
                 } else {
                     // Обработка неуспешного ответа
