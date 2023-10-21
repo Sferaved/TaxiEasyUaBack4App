@@ -1,8 +1,8 @@
-package com.taxieasyua.back4app.ui.fondy.payment;
+package com.taxieasyua.back4app.ui.fondy.recurring;
 
 import com.google.gson.annotations.SerializedName;
 
-public class SuccessResponseDataPay {
+public class SuccessResponseDataRecurring {
     @SerializedName("rrn")
     private String rrn;
 
@@ -64,13 +64,13 @@ public class SuccessResponseDataPay {
     private String approvalCode;
 
     @SerializedName("merchant_id")
-    private long merchantId;
+    private String merchantId;
 
     @SerializedName("settlement_currency")
     private String settlementCurrency;
 
     @SerializedName("payment_id")
-    private long paymentId;
+    private String paymentId;
 
     @SerializedName("card_bin")
     private String cardBin;
@@ -93,32 +93,11 @@ public class SuccessResponseDataPay {
     @SerializedName("product_id")
     private String productId;
 
-    @SerializedName("sender_account")
-    private String senderAccount;
-
-    @SerializedName("rectoken_lifetime")
-    private String rectokenLifetime;
-
-    @SerializedName("rectoken")
-    private String rectoken;
-
-    @SerializedName("verification_status")
-    private String verificationStatus;
-
-    @SerializedName("parent_order_id")
-    private String parentOrderId;
-
-    @SerializedName("merchant_data")
-    private String merchantData;
-
     @SerializedName("error_message")
     private String errorMessage;
 
     @SerializedName("error_code")
     private String errorCode;
-
-    @SerializedName("checkout_url")
-    private String checkoutUrl;
 
     public String getRrn() {
         return rrn;
@@ -200,7 +179,7 @@ public class SuccessResponseDataPay {
         return approvalCode;
     }
 
-    public long getMerchantId() {
+    public String getMerchantId() {
         return merchantId;
     }
 
@@ -208,7 +187,7 @@ public class SuccessResponseDataPay {
         return settlementCurrency;
     }
 
-    public long getPaymentId() {
+    public String getPaymentId() {
         return paymentId;
     }
 
@@ -240,39 +219,11 @@ public class SuccessResponseDataPay {
         return productId;
     }
 
-    public String getSenderAccount() {
-        return senderAccount;
-    }
-
-    public String getRectokenLifetime() {
-        return rectokenLifetime;
-    }
-
-    public String getRectoken() {
-        return rectoken;
-    }
-
-    public String getVerificationStatus() {
-        return verificationStatus;
-    }
-
-    public String getParentOrderId() {
-        return parentOrderId;
-    }
-
-    public String getMerchantData() {
-        return merchantData;
-    }
-
     public String getErrorMessage() {
         return errorMessage;
     }
 
     public String getErrorCode() {
         return errorCode;
-    }
-
-    public String getCheckoutUrl() {
-        return checkoutUrl;
     }
 }

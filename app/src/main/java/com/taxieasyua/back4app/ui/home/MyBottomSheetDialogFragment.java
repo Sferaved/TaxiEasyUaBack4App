@@ -37,7 +37,9 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -390,12 +392,12 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         }
         try {
             HomeFragment.text_view_cost.setText(changeCost());
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
 
     }
-    private String changeCost() throws MalformedURLException {
+    private String changeCost() throws MalformedURLException, UnsupportedEncodingException {
         String newCost = "0";
         String url = getTaxiUrlSearch("costSearch", requireActivity());
 
@@ -434,12 +436,19 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
                 new String[] { "1" });
         database.close();
     }
-    private String getTaxiUrlSearch(String urlAPI, Context context) {
+    private String getTaxiUrlSearch(String urlAPI, Context context) throws UnsupportedEncodingException {
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);
 
-        String from = stringListRout.get(1);
+        String originalString = stringListRout.get(1);
+        int indexOfSlash = originalString.indexOf("/");
+        String from = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String from_number = stringListRout.get(2);
-        String to = stringListRout.get(3);
+
+        originalString = stringListRout.get(3);
+        indexOfSlash = originalString.indexOf("/");
+        String to = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String to_number = stringListRout.get(4);
         // Origin of route
         String str_origin = from + "/" + from_number;

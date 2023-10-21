@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_15102023_1";
+    public static final String DB_NAME = "data_21102023_13";
 
     /**
      * Table section
@@ -209,7 +209,8 @@ public class MainActivity extends AppCompatActivity {
                 " phone_number text," +
                 " email text," +
                 " username text," +
-                " bonus text);");
+                " bonus text," +
+                " rectoken text);");
 
         cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -460,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void insertUserInfo() {
 
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -471,6 +472,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(4, "email");
             statement.bindString(5, "username");
             statement.bindString(6, "0");
+            statement.bindString(7, "");
 
             statement.execute();
             database.setTransactionSuccessful();

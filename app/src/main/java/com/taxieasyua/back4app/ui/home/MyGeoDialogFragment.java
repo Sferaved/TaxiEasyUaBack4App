@@ -134,7 +134,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     private String messageFondy;
     private static String urlOrder;
     private long MIN_COST_VALUE;
-    private long firstCostForMin;
+    public static long firstCostForMin;
     private static long discount;
 
     public static MyGeoDialogFragment newInstance() {

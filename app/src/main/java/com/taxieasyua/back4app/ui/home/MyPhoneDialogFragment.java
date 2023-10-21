@@ -33,9 +33,18 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.view.ViewCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
+import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
+import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
+import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
+import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
@@ -47,12 +56,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
     EditText phoneNumber;
     AppCompatButton button;
     CheckBox checkBox;
     String page;
+    private String TAG = "TAG";
+    private SQLiteDatabase database;
 
     public MyPhoneDialogFragment(String page) {
         this.page = page;
@@ -82,21 +99,34 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 }
                 if (val) {
                     MainActivity.verifyPhone = true;
-                    updateRecordsUser(phoneNumber.getText().toString(), getContext());
+                    updateRecordsUser(phoneNumber.getText().toString(), requireActivity());
+                    String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         switch (page) {
                             case "home" :
-                                orderHome();
+                                if (pay_method.equals("google_payment")) {
+                                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                                    String messageFondy = getString(R.string.fondy_message);
+                                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
+                                    Log.d("TAG1", "onClick: tokenCard" + tokenCard);
+//                        if(tokenCard.equals("")) {}
+                                    getUrlToPayment(MainActivity.order_id, messageFondy, HomeFragment.text_view_cost.getText().toString() + "00");
+                                } else {
+                                    orderHome();
+                                }
+
                                 break;
                             case "geo" :
                                 orderGeo();
+                                dismiss();
                                 break;
                             case "marker" :
                                 orderMarker();
+                                dismiss();
                                 break;
                         }
                     }
-                    dismiss();
+
 
                 }
             }
@@ -104,6 +134,105 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         return view;
     }
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        // Получаем контекст активности
+        database = context.openOrCreateDatabase(MainActivity.DB_NAME, Context.MODE_PRIVATE, null);
+    }
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+//        dismiss();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+
+
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+
+                                String rectoken = responseBody.getRectoken(); //Токен карты
+                                ContentValues cv = new ContentValues();
+                                cv.put("rectoken", rectoken);
+                                database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                                        new String[] { "1" });
+                                database.close();
+                                
+                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO));
+                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO).get(6));
+                                String urlOrder = getTaxiUrlSearch( "orderSearch", requireActivity());
+                                Log.d(TAG, "onResponse: urlOrder &&&77777777777777" + urlOrder);
+                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+                                paymentIntent.putExtra("urlOrder", urlOrder);
+                                paymentIntent.putExtra("orderCost", HomeFragment.text_view_cost.getText().toString());
+                                paymentIntent.putExtra("fragment_key", "home");
+                                startActivity(paymentIntent);
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+
     private void orderHome() {
         if (connected()) {
             try {
@@ -402,9 +531,16 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME);
 
-        String from = stringListRout.get(1);
+        String originalString = stringListRout.get(1);
+        int indexOfSlash = originalString.indexOf("/");
+        String from = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String from_number = stringListRout.get(2);
-        String to = stringListRout.get(3);
+
+        originalString = stringListRout.get(3);
+        indexOfSlash = originalString.indexOf("/");
+        String to = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String to_number = stringListRout.get(4);
 
 
@@ -446,8 +582,11 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
 
+            String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + HomeFragment.discount);
+
+
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + HomeFragment.addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 

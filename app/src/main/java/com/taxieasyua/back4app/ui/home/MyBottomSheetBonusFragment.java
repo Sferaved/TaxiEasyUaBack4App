@@ -30,7 +30,9 @@ import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -182,7 +184,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
 
                 sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-            } catch (MalformedURLException ignored) {
+            } catch (MalformedURLException | UnsupportedEncodingException ignored) {
 
             }
             assert sendUrlMapCost != null;
@@ -199,6 +201,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 HomeFragment.addCost = 0;
                 updateAddCost(String.valueOf(0));
                 firstCost = firstCost + discount;
+
+                HomeFragment.costFirstForMin = firstCost;
                 String costUpdate = String.valueOf(firstCost);
                 HomeFragment.text_view_cost.setText(costUpdate);
             }
@@ -228,6 +232,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 updateAddCost(String.valueOf(0));
                 firstCost = firstCost + discount;
                 String costUpdate = String.valueOf(firstCost);
+                MyGeoDialogFragment.firstCostForMin = firstCost;
                 textView.setText(costUpdate);
                 }
             }
@@ -264,6 +269,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
                 firstCost = firstCost + discount;
                 updateAddCost(String.valueOf(0));
+
+                MyGeoMarkerDialogFragment.firstCostForMin = firstCost;
                 costUpdate = String.valueOf(firstCost);
                 textView.setText(costUpdate);
             }
@@ -283,13 +290,20 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private String getTaxiUrlSearch(String urlAPI, Context context) {
+    private String getTaxiUrlSearch(String urlAPI, Context context) throws UnsupportedEncodingException {
 
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);
 
-        String from = stringListRout.get(1);
+        String originalString = stringListRout.get(1);
+        int indexOfSlash = originalString.indexOf("/");
+        String from = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String from_number = stringListRout.get(2);
-        String to = stringListRout.get(3);
+
+        originalString = stringListRout.get(3);
+        indexOfSlash = originalString.indexOf("/");
+        String to = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String to_number = stringListRout.get(4);
 
         // Origin of route

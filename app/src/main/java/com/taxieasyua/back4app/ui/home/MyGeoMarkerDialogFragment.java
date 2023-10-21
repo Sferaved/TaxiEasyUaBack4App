@@ -98,7 +98,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
     private String pay_method;
     private String messageFondy;
     private static String urlOrder;
-    private long firstCostForMin;
+    public static long firstCostForMin;
     private long discount;
 
     @Nullable

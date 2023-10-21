@@ -82,7 +82,9 @@ import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,9 +126,9 @@ public class HomeFragment extends Fragment {
     public static String  from_numberCost, toCost, to_numberCost;
     public static ProgressBar progressBar;
     String pay_method;
-    private long costFirstForMin;
-    private String urlOrder;
-    private long discount;
+    public static long costFirstForMin;
+    public static String urlOrder;
+    public static long discount;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -257,6 +259,9 @@ public class HomeFragment extends Fragment {
         to_number = binding.toNumber;
 
         btn_order = binding.btnOrder;
+
+        String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
+        Log.d(TAG, "onClick: tokenCard" + tokenCard);
         btn_order.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("UseRequireInsteadOfGet")
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -285,17 +290,22 @@ public class HomeFragment extends Fragment {
                             break;
                     }
                     progressBar.setVisibility(View.VISIBLE);
-                    orderRout();
-                    if (pay_method.equals("google_payment")) {
-                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                        messageFondy = getString(R.string.fondy_message);
-                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-                    } else {
-                        if (verifyPhone(requireActivity())) {
-                            orderFinished();
+
+                    try {
+                        orderRout();
+                    } catch (UnsupportedEncodingException ignored) {
+                    }
+
+                    if (verifyPhone(requireActivity())) {
+                        if (pay_method.equals("google_payment")) {
+                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                            messageFondy = getString(R.string.fondy_message);
+                            String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
+                            Log.d(TAG, "onClick: tokenCard" + tokenCard);
+//                        if(tokenCard.equals("")) {}
+                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
                         } else {
-                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home");
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            orderFinished();
                         }
                     }
 
@@ -311,7 +321,7 @@ public class HomeFragment extends Fragment {
         on_map = binding.btnMap;
         on_map.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
-            if(!verifyOrder(getContext())) {
+            if(!verifyOrder(requireActivity())) {
 
                 MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -322,12 +332,12 @@ public class HomeFragment extends Fragment {
 
                 try {
                     gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch(Exception ex) {
+                } catch(Exception ignored) {
                 }
 
                 try {
                     network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                } catch(Exception ex) {
+                } catch(Exception ignored) {
                 }
 
                 if(!gps_enabled || !network_enabled) {
@@ -357,7 +367,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231017113615688_EF6E", "повернення замовлення", "3100");
+                getRevers("V_20231021133045785_ZJ29", "повернення замовлення", "600");
 //                getRevers("V_20231017113030583_DF70", "повернення замовлення", "2800");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -454,7 +464,7 @@ public class HomeFragment extends Fragment {
     }
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void orderRout() {
+    private void orderRout() throws UnsupportedEncodingException {
         if(!verifyOrder(requireContext())) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -540,11 +550,16 @@ public class HomeFragment extends Fragment {
             Log.d(TAG, "order: settings" + settings);
             updateRoutHome(settings);
         }
+
+        urlOrder = getTaxiUrlSearch( "orderSearch", requireActivity());
         if (!verifyPhone(requireContext())) {
             getPhoneNumber();
         }
-
-        urlOrder = getTaxiUrlSearch( "orderSearch", requireActivity());
+        if (!verifyPhone(requireActivity())) {
+            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home");
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            progressBar.setVisibility(View.INVISIBLE);
+        }
     }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
@@ -658,6 +673,17 @@ public class HomeFragment extends Fragment {
                             String checkoutUrl = responseBody.getCheckoutUrl();
                             if ("success".equals(responseStatus)) {
                                 // Обработка успешного ответа
+
+                                String rectoken = responseBody.getRectoken(); //Токен карты
+                                ContentValues cv = new ContentValues();
+                                cv.put("rectoken", rectoken);
+                                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                                        new String[] { "1" });
+                                database.close();
+                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, getActivity()));
+                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(6));
+
                                 Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
                                 paymentIntent.putExtra("checkoutUrl", checkoutUrl);
                                 paymentIntent.putExtra("urlOrder", urlOrder);
@@ -1059,7 +1085,7 @@ public class HomeFragment extends Fragment {
                 buttonBonus.setVisibility(View.INVISIBLE);
             }
 
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | UnsupportedEncodingException e) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
@@ -1161,7 +1187,7 @@ public class HomeFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
 
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | UnsupportedEncodingException e) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
@@ -1293,14 +1319,22 @@ public class HomeFragment extends Fragment {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private String getTaxiUrlSearch(String urlAPI, Context context) {
+    private String getTaxiUrlSearch(String urlAPI, Context context) throws UnsupportedEncodingException {
         Log.d("TAG2", "startCost: discountText" + logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).toString());
 
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);
         Log.d(TAG, "getTaxiUrlSearch: stringListRout" + stringListRout);
-        String from = stringListRout.get(1);
+
+        String originalString = stringListRout.get(1);
+        int indexOfSlash = originalString.indexOf("/");
+        String from = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String from_number = stringListRout.get(2);
-        String to = stringListRout.get(3);
+
+        originalString = stringListRout.get(3);
+        indexOfSlash = originalString.indexOf("/");
+        String to = (indexOfSlash != -1) ? originalString.substring(0, indexOfSlash) : originalString;
+
         String to_number = stringListRout.get(4);
 
 

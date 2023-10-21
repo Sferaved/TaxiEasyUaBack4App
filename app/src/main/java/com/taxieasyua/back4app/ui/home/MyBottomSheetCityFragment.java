@@ -98,6 +98,22 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 positionFirst = position;
+                if(positionFirstOld != positionFirst){
+                    ContentValues cv = new ContentValues();
+                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+                    cv.put("city", cityCode [positionFirst]);
+                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+                    resetRoutHome();
+                    navController.navigate(R.id.nav_home);
+
+                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
+
+                }
             }
         });
 
