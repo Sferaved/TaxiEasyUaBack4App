@@ -152,26 +152,25 @@ public class GalleryFragment extends Fragment {
         btn_minus = binding.btnMinus;
         btn_plus = binding.btnPlus;
 
-
-
-        btn_minus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cost = Long.parseLong(text_view_cost.getText().toString());
-                cost -= 5;
-                addCost -= 5;
-                if (cost <= MIN_COST_VALUE) {
-                    cost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - costFirstForMin;
-                }
-                updateAddCost(String.valueOf(addCost));
-                text_view_cost.setText(String.valueOf(cost));
+        btn_minus.setOnClickListener(v -> {
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+            addCost = Long.parseLong(stringListInfo.get(5));
+            cost = Long.parseLong(text_view_cost.getText().toString());
+            cost -= 5;
+            addCost -= 5;
+            if (cost <= MIN_COST_VALUE) {
+                cost = MIN_COST_VALUE;
+                addCost = MIN_COST_VALUE - costFirstForMin;
             }
+            updateAddCost(String.valueOf(addCost));
+            text_view_cost.setText(String.valueOf(cost));
         });
 
         btn_plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                addCost = Long.parseLong(stringListInfo.get(5));
                 cost = Long.parseLong(text_view_cost.getText().toString());
                 cost += 5;
                 addCost += 5;
@@ -401,6 +400,8 @@ public class GalleryFragment extends Fragment {
                                 String errorResponseCode = responseBody.getErrorCode();
                                 Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
                                 Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                 // Отобразить сообщение об ошибке пользователю
                             } else {
                                 // Обработка других возможных статусов ответа
@@ -489,6 +490,7 @@ public class GalleryFragment extends Fragment {
                 discount = cost * discountInt / 100;
 
                 cost += discount;
+                updateAddCost(String.valueOf(discount));
                 text_view_cost.setText(String.valueOf(cost));
 
                 costFirstForMin = cost;
@@ -577,7 +579,7 @@ public class GalleryFragment extends Fragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
+        String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
         String parameters = null;

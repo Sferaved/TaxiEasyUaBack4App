@@ -84,7 +84,6 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -219,24 +218,26 @@ public class HomeFragment extends Fragment {
 
         btn_minus = binding.btnMinus;
         btn_plus= binding.btnPlus;
-        btn_minus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cost = Long.parseLong(text_view_cost.getText().toString());
-                cost -= 5;
-                addCost -= 5;
-                if (cost <= MIN_COST_VALUE) {
-                    cost = MIN_COST_VALUE;
-                    addCost = MIN_COST_VALUE - costFirstForMin;
-                }
-                updateAddCost(String.valueOf(addCost));
-                text_view_cost.setText(String.valueOf(cost));
+
+        btn_minus.setOnClickListener(v -> {
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+            addCost = Long.parseLong(stringListInfo.get(5));
+            cost = Long.parseLong(text_view_cost.getText().toString());
+            cost -= 5;
+            addCost -= 5;
+            if (cost <= MIN_COST_VALUE) {
+                cost = MIN_COST_VALUE;
+                addCost = MIN_COST_VALUE - costFirstForMin;
             }
+            updateAddCost(String.valueOf(addCost));
+            text_view_cost.setText(String.valueOf(cost));
         });
 
         btn_plus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                addCost = Long.parseLong(stringListInfo.get(5));
                 cost = Long.parseLong(text_view_cost.getText().toString());
                 cost += 5;
                 addCost += 5;
@@ -367,7 +368,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231021133045785_ZJ29", "повернення замовлення", "600");
+                getRevers("V_20231022092601788_WNB5", "повернення замовлення", "1100");
 //                getRevers("V_20231017113030583_DF70", "повернення замовлення", "2800");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -556,7 +557,7 @@ public class HomeFragment extends Fragment {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home");
+            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("home", text_view_cost.getText().toString());
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
@@ -696,6 +697,8 @@ public class HomeFragment extends Fragment {
                                 String errorResponseCode = responseBody.getErrorCode();
                                 Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
                                 Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                 // Отобразить сообщение об ошибке пользователю
                             } else {
                                 // Обработка других возможных статусов ответа
@@ -1069,6 +1072,8 @@ public class HomeFragment extends Fragment {
                 discount = cost * discountInt / 100;
                 Log.d("TAG2", "discount: " + discount);
                 cost += discount;
+
+                updateAddCost(String.valueOf(discount));
                 text_view_cost.setText(Long.toString(cost));
 
                 costFirstForMin = cost;
@@ -1137,12 +1142,12 @@ public class HomeFragment extends Fragment {
 
             List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
             long addCost = Long.parseLong(stringListInfo.get(5));
-            Log.d(TAG, "cost: addCost " + addCost);
+
             assert orderCostStr != null;
             long orderCostLong =  Long.parseLong(orderCostStr);
-            Log.d(TAG, "cost: orderCostLong " + orderCostLong);
+
             String orderCost = String.valueOf(orderCostLong + addCost);
-            Log.d(TAG, "cost: orderCost " + orderCost);
+
 
             String message = (String) sendUrlMapCost.get("message");
 
@@ -1178,6 +1183,7 @@ public class HomeFragment extends Fragment {
 
 
                 cost = cost + discount;
+                updateAddCost(String.valueOf(discount));
                 text_view_cost.setText(Long.toString(cost));
 
                 costFirstForMin = cost;
@@ -1356,8 +1362,7 @@ public class HomeFragment extends Fragment {
 
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-
-        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
+        String addCost = stringListInfo.get(5);
 
         Log.d("TAG2", "startCost: discountText" + discount);
 

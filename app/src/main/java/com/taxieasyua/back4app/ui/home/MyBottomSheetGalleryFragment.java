@@ -418,8 +418,7 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
             long discountInt = Integer.parseInt(discountText);
             long discount = firstCost * discountInt / 100;
 
-            GalleryFragment.addCost = 0;
-            updateAddCost(String.valueOf(0));
+            updateAddCost(String.valueOf(discount));
 
             newCost = String.valueOf(firstCost + discount);
         }

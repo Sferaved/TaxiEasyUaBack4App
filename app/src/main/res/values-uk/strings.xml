@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.841</string>
-    <string name="version">Версія: 2.841</string>
+    <string name="version_code">2.842</string>
+    <string name="version">Версія: 2.842</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -266,5 +266,6 @@
     <string name="btn_return">Повернутись до додатку</string>
     <string name="fondy_back">Для замовлення поїздки після успішної оплати або для вибору іншого способу платежу - натисніть кнопку на своєму телефоні \"Повернутись\" (стрілочка \"Назад\").</string>
     <string name="phone_input_error">Без введення номера телефону замовлення не можливе.</string>
+    <string name="pay_failure">Помилка платежу. Спробуйте інший спосіб оплати.</string>
 
 </resources>

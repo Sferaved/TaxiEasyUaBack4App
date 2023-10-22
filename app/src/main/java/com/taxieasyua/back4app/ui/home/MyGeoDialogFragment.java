@@ -132,7 +132,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     public static String geo_marker;
     String pay_method;
     private String messageFondy;
-    private static String urlOrder;
+    public static String urlOrder;
     private long MIN_COST_VALUE;
     public static long firstCostForMin;
     private static long discount;
@@ -330,6 +330,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                              discount = firstCost * discountInt / 100;
                              firstCost = firstCost + discount;
 
+                             updateAddCost(String.valueOf(discount));
                              firstCostForMin = firstCost;
                              text_view_cost.setText(String.valueOf(firstCost));
 
@@ -404,7 +405,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     firstCost = Long.parseLong(orderCost);
                     discount = firstCost * discountInt / 100;
                     firstCost = firstCost + discount;
-
+                    updateAddCost(String.valueOf(discount));
                     text_view_cost.setText(String.valueOf(firstCost));
 
                     Log.d("TAG", "startCost: firstCost " + firstCost);
@@ -508,7 +509,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
+
         btn_minus.setOnClickListener(v -> {
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+            addCost = Long.parseLong(stringListInfo.get(5));
             firstCost -= 5;
             addCost -= 5;
             if (firstCost <= MIN_COST_VALUE) {
@@ -521,6 +525,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         });
 
         btn_plus.setOnClickListener(v -> {
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+            addCost = Long.parseLong(stringListInfo.get(5));
             firstCost += 5;
             addCost += 5;
             updateAddCost(String.valueOf(addCost));
@@ -554,19 +560,21 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             break;
                     }
                     orderRout();
-                    if (pay_method.equals("google_payment")) {
-                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                        messageFondy = getString(R.string.fondy_message);
-                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-                    } else {
-                        if (verifyPhone(requireActivity())) {
-                            try {
-                            orderFinished();
-                             } catch (MalformedURLException ignored) {
-                            }
+                    if (verifyPhone(requireActivity())) {
+                        if (pay_method.equals("google_payment")) {
+                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                            messageFondy = getString(R.string.fondy_message);
+                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
                         } else {
-                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("geo");
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            if (verifyPhone(requireActivity())) {
+                                try {
+                                    orderFinished();
+                                } catch (MalformedURLException ignored) {
+                                }
+                            } else {
+                                MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("geo", text_view_cost.getText().toString());
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                            }
                         }
                     }
                 }
@@ -634,6 +642,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                                 String errorResponseCode = responseBody.getErrorCode();
                                 Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
                                 Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                 // Отобразить сообщение об ошибке пользователю
                             } else {
                                 // Обработка других возможных статусов ответа
@@ -744,7 +754,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             firstCost = Long.parseLong(orderCost);
             discount = firstCost * discountInt / 100;
             firstCost = firstCost + discount;
-
+            updateAddCost(String.valueOf(discount));
             text_view_cost.setText(String.valueOf(firstCost));
             MIN_COST_VALUE = (long) (firstCost * 0.1);
             firstCostForMin = firstCost;
@@ -882,7 +892,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
+        String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
         String parameters = null;
@@ -1129,7 +1139,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             long discountInt = Integer.parseInt(discountText);
                             firstCost = Long.parseLong(orderCost);
                             discount= firstCost * discountInt / 100;
-
+                            updateAddCost(String.valueOf(discount));
                             firstCost = firstCost + discount;
                             text_view_cost.setText(String.valueOf(firstCost));
                             MIN_COST_VALUE = (long) (firstCost*0.1);
@@ -1237,45 +1247,34 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             }
         }
 
-        if (!verifyPhone(requireActivity())) {
+        if(urlAddress == null) {
+            List<String> settings = new ArrayList<>();
+            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+            settings.add(toCost);
+            settings.add(to_numberCost);
+
+            updateRoutGeo(settings);
+            if(geo_marker.equals("geo")) {
+                urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", requireActivity());
+            } else {
+                urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
+            }
+        } else {
+            List<String> settings = new ArrayList<>();
+            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+            settings.add(String.valueOf(to_lat));
+            settings.add(String.valueOf(to_lng));
+            updateRoutMarker(settings);
+            urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
+        }
+        Log.d("TAG", "order: urlOrder "  + urlOrder);
+        if (!verifyPhone(requireContext())) {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("geo");
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            progressBar.setVisibility(View.INVISIBLE);
-        }
-        if(connected()) {
-            if (verifyPhone(requireActivity())) {
-
-                if(urlAddress == null) {
-                    List<String> settings = new ArrayList<>();
-                    settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-                    settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-                    settings.add(toCost);
-                    settings.add(to_numberCost);
-
-                    updateRoutGeo(settings);
-                    if(geo_marker.equals("geo")) {
-                        urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", requireActivity());
-                    } else {
-                        urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
-                    }
-                } else {
-                    List<String> settings = new ArrayList<>();
-                    settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-                    settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-                    settings.add(String.valueOf(to_lat));
-                    settings.add(String.valueOf(to_lng));
-
-                    updateRoutMarker(settings);
-
-                    urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
-                    Log.d("TAG", "order: urlOrder "  + urlOrder);
-                }
-            }
-        } else {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("geo", text_view_cost.getText().toString());
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
@@ -1538,7 +1537,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
         String bonusPayment =  stringListInfo.get(4);
-        String addCost = String.valueOf(Long.parseLong(stringListInfo.get(5)) + discount);
+        String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
         String parameters = null;

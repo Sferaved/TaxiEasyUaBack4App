@@ -418,8 +418,8 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
             long discount = firstCost * discountInt / 100;
-            HomeFragment.addCost = 0;
-            updateAddCost(String.valueOf(0));
+
+            updateAddCost(String.valueOf(discount));
 
             newCost = String.valueOf(firstCost + discount);
         }

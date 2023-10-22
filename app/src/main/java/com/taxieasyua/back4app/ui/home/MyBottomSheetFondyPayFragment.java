@@ -143,6 +143,8 @@ public class MyBottomSheetFondyPayFragment extends BottomSheetDialogFragment {
                                 String errorResponseCode = responseBody.getErrorCode();
                                 Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
                                 Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                                 // Отобразить сообщение об ошибке пользователю
                             } else {
                                 // Обработка других возможных статусов ответа

@@ -198,9 +198,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 long firstCost = Long.parseLong(orderCost);
                 discount = firstCost * discountInt / 100;
 
-                HomeFragment.addCost = 0;
-                updateAddCost(String.valueOf(0));
+
                 firstCost = firstCost + discount;
+                updateAddCost(String.valueOf(discount));
 
                 HomeFragment.costFirstForMin = firstCost;
                 String costUpdate = String.valueOf(firstCost);
@@ -228,9 +228,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 long discount;
                 long firstCost = Long.parseLong(orderCost);
                 discount = firstCost * discountInt / 100;
-                MyGeoDialogFragment.addCost = 0;
-                updateAddCost(String.valueOf(0));
+
                 firstCost = firstCost + discount;
+                updateAddCost(String.valueOf(discount));
+
                 String costUpdate = String.valueOf(firstCost);
                 MyGeoDialogFragment.firstCostForMin = firstCost;
                 textView.setText(costUpdate);
@@ -260,15 +261,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 long firstCost = Long.parseLong(orderCost);
                 discount = firstCost * discountInt / 100;
 
-
-                if (fragment.equals("Gallery")) {
-                    GalleryFragment.addCost = 0;
-                } else {
-                    MyGeoMarkerDialogFragment.addCost = 0;
-
-                }
                 firstCost = firstCost + discount;
-                updateAddCost(String.valueOf(0));
+                updateAddCost(String.valueOf(discount));
 
                 MyGeoMarkerDialogFragment.firstCostForMin = firstCost;
                 costUpdate = String.valueOf(firstCost);
