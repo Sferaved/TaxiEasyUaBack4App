@@ -36,6 +36,9 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     ListView listView;
     String city;
     AppCompatButton btn_ok;
+    public MyBottomSheetCityFragment() {
+        // Пустой конструктор без аргументов
+    }
 
     public MyBottomSheetCityFragment(String city) {
         this.city = city;
