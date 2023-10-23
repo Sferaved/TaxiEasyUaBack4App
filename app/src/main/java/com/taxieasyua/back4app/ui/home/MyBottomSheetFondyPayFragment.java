@@ -1,7 +1,12 @@
 package com.taxieasyua.back4app.ui.home;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.gson.Gson;
@@ -29,6 +35,10 @@ import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
 import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -98,13 +108,14 @@ public class MyBottomSheetFondyPayFragment extends BottomSheetDialogFragment {
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
         String merchantPassword = getString(R.string.fondy_key_storage);
-
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
                 MainActivity.MERCHANT_ID,
-                merchantPassword
+                merchantPassword,
+                email
         );
 
 
@@ -169,6 +180,29 @@ public class MyBottomSheetFondyPayFragment extends BottomSheetDialogFragment {
 
 
         });
+    }
+
+    @SuppressLint("Range")
+    private List<String> logCursor(String table) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = database.query(table, null, null, null, null, null, null);
+        if (c != null) {
+            if (c.moveToFirst()) {
+                String str;
+                do {
+                    str = "";
+                    for (String cn : c.getColumnNames()) {
+                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
+                        list.add(c.getString(c.getColumnIndex(cn)));
+
+                    }
+
+                } while (c.moveToNext());
+            }
+        }
+        database.close();
+        return list;
     }
 
     private void handleSuccessResponse(String checkoutUrl) {

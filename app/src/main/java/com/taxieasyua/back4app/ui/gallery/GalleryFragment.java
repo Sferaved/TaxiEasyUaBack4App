@@ -360,13 +360,14 @@ public class GalleryFragment extends Fragment {
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
         String merchantPassword = getString(R.string.fondy_key_storage);
-
+        String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
                 MainActivity.MERCHANT_ID,
-                merchantPassword
+                merchantPassword,
+                email
         );
         StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
         Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());

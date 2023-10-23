@@ -641,13 +641,14 @@ public class HomeFragment extends Fragment {
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
         String merchantPassword = getString(R.string.fondy_key_storage);
-
+        String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
                 MainActivity.MERCHANT_ID,
-                merchantPassword
+                merchantPassword,
+                email
         );
 
 
@@ -675,15 +676,7 @@ public class HomeFragment extends Fragment {
                             if ("success".equals(responseStatus)) {
                                 // Обработка успешного ответа
 
-                                String rectoken = responseBody.getRectoken(); //Токен карты
-                                ContentValues cv = new ContentValues();
-                                cv.put("rectoken", rectoken);
-                                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                                        new String[] { "1" });
-                                database.close();
-                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, getActivity()));
-                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, getActivity()).get(6));
+
 
                                 Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
                                 paymentIntent.putExtra("checkoutUrl", checkoutUrl);
@@ -1443,7 +1436,7 @@ public class HomeFragment extends Fragment {
     }
 
     @SuppressLint("Range")
-    public List<String> logCursor(String table, Context context) {
+    private List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);

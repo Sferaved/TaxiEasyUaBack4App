@@ -87,7 +87,8 @@ public class BonusFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(connected()) {
-                    @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
+                    @SuppressLint("UseRequireInsteadOfGet")
+                    String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
                     progressBar.setVisibility(View.VISIBLE);
                     textView.setVisibility(View.INVISIBLE);
                     binding.text0.setVisibility(View.INVISIBLE);
@@ -192,7 +193,7 @@ public class BonusFragment extends Fragment {
     }
 
 
-     @SuppressLint("Range")
+    @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

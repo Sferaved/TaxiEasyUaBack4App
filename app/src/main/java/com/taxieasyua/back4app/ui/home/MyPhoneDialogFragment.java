@@ -175,13 +175,14 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
         String merchantPassword = getString(R.string.fondy_key_storage);
-
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
                 MainActivity.MERCHANT_ID,
-                merchantPassword
+                merchantPassword,
+                email
         );
 
 

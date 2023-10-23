@@ -1,5 +1,6 @@
 package com.taxieasyua.back4app.ui.fondy.payment;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
@@ -27,6 +28,8 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.ErrorPayActivity;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
+import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
 import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
@@ -127,6 +130,8 @@ public class FondyPaymentActivity extends AppCompatActivity {
                         if(orderStatus.equals("approved")){
                             String fragment_key = getIntent().getStringExtra("fragment_key");
 
+                            getCardToken();
+
                             switch (Objects.requireNonNull(fragment_key)){
                                 case "home":
                                     HomeFragment.progressBar.setVisibility(View.VISIBLE);
@@ -178,6 +183,51 @@ public class FondyPaymentActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void getCardToken() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        // Создайте сервис
+        CallbackService service = retrofit.create(CallbackService.class);
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        // Выполните запрос
+        Call<CallbackResponse> call = service.handleCallback(email);
+        call.enqueue(new Callback<CallbackResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {
+                if (response.isSuccessful()) {
+                    CallbackResponse callbackResponse = response.body();
+                    if (callbackResponse != null) {
+
+                        String card_token = callbackResponse.getCard_token();//Токен карты
+
+                        Log.d(TAG, "onResponse: card_token: " + card_token);
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("rectoken", card_token);
+                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+                        Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO));
+                        Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO).get(6));
+
+
+                    }
+                } else {
+                    // Обработка случаев, когда ответ не 200 OK
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CallbackResponse> call, Throwable t) {
+                // Обработка ошибки запроса
+            }
+        });
     }
 
     public void orderGeoMarker() throws MalformedURLException {

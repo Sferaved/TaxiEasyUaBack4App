@@ -1,14 +1,12 @@
 package com.taxieasyua.back4app.ui.fondy.payment;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 import com.taxieasyua.back4app.ui.fondy.SignatureGenerator;
 
-import java.util.TreeMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class RequestData {
     @SerializedName("order_id")
@@ -25,10 +23,14 @@ public class RequestData {
     private String merchant_id; // Имя поля должно соответствовать JSON-запросу
     @SerializedName("preauth")
     private String preauth; // Имя поля должно соответствовать JSON-запросу
+    @SerializedName("sender_email")
+    private String sender_email; // Имя поля должно соответствовать JSON-запросу
     @SerializedName("required_rectoken")
     private String required_rectoken; // Имя поля должно соответствовать JSON-запросу
+    @SerializedName("server_callback_url")
+    private String server_callback_url; // Имя поля должно соответствовать JSON-запросу
 
-    public RequestData(String orderId, String orderDescription, String amount, String merchantId, String merchantPassword) {
+    public RequestData(String orderId, String orderDescription, String amount, String merchantId, String merchantPassword, String email) {
         this.order_id = orderId; // Используйте поле order_id, а не orderId
         this.order_desc = orderDescription; // Используйте поле order_desc, а не orderDescription
         this.currency = "UAH"; // Установите значение валюты
@@ -36,6 +38,9 @@ public class RequestData {
         this.merchant_id = merchantId; // Используйте поле merchant_id, а не merchantId
         this.preauth = "Y";
         this.required_rectoken = "Y";
+        this.sender_email = email;
+        this.server_callback_url = "https://m.easy-order-taxi.site/server-callback/";
+
         this.signature = generateSignature(merchantPassword, createParameterMap());
     }
 
@@ -48,6 +53,8 @@ public class RequestData {
         params.put("preauth", preauth);
         params.put("required_rectoken", required_rectoken);
         params.put("merchant_id", merchant_id);
+        params.put("sender_email", sender_email);
+        params.put("server_callback_url", server_callback_url);
         // Добавьте другие параметры, если необходимо
 
         return params;
@@ -69,6 +76,7 @@ public class RequestData {
                 ", preauth='" + preauth + '\'' +
                 ", required_rectoken='" + required_rectoken + '\'' +
                 ", merchant_id='" + merchant_id + '\'' +
+                ", server_callback_url='" + server_callback_url + '\'' +
                 '}';
     }
 }

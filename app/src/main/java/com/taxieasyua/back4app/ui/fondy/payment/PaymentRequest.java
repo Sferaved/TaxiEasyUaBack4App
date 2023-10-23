@@ -6,8 +6,8 @@ public class PaymentRequest {
     @SerializedName("request")
     private RequestData request;
 
-    public PaymentRequest(String orderId, String orderDescription, String amount, String merchantId, String merchantPassword) {
-        this.request = new RequestData(orderId, orderDescription, amount, merchantId, merchantPassword);
+    public PaymentRequest(String orderId, String orderDescription, String amount, String merchantId, String merchantPassword, String email) {
+        this.request = new RequestData(orderId, orderDescription, amount, merchantId, merchantPassword, email);
     }
 
     @Override
