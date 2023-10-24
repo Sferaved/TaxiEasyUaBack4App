@@ -114,7 +114,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
                                     String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
                                     Log.d("TAG1", "onClick: tokenCard" + tokenCard);
-//                        if(tokenCard.equals("")) {}
+
                                     getUrlToPayment(amount + "00");
                                 } else {
                                     orderHome();
@@ -128,7 +128,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
                                     String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
                                     Log.d("TAG1", "onClick: tokenCard" + tokenCard);
-//                        if(tokenCard.equals("")) {}
+
                                     getUrlToPayment(amount + "00");
                                 } else {
                                     orderGeo();
@@ -142,7 +142,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
                                     String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
                                     Log.d("TAG1", "onClick: tokenCard" + tokenCard);
-//                        if(tokenCard.equals("")) {}
+
                                     getUrlToPayment(amount + "00");
                                 } else {
                                     orderMarker();

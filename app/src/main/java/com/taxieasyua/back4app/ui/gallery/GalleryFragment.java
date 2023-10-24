@@ -261,7 +261,7 @@ public class GalleryFragment extends Fragment {
 
                     String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
                     Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                    if (tokenCard.equals("") || tokenCard == null) {
+                    if (tokenCard == null || tokenCard.equals("")) {
                         getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
                     } else {
                         paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);

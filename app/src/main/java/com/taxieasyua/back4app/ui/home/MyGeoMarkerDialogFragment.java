@@ -241,7 +241,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                         messageFondy = getString(R.string.fondy_message);
                         String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
                         Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                        if (tokenCard.equals("") || tokenCard == null) {
+                        if (tokenCard == null || tokenCard.equals("")) {
                             getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
                         } else {
                             paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
@@ -250,7 +250,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                         if (verifyPhone(requireActivity())) {
                             orderFinished();
                         } else {
-                            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
+                            bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
                             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         }
                     }
@@ -448,7 +448,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
+            bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         }
@@ -778,7 +778,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            MyPhoneDialogFragment bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
+            bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         }
@@ -998,6 +998,15 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
+    }
+    private MyPhoneDialogFragment bottomSheetDialogFragment;
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(bottomSheetDialogFragment != null) {
+            bottomSheetDialogFragment.dismiss();
+        }
+
     }
 }
 

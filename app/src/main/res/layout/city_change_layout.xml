@@ -9,30 +9,28 @@
         android:id="@+id/textView4"
         android:layout_width="60sp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16sp"
+
         android:layout_marginTop="20sp"
-        android:layout_marginBottom="20sp"
         android:fontFamily="@font/regular"
         android:text="@string/city"
         android:textColor="#D9D9D9"
         android:textSize="18sp"
-        app:layout_constraintEnd_toStartOf="@+id/list_city"
-        app:layout_constraintHorizontal_bias="0.218"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
         android:id="@+id/list_city"
-        android:layout_width="150sp"
+        android:layout_width="120sp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20sp"
         android:layout_marginBottom="20sp"
         android:background="#689194"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintTop_toBottomOf="@+id/textView4"
+        app:layout_constraintVertical_bias="0.041" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
