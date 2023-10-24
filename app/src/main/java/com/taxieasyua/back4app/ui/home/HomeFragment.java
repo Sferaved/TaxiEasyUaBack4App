@@ -74,6 +74,11 @@ import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
 import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
+import com.taxieasyua.back4app.ui.fondy.token_pay.ApiResponseToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -303,8 +308,11 @@ public class HomeFragment extends Fragment {
                             messageFondy = getString(R.string.fondy_message);
                             String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
                             Log.d(TAG, "onClick: tokenCard" + tokenCard);
-//                        if(tokenCard.equals("")) {}
-                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
+                            if (tokenCard.equals("") || tokenCard == null) {
+                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
+                            } else {
+                                paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
+                            }
                         } else {
                             orderFinished();
                         }
@@ -368,7 +376,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231022092601788_WNB5", "повернення замовлення", "1100");
+//                getRevers("V_20231024095505810_DJ8Z", "повернення замовлення", "1100");
 //                getRevers("V_20231017113030583_DF70", "повернення замовлення", "2800");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -711,6 +719,88 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+    private void paymentByToken(
+            String order_id,
+            String orderDescription,
+            String amount,
+            String rectoken
+    ) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity()));
+        String email = stringList.get(3);
+
+        RequestDataToken paymentRequest = new RequestDataToken(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword,
+                rectoken,
+                email
+        );
+
+
+        StatusRequestToken statusRequest = new StatusRequestToken(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponseToken<SuccessResponseDataToken>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponseToken<SuccessResponseDataToken>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponseToken<SuccessResponseDataToken>> call, Response<ApiResponseToken<SuccessResponseDataToken>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponseToken<SuccessResponseDataToken> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataToken responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                            String orderStatus = responseBody.getOrderStatus();
+                            if ("approved".equals(orderStatus)) {
+                                // Обработка успешного ответа
+                               orderFinished();
+                            } else {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                                // Отобразить сообщение об ошибке пользователю
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
                 Log.d("TAG1", "onFailure1111: " + t.toString());
             }
 

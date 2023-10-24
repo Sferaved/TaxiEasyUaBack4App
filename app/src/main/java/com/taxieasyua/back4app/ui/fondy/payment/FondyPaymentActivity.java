@@ -213,10 +213,9 @@ public class FondyPaymentActivity extends AppCompatActivity {
                         database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                                 new String[] { "1" });
                         database.close();
+
                         Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO));
                         Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO).get(6));
-
-
                     }
                 } else {
                     // Обработка случаев, когда ответ не 200 OK

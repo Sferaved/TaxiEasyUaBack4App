@@ -74,26 +74,27 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-
-        switch (this.city){
-            case "Kyiv City":
-                positionFirst = 0;
-                break;
-            case "Dnipropetrovsk Oblast":
-                positionFirst = 1;
-                break;
-            case "Odessa":
-                positionFirst = 2;
-                break;
-            case "Zaporizhzhia":
-                positionFirst = 3;
-                break;
-            case "Cherkasy Oblast":
-                positionFirst = 4;
-                break;
-            default:
-                positionFirst = 0;
-                break;
+        if (city != null) {
+            switch (this.city) {
+                case "Kyiv City":
+                    positionFirst = 0;
+                    break;
+                case "Dnipropetrovsk Oblast":
+                    positionFirst = 1;
+                    break;
+                case "Odessa":
+                    positionFirst = 2;
+                    break;
+                case "Zaporizhzhia":
+                    positionFirst = 3;
+                    break;
+                case "Cherkasy Oblast":
+                    positionFirst = 4;
+                    break;
+                default:
+                    positionFirst = 0;
+                    break;
+            }
         }
         listView.setItemChecked(positionFirst,true);
         int positionFirstOld = positionFirst;
