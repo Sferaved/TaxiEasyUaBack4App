@@ -819,6 +819,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        progressBar.setVisibility(View.INVISIBLE);
         if(bottomSheetDialogFragment != null) {
             bottomSheetDialogFragment.dismiss();
         }
