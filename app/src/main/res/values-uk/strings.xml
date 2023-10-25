@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.849</string>
-    <string name="version">Версія: 2.849</string>
+    <string name="version_code">2.850</string>
+    <string name="version">Версія: 2.850</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -251,7 +251,7 @@
     <string name="e_google_pay_canceled">GooglePay скасовано</string>
     <string name="update_count">Перевірити баланс</string>
     <string name="pay_count">Поповнити рахунок</string>
-    <string name="my_card_pay">Поповнити рахунок</string>
+    <string name="my_card_pay">Платіжна карта</string>
     <string name="my_site">Відвідайте наш сайт</string>
 <!--    <string name="fondy_message">Сплата за послугі таксі.</string>-->
     <string name="fondy_message"> Інша допоміжна діяльність у сфері транспорту</string>
@@ -264,8 +264,14 @@
     <string name="btn_pay_return">Повернути оплату</string>
     <string name="check_pay_return">Чекайте на повернення платежу</string>
     <string name="btn_return">Повернутись до додатку</string>
-    <string name="fondy_back">Для замовлення поїздки після успішної оплати або для вибору іншого способу платежу - натисніть кнопку на своєму телефоні \"Повернутись\" (стрілочка \"Назад\").</string>
+    <string name="fondy_back">Для замовлення поїздки після успішної оплати або для вибору іншого способу платежу - натисніть на своєму телефоні кнопку \"Повернутись\" (стрілочка \"Назад\").</string>
+    <string name="fondy_back_ver">Після успішної перевірки - натисніть на своєму телефоні кнопку \"Повернутись\" (стрілочка \"Назад\").</string>
     <string name="phone_input_error">Без введення номера телефону замовлення не можливе.</string>
     <string name="pay_failure">Помилка платежу. Спробуйте інший спосіб оплати.</string>
+    <string name="link_card">Прив\'язати карту</string>
+    <string name="delink_card">Видалити прив\'язку</string>
+    <string name="link_card_succesfuly">Ваша карта перевірена та готова до оплати подорожей.</string>
+    <string name="un_link_token">Прив\'язка платіжної картки видалена з додатку.</string>
+    <string name="cancel_card">Завершити</string>
 
 </resources>

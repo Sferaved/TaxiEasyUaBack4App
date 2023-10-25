@@ -101,7 +101,10 @@
         <activity android:name=".ui.fondy.BaseExampleActivity" />
         <activity android:name=".ui.fondy.FlexibleExampleActivity" />
         <activity android:name=".ui.fondy.SimpleExampleActivity" />
-        <activity android:name=".ui.fondy.payment.FondyPaymentActivity" />
+        <activity android:name=".ui.fondy.payment.FondyPaymentActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name="com.taxieasyua.back4app.ui.card.FondyVerificationActivity"
+            android:screenOrientation="portrait" />
 
         <receiver android:name=".NetworkChangeReceiver" />
 

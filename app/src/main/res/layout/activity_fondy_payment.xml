@@ -10,11 +10,34 @@
     <WebView
         android:id="@+id/webView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="600sp"
+        android:layout_marginBottom="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_ok"
+        android:layout_width="293sp"
+        android:layout_height="45sp"
+
+        android:background="@drawable/buttons"
+        android:fontFamily="@font/regular"
+        android:layout_margin="8sp"
+        android:insetLeft="0sp"
+        android:insetTop="0sp"
+        android:insetRight="0sp"
+        android:insetBottom="0sp"
+        android:text="@string/cancel_card"
+
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-     />
+        app:layout_constraintTop_toBottomOf="@+id/webView"
+        app:layout_constraintVertical_bias="0.5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

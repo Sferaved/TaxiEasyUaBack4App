@@ -1,0 +1,54 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color_new"
+    tools:context=".ui.uid.UIDFragment">
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_marginTop="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_card_unlink"
+        tools:ignore="MissingConstraints" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_card_link"
+        android:layout_width="293sp"
+        android:layout_height="45sp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/buttons"
+        android:fontFamily="@font/regular"
+
+        android:text="@string/link_card"
+        android:textAlignment="center"
+        android:textColor="#D9D9D9"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_card_unlink"
+        android:layout_width="293sp"
+        android:layout_height="45sp"
+
+        android:layout_marginTop="16dp"
+        android:background="@drawable/buttons"
+
+        android:fontFamily="@font/regular"
+        android:text="@string/delink_card"
+        android:textAlignment="center"
+        android:textColor="#D9D9D9"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_card_link" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

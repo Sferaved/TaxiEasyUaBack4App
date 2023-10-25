@@ -30,7 +30,13 @@ public class RequestData {
     @SerializedName("server_callback_url")
     private String server_callback_url; // Имя поля должно соответствовать JSON-запросу
 
-    public RequestData(String orderId, String orderDescription, String amount, String merchantId, String merchantPassword, String email) {
+    public RequestData(
+            String orderId,
+            String orderDescription,
+            String amount,
+            String merchantId,
+            String merchantPassword,
+            String email) {
         this.order_id = orderId; // Используйте поле order_id, а не orderId
         this.order_desc = orderDescription; // Используйте поле order_desc, а не orderDescription
         this.currency = "UAH"; // Установите значение валюты
@@ -55,7 +61,6 @@ public class RequestData {
         params.put("merchant_id", merchant_id);
         params.put("sender_email", sender_email);
         params.put("server_callback_url", server_callback_url);
-        // Добавьте другие параметры, если необходимо
 
         return params;
     }

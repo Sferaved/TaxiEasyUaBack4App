@@ -28,10 +28,10 @@
         tools:layout="@layout/fragment_bonus" />
 
     <fragment
-        android:id="@+id/nav_fondy"
-        android:name="com.taxieasyua.back4app.ui.fondy.FondyFragment"
+        android:id="@+id/nav_card"
+        android:name="com.taxieasyua.back4app.ui.card.CardFragment"
         android:label="@string/my_card_pay"
-        tools:layout="@layout/fragment_fondy" />
+        tools:layout="@layout/fragment_card" />
 
     <fragment
         android:id="@+id/nav_about"
