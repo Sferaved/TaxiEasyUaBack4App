@@ -66,6 +66,7 @@ import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
@@ -642,12 +643,21 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             String checkoutUrl = responseBody.getCheckoutUrl();
                             if ("success".equals(responseStatus)) {
                                 // Обработка успешного ответа
-                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-                                paymentIntent.putExtra("urlOrder", urlOrder);
-                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
-                                paymentIntent.putExtra("fragment_key", "geo");
-                                startActivity(paymentIntent);
+                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                        checkoutUrl,
+                                        text_view_cost.getText().toString(),
+                                        "geo",
+                                        urlOrder
+                                );
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+
+//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+//                                paymentIntent.putExtra("urlOrder", urlOrder);
+//                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
+//                                paymentIntent.putExtra("fragment_key", "geo");
+//                                startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
                                 // Обработка ответа об ошибке
                                 String errorResponseMessage = responseBody.getErrorMessage();

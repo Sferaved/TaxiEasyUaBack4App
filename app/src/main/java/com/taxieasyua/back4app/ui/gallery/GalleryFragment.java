@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -29,7 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
@@ -39,33 +37,25 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
 import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
 import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
-import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
-import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
-import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
 import com.taxieasyua.back4app.ui.fondy.token_pay.ApiResponseToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGalleryFragment;
-import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,10 +72,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class GalleryFragment extends Fragment {
 
     private static final String TAG = "TAG";
+    @SuppressLint("StaticFieldLeak")
     public static ProgressBar progressbar;
     private FragmentGalleryBinding binding;
     private ListView listView;
     private String[] array;
+    @SuppressLint("StaticFieldLeak")
     public static TextView textView, text_view_cost;
     String from_mes, to_mes;
     public static AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd, buttonBonus;
@@ -484,12 +476,20 @@ public class GalleryFragment extends Fragment {
                             String checkoutUrl = responseBody.getCheckoutUrl();
                             if ("success".equals(responseStatus)) {
                                 // Обработка успешного ответа
-                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-                                paymentIntent.putExtra("urlOrder", urlOrder);
-                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
-                                paymentIntent.putExtra("fragment_key", "gallery");
-                                startActivity(paymentIntent);
+                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                        checkoutUrl,
+                                        text_view_cost.getText().toString(),
+                                        "gallery",
+                                        urlOrder
+                                        );
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+//                                paymentIntent.putExtra("urlOrder", urlOrder);
+//                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
+//                                paymentIntent.putExtra("fragment_key", "gallery");
+//                                startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
                                 // Обработка ответа об ошибке
                                 String errorResponseMessage = responseBody.getErrorMessage();

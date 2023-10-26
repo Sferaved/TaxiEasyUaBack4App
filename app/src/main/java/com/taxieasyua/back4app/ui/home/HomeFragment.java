@@ -64,6 +64,7 @@ import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
@@ -377,7 +378,8 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231025131741404_NBX2", "повернення замовлення", "100");
+                getRevers("V_20231026101443728_K7AC", "повернення замовлення", "1600");
+//                getRevers("V_20231026101213069_NNTB", "повернення замовлення", "1100");
 //                getRevers("V_20231025124250843_CQ8B", "повернення замовлення", "100");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -685,14 +687,21 @@ public class HomeFragment extends Fragment {
                             if ("success".equals(responseStatus)) {
                                 // Обработка успешного ответа
 
+                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                        checkoutUrl,
+                                        text_view_cost.getText().toString(),
+                                        "home",
+                                        urlOrder
+                                );
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
 
-                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-                                paymentIntent.putExtra("urlOrder", urlOrder);
-                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
-                                paymentIntent.putExtra("fragment_key", "home");
-                                startActivity(paymentIntent);
+//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+//                                paymentIntent.putExtra("urlOrder", urlOrder);
+//                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
+//                                paymentIntent.putExtra("fragment_key", "home");
+//                                startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
                                 // Обработка ответа об ошибке
                                 String errorResponseMessage = responseBody.getErrorMessage();

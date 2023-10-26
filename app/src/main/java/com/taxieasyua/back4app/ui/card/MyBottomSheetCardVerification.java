@@ -19,6 +19,7 @@ import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -105,7 +106,6 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 getStatus();
             }
 
@@ -257,7 +257,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         if (responseData != null) {
                             // Обработка успешного ответа
                             Log.d("TAG1", "onResponse: " + responseData.toString());
-                            Toast.makeText(requireActivity(), getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
+                            if (isAdded()) { // Проверяем, что фрагмент присоединен к активности
+                                if (response.isSuccessful()) {
+                                    Toast.makeText(requireActivity(), getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
+                                }
+                            }
                         }
                     }
                 } else {

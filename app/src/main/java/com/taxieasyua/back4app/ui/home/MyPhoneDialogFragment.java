@@ -40,6 +40,7 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
@@ -223,12 +224,22 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                 Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO).get(6));
 
                                 Log.d(TAG, "onResponse: urlOrder &&&77777777777777" + urlOrder);
-                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-                                paymentIntent.putExtra("urlOrder", urlOrder);
-                                paymentIntent.putExtra("orderCost", HomeFragment.text_view_cost.getText().toString());
-                                paymentIntent.putExtra("fragment_key", "home");
-                                startActivity(paymentIntent);
+
+                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                        checkoutUrl,
+                                        HomeFragment.text_view_cost.getText().toString(),
+                                        "home",
+                                        urlOrder
+                                );
+                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+
+//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
+//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
+//                                paymentIntent.putExtra("urlOrder", urlOrder);
+//                                paymentIntent.putExtra("orderCost", HomeFragment.text_view_cost.getText().toString());
+//                                paymentIntent.putExtra("fragment_key", "home");
+//                                startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
                                 // Обработка ответа об ошибке
                                 String errorResponseMessage = responseBody.getErrorMessage();
