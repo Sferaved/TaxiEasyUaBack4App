@@ -5,6 +5,7 @@ import static android.content.Context.MODE_PRIVATE;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -44,6 +45,8 @@ import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
 import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
+import com.taxieasyua.back4app.ui.home.MyGeoMarkerDialogFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
@@ -182,6 +185,25 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             }
         });
 
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        switch (Objects.requireNonNull(fragment_key)){
+            case "home":
+                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                break;
+            case "gallery":
+                GalleryFragment.progressbar.setVisibility(View.INVISIBLE);
+                break;
+            case "geo":
+                MyGeoDialogFragment.progressBar.setVisibility(View.INVISIBLE);
+                break;
+            case "marker":
+                MyGeoMarkerDialogFragment.progressBar.setVisibility(View.INVISIBLE);
+                break;
+        }
     }
 
     public void orderGeoMarker() throws MalformedURLException {

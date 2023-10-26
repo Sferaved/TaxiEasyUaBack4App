@@ -6,6 +6,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -401,7 +402,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                                 MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
                                         checkoutUrl,
                                         text_view_cost.getText().toString(),
-                                        "geo",
+                                        "marker",
                                         urlOrder
                                 );
                                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -530,6 +531,13 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
         }
     }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+    }
+
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d(TAG, "updateAddCost: addCost" + addCost);
