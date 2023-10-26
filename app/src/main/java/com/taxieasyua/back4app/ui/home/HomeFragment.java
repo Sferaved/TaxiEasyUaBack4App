@@ -361,7 +361,7 @@ public class HomeFragment extends Fragment {
                             && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                         checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.on_geo_loc_mes));
+                        MyBottomSheetErrorGeoFragment bottomSheetDialogFragment = new MyBottomSheetErrorGeoFragment(getString(R.string.on_geo_loc_mes));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                         btnGeo.setVisibility(View.VISIBLE);
                     }  else {
