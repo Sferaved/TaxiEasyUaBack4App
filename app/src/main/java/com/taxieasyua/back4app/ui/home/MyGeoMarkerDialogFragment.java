@@ -584,7 +584,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             text_view_cost.setText(String.valueOf(firstCost));
 
             firstCostForMin = firstCost;
-            long MIN_COST_VALUE = (long) (firstCost * 0.1);
+            long MIN_COST_VALUE = (long) (firstCost*0.6);
 
             btn_minus.setOnClickListener(v -> {
                 List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());

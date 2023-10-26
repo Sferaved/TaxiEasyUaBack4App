@@ -860,7 +860,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
             firstCost = firstCost + discount;
             updateAddCost(String.valueOf(discount));
             text_view_cost.setText(String.valueOf(firstCost));
-            MIN_COST_VALUE = (long) (firstCost * 0.1);
+            MIN_COST_VALUE = (long) (firstCost*0.6);
             firstCostForMin = firstCost;
         }
         if(!text_view_cost.getText().toString().equals("")) {

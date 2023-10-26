@@ -221,7 +221,7 @@ public class HomeFragment extends Fragment {
             cost = Long.parseLong(text_view_cost.getText().toString());
         }
 
-        MIN_COST_VALUE = (long) (cost * 0.1);
+        MIN_COST_VALUE = (long) (cost*0.6);
 
         btn_minus = binding.btnMinus;
         btn_plus= binding.btnPlus;
@@ -378,7 +378,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231026101443728_K7AC", "повернення замовлення", "1600");
+                getRevers("V_20231026112315612_LNY8", "повернення замовлення", "1900");
 //                getRevers("V_20231026101213069_NNTB", "повернення замовлення", "1100");
 //                getRevers("V_20231025124250843_CQ8B", "повернення замовлення", "100");
                 Intent intent = new Intent(Intent.ACTION_DIAL);
@@ -1175,7 +1175,7 @@ public class HomeFragment extends Fragment {
                 text_view_cost.setText(Long.toString(cost));
 
                 costFirstForMin = cost;
-                MIN_COST_VALUE = (long) (cost * 0.1);
+                MIN_COST_VALUE = (long) (cost*0.6);
                 Log.d(TAG, "cost: MIN_COST_VALUE "  + MIN_COST_VALUE);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
@@ -1285,7 +1285,7 @@ public class HomeFragment extends Fragment {
                 text_view_cost.setText(Long.toString(cost));
 
                 costFirstForMin = cost;
-                MIN_COST_VALUE = (long) (cost * 0.1);
+                MIN_COST_VALUE = (long) (cost*0.6);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());

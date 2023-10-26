@@ -15,4 +15,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "TaxiEasyUaBack4App"
 include ':app'
-include ':library'

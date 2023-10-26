@@ -1,324 +1,276 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code" tools:ignore="MissingTranslation">2.851</string>
-    <string name="version" tools:ignore="MissingTranslation">Версия: 2.851</string>
+    <string name="version_code">2.852</string>
+    <string name="version">Версия: 2.852</string>
 
-    <string name="app_name" tools:ignore="MissingTranslation">Такси Украина 2</string>
+    <string name="app_name">Такси Украина 2</string>
+    <string name="back4app_server_url">https://parseapi.back4app.com/</string>
+    <string name="back4app_app_id">01YGF894m3NJRXT1BlH6qPo9pUfDlG9sqi9K9mIL</string>
+    <string name="back4app_client_key">T5f5GuT1UCmaiJn8Dek3sVmayGuJa2jfelQR6V6f</string>
 
-    <string name="back4app_server_url" tools:ignore="MissingTranslation">https://parseapi.back4app.com/</string>
-    <string name="back4app_app_id" tools:ignore="MissingTranslation">01YGF894m3NJRXT1BlH6qPo9pUfDlG9sqi9K9mIL</string>
-    <string name="back4app_client_key" tools:ignore="MissingTranslation">T5f5GuT1UCmaiJn8Dek3sVmayGuJa2jfelQR6V6f</string>
 
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Попутчик такси Украина дешево</string>
+    <string name="nav_header_subtitle">Быстрые поездки по городам Украины</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Настройки</string>
 
-    <string name="navigation_drawer_open" tools:ignore="MissingTranslation">Open navigation drawer</string>
-    <string name="navigation_drawer_close" tools:ignore="MissingTranslation">Close navigation drawer</string>
-    <string name="nav_header_title" tools:ignore="MissingTranslation">Попутчик такси Украина дешево</string>
-    <string name="nav_header_subtitle" tools:ignore="MissingTranslation">Быстрые поездки по городам Украины</string>
-    <string name="nav_header_desc" tools:ignore="MissingTranslation">Navigation header</string>
-    <string name="action_settings" tools:ignore="MissingTranslation">Настройки</string>
-
-    <string name="menu_maps" tools:ignore="MissingTranslation">Карта</string>
-    <string name="menu_home" tools:ignore="MissingTranslation">По адресам</string>
-    <string name="menu_gallery" tools:ignore="MissingTranslation">Мои маршруты</string>
-    <string name="menu_slideshow" tools:ignore="MissingTranslation">Slideshow</string>
-    <string name="menu_about" tools:ignore="MissingTranslation">О приложении</string>
-    <string name="title_activity_login" tools:ignore="MissingTranslation">LoginActivity</string>
-    <string name="prompt_email" tools:ignore="MissingTranslation">Email</string>
-    <string name="prompt_password" tools:ignore="MissingTranslation">Password</string>
-    <string name="action_sign_in" tools:ignore="MissingTranslation">Sign in или register</string>
-    <string name="action_sign_in_short" tools:ignore="MissingTranslation">Sign in</string>
-    <string name="welcome" tools:ignore="MissingTranslation">"Welcome!"</string>
-    <string name="invalid_username" tools:ignore="MissingTranslation">Не valid username</string>
-    <string name="invalid_password" tools:ignore="MissingTranslation">Password must be >5 characters</string>
-    <string name="login_failed" tools:ignore="MissingTranslation">"Login failed"</string>
-    <string name="action_exit" tools:ignore="MissingTranslation">Выход</string>
-    <string name="delete_record" tools:ignore="MissingTranslation">удалить?</string>
-    <string name="make_rout" tools:ignore="MissingTranslation">Создать маршрут</string>
-    <string name="call_admin" tools:ignore="MissingTranslation">Вызов оператора</string>
-    <string name="email_friend" tools:ignore="MissingTranslation">Рассказать другу</string>
+    <string name="menu_maps">Карта</string>
+    <string name="menu_home">По адресу</string>
+    <string name="menu_gallery">Мои маршруты</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_about">О приложении</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in или register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Не valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="action_exit">Выход</string>
+    <string name="delete_record">удалить?</string>
+    <string name="make_rout">Создать маршрут</string>
+    <string name="call_admin">Вызов оператору</string>
+    <string name="email_friend">Рассказать другу</string>
     <!-- <string name="default_web_client_id">356539267738-5bs72asrar11ud7ckcis68ophlnm3gfj.apps.googleusercontent.com</string>-->
-    <!--  <string name="default_web_client_id">356539267738-0v3d1nsci9g7fij8cemnlid7cfalvdo2.apps.googleusercontent.com</string>-->
-    <string name="my_phone" tools:ignore="MissingTranslation">Мой телефон</string>
-    <string name="open_maps" tools:ignore="MissingTranslation">Заказать по карте</string>
-    <string name="driver" tools:ignore="MissingTranslation">Работа водителем</string>
-    <string name="send_email" tools:ignore="MissingTranslation">Поделиться</string>
-    <string name="gps_ok" tools:ignore="MissingTranslation">У Вас все хорошо</string>
-    <string name="cancel_button" tools:ignore="MissingTranslation">Нет, спасибо</string>
-    <string name="gps_on" tools:ignore="MissingTranslation">Включить</string>
-    <string name="gps_info" tools:ignore="MissingTranslation">Чтобы улучшить работу программы, включите на устройстве геолокацию Google</string>
-    <string name="gps_on_button" tools:ignore="MissingTranslation">включит gps</string>
-    <string name="wellcome" tools:ignore="MissingTranslation">Сформируйте маршрут или выберите любимый.</string>
-    <string name="verify_phone" tools:ignore="MissingTranslation">Проверка телефона</string>
-    <string name="format_phone" tools:ignore="MissingTranslation">Формат ввода телефонного номера: +380936665544</string>
-    <string name="sent_button" tools:ignore="MissingTranslation">Отправить</string>
-    <string name="verify_internet" tools:ignore="MissingTranslation">Проверьте интернет-подключение или позвоните оператору.</string>
-    <string name="save_button" tools:ignore="MissingTranslation">Сохранить</string>
-    <string name="you_this" tools:ignore="MissingTranslation">"Вы сейчас здесь: "</string>
-    <string name="make_rout_message" tools:ignore="MissingTranslation">Сформируйте маршрут</string>
-    <string name="error_message" tools:ignore="MissingTranslation">"Ошибка: "</string>
-    <string name="to_point" tools:ignore="MissingTranslation">"Место назначения: "</string>
-    <string name="cost_of_order" tools:ignore="MissingTranslation">" Стоимость поездки: "</string>
-    <string name="firebase_false_message" tools:ignore="MissingTranslation">грн. Извините, без проверки Google-аккаунта заказ невозможен.</string>
-    <string name="UAH" tools:ignore="MissingTranslation">грн</string>
-    <string name="order" tools:ignore="MissingTranslation">Заказать</string>
-    <string name="thanks_message" tools:ignore="MissingTranslation">"Спасибо за заказ от "</string>
-    <string name="call_of_order" tools:ignore="MissingTranslation">" Ожидайте звонка оператора. Стоимость поездки: "</string>
-    <string name="next_try" tools:ignore="MissingTranslation">" Попробуйте еще или позвоните оператору."</string>
-    <string name="help" tools:ignore="MissingTranslation">Поддержка</string>
-    <string name="show_to_point" tools:ignore="MissingTranslation">Укажите место назначения</string>
-    <string name="change" tools:ignore="MissingTranslation">ИЗМЕНИТЬ</string>
-    <string name="on_city" tools:ignore="MissingTranslation">" по городу."</string>
-    <string name="on_city_tv" tools:ignore="MissingTranslation">" по городу"</string>
-    <string name="help_button" tools:ignore="MissingTranslation">Поддержка</string>
-    <string name="try_again" tools:ignore="MissingTranslation">Заново</string>
-    <string name="ok_button" tools:ignore="MissingTranslation">Ок</string>
-    <string name="to_message" tools:ignore="MissingTranslation">" -> "</string>
-    <string name="rout_from_message" tools:ignore="MissingTranslation">Укажите место отправки</string>
-    <string name="routs_button" tools:ignore="MissingTranslation">Маршруты</string>
-    <string name="old_routs_message" tools:ignore="MissingTranslation">Выбирайте из списка предыдущих поездок</string>
-    <string name="firebase_error" tools:ignore="MissingTranslation">Извините. Вход заблокирован. Обратитесь к оператору.</string>
-    <string name="choice_button" tools:ignore="MissingTranslation">подтвердить</string>
-    <string name="to_edit" tools:ignore="MissingTranslation">Куда</string>
-    <string name="from_edit" tools:ignore="MissingTranslation">Откуда</string>
-    <string name="sms_code" tools:ignore="MissingTranslation">Код проверки со смс-сообщения</string>
-    <string name="android" tools:ignore="MissingTranslation">Андроид-приложение для быстрых и дешевых поездок при заказе онлайн.</string>
-    <string name="good_day" tools:ignore="MissingTranslation">Приветствую. Нашел великолепное приложение для поездок на такси. \n \n Советую попробовать по ссылке в официальном магазине Google: \n\n https://play.google.com/store/apps/details?id=com.taxieasyua.back4app \n\n Хорошего дня. \n Еще увидимся.</string>
-    <string name="share" tools:ignore="MissingTranslation">Посоветовать другу приложение...</string>
-    <string name="no_email_agent" tools:ignore="MissingTranslation">Почтовый клиент не установлен.</string>
-    <string name="check_position" tools:ignore="MissingTranslation">Ожидайте, происходит определение Вашего местоположения...</string>
-    <string name="my_adresses" tools:ignore="MissingTranslation">Избранные</string>
-    <string name="make_order_message" tools:ignore="MissingTranslation">Совершите хотя бы одну поездку</string>
-    <string name="to_adress_message" tools:ignore="MissingTranslation">Куда едем?</string>
-    <string name="coastMarkersMessage" tools:ignore="MissingTranslation">"Стоимость поездки по маршруту "</string>
-    <string name="please_phone_message" tools:ignore="MissingTranslation">Это приложение  передает номер Вашего мобильного телефона для включения функции заказа такси. Нажав кнопку СОХРАНИТЬ Вы подтверждаете согласие на передачу номера Вашего телефона диспетчеру для поиска автомобиля и сохранение его для следующих заказов.</string>
-    <string name="check_message" tools:ignore="MissingTranslation">Ожидайте, идет подключение...</string>
-    <string name="find_of_map" tools:ignore="MissingTranslation">Попробуйте найти на карте</string>
-    <string name="end_point_marker" tools:ignore="MissingTranslation">Место назначения</string>
-    <string name="error_firebase_start" tools:ignore="MissingTranslation">Ошибка проверки. Наберите оператора.</string>
-    <string name="address_error_message" tools:ignore="MissingTranslation">Ошибка ввода адреса</string>
+    <!--<string name="default_web_client_id">356539267738-0v3d1nsci9g7fij8cemnlid7cfalvdo2.apps.googleusercontent.com</string>-->
+    <string name="my_phone">Мой телефон</string>
+    <string name="open_maps">Заказать по карте</string>
+    <string name="driver">Работа водителем</string>
+    <string name="send_email">Поделиться</string>
+    <string name="gps_ok">У Вас все хорошо</string>
+    <string name="cancel_button">Нет, спасибо</string>
+    <string name="gps_on">Включить</string>
+    <string name="gps_info">Чтобы улучшить работу программы, включите на устройстве геолокацию Google</string>
+    <string name="gps_on_button">включит gps</string>
+    <string name="wellcome">Сформируйте маршрут или выберите любимый.</string>
+    <string name="verify_phone">Проверка телефона</string>
+    <string name="format_phone">Формат ввода телефонного номера: +380936665544</string>
+    <string name="sent_button">Отправить</string>
+    <string name="verify_internet">Проверьте интернет-подключение или позвоните оператору.</string>
+    <string name="save_button">Сохранить</string>
+    <string name="you_this">"Вы сейчас здесь: "</string>
+    <string name="make_rout_message">Сформируйте маршрут</string>
+    <string name="error_message">"Ошибка: "</string>
+    <string name="to_point">"Место назначения: "</string>
+    <string name="cost_of_order">" Стоимость поездки: "</string>
+    <string name="firebase_false_message">грн. Извините, без проверки Google-аккаунта заказ невозможен.</string>
+    <string name="UAH">грн</string>
+    <string name="order">Заказать</string>
+    <string name="thanks_message">"Спасибо за заказ от "</string>
+    <string name="call_of_order">" Ожидайте звонка оператора. Стоимость поездки: "</string>
+    <string name="next_try">" Попробуйте еще или позвоните оператору."</string>
+    <string name="help">Поддержка</string>
+    <string name="show_to_point">Укажите место назначения</string>
+    <string name="change">ИЗМЕНИТЬ</string>
+    <string name="on_city">" по городу."</string>
+    <string name="on_city_tv">" по городу"</string>
+    <string name="help_button">Поддержка</string>
+    <string name="try_again">Снова</string>
+    <string name="ok_button">Ок</string>
+    <string name="to_message">" -> "</string>
+    <string name="rout_from_message">Укажите место отправки</string>
+    <string name="routs_button">Маршруты</string>
+    <string name="old_routs_message">Выбирайте из списка предыдущих поездок</string>
+    <string name="firebase_error">Извините. Вход заблокирован. Обратитесь к оператору.</string>
+    <string name="choice_button">подтвердить</string>
+    <string name="to_edit">Куда</string>
+    <string name="from_edit">Откуда</string>
+    <string name="sms_code">Код проверки со смс-сообщения</string>
+    <string name="android">Андроид-приложение для скорых и дешевых поездок при заказе онлайн.</string>
+    <string name="good_day">Мои приветствия. Нашел великолепное приложение для поездок на такси. \n \n Советую попробовать по ссылке в официальном магазине Google: \n\n https://play.google.com/store/apps/details?id=com.taxieasyua.back4app \n\n Хорошего дня. \n Еще увидимся.</string>
+    <string name="share">Посоветовать другу приложение...</string>
+    <string name="no_email_agent">Почтовый клиент не установлен.</string>
+    <string name="check_position">Подождите, происходит определение Вашего местоположения...</string>
+    <string name="my_adresses">Избранные</string>
+    <string name="make_order_message">Совершите хотя бы одну поездку</string>
+    <string name="to_adress_message">Куда едем?</string>
+    <string name="coastMarkersMessage">"Стоимость путешествия по маршруту"</string>
+    <string name="please_phone_message">Приложение передает номер вашего мобильного телефона для включения функции заказа такси. Нажав кнопку Сохранить Вы подтверждаете согласие на передачу телефонного номера диспетчеру для поиска автомобиля и сохранения его для следующих заказов.</string><string name="check_message">Ждите, идет подключение.</string>
+    <string name="find_of_map">Попробуйте найти на карте</string>
+    <string name="end_point_marker">Место назначения</string>
+    <string name="error_firebase_start">Ошибка проверки. Наберите оператора.</string>
+    <string name="address_error_message">Ошибка ввода адреса</string>
 
+    <string name="BAGGAGE">Загрузка салона</string>
+    <string name="ANIMAL">Животное</string>,
+    <string name="CONDIT">Кондиционер</string>
+    <string name="MEET">Встреча с табличкой</string>
+    <string name="COURIER">Курьер. доставка</string>
+    <string name="TERMINAL">Терминал</string>
+    <string name="CHECK">Чек</string>
+    <string name="BABY_SEAT">Детское кресло</string>
+    <string name="DRIVER">Драйвер</string>
+    <string name="NO_SMOKE">Некурящий водитель</string>
+    <string name="ENGLISH">Англоязычный водитель</string>
+    <string name="CABLE">Трос</string>
+    <string name="FUEL">Подвоз топлива</string>
+    <string name="WIRES">Провод</string>
+    <string name="SMOKE">Я буду курить</string>
 
-    <string name="BAGGAGE" tools:ignore="MissingTranslation">Загрузка салона</string>
-    <string name="ANIMAL" tools:ignore="MissingTranslation">Животное</string>,
-    <string name="CONDIT" tools:ignore="MissingTranslation">Кондиционер</string>
-    <string name="MEET" tools:ignore="MissingTranslation">Встреча с табличкой</string>
-    <string name="COURIER" tools:ignore="MissingTranslation">Курьер. доставка</string>
-    <string name="TERMINAL" tools:ignore="MissingTranslation">Терминал</string>
-    <string name="CHECK" tools:ignore="MissingTranslation">Чек</string>
-    <string name="BABY_SEAT" tools:ignore="MissingTranslation">Детское кресло</string>
-    <string name="DRIVER" tools:ignore="MissingTranslation">Драйвер</string>
-    <string name="NO_SMOKE" tools:ignore="MissingTranslation">Некурящий водитель</string>
-    <string name="ENGLISH" tools:ignore="MissingTranslation">Англоговорящий водитель</string>
-    <string name="CABLE" tools:ignore="MissingTranslation">Трос</string>
-    <string name="FUEL" tools:ignore="MissingTranslation">Подвоз топлива</string>
-    <string name="WIRES" tools:ignore="MissingTranslation">Провода</string>
-    <string name="SMOKE" tools:ignore="MissingTranslation">Я буду курить</string>
-    <string name="add_services" tools:ignore="MissingTranslation">Дополнительно</string>
-    <string name="time_limit" tools:ignore="MissingTranslation">Превышение времени выполнения</string>
-    <string name="slow_internet" tools:ignore="MissingTranslation">Низкая скорость интернета</string>
-    <string name="update_message" tools:ignore="MissingTranslation">Необходимо провести обновление</string>
-    <string name="update_url" tools:ignore="MissingTranslation">Обновить приложение</string>
-    <string name="new_version" tools:ignore="MissingTranslation">Доступна новая версия</string>
-    <string name="news_of_version" tools:ignore="MissingTranslation">В новой версии улучшена производительность и добавлены новые удобные функции</string>
-    <string name="Street_hint" tools:ignore="MissingTranslation">Улица</string>
-    <string name="gps" tools:ignore="MissingTranslation">GPS</string>
-    <string name="btn_cost" tools:ignore="MissingTranslation">Заказать</string>
-    <string name="texthist" tools:ignore="MissingTranslation">Предыдущие адреса</string>
-    <string name="routs" tools:ignore="MissingTranslation">Мои адреса</string>
-    <string name="on_map" tools:ignore="MissingTranslation">По карте</string>
-    <string name="add_cost_message" tools:ignore="MissingTranslation">Увеличьте стоимость поездки для более быстрого поиска машины</string>
-    <string name="from_text" tools:ignore="MissingTranslation">Откуда</string>
-    <string name="to_text" tools:ignore="MissingTranslation">Куда</string>
-    <string name="serve" tools:ignore="MissingTranslation">Подача</string>
-    <string name="coment" tools:ignore="MissingTranslation">Комментарий</string>
-    <string name="services" tools:ignore="MissingTranslation">УСЛУГИ</string>
-    <string name="resettimetoorder" tools:ignore="MissingTranslation">Измените дату или время для предварительного заказа</string>
-    <string name="my_routs" tools:ignore="MissingTranslation">Отметьте маршрут</string>
-    <string name="no_routs" tools:ignore="MissingTranslation">Нет маршрутов</string>
-    <string name="cheng" tools:ignore="MissingTranslation">Изменить</string>
-    <string name="delete_routs" tools:ignore="MissingTranslation">удалить</string>
-    <string name="text_result" tools:ignore="MissingTranslation">Ваш заказ</string>
-    <string name="btn_again_text" tools:ignore="MissingTranslation">Заказать еще</string>
-    <string name="textStatus" tools:ignore="MissingTranslation">Статус заказа</string>
-    <string name="cancel_order" tools:ignore="MissingTranslation">Отменить заказ</string>
-    <string name="ex_st_1" tools:ignore="MissingTranslation">Ожидается поиск машины (для предварительного заказа)</string>
-    <string name="ex_st_2" tools:ignore="MissingTranslation">Машина найдена.</string>
-    <string name="ex_st_3" tools:ignore="MissingTranslation">" Номер авто: "</string>
-    <string name="ex_st_4" tools:ignore="MissingTranslation">" Телефон водителя: "</string>
-    <string name="ex_st_5" tools:ignore="MissingTranslation">" Ожидаемое время подачи: "</string>
-    <string name="ex_st_0" tools:ignore="MissingTranslation">Выполняется поиск машины</string>
-    <string name="your_city" tools:ignore="MissingTranslation">"Ваш город "</string>
-    <string name="Kyiv_city" tools:ignore="MissingTranslation">Киев</string>
-    <string name="Odessa" tools:ignore="MissingTranslation">Одесса</string>
-    <string name="gps_message" tools:ignore="MissingTranslation">Для использовния карты включите GPS</string>
-    <string name="city" tools:ignore="MissingTranslation">Город</string>
-    <string name="change_message" tools:ignore="MissingTranslation">"Смена базы адресов. "</string>
-    <string name="server_error_connected" tools:ignore="MissingTranslation">Сервер не принял запрос, наберите операторов</string>
-    <string name="GDPR" tools:ignore="MissingTranslation">" GDPR"</string>
-    <string name="ok_GDPR" tools:ignore="MissingTranslation">Согласиться</string>
-    <string name="Dnipro_city" tools:ignore="MissingTranslation">Днепр</string>
-    <string name="city_change" tools:ignore="MissingTranslation">Выберите город</string>
-    <string name="Zaporizhzhia" tools:ignore="MissingTranslation">Запорожье</string>
-    <string name="Cherkasy" tools:ignore="MissingTranslation">Черкассы</string>
-    <string name="OdessaTest" tools:ignore="MissingTranslation">Одесса (Тест)</string>
-    <string name="disc_text" tools:ignore="MissingTranslation">Изменить стоимость на</string>
-    <string name="email_sent" tools:ignore="MissingTranslation">Сообщение отправлено</string>
-    <string name="send_like" tools:ignore="MissingTranslation">Оценить приложение</string>
-    <string name="send_email_admin" tools:ignore="MissingTranslation">Сообщить про проблему</string>
-    <string name="SA_subject" tools:ignore="MissingTranslation">Сообщение № I-</string>
-    <string name="SA_message_start" tools:ignore="MissingTranslation">Текст Вашего сообщения: </string>
-    <string name="SA_info_pas" tools:ignore="MissingTranslation">Информация о приложении: </string>
-    <string name="SA_info_city" tools:ignore="MissingTranslation">База адресов города </string>
-    <string name="SA_pas_text" tools:ignore="MissingTranslation">Приложение: </string>
-    <string name="SA_user_text" tools:ignore="MissingTranslation">Пользователь: </string>
-    <string name="SA_email" tools:ignore="MissingTranslation">Электронная почта: </string>
-    <string name="SA_phone_text" tools:ignore="MissingTranslation">Телефон: </string>
-    <string name="black_list_message" tools:ignore="MissingTranslation">Извините, Вы не можете заказывать поездки. За информацией обратитесь к оператору.</string>
-    <string name="action_help" tools:ignore="MissingTranslation">ПОДДЕРЖКА</string>
-    <string name="cost_of_road" tools:ignore="MissingTranslation">Стоимость поездки по выбранному маршруту составит</string>
-    <string name="btn_geo_text" tools:ignore="MissingTranslation">Доступ к геопозиции</string>
-    <string name="on_geo_loc_mes" tools:ignore="MissingTranslation">Для работы с картой разрешите доступ приложению к определнию Вашего местоположения</string>
-    <string name="OK" tools:ignore="MissingTranslation">Ок</string>
-    <string name="to_marker_mes" tools:ignore="MissingTranslation">Отметьте маркером на карте место высадки</string>
-    <string name="set_marker" tools:ignore="MissingTranslation">Отметить на карте</string>
-    <string name="uid_menu" tools:ignore="MissingTranslation">История заказов</string>
-    <string name="close_resone_def" tools:ignore="MissingTranslation">Уточните у диспетчера</string>
-    <string name="close_resone_in_work" tools:ignore="MissingTranslation">В обработке</string>
-    <string name="close_resone_0" tools:ignore="MissingTranslation">Выполнен</string>
-    <string name="close_resone_1" tools:ignore="MissingTranslation">Снят клиентом </string>
-    <string name="close_resone_2" tools:ignore="MissingTranslation">Не выполнено</string>
-    <string name="close_resone_3" tools:ignore="MissingTranslation">Не выполнено </string>
-    <string name="close_resone_4" tools:ignore="MissingTranslation">Не выполнено </string>
-    <string name="close_resone_5" tools:ignore="MissingTranslation">Не выполнено</string>
-    <string name="close_resone_6" tools:ignore="MissingTranslation">Снят клиентом</string>
-    <string name="close_resone_7" tools:ignore="MissingTranslation">Снят клиентом</string>
-    <string name="close_resone_8" tools:ignore="MissingTranslation">Выполнен</string>
-    <string name="close_resone_9" tools:ignore="MissingTranslation">Снят клиентом</string>
-    <string name="close_resone_from" tools:ignore="MissingTranslation">"От "</string>
-    <string name="close_resone_to" tools:ignore="MissingTranslation">" до: "</string>
-    <string name="close_resone_cost" tools:ignore="MissingTranslation">", стоимость: "</string>
-    <string name="close_resone_time" tools:ignore="MissingTranslation">", время заказа: "</string>
-    <string name="close_resone_text" tools:ignore="MissingTranslation">", состояние: "</string>
-    <string name="startPoint" tools:ignore="MissingTranslation">Место посадки</string>
-    <string name="my_bonus" tools:ignore="MissingTranslation">"Доступно бонусов: "</string>
-    <string name="add_bonus" tools:ignore="MissingTranslation">"Вам начислено "</string>
-    <string name="bonus" tools:ignore="MissingTranslation">" бонусов"</string>
-    <string name="sent_bonus" tools:ignore="MissingTranslation">Использовать</string>
-    <string name="no_bonus" tools:ignore="MissingTranslation">У Вас нет доступных бонусов</string>
-    <string name="btn_bonus" tools:ignore="MissingTranslation">Способ оплаты</string>
-    <string name="nobonuspayment" tools:ignore="MissingTranslation">Недостаточно бонусов. Оплата наличными.</string>
-    <string name="nal_payment" tools:ignore="MissingTranslation">Наличными</string>
-    <string name="bonus_payment" tools:ignore="MissingTranslation">Бонусы</string>
-    <string name="def_status" tools:ignore="MissingTranslation">Уточните у диспетчера</string>
-    <string name="block_mes" tools:ignore="MissingTranslation">Заблокировано </string>
-    <string name="bon" tools:ignore="MissingTranslation"> бонусов</string>
-    <string name="my_bonus_menu" tools:ignore="MissingTranslation">Мои бонусы</string>
-    <string name="update_bonus" tools:ignore="MissingTranslation">получить бонусы</string>
-    <string name="upd_bonus_info" tools:ignore="MissingTranslation">Обновите информацию о ваших бонусах</string>
-    <string name="bonus_text_0" tools:ignore="MissingTranslation"> Не забудьте забрать бонус за следующие сутки.</string>
-    <string name="bonus_text_1" tools:ignore="MissingTranslation">Правила начисления бонусов:</string>
-    <string name="bonus_text_2" tools:ignore="MissingTranslation">- Регистрация в приложении - 1 бонус;</string>
-    <string name="bonus_text_3" tools:ignore="MissingTranslation">- Первый заказ - 1 бонус;</string>
-    <string name="bonus_text_4" tools:ignore="MissingTranslation">- Выполненный маршрут - 1 бонус за каждую 1 целую гривну из суммы выполнения;</string>
-    <string name="bonus_text_5" tools:ignore="MissingTranslation">- Вход в приложение – 1 бонус начисляется не более 1 раза в сутки.</string>
-    <string name="bonus_text_6" tools:ignore="MissingTranslation">Бонусы можно использовать при заказе поездок при условии возможности такого сервиса в выбранной Вами базе адресов, а также если стоимость поездки полностью покрывается доступными бонусами из расчета 100 бонусов = 1 грн.</string>
-    <string name="bonus_text_7" tools:ignore="MissingTranslation">Для получения актуальной информации и начисления бонусов - нажмите кнопку - ПОЛУЧИТЬ БОНУСЫ</string>
-    <string name="payment_type_ok" tools:ignore="MissingTranslation">Применить выбор</string>
-    <string name="bonus_upd_mes" tools:ignore="MissingTranslation">Информация о количестве бонусов обновлена</string>
-    <string name="start_point_text" tools:ignore="MissingTranslation">Точка посадки</string>
-    <string name="order_after_phone" tools:ignore="MissingTranslation">"Для заказа нажмите кнопку "</string>
-    <string name="clear_home" tools:ignore="MissingTranslation">Очистить поля</string>
-    <string name="google_payment" tools:ignore="MissingTranslation">Картой</string>
+    <string name="add_services">Дополнительно</string>
+    <string name="time_limit">Превышение времени выполнения</string>
+    <string name="slow_internet">Низкая скорость интернета</string>
+    <string name="update_message">Необходимо произвести обновление</string>
+    <string name="update_url">Обновить приложение</string>
+    <string name="new_version">Доступна новая версия</string>
+    <string name="news_of_version">В новой версии улучшена производительность и добавлены новые удобные функции</string>
+    <string name="Street_hint">Улица</string>
+    <string name="gps">GPS</string>
+    <string name="btn_cost">Заказать</string>
+    <string name="texthist">Предыдущие адреса</string>
+    <string name="routs">Мои адреса</string>
+    <string name="on_map">По карте</string>
+    <string name="add_cost_message">Увеличьте стоимость поездки для быстрого поиска машины</string>
+    <string name="from_text">Откуда</string>
+    <string name="to_text">Куда</string>
+    <string name="serve">Подача</string>
+    <string name="coment">Комментарий</string>
+    <string name="services">УСЛУГИ</string>
+    <string name="resettimetoorder">Измените дату или время для предварительного заказа</string>
+    <string name="my_routs">Выберите маршрут</string>
+    <string name="no_routs">Нет маршрутов</string>
+    <string name="cheng">Изменить</string>
+    <string name="delete_routs">удалить</string>
+    <string name="text_result">Ваш заказ</string>
+    <string name="btn_again_text">Заказать еще</string>
+    <string name="textStatus">Статус заказа</string>
+    <string name="cancel_order">Отменить заказ</string>
+    <string name="ex_st_1">Ожидается поиск машины (для предварительного заказа)</string>
+    <string name="ex_st_2">Найденная машина.</string>
+    <string name="ex_st_3">" Номер авто: "</string>
+    <string name="ex_st_4">" Телефон водителя: "</string>
+    <string name="ex_st_5">" Ожидаемое время подачи: "</string>
+    <string name="ex_st_0">Происходит поиск машины</string>
+    <string name="your_city">"Ваш город"</string>
+    <string name="Kyiv_city">Киев</string>
+    <string name="Odessa">Одесса</string>
+    <string name="gps_message">Для использования карты включите GPS</string>
+    <string name="city">Город</string>
+    <string name="change_message">"Изменение базы адресов."</string>
+    <string name="server_error_connected">Сервер не принял запрос, наберите операторов</string>
+    <string name="GDPR">GDPR</string>
+    <string name="ok_GDPR">Согласиться</string>
+    <string name="Dnipro_city">Днепр</string>
+    <string name="city_change">Выберите город</string>
+    <string name="Zaporizhzhia">Запорожье</string>
+    <string name="Cherkasy">Черкассы</string>
+    <string name="OdessaTest">Одесса (Тест)</string>
+    <string name="disc_text">Изменить стоимость на</string>
+    <string name="email_sent">Сообщение отправлено</string>
+    <string name="send_like">Оценить приложение</string>
+    <string name="send_email_admin">Сообщить о проблеме</string>
+    <string name="SA_subject">Сообщение № I-</string>
+    <string name="SA_message_start">Текст вашего сообщения: </string>
+    <string name="SA_info_pas">Информация о приложении: </string>
+    <string name="SA_info_city">База адресов города</string>
+    <string name="SA_pas_text">Приложение:</string>
+    <string name="SA_user_text">Пользователь:</string>
+    <string name="SA_email">Электронная почта:</string>
+    <string name="SA_phone_text">"Телефон:</string>
+    <string name="black_list_message">Извините, вы не можете заказывать путешествия. За информацией обратитесь к оператору.</string>
+    <string name="action_help">ПОМОЩЬ</string>
+    <string name="cost_of_road">Стоимость поездки по выбранному маршруту составит</string>
+    <string name="btn_geo_text">Доступ к геопозиции</string>
+    <string name="on_geo_loc_mes">Для работы с картой разрешите доступ к программе для определения вашего местоположения</string>
+    <string name="OK">Ок</string>
+    <string name="to_marker_mes">Пометьте маркером на карте место высадки</string>
+    <string name="set_marker">Отметить по карте</string>
+    <string name="uid_menu">История заказов</string>
+    <string name="close_resone_def">Уточнить у диспетчера</string>
+    <string name="close_resone_in_work">В обработке</string>
+    <string name="close_resone_0">Выполнен</string>
+    <string name="close_resone_1">Снят клиентом</string>
+    <string name="close_resone_2">Не выполнено</string>
+    <string name="close_resone_3">Не выполнено</string>
+    <string name="close_resone_4">Не выполнено</string>
+    <string name="close_resone_5">Не выполнено</string>
+    <string name="close_resone_6">Снят клиентом</string>
+    <string name="close_resone_7">Снят клиентом</string>
+    <string name="close_resone_8">Выполнен</string>
+    <string name="close_resone_9">Снят клиентом</string>
+    <string name="close_resone_from">"От "</string>
+    <string name="close_resone_to">" к "</string>
+    <string name="close_resone_cost">", стоимость: "</string>
+    <string name="close_resone_time">", время заказа: "</string>
+    <string name="close_resone_text">", состояние: "</string>
+    <string name="startPoint">Место посадки</string>
+    <string name="my_bonus">"Доступно бонусов: "</string>
+    <string name="add_bonus">"Вам начислено"</string>
+    <string name="bonus">"бонусов"</string>
+    <string name="sent_bonus">Использовать</string>
+    <string name="no_bonus">У Вас нет доступных бонусов</string>
+    <string name="btn_bonus">Способ оплаты</string>
+    <string name="nobonuspayment">Недостаточно бонусов. Оплата наличными.</string>
+    <string name="nal_payment">Наличными деньгами</string>
+    <string name="bonus_payment">Бонусы</string>
+    <string name="def_status">Уточните у диспетчера</string>
+    <string name="block_mes">Заблокировано</string>
+    <string name="bon">бонусов</string>
+    <string name="my_bonus_menu">Мои бонусы</string>
+    <string name="update_bonus">получить бонусы</string>
+    <string name="upd_bonus_info">Обновите информацию о ваших бонусах</string>
+    <string name="bonus_text_0">Не забудьте забрать бонус за следующие сутки.</string>
+    <string name="bonus_text_1">Правила начисления бонусов:</string>
+    <string name="bonus_text_2">- Регистрация в приложении - 1 бонус;</string>
+    <string name="bonus_text_3">- Первый заказ – 1 бонус;</string>
+    <string name="bonus_text_4">- Выполненный маршрут - 1 бонус за каждую 1 целую гривну из суммы выполнения;</string>
+    <string name="bonus_text_5">- Вход в приложение - 1 бонус начисляется не более 1 раза в сутки.</string>
+    <string name="bonus_text_6">Бонусы можно использовать при заказе поездок при возможности такого сервиса в выбранной Вами базе адресов, а также если стоимость поездки полностью покрывается доступными бонусами из расчета 100 бонусов = 1 грн.</string>
+    <string name="bonus_text_7">Для получения актуальной информации и начисления бонусов - нажмите кнопку - ПОЛУЧИТЬ БОНУСЫ</string>
+    <string name="payment_type_ok">Применить выбор</string>
+    <string name="bonus_upd_mes">Информация о количестве бонусов обновлена</string>
+    <string name="start_point_text">Место отправления</string>
+    <string name="order_after_phone">"Для заказа нажмите кнопку "</string>
+    <string name="clear_home">Очистить поля</string>
+    <string name="google_payment">Картой</string>
 
     <string name="lbl_card_number">Номер карты:</string>
     <string name="lbl_expd">Срок действия:</string>
     <string name="hint_mm">ММ</string>
     <string name="hint_yy">ГГ</string>
     <string name="lbl_cvv">CVV:</string>
-    <string name="e_invalid_card_number">Неверный номер карты</string>
+    <string name="e_invalid_card_number">Неправильный номер карты</string>
     <string name="e_invalid_yy">Неверный год</string>
     <string name="e_invalid_mm">Неверный месяц</string>
     <string name="e_invalid_date">Неверный срок действия</string>
     <string name="e_invalid_cvv">Неверный cvv</string>
 
-
-    <string name="lbl_amount" tools:ignore="MissingTranslation">Сумма к оплате (грн):</string>
-    <string name="lbl_ccy" tools:ignore="MissingTranslation">Валюта:</string>
-    <string name="lbl_email" tools:ignore="MissingTranslation">Электронная почта:</string>
-    <string name="lbl_description" tools:ignore="MissingTranslation">Описание:</string>
-    <string name="btn_pay_google" tools:ignore="MissingTranslation">Google Pay</string>
-    <string name="btn_pay_card" tools:ignore="MissingTranslation">Картой</string>
-    <string name="e_invalid_amount" tools:ignore="MissingTranslation">Неверная сумма</string>
-    <string name="e_invalid_email" tools:ignore="MissingTranslation">Неверный адрес электронной почты</string>
-    <string name="e_invalid_description" tools:ignore="MissingTranslation">Введите описание</string>
-    <string name="e_google_pay_unsupported" tools:ignore="MissingTranslation">GooglePay не поддерживается</string>
-    <string name="e_google_pay_canceled" tools:ignore="MissingTranslation">GooglePay отменен</string>
-    <string name="update_count" tools:ignore="MissingTranslation">Проверить баланс</string>
-    <string name="pay_count" tools:ignore="MissingTranslation">Пополнить счет</string>
-    <string name="my_card_pay" tools:ignore="MissingTranslation">Платежная карта</string>
-    <string name="my_site" translatable="false">Посетите наш сайт</string>
-    <string name="title_activity_payment_fondy" tools:ignore="MissingTranslation">PaymentFondyActivity</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label" tools:ignore="MissingTranslation">First Fragment</string>
-    <string name="second_fragment_label" tools:ignore="MissingTranslation">Second Fragment</string>
-    <string name="next" tools:ignore="MissingTranslation">Next</string>
-    <string name="previous" tools:ignore="MissingTranslation">Previous</string>
-
-    <string name="lorem_ipsum" tools:ignore="MissingTranslation">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
-        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
-        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
-        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
-        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
-        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
-        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
-        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
-        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
-        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
-        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
-        bibendum, vel congue leo egestas.\n\n
-        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
-        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
-        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
-        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
-        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
-        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
-        est.\n\n
-        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
-        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
-        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
-        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
-        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
-        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
-        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
-        convallis.\n\n
-        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
-        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
-        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
-        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
-        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
-        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
-        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
-    </string>
-<!--    <string name="fondy_message" tools:ignore="MissingTranslation">"Оплата услуг такси."</string>-->
-    <string name="fondy_message" tools:ignore="MissingTranslation">Інша допоміжна діяльність у сфері транспорту</string>
-    <string name="fondy_revers_message" tools:ignore="MissingTranslation">"Возврат платежа: "</string>
-    <string name="fondy_pay" tools:ignore="MissingTranslation">Оплатить картой</string>
-    <string name="cost_of_road_fondy" tools:ignore="MissingTranslation">Стоимость поездки: </string>
-    <string name="payment_error" tools:ignore="MissingTranslation">Ошибка платежа. Выберитие другой способ оплаты.</string>
-    <string name="return_pay" tools:ignore="MissingTranslation">Повернення замовлення.</string>
-    <string name="return_pay_error" tools:ignore="MissingTranslation">Ошибка возврата платежа.</string>
-    <string name="btn_pay_return" tools:ignore="MissingTranslation">Вернуть оплату</string>
-    <string name="check_pay_return" tools:ignore="MissingTranslation">Ожидайте возврата платежа</string>
-    <string name="btn_return" tools:ignore="MissingTranslation">Вернуться в приложение</string>
-    <string name="fondy_back" tools:ignore="MissingTranslation">Для заказа поездки после успешной оплаты или для выбора другого способа платежа - нажмите на своем телефоне кнопку \"Вернуться\" (стрелочка \"Назад\").</string>
-    <string name="fondy_back_ver" tools:ignore="MissingTranslation">После успешной проверки - нажмите на своем телефоне кнопку  \"Вернуться\" (стрелочка \"Назад\").</string>
-    <string name="phone_input_error" tools:ignore="MissingTranslation">Без ввода номера телефона заказ не возможен.</string>
-    <string name="pay_failure" tools:ignore="MissingTranslation">Ошибка платежа. Попробуйте другой способ оплаты.</string>
-    <string name="link_card" tools:ignore="MissingTranslation">Привязать карту</string>
-    <string name="delink_card" tools:ignore="MissingTranslation">Удалить привязку</string>
-    <string name="link_card_succesfuly" tools:ignore="MissingTranslation">Ваша карта проверена и готова к оплате поездок.</string>
-    <string name="un_link_token" tools:ignore="MissingTranslation">Привязка платежной карты удалена из приложения.</string>
-    <string name="cancel_card" tools:ignore="MissingTranslation">Завершить</string>
-
-
+    <string name="lbl_amount">Сумма для оплаты (грн):</string>
+    <string name="lbl_ccy">Валюта:</string>
+    <string name="lbl_email">Электронный адрес:</string>
+    <string name="lbl_description">Описание:</string>
+    <string name="btn_pay_google">Google Pay</string>
+    <string name="btn_pay_card">Картой</string>
+    <string name="e_invalid_amount">Недействительная сумма</string>
+    <string name="e_invalid_email">Недействительный адрес электронной почты</string>
+    <string name="e_invalid_description">Введите описание</string>
+    <string name="e_google_pay_unsupported">GooglePay не поддерживается</string>
+    <string name="e_google_pay_canceled">GooglePay отменен</string>
+    <string name="update_count">Проверить баланс</string>
+    <string name="pay_count">Пополнить счет</string>
+    <string name="my_card_pay">Платежная карта</string>
+    <string name="my_site">Посетите наш сайт</string>
+    <!-- <string name="fondy_message">Оплата по услуге такси.</string>-->
+    <string name="fondy_message">Другая вспомогательная деятельность в сфере транспорта</string>
+    <string name="fondy_revers_message">"Возврат платежа: "</string>
+    <string name="fondy_pay">Оплатить картой</string>
+    <string name="cost_of_road_fondy">Стоимость поездки: </string>
+    <string name="payment_error">Ошибка платежа. Выберите другой способ оплаты.</string>
+    <string name="return_pay">Возвращение заказа.</string>
+    <string name="return_pay_error">Ошибка возврата платежа.</string>
+    <string name="btn_pay_return">Вернуть оплату</string>
+    <string name="check_pay_return">Ждите возврата платежа</string>
+    <string name="btn_return">Вернуться к приложению</string>
+    <string name="fondy_back">Для заказа поездки после успешной оплаты или для выбора другого способа платежа - нажмите на своем телефоне кнопку "Вернуться" (стрелочка "Назад").</string>
+    <string name="fondy_back_ver">После успешной проверки - нажмите на своем телефоне кнопку "Вернуться" (стрелочка "Назад").</string>
+    <string name="phone_input_error">Без ввода номера телефона заказ невозможен.</string>
+    <string name="pay_failure">Ошибка платежа. Попробуйте другой способ оплаты.</string>
+    <string name="link_card">Привязать карту</string>
+    <string name="delink_card">Удалить привязку</string>
+    <string name="link_card_succesfuly">Ваша карта проверена и готова к оплате путешествий.</string>
+    <string name="un_link_token">Привязка платежной карты удалена из приложения.</string>
+    <string name="cancel_card">Завершить</string>
 </resources>

@@ -590,7 +590,7 @@ public class GalleryFragment extends Fragment {
                 text_view_cost.setText(String.valueOf(cost));
 
                 costFirstForMin = cost;
-                MIN_COST_VALUE = (long) (cost * 0.1);
+                MIN_COST_VALUE = (long) (cost*0.6);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
