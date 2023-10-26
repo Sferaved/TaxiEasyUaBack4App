@@ -282,6 +282,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
             public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
                 Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+                dismiss();
             }
         });
 

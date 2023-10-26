@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.853</string>
-    <string name="version">Версия: 2.853</string>
+    <string name="version_code">2.854</string>
+    <string name="version">Версия: 2.8544052</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
