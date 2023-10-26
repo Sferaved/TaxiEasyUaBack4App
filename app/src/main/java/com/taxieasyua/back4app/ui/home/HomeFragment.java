@@ -378,7 +378,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231026112315612_LNY8", "повернення замовлення", "1900");
+//                getRevers("V_20231026112315612_LNY8", "повернення замовлення", "1900");
 //                getRevers("V_20231026101213069_NNTB", "повернення замовлення", "1100");
 //                getRevers("V_20231025124250843_CQ8B", "повернення замовлення", "100");
                 Intent intent = new Intent(Intent.ACTION_DIAL);

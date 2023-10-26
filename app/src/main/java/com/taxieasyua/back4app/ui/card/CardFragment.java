@@ -213,13 +213,13 @@ public class CardFragment extends Fragment {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     // Обработка успешного ответа
-                    ContentValues cv = new ContentValues();
-                    cv.put("rectoken", "");
-                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
                     if (isAdded()) {
+                        ContentValues cv = new ContentValues();
+                        cv.put("rectoken", "");
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
                         MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(getString(R.string.un_link_token));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
