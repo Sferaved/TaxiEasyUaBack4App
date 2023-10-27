@@ -82,6 +82,11 @@ import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
+import com.taxieasyua.back4app.ui.mono.MonoApi;
+import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
+import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
+import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
+import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
@@ -305,19 +310,31 @@ public class HomeFragment extends Fragment {
                     }
 
                     if (verifyPhone(requireActivity())) {
-                        if (pay_method.equals("google_payment")) {
-                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                            messageFondy = getString(R.string.fondy_message);
-                            String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-                            Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                            if (tokenCard == null || tokenCard.equals("")) {
-                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
-                            } else {
-                                paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-                            }
-                        } else {
-                            orderFinished();
+                        switch (pay_method) {
+                            case "google_payment":
+                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                                messageFondy = getString(R.string.fondy_message);
+                                String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
+                                Log.d(TAG, "onClick: tokenCard" + tokenCard);
+                                if (tokenCard == null || tokenCard.equals("")) {
+                                    getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
+                                } else {
+                                    paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
+                                }
+                                break;
+                            case "mono_payment":
+                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+
+                                int amount = Integer.parseInt(text_view_cost.getText().toString() + "00");
+                                String reference = MainActivity.order_id;
+                                String comment = getString(R.string.fondy_message);
+
+                                getUrlToPaymentMono(amount, reference, comment);
+                                break;
+                            default:
+                                orderFinished();
                         }
+
                     }
 
                 } else {
@@ -643,6 +660,78 @@ public class HomeFragment extends Fragment {
         });
 
     }
+    private void getReversMono(
+            String invoiceId,
+            String extRef,
+            int amount
+    ) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        RequestCancelMono paymentRequest = new RequestCancelMono(
+               invoiceId,
+               extRef,
+               amount
+        );
+        Log.d("TAG1", "getRevers: " + paymentRequest.toString());
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponseCancelMono> call = monoApi.invoiceCancel(token, paymentRequest);
+
+        call.enqueue(new Callback<ResponseCancelMono>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseCancelMono> call, @NonNull Response<ResponseCancelMono> response) {
+
+                if (response.isSuccessful()) {
+                    ResponseCancelMono apiResponse = response.body();
+                    Log.d("TAG2", "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        String responseData = apiResponse.getStatus();
+                        Log.d("TAG2", "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+
+                            switch (responseData) {
+                                case "processing":
+                                    Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
+                                    break;
+                            case "success":
+                                    Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
+                                    break;
+                            case "failure":
+                                    Log.d("TAG2", "onResponse: " + "неуспішне скасування");
+                                    Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
+                                    Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
+                                    break;
+                            }
+
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG2", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG2", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseCancelMono> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG2", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
     private void getUrlToPayment(String order_id, String orderDescription, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -811,6 +900,77 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+
+    private void getUrlToPaymentMono(int amount, String reference, String comment) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        RequestPayMono paymentRequest = new RequestPayMono(
+                amount,
+                reference,
+                comment
+        );
+
+        Log.d("TAG1", "getUrlToPayment: " + paymentRequest.toString());
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponsePayMono> call = monoApi.invoiceCreate(token, paymentRequest);
+
+        call.enqueue(new Callback<ResponsePayMono>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ResponsePayMono> call, Response<ResponsePayMono> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ResponsePayMono apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                       String pageUrl = response.body().getPageUrl();;
+                       MainActivity.invoiceId = response.body().getInvoiceId();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (pageUrl != null) {
+
+                            // Обработка успешного ответа
+
+                            MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                    pageUrl,
+                                    text_view_cost.getText().toString(),
+                                    "home",
+                                    urlOrder
+                            );
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        } else {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        }
+
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePayMono> call, Throwable t) {
                 Log.d("TAG1", "onFailure1111: " + t.toString());
             }
 

@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String MERCHANT_ID ="1534178";
 //    public static final String MERCHANT_ID ="1396424";
     public static String order_id;
+    public static String invoiceId;
 
     @Override
     protected void onRestart() {

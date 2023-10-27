@@ -75,12 +75,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
          array = new  String[]{
                 getString(R.string.nal_payment),
                 getString(R.string.bonus_payment),
-                getString(R.string.google_payment)
+                getString(R.string.google_payment),
+                getString(R.string.mono_payment)
         };
          arrayCode = new  String[]{
-                "nal_payment",
-                "bonus_payment",
-                "google_payment"
+                 "nal_payment",
+                 "bonus_payment",
+                 "google_payment",
+                 "mono_payment"
         };
 
         CustomArrayAdapter adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
@@ -165,6 +167,11 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             case "google_payment":
                 listView.setItemChecked(2, true);
                 pos = 2;
+                paymentType(arrayCode [pos]);
+                break;
+            case "mono_payment":
+                listView.setItemChecked(3, true);
+                pos = 3;
                 paymentType(arrayCode [pos]);
                 break;
         }

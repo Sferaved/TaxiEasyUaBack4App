@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,16 +26,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.gson.Gson;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.card.CardFragment;
-import com.taxieasyua.back4app.ui.finish.ErrorPayActivity;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
-import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
-import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
-import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
-import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
-import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
 import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
 import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
@@ -48,9 +40,10 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoMarkerDialogFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
+import com.taxieasyua.back4app.ui.mono.MonoApi;
+import com.taxieasyua.back4app.ui.mono.status.ResponseStatusMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +65,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     private String amount;
     private AppCompatButton btnOk;
     String email, fragment_key, urlOrder;
+    private String pay_method;
+
     public MyBottomSheetCardPayment(
             String checkoutUrl,
             String amount,
@@ -94,9 +89,19 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(MainActivity.order_id != null) {
-                    getStatus();
+                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+
+                switch (pay_method) {
+                    case "google_payment":
+                        if(MainActivity.order_id != null)
+                        getStatus();
+                        break;
+                    case "mono_payment":
+                        if(MainActivity.invoiceId != null)
+                        getStatusMono();
+                        break;
                 }
+
             }
 
         });
@@ -177,6 +182,74 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
             @Override
             public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
+    }
+    private void getStatusMono() {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponseStatusMono> call = monoApi.getInvoiceStatus(token, MainActivity.invoiceId);
+
+        call.enqueue(new Callback<ResponseStatusMono>() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onResponse(@NonNull Call<ResponseStatusMono> call, @NonNull Response<ResponseStatusMono> response) {
+                if (response.isSuccessful()) {
+                    ResponseStatusMono apiResponse = response.body();
+                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        String status = apiResponse.getStatus();
+                        Log.d(TAG, "onResponse: " + status);
+                        // Обработка успешного ответа
+
+                        if(status.equals("hold")){
+//                            getCardToken();
+                            switch (Objects.requireNonNull(fragment_key)){
+                                case "home":
+                                    HomeFragment.progressBar.setVisibility(View.VISIBLE);
+                                    try {
+                                        orderHome();
+                                    } catch (MalformedURLException ignored) {
+
+                                    }
+                                    break;
+                                case "gallery":
+                                case "geo":
+                                case "marker":
+
+                                    try {
+                                        orderGeoMarker();
+                                    } catch (MalformedURLException ignored) {
+
+                                    }
+                                    break;
+                            }
+                        };
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseStatusMono> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
                 Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
 

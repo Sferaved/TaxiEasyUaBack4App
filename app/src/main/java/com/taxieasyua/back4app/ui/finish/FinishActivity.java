@@ -44,6 +44,9 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetFondyPayFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.mono.MonoApi;
+import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
+import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -408,10 +411,14 @@ public class FinishActivity extends AppCompatActivity {
                         String result =  String.valueOf(status.getResponse());
                         Log.d("TAG", "onResponse: result" + result);
                         text_status.setText(result);
-
-                        if (pay_method.equals("google_payment")) {
-                            String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
-                            getRevers(MainActivity.order_id, comment, amount);
+                        String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+                        switch (pay_method) {
+                            case "google_payment":
+                                getRevers(MainActivity.order_id, comment, amount);
+                                break;
+                            case "mono_payment":
+                                getReversMono(MainActivity.invoiceId, comment, Integer.parseInt(amount));
+                                break;
                         }
                     }
                 } else {
@@ -491,6 +498,79 @@ public class FinishActivity extends AppCompatActivity {
         });
 
     }
+    private void getReversMono(
+            String invoiceId,
+            String extRef,
+            int amount
+    ) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        RequestCancelMono paymentRequest = new RequestCancelMono(
+                invoiceId,
+                extRef,
+                amount
+        );
+        Log.d("TAG1", "getRevers: " + paymentRequest.toString());
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponseCancelMono> call = monoApi.invoiceCancel(token, paymentRequest);
+
+        call.enqueue(new Callback<ResponseCancelMono>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseCancelMono> call, @NonNull Response<ResponseCancelMono> response) {
+
+                if (response.isSuccessful()) {
+                    ResponseCancelMono apiResponse = response.body();
+                    Log.d("TAG2", "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        String responseData = apiResponse.getStatus();
+                        Log.d("TAG2", "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+
+                            switch (responseData) {
+                                case "processing":
+                                    Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
+                                    break;
+                                case "success":
+                                    Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
+                                    break;
+                                case "failure":
+                                    Log.d("TAG2", "onResponse: " + "неуспішне скасування");
+                                    Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
+                                    Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
+                                    break;
+                            }
+
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG2", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG2", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseCancelMono> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG2", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
+
     private void statusOrderWithDifferentValue(String value) {
         String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value;
 

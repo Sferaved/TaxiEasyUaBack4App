@@ -52,6 +52,9 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGalleryFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
+import com.taxieasyua.back4app.ui.mono.MonoApi;
+import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
+import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import org.json.JSONException;
@@ -246,21 +249,51 @@ public class GalleryFragment extends Fragment {
                         break;
                 }
                 orderRout();
-                if (pay_method.equals("google_payment")) {
-                    progressbar.setVisibility(View.VISIBLE);
-                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                    messageFondy = getString(R.string.fondy_message);
+                switch (pay_method) {
+                    case "google_payment":
+                        progressbar.setVisibility(View.VISIBLE);
+                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                        messageFondy = getString(R.string.fondy_message);
+                        String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
+                        Log.d(TAG, "onClick: tokenCard" + tokenCard);
+                        if (tokenCard == null || tokenCard.equals("")) {
+                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
+                        } else {
+                            paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
+                        }
+                        break;
+                    case "mono_payment":
+                        progressbar.setVisibility(View.VISIBLE);
+                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
 
-                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-                    Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                    if (tokenCard == null || tokenCard.equals("")) {
-                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-                    } else {
-                        paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-                    }
-                } else {
-                   orderFinished();
+                        int amount = Integer.parseInt(text_view_cost.getText().toString() + "00");
+                        String reference = MainActivity.order_id;
+                        String comment = getString(R.string.fondy_message);
+
+                        getUrlToPaymentMono(amount, reference, comment);
+                        break;
+                    default:
+                        progressbar.setVisibility(View.VISIBLE);
+                        orderFinished();
                 }
+
+
+
+//                if (pay_method.equals("google_payment")) {
+//                    progressbar.setVisibility(View.VISIBLE);
+//                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+//                    messageFondy = getString(R.string.fondy_message);
+//
+//                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
+//                    Log.d(TAG, "onClick: tokenCard" + tokenCard);
+//                    if (tokenCard == null || tokenCard.equals("")) {
+//                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
+//                    } else {
+//                        paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
+//                    }
+//                } else {
+//                   orderFinished();
+//                }
 
             }
         });
@@ -286,6 +319,78 @@ public class GalleryFragment extends Fragment {
 
         return root;
     }
+
+    private void getUrlToPaymentMono(int amount, String reference, String comment) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        RequestPayMono paymentRequest = new RequestPayMono(
+                amount,
+                reference,
+                comment
+        );
+
+        Log.d("TAG1", "getUrlToPayment: " + paymentRequest.toString());
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponsePayMono> call = monoApi.invoiceCreate(token, paymentRequest);
+
+        call.enqueue(new Callback<ResponsePayMono>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ResponsePayMono> call, Response<ResponsePayMono> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ResponsePayMono apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        String pageUrl = response.body().getPageUrl();;
+                        MainActivity.invoiceId = response.body().getInvoiceId();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (pageUrl != null) {
+
+                            // Обработка успешного ответа
+
+                            MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                    pageUrl,
+                                    text_view_cost.getText().toString(),
+                                    "gallery",
+                                    urlOrder
+                            );
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        } else {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        }
+
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePayMono> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+            }
+
+
+        });
+    }
+
 
     private void paymentByToken(
             String order_id,

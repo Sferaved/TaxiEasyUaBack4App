@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.857</string>
-    <string name="version">Версия: 2.857</string>
+    <string name="version_code">2.858</string>
+    <string name="version">Версия: 2.858</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -204,7 +204,7 @@
     <string name="no_bonus">У Вас нет доступных бонусов</string>
     <string name="btn_bonus">Способ оплаты</string>
     <string name="nobonuspayment">Недостаточно бонусов. Оплата наличными.</string>
-    <string name="nal_payment">Наличными деньгами</string>
+    <string name="nal_payment">Наличными</string>
     <string name="bonus_payment">Бонусы</string>
     <string name="def_status">Уточните у диспетчера</string>
     <string name="block_mes">Заблокировано</string>
@@ -273,4 +273,5 @@
     <string name="link_card_succesfuly">Ваша карта проверена и готова к оплате путешествий.</string>
     <string name="un_link_token">Привязка платежной карты удалена из приложения.</string>
     <string name="cancel_card">Завершить</string>
+    <string name="mono_payment">Монобанк</string>
 </resources>
