@@ -2,9 +2,11 @@ package com.taxieasyua.back4app.ui.home;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -19,6 +21,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
@@ -62,14 +66,33 @@ public class MyBottomSheetErrorGeoFragment extends BottomSheetDialogFragment {
         btn_geo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dismiss();
-                startActivity(new Intent(requireActivity(), OpenStreetMapActivity.class));
+                if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+
+                    HomeFragment.btnGeo.setVisibility(View.VISIBLE);
+                }  else {
+                    HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                    HomeFragment.btnGeo.setVisibility(View.INVISIBLE);
+                    dismiss();
+                    Intent intent = new Intent(requireActivity(), OpenStreetMapActivity.class);
+                    startActivity(intent);
+                }
             }
         });
         textViewInfo = view.findViewById(R.id.textViewInfo);
         textViewInfo.setText(errorMessage);
 
         return view;
+    }
+
+    public void checkPermission(String permission, int requestCode) {
+        // Checking if permission is not granted
+        if (ContextCompat.checkSelfPermission(requireActivity(), permission) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{permission}, requestCode);
+
+        }
     }
 
     @SuppressLint("Range")

@@ -120,7 +120,7 @@ public class HomeFragment extends Fragment {
     public AppCompatButton buttonBonus;
     public AppCompatButton btn_minus;
     public AppCompatButton btn_plus;
-    public AppCompatButton btnGeo;
+    public static AppCompatButton btnGeo;
     public AppCompatButton on_map;
     public AppCompatButton btn_clear;
 
