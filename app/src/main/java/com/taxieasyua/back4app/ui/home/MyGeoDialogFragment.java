@@ -89,6 +89,8 @@ import com.taxieasyua.back4app.ui.mono.MonoApi;
 import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
 import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
 import org.json.JSONException;
@@ -548,7 +550,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     progressBar.setVisibility(View.VISIBLE);
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-                    pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                    pay_method =  pay_system();
 
                     switch (stringList.get(1)) {
                         case "Kyiv City":
@@ -571,7 +573,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     orderRout();
                     if (verifyPhone(requireActivity())) {
                         switch (pay_method) {
-                            case "google_payment":
+                            case "fondy_payment":
                                 MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
                                 messageFondy = getString(R.string.fondy_message);
                                 String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
@@ -601,7 +603,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
 
 
-//                        if (pay_method.equals("google_payment")) {
+//                        if (pay_method.equals("card_payment")) {
 //                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
 //                            messageFondy = getString(R.string.fondy_message);
 //                            String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
@@ -632,6 +634,59 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
 
         return view;
+    }
+    private String baseUrl = "https://m.easy-order-taxi.site";
+    private String pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+
+                    ContentValues cv = new ContentValues();
+                    cv.put("bonusPayment", paymentCodeNew);
+                    // обновляем по id
+                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                if (isAdded()) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
+        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
     }
 
     private void getUrlToPaymentMono(int amount, String reference, String comment) {

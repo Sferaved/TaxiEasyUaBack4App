@@ -61,6 +61,7 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
+import com.taxieasyua.back4app.ui.card.unlink.UnlinkApi;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
@@ -88,6 +89,8 @@ import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
 import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
 import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
 import org.json.JSONException;
@@ -140,6 +143,7 @@ public class HomeFragment extends Fragment {
     public static String urlOrder;
     public static long discount;
     private MyPhoneDialogFragment bottomSheetDialogFragment;
+    private String baseUrl = "https://m.easy-order-taxi.site";
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -281,7 +285,8 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 progressBar.setVisibility(View.VISIBLE);
-                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                pay_method =  pay_system();
+
                 if(connected()) {
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                     List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
@@ -310,8 +315,9 @@ public class HomeFragment extends Fragment {
                     }
 
                     if (verifyPhone(requireActivity())) {
+                        Log.d(TAG, "onClick: pay_method "+ pay_method);
                         switch (pay_method) {
-                            case "google_payment":
+                            case "fondy_payment":
                                 MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
                                 messageFondy = getString(R.string.fondy_message);
                                 String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
@@ -331,8 +337,9 @@ public class HomeFragment extends Fragment {
 
                                 getUrlToPaymentMono(amount, reference, comment);
                                 break;
-                            default:
+                            case "nal_payment":
                                 orderFinished();
+                                break;
                         }
 
                     }
@@ -978,6 +985,59 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    private String pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+
+                    ContentValues cv = new ContentValues();
+                    cv.put("bonusPayment", paymentCodeNew);
+                    // обновляем по id
+                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                if (isAdded()) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
+        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+    }
+
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(requireActivity(), permission) == PackageManager.PERMISSION_DENIED) {
@@ -989,6 +1049,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         progressBar.setVisibility(View.INVISIBLE);
+        pay_method =  pay_system();
         if(bottomSheetDialogFragment != null) {
             bottomSheetDialogFragment.dismiss();
         }

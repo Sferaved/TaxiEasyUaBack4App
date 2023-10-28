@@ -156,7 +156,7 @@ public class FinishActivity extends AppCompatActivity {
                  }
              }, delayMillis);
          }
-        if (pay_method.equals("google_payment")) {
+        if (pay_method.equals("card_payment")) {
             callOrderIdMemory(MainActivity.order_id, UID_key);
             handler.postDelayed(new Runnable() {
                 @Override
@@ -242,7 +242,7 @@ public class FinishActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (pay_method.equals("bonus_payment") || pay_method.equals("google_payment")) {
+        if (pay_method.equals("bonus_payment") || pay_method.equals("card_payment")) {
            thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -413,7 +413,7 @@ public class FinishActivity extends AppCompatActivity {
                         text_status.setText(result);
                         String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
                         switch (pay_method) {
-                            case "google_payment":
+                            case "fondy_payment":
                                 getRevers(MainActivity.order_id, comment, amount);
                                 break;
                             case "mono_payment":

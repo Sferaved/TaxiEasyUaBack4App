@@ -110,7 +110,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         switch (page) {
                             case "home" :
-                                if (pay_method.equals("google_payment")) {
+                                if (pay_method.equals("card_payment")) {
                                     urlOrder = getTaxiUrlSearch("orderSearch");
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
                                     String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
@@ -123,7 +123,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                 }
                                 break;
                             case "geo" :
-                                if (pay_method.equals("google_payment")) {
+                                if (pay_method.equals("card_payment")) {
                                     urlOrder = getTaxiUrlSearchGeo("orderSearchGeo");
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
 
@@ -137,7 +137,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                 }
                                 break;
                             case "marker" :
-                                if (pay_method.equals("google_payment")) {
+                                if (pay_method.equals("card_payment")) {
                                     urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers");
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
 

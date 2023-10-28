@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.858</string>
-    <string name="version">Версия: 2.858</string>
+    <string name="version_code">2.859</string>
+    <string name="version">Версия: 2.859</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -225,7 +225,7 @@
     <string name="start_point_text">Место отправления</string>
     <string name="order_after_phone">"Для заказа нажмите кнопку "</string>
     <string name="clear_home">Очистить поля</string>
-    <string name="google_payment">Картой</string>
+    <string name="card_payment">Картой</string>
 
     <string name="lbl_card_number">Номер карты:</string>
     <string name="lbl_expd">Срок действия:</string>

@@ -29,6 +29,8 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -37,6 +39,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
@@ -50,6 +58,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String[] array, arrayCode;
     AppCompatButton btn_ok;
     int pos;
+    private String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetBonusFragment(long cost, String rout, String api) {
         this.cost = cost;
@@ -75,14 +84,12 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
          array = new  String[]{
                 getString(R.string.nal_payment),
                 getString(R.string.bonus_payment),
-                getString(R.string.google_payment),
-                getString(R.string.mono_payment)
+                getString(R.string.card_payment),
         };
          arrayCode = new  String[]{
                  "nal_payment",
                  "bonus_payment",
-                 "google_payment",
-                 "mono_payment"
+                 "card_payment",
         };
 
         CustomArrayAdapter adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
@@ -131,8 +138,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     }
 
     private void paymentType(String paymentCode) {
+
         ContentValues cv = new ContentValues();
-        cv.put("bonusPayment", paymentCode);
+        Log.d("TAG", "paymentType: paymentCode " + paymentCode);
+        if (paymentCode.equals("card_payment")) {
+            cv.put("bonusPayment", pay_system());
+        } else {
+            cv.put("bonusPayment", paymentCode);
+        }
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -152,7 +165,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         if (cursor.moveToFirst()) {
             bonusPayment = cursor.getString(cursor.getColumnIndex("bonusPayment"));
         }
-
+        Log.d("TAG", "fistItem: " + bonusPayment);
         switch (bonusPayment) {
             case "nal_payment":
                 listView.setItemChecked(0, true);
@@ -164,18 +177,69 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 pos = 1;
                 paymentType(arrayCode [pos]);
                 break;
-            case "google_payment":
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
                 listView.setItemChecked(2, true);
                 pos = 2;
                 paymentType(arrayCode [pos]);
                 break;
-            case "mono_payment":
-                listView.setItemChecked(3, true);
-                pos = 3;
-                paymentType(arrayCode [pos]);
-                break;
         }
+
         database.close();
+    }
+    public String pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+                    if (isAdded()) {
+                        ContentValues cv = new ContentValues();
+                        cv.put("bonusPayment", paymentCodeNew);
+                        // обновляем по id
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[]{"1"});
+                        database.close();
+                    }
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                if (isAdded()) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
+        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
     }
 
     @Override

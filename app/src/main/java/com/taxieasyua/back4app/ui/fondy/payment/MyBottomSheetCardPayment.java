@@ -43,6 +43,8 @@ import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.mono.MonoApi;
 import com.taxieasyua.back4app.ui.mono.status.ResponseStatusMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -89,10 +91,10 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                pay_method =  pay_system();
 
                 switch (pay_method) {
-                    case "google_payment":
+                    case "fondy_payment":
                         if(MainActivity.order_id != null)
                         getStatus();
                         break;
@@ -259,16 +261,80 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         });
 
     }
+    private String baseUrl = "https://m.easy-order-taxi.site";
+    private String pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+                    if(isAdded()){
+                        ContentValues cv = new ContentValues();
+                        cv.put("bonusPayment", paymentCodeNew);
+                        // обновляем по id
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+                    }
+
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                if (isAdded()) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
+        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+    }
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+
+        String paymentCode = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+        switch (paymentCode) {
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                pay_system();
+                break;
+        }
+
         switch (Objects.requireNonNull(fragment_key)){
             case "home":
                 HomeFragment.progressBar.setVisibility(View.INVISIBLE);
                 break;
             case "gallery":
-                GalleryFragment.progressbar.setVisibility(View.INVISIBLE);
+                GalleryFragment.progressbar.setVisibility(View.GONE);
                 break;
             case "geo":
                 MyGeoDialogFragment.progressBar.setVisibility(View.INVISIBLE);
