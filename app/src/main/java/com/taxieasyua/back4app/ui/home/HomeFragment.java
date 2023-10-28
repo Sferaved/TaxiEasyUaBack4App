@@ -285,7 +285,10 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 progressBar.setVisibility(View.VISIBLE);
-                pay_method =  pay_system();
+                pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                if(pay_method.equals("card_payment")){
+                    pay_method =  pay_system();
+                }
 
                 if(connected()) {
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -1012,13 +1015,16 @@ public class HomeFragment extends Fragment {
                             break;
                     }
 
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonusPayment", paymentCodeNew);
-                    // обновляем по id
-                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
+                    if(isAdded()) {
+                        ContentValues cv = new ContentValues();
+                        cv.put("bonusPayment", paymentCodeNew);
+                        // обновляем по id
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+                    }
+
 
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
@@ -1049,7 +1055,10 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         progressBar.setVisibility(View.INVISIBLE);
-        pay_method =  pay_system();
+        pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+        if(pay_method.equals("card_payment")){
+            pay_method = pay_system();
+        }
         if(bottomSheetDialogFragment != null) {
             bottomSheetDialogFragment.dismiss();
         }

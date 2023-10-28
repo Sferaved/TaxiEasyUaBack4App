@@ -550,7 +550,11 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     progressBar.setVisibility(View.VISIBLE);
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-                    pay_method =  pay_system();
+
+                    pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                    if(pay_method.equals("card_payment")){
+                        pay_method = pay_system();
+                    }
 
                     switch (stringList.get(1)) {
                         case "Kyiv City":

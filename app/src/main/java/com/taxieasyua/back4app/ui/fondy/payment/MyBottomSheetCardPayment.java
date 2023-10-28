@@ -91,7 +91,10 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         btnOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pay_method =  pay_system();
+                pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                if(pay_method.equals("card_payment")){
+                    pay_method = pay_system();
+                }
 
                 switch (pay_method) {
                     case "fondy_payment":

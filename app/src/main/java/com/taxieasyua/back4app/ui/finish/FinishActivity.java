@@ -47,6 +47,8 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.mono.MonoApi;
 import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
 import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -85,6 +87,10 @@ public class FinishActivity extends AppCompatActivity {
         setContentView(R.layout.activity_finish);
         new VerifyUserTask().execute();
         pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+
+        if(pay_method.equals("card_payment")){
+            pay_method = pay_system();
+        }
         List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
@@ -402,6 +408,10 @@ public class FinishActivity extends AppCompatActivity {
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
         pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+
+        if(pay_method.equals("card_payment")){
+            pay_method = pay_system();
+        }
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {
@@ -439,6 +449,60 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
+
+    private String pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("bonusPayment", paymentCodeNew);
+                        // обновляем по id
+                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+
+
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+        return logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+    }
+
     private void getRevers(String orderId, String comment, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()

@@ -229,9 +229,12 @@ public class GalleryFragment extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
-                pay_method =  pay_system();
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
 
+                pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                if(pay_method.equals("card_payment")){
+                    pay_method = pay_system();
+                }
                 switch (stringList.get(1)) {
                     case "Kyiv City":
                     case "Dnipropetrovsk Oblast":

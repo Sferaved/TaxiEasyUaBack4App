@@ -48,6 +48,8 @@ import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
 import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -107,10 +109,13 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     updateRecordsUser(phoneNumber.getText().toString(), requireActivity());
                     String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
+                    if(pay_method.equals("card_payment")){
+                        pay_method = pay_system();
+                    }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         switch (page) {
                             case "home" :
-                                if (pay_method.equals("card_payment")) {
+                                if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
                                     urlOrder = getTaxiUrlSearch("orderSearch");
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
                                     String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
@@ -123,7 +128,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                 }
                                 break;
                             case "geo" :
-                                if (pay_method.equals("card_payment")) {
+                                if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
                                     urlOrder = getTaxiUrlSearchGeo("orderSearchGeo");
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
 
@@ -137,7 +142,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                                 }
                                 break;
                             case "marker" :
-                                if (pay_method.equals("card_payment")) {
+                                if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
                                     urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers");
                                     Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
 
@@ -158,6 +163,61 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             }
         });
         return view;
+    }
+    private String baseUrl = "https://m.easy-order-taxi.site";
+    private String pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+                    if(isAdded()){
+                        ContentValues cv = new ContentValues();
+                        cv.put("bonusPayment", paymentCodeNew);
+                        // обновляем по id
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+                    }
+
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                if (isAdded()) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
+        return logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
     }
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);

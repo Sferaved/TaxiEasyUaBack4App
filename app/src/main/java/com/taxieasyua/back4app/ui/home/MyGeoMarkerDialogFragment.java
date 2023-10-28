@@ -221,7 +221,10 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 OpenStreetMapActivity.progressBar.setVisibility(View.VISIBLE);
                 List<String> stringList1 = logCursor(MainActivity.CITY_INFO, requireActivity());
-                pay_method =  pay_system();
+                pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+                if(pay_method.equals("card_payment")){
+                    pay_method = pay_system();
+                }
 
                 switch (stringList1.get(1)) {
                     case "Kyiv City":
