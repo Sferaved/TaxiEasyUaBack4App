@@ -3,39 +3,22 @@ package com.taxieasyua.back4app.ui.card;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -54,25 +37,14 @@ import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
 import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
-import com.taxieasyua.back4app.ui.home.CustomListAdapter;
+import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
-import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
-import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -89,6 +61,8 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
     private String amount;
     private AppCompatButton btnOk;
     String email;
+    private final String baseUrl = "https://m.easy-order-taxi.site";
+
     public MyBottomSheetCardVerification(String checkoutUrl, String amount) {
         this.checkoutUrl = checkoutUrl;
         this.amount = amount;
@@ -101,23 +75,36 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.activity_fondy_payment, container, false);
         webView = view.findViewById(R.id.webView);
         email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
-        btnOk = view.findViewById(R.id.btn_ok);
-        CardFragment.progressBar.setVisibility(View.INVISIBLE);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getStatus();
-            }
 
-        });
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // Этот метод вызывается при каждой попытке загрузки новой страницы
+                // внутри WebView. В параметре 'url' будет содержаться URL страницы.
+                // Здесь вы можете сохранить URL или выполнить другие действия.
+
+                // Пример сохранения URL в переменной
+                String loadedUrl = url;
+                Log.d("WebView", "Загружен URL: " + loadedUrl);
+                if(url.equals("https://m.easy-order-taxi.site/mono/redirectUrl")) {
+
+                getStatusFondy();
+
+//                    }
+//                            getStatusMono();
+
+                }
+                // Возвращаем false, чтобы разрешить WebView загрузить страницу.
+                return false;
+            }
+        });
         webView.loadUrl(Objects.requireNonNull(checkoutUrl));
         return view;
     }
 
-    private void getStatus() {
+    private void getStatusFondy() {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pay.fondy.eu/api/")
@@ -164,6 +151,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
+
             }
 
             @Override
@@ -200,15 +188,15 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
 
                         Log.d(TAG, "onResponse: card_token: " + card_token);
 
-                        ContentValues cv = new ContentValues();
-                        cv.put("rectoken", card_token);
-                        SQLiteDatabase database =  requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
+                        if(isAdded()) {
+                            ContentValues cv = new ContentValues();
+                            cv.put("rectoken", card_token);
+                            SQLiteDatabase database =  requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
+                                    new String[] { "1" });
+                            database.close();
+                        }
 
-                        Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, requireActivity()));
-                        Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6));
                     }
                 } else {
                     // Обработка случаев, когда ответ не 200 OK
@@ -260,6 +248,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                             if (isAdded()) { // Проверяем, что фрагмент присоединен к активности
                                 if (response.isSuccessful()) {
                                     Toast.makeText(requireActivity(), getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
+                                    dismiss();
                                 }
                             }
                         }
@@ -275,17 +264,26 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         e.printStackTrace();
                     }
                 }
-                dismiss();
+
             }
 
             @Override
             public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
                 Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
-                dismiss();
+
             }
         });
 
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        CardFragment.progressBar.setVisibility(View.GONE);
+        if(MainActivity.order_id !=null) {
+            getRevers(MainActivity.order_id,getString(R.string.return_pay), amount);
+        }
     }
 
     @SuppressLint("Range")

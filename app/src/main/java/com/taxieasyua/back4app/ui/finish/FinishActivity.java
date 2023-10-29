@@ -29,6 +29,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
+import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
@@ -39,6 +40,11 @@ import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
 import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
+import com.taxieasyua.back4app.ui.fondy.token_pay.ApiResponseToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
+import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetFondyPayFragment;
@@ -47,6 +53,8 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.mono.MonoApi;
 import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
 import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
+import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
+import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
@@ -59,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -67,18 +76,23 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FinishActivity extends AppCompatActivity {
+    private static final String TAG = "TAG";
     public static TextView text_status;
 
-    String api;
+    public static String api;
     String baseUrl = "https://m.easy-order-taxi.site";
     Map<String, String> receivedMap;
-    String UID_key;
+    String uid;
     Thread thread;
     String pay_method;
 
     String amount;
-    TextView text_full_message;
+    public static TextView text_full_message;
     String messageResult;
+    private String messageFondy;
+    private String uid_Double;
+    public static Button btn_reset_status;
+    public static Button btn_cancel_order;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -120,24 +134,23 @@ public class FinishActivity extends AppCompatActivity {
         receivedMap = (HashMap<String, String>) getIntent().getSerializableExtra("sendUrlMap");
         amount = receivedMap.get("order_cost") + "00";
 
-
-
         Log.d("TAG", "onCreate: receivedMap" + receivedMap.toString());
         text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(messageResult);
 
-        UID_key = getIntent().getStringExtra("UID_key");
+        uid = getIntent().getStringExtra("UID_key");
+        uid_Double = receivedMap.get("dispatching_order_uid_Double");
 
         text_status = findViewById(R.id.text_status);
-        statusOrderWithDifferentValue(UID_key);
+        statusOrderWithDifferentValue(uid);
 
 
-        Button btn_reset_status = findViewById(R.id.btn_reset_status);
+        btn_reset_status = findViewById(R.id.btn_reset_status);
         btn_reset_status.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(connected()){
-                    statusOrderWithDifferentValue(UID_key);
+                    statusOrderWithDifferentValue(uid);
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -145,30 +158,64 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
 
-        Button btn_cancel_order = findViewById(R.id.btn_cancel_order);
+        btn_cancel_order = findViewById(R.id.btn_cancel_order);
         long delayMillis = 5 * 60 * 1000;
 
         Handler handler = new Handler();
 
         if (pay_method.equals("bonus_payment")) {
 
-             String url = baseUrl + "/bonusBalance/recordsBloke/" + UID_key;
+             String url = baseUrl + "/bonusBalance/recordsBloke/" + uid;
 
              fetchBonus(url);
              handler.postDelayed(new Runnable() {
-                 @Override
-                 public void run() {
-                     btn_cancel_order.setVisibility(View.GONE);
-                 }
+                    @Override
+                    public void run() {
+                        MainActivity.order_id = null;
+                        String cancelText = getApplicationContext().getString(R.string.call_btn_cancel);
+                        text_status.setText(cancelText);
+                        btn_cancel_order.setText(getString(R.string.help_button));
+                        btn_cancel_order.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(Intent.ACTION_DIAL);
+
+                                List<String> stringList = logCursor(MainActivity.CITY_INFO);
+                                String phone = stringList.get(3);
+                                intent.setData(Uri.parse(phone));
+                                startActivity(intent);
+                            }
+                        });
+                    }
              }, delayMillis);
          }
-        if (pay_method.equals("card_payment")) {
-            callOrderIdMemory(MainActivity.order_id, UID_key);
+        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+
+        if(pay_method.equals("card_payment")){
+            pay_method = pay_system();
+        }
+        if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
+
+            callOrderIdMemory(MainActivity.order_id, uid, pay_method);
+
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     MainActivity.order_id = null;
-                    btn_cancel_order.setVisibility(View.GONE);
+                    String cancelText = getApplicationContext().getString(R.string.call_btn_cancel);
+                    text_status.setText(cancelText);
+                    btn_cancel_order.setText(getString(R.string.help_button));
+                    btn_cancel_order.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(Intent.ACTION_DIAL);
+
+                            List<String> stringList = logCursor(MainActivity.CITY_INFO);
+                            String phone = stringList.get(3);
+                            intent.setData(Uri.parse(phone));
+                            startActivity(intent);
+                        }
+                    });
                 }
             }, delayMillis);
         }
@@ -178,9 +225,9 @@ public class FinishActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(connected()){
-                    cancelOrder(UID_key);
-                    if(!receivedMap.get("dispatching_order_uid_Double").equals(" ")) {
-                        cancelOrder(receivedMap.get("dispatching_order_uid_Double"));
+                    cancelOrder(uid);
+                    if(!uid_Double.equals(" ")) {
+                        cancelOrder(uid_Double);
                     }
                     if (thread != null && thread.isAlive()) {
                         thread.interrupt();
@@ -188,6 +235,8 @@ public class FinishActivity extends AppCompatActivity {
                 } else {
                     text_status.setText(R.string.verify_internet);
                 }
+                btn_reset_status.setVisibility(View.GONE);
+                btn_cancel_order.setVisibility(View.GONE);
             }
         });
 
@@ -231,8 +280,321 @@ public class FinishActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+        if(pay_method.equals("card_payment")){
+            pay_method =  pay_system();
+        }
+        switch (pay_method) {
+            case "fondy_payment":
+
+                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+                messageFondy = getString(R.string.fondy_message);
+                String tokenCardFondy = logCursor(MainActivity.TABLE_USER_INFO).get(6);
+
+                if (tokenCardFondy == null || tokenCardFondy.equals("")) {
+                    getUrlToPayment(MainActivity.order_id, messageFondy, amount);
+                } else {
+                    paymentByTokenFondy(MainActivity.order_id, messageFondy, amount, tokenCardFondy);
+                }
+                break;
+            case "mono_payment":
+
+                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+
+                String reference = MainActivity.order_id;
+                String comment = getString(R.string.fondy_message);
+
+                getUrlToPaymentMono(amount, reference, comment);
+                break;
+
+        }
+
+    }
+    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        RequestData paymentRequest = new RequestData(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword,
+                email
+        );
+
+
+        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataPay responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            String responseStatus = responseBody.getResponseStatus();
+                            String checkoutUrl = responseBody.getCheckoutUrl();
+                            if ("success".equals(responseStatus)) {
+                                // Обработка успешного ответа
+
+                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                        checkoutUrl,
+                                        amount,
+                                        uid,
+                                        uid_Double
+                                );
+                                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                            } else if ("failure".equals(responseStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+                                cancelOrderDismiss(uid);
+                                cancelOrderDismiss(uid_Double);
+                                // Отобразить сообщение об ошибке пользователю
+                            } else {
+                                // Обработка других возможных статусов ответа
+                            }
+                        } else {
+                            // Обработка пустого тела ответа
+                            cancelOrderDismiss(uid);
+                            cancelOrderDismiss(uid_Double);
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                        cancelOrderDismiss(uid);
+                        cancelOrderDismiss(uid_Double);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                    cancelOrderDismiss(uid);
+                    cancelOrderDismiss(uid_Double);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+                cancelOrderDismiss(uid);
+                cancelOrderDismiss(uid_Double);
+            }
+
+
+        });
     }
 
+    private void cancelOrderDismiss(String value) {
+        String url = baseUrl + "/" + FinishActivity.api + "/android/webordersCancel/" + value;
+        Call<Status> call = ApiClient.getApiService().cancelOrder(url);
+        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+
+        call.enqueue(new Callback<Status>() {
+            @Override
+            public void onResponse(Call<Status> call, Response<Status> response) {
+                Status status = response.body();
+                if (status != null) {
+
+                    String result =  String.valueOf(status.getResponse());
+                    Log.d("TAG", "onResponse: result" + result);
+                    FinishActivity.text_status.setText(result + getString(R.string.pay_failure));
+
+                } else {
+                    FinishActivity.text_status.setText(R.string.verify_internet);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Status> call, Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                Log.d("TAG", "onFailure: " + errorMessage);
+
+            }
+        });
+    }
+
+    private void paymentByTokenFondy(
+            String order_id,
+            String orderDescription,
+            String amount,
+            String rectoken
+    ) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO);
+        String email = stringList.get(3);
+
+        RequestDataToken paymentRequest = new RequestDataToken(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword,
+                rectoken,
+                email
+        );
+
+
+        StatusRequestToken statusRequest = new StatusRequestToken(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+
+        Call<ApiResponseToken<SuccessResponseDataToken>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponseToken<SuccessResponseDataToken>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponseToken<SuccessResponseDataToken>> call, Response<ApiResponseToken<SuccessResponseDataToken>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponseToken<SuccessResponseDataToken> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataToken responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                            String orderStatus = responseBody.getOrderStatus();
+                            if (!"approved".equals(orderStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+
+                                cancelOrderDismiss(uid);
+                                cancelOrderDismiss(uid_Double);
+                            }
+                        } else {
+                            cancelOrderDismiss(uid);
+                            cancelOrderDismiss(uid_Double);
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                        cancelOrderDismiss(uid);
+                        cancelOrderDismiss(uid_Double);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                    cancelOrderDismiss(uid);
+                    cancelOrderDismiss(uid_Double);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+                cancelOrderDismiss(uid);
+                cancelOrderDismiss(uid_Double);
+            }
+        });
+    }
+
+    private void getUrlToPaymentMono(String amount, String reference, String comment) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+        int amountMono = Integer.parseInt(amount);
+        RequestPayMono paymentRequest = new RequestPayMono(
+                amountMono,
+                reference,
+                comment
+        );
+
+        Log.d("TAG1", "getUrlToPayment: " + paymentRequest.toString());
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponsePayMono> call = monoApi.invoiceCreate(token, paymentRequest);
+
+        call.enqueue(new Callback<ResponsePayMono>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ResponsePayMono> call, Response<ResponsePayMono> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ResponsePayMono apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        String pageUrl = response.body().getPageUrl();;
+                        MainActivity.invoiceId = response.body().getInvoiceId();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (pageUrl != null) {
+
+                            // Обработка успешного ответа
+
+                            MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
+                                    pageUrl,
+                                    amount,
+                                    uid,
+                                    uid_Double
+                            );
+                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                        } else {
+                            cancelOrderDismiss(uid);
+                            cancelOrderDismiss(uid_Double);
+                        }
+
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                        cancelOrderDismiss(uid);
+                        cancelOrderDismiss(uid_Double);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                    cancelOrderDismiss(uid);
+                    cancelOrderDismiss(uid_Double);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePayMono> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+                cancelOrderDismiss(uid);
+                cancelOrderDismiss(uid_Double);
+            }
+
+
+        });
+    }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d("TAG", "updateAddCost: addCost" + addCost);
@@ -320,14 +682,14 @@ public class FinishActivity extends AppCompatActivity {
 
     }
 
-    public void callOrderIdMemory(String fondyOrderId, String uid) {
+    public void callOrderIdMemory(String orderId, String uid, String paySystem) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         ApiService apiService = retrofit.create(ApiService.class);
-        Call<Void> call = apiService.orderIdMemory(fondyOrderId, uid);
+        Call<Void> call = apiService.orderIdMemory(orderId, uid, paySystem);
 
         call.enqueue(new Callback<Void>() {
             @Override
@@ -440,7 +802,7 @@ public class FinishActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<Status> call, Throwable t) {
+            public void onFailure(@NonNull Call<Status> call, @NonNull Throwable t) {
                 // Обработка ошибок сети или других ошибок
                 String errorMessage = t.getMessage();
                 t.printStackTrace();

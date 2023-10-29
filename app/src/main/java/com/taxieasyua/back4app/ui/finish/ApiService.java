@@ -31,10 +31,11 @@ public interface ApiService {
     Call<Void> startNewProcessExecutionStatus(
             @Path("doubleOrder") String doubleOrder
     );
-    @GET("/fondy/orderIdMemory/{fondy_order_id}/{uid}")
+    @GET("/android/orderIdMemory/{order_id}/{uid}/{paySystem}")
     Call<Void> orderIdMemory(
-            @Path("fondy_order_id") String fondy_order_id,
-            @Path("uid") String uid
+            @Path("order_id") String fondy_order_id,
+            @Path("uid") String uid,
+            @Path("paySystem") String paySystem
     );
 
 }

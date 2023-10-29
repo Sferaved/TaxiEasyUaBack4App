@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.860</string>
-    <string name="version">Версия: 2.860</string>
+    <string name="version_code">2.863</string>
+    <string name="version">Версия: 2.863</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -267,11 +267,13 @@
     <string name="fondy_back">Для заказа поездки после успешной оплаты или для выбора другого способа платежа - нажмите на своем телефоне кнопку "Вернуться" (стрелочка "Назад").</string>
     <string name="fondy_back_ver">После успешной проверки - нажмите на своем телефоне кнопку "Вернуться" (стрелочка "Назад").</string>
     <string name="phone_input_error">Без ввода номера телефона заказ невозможен.</string>
-    <string name="pay_failure">Ошибка платежа. Попробуйте другой способ оплаты.</string>
+    <string name="pay_failure">Произошла ошибка платежа. Попробуйте другой способ оплаты.</string>
     <string name="link_card">Привязать карту</string>
     <string name="delink_card">Удалить привязку</string>
     <string name="link_card_succesfuly">Ваша карта проверена и готова к оплате путешествий.</string>
     <string name="un_link_token">Привязка платежной карты удалена из приложения.</string>
     <string name="cancel_card">Завершить</string>
     <string name="mono_payment">Монобанк</string>
+    <string name="pay_to_driver">" Оплата водителю наличными."</string>
+    <string name="call_btn_cancel">Отменить поездку возможно через звонок оператору</string>
 </resources>

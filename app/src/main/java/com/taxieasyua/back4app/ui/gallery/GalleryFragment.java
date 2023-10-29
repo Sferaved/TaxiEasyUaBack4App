@@ -253,53 +253,9 @@ public class GalleryFragment extends Fragment {
                         }
                         break;
                 }
+                progressbar.setVisibility(View.VISIBLE);
                 orderRout();
-                switch (pay_method) {
-                    case "fondy_payment":
-                        progressbar.setVisibility(View.VISIBLE);
-                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                        messageFondy = getString(R.string.fondy_message);
-                        String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-                        Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                        if (tokenCard == null || tokenCard.equals("")) {
-                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
-                        } else {
-                            paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-                        }
-                        break;
-                    case "mono_payment":
-                        progressbar.setVisibility(View.VISIBLE);
-                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-
-                        int amount = Integer.parseInt(text_view_cost.getText().toString() + "00");
-                        String reference = MainActivity.order_id;
-                        String comment = getString(R.string.fondy_message);
-
-                        getUrlToPaymentMono(amount, reference, comment);
-                        break;
-                    default:
-                        progressbar.setVisibility(View.VISIBLE);
-                        orderFinished();
-                }
-
-
-
-//                if (pay_method.equals("card_payment")) {
-//                    progressbar.setVisibility(View.VISIBLE);
-//                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-//                    messageFondy = getString(R.string.fondy_message);
-//
-//                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-//                    Log.d(TAG, "onClick: tokenCard" + tokenCard);
-//                    if (tokenCard == null || tokenCard.equals("")) {
-//                        getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString()+ "00");
-//                    } else {
-//                        paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-//                    }
-//                } else {
-//                   orderFinished();
-//                }
-
+                orderFinished();
             }
         });
 

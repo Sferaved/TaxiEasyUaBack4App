@@ -144,6 +144,7 @@ public class HomeFragment extends Fragment {
     public static long discount;
     private MyPhoneDialogFragment bottomSheetDialogFragment;
     private String baseUrl = "https://m.easy-order-taxi.site";
+    private Map<String, String> sendUrlMap;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -285,10 +286,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 progressBar.setVisibility(View.VISIBLE);
-                pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-                if(pay_method.equals("card_payment")){
-                    pay_method =  pay_system();
-                }
+
 
                 if(connected()) {
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -319,32 +317,7 @@ public class HomeFragment extends Fragment {
 
                     if (verifyPhone(requireActivity())) {
                         Log.d(TAG, "onClick: pay_method "+ pay_method);
-                        switch (pay_method) {
-                            case "fondy_payment":
-                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                                messageFondy = getString(R.string.fondy_message);
-                                String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-                                Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                                if (tokenCard == null || tokenCard.equals("")) {
-                                    getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
-                                } else {
-                                    paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-                                }
-                                break;
-                            case "mono_payment":
-                                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-
-                                int amount = Integer.parseInt(text_view_cost.getText().toString() + "00");
-                                String reference = MainActivity.order_id;
-                                String comment = getString(R.string.fondy_message);
-
-                                getUrlToPaymentMono(amount, reference, comment);
-                                break;
-                            case "nal_payment":
-                                orderFinished();
-                                break;
-                        }
-
+                        orderFinished();
                     }
 
                 } else {
@@ -405,9 +378,9 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                getRevers("V_20231026123207548_U28Z", "повернення замовлення", "100");
-//                getRevers("V_20231026101213069_NNTB", "повернення замовлення", "1100");
-//                getRevers("V_20231025124250843_CQ8B", "повернення замовлення", "100");
+                getRevers("V_20231029120259023_JYLZ", "повернення замовлення", "100");
+//                getRevers("V_20231029113207393_BAYD", "повернення замовлення", "100");
+
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String phone = stringList.get(3);
@@ -434,6 +407,66 @@ public class HomeFragment extends Fragment {
             }
         });
         return root;
+    }
+
+    private void getRevers(String orderId, String comment, String amount) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ReversApi apiService = retrofit.create(ReversApi.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        ReversRequestData reversRequestData = new ReversRequestData(
+                orderId,
+                comment,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword
+        );
+        Log.d("TAG1", "getRevers: " + reversRequestData.toString());
+        ReversRequestSent reversRequestSent = new ReversRequestSent(reversRequestData);
+
+
+        Call<ApiResponseRev<SuccessResponseDataRevers>> call = apiService.makeRevers(reversRequestSent);
+
+        call.enqueue(new Callback<ApiResponseRev<SuccessResponseDataRevers>>() {
+            @Override
+            public void onResponse(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Response<ApiResponseRev<SuccessResponseDataRevers>> response) {
+
+                if (response.isSuccessful()) {
+                    ApiResponseRev<SuccessResponseDataRevers> apiResponse = response.body();
+                    Log.d("TAG1", "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        SuccessResponseDataRevers responseData = apiResponse.getResponse();
+                        Log.d("TAG1", "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+                            Log.d("TAG1", "onResponse: " + responseData.toString());
+
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
     }
 
     private void orderFinished() {
@@ -611,382 +644,7 @@ public class HomeFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
-    private void getRevers(String orderId, String comment, String amount) {
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        ReversApi apiService = retrofit.create(ReversApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-
-        ReversRequestData reversRequestData = new ReversRequestData(
-                orderId,
-                comment,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword
-        );
-        Log.d("TAG1", "getRevers: " + reversRequestData.toString());
-        ReversRequestSent reversRequestSent = new ReversRequestSent(reversRequestData);
-
-
-        Call<ApiResponseRev<SuccessResponseDataRevers>> call = apiService.makeRevers(reversRequestSent);
-
-        call.enqueue(new Callback<ApiResponseRev<SuccessResponseDataRevers>>() {
-            @Override
-            public void onResponse(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Response<ApiResponseRev<SuccessResponseDataRevers>> response) {
-
-                if (response.isSuccessful()) {
-                    ApiResponseRev<SuccessResponseDataRevers> apiResponse = response.body();
-                    Log.d("TAG1", "JSON Response: " + new Gson().toJson(apiResponse));
-                    if (apiResponse != null) {
-                        SuccessResponseDataRevers responseData = apiResponse.getResponse();
-                        Log.d("TAG1", "onResponse: " + responseData.toString());
-                        if (responseData != null) {
-                            // Обработка успешного ответа
-                            Log.d("TAG1", "onResponse: " + responseData.toString());
-
-                        }
-                    }
-                } else {
-                    // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
-                // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
-            }
-        });
-
-    }
-    private void getReversMono(
-            String invoiceId,
-            String extRef,
-            int amount
-    ) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.monobank.ua/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        MonoApi monoApi = retrofit.create(MonoApi.class);
-
-        RequestCancelMono paymentRequest = new RequestCancelMono(
-               invoiceId,
-               extRef,
-               amount
-        );
-        Log.d("TAG1", "getRevers: " + paymentRequest.toString());
-
-        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
-        Call<ResponseCancelMono> call = monoApi.invoiceCancel(token, paymentRequest);
-
-        call.enqueue(new Callback<ResponseCancelMono>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponseCancelMono> call, @NonNull Response<ResponseCancelMono> response) {
-
-                if (response.isSuccessful()) {
-                    ResponseCancelMono apiResponse = response.body();
-                    Log.d("TAG2", "JSON Response: " + new Gson().toJson(apiResponse));
-                    if (apiResponse != null) {
-                        String responseData = apiResponse.getStatus();
-                        Log.d("TAG2", "onResponse: " + responseData.toString());
-                        if (responseData != null) {
-                            // Обработка успешного ответа
-
-                            switch (responseData) {
-                                case "processing":
-                                    Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
-                                    break;
-                            case "success":
-                                    Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
-                                    break;
-                            case "failure":
-                                    Log.d("TAG2", "onResponse: " + "неуспішне скасування");
-                                    Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
-                                    Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
-                                    break;
-                            }
-
-                        }
-                    }
-                } else {
-                    // Обработка ошибки запроса
-                    Log.d("TAG2", "onResponse: Ошибка запроса, код " + response.code());
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Log.d("TAG2", "onResponse: Тело ошибки: " + errorBody);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponseCancelMono> call, Throwable t) {
-                // Обработка ошибки сети или другие ошибки
-                Log.d("TAG2", "onFailure: Ошибка сети: " + t.getMessage());
-            }
-        });
-
-    }
-    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-        String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
-        RequestData paymentRequest = new RequestData(
-                order_id,
-                orderDescription,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword,
-                email
-        );
-
-
-        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataPay responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (responseBody != null) {
-                            String responseStatus = responseBody.getResponseStatus();
-                            String checkoutUrl = responseBody.getCheckoutUrl();
-                            if ("success".equals(responseStatus)) {
-                                // Обработка успешного ответа
-
-                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
-                                        checkoutUrl,
-                                        text_view_cost.getText().toString(),
-                                        "home",
-                                        urlOrder
-                                );
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-
-//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-//                                paymentIntent.putExtra("urlOrder", urlOrder);
-//                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
-//                                paymentIntent.putExtra("fragment_key", "home");
-//                                startActivity(paymentIntent);
-                            } else if ("failure".equals(responseStatus)) {
-                                // Обработка ответа об ошибке
-                                String errorResponseMessage = responseBody.getErrorMessage();
-                                String errorResponseCode = responseBody.getErrorCode();
-                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
-                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
-                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                // Отобразить сообщение об ошибке пользователю
-                            } else {
-                                // Обработка других возможных статусов ответа
-                            }
-                        } else {
-                            // Обработка пустого тела ответа
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
-    private void paymentByToken(
-            String order_id,
-            String orderDescription,
-            String amount,
-            String rectoken
-    ) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-        List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity()));
-        String email = stringList.get(3);
-
-        RequestDataToken paymentRequest = new RequestDataToken(
-                order_id,
-                orderDescription,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword,
-                rectoken,
-                email
-        );
-
-
-        StatusRequestToken statusRequest = new StatusRequestToken(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponseToken<SuccessResponseDataToken>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponseToken<SuccessResponseDataToken>>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ApiResponseToken<SuccessResponseDataToken>> call, Response<ApiResponseToken<SuccessResponseDataToken>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponseToken<SuccessResponseDataToken> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataToken responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (responseBody != null) {
-                            Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
-                            String orderStatus = responseBody.getOrderStatus();
-                            if ("approved".equals(orderStatus)) {
-                                // Обработка успешного ответа
-                               orderFinished();
-                            } else {
-                                // Обработка ответа об ошибке
-                                String errorResponseMessage = responseBody.getErrorMessage();
-                                String errorResponseCode = responseBody.getErrorCode();
-                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
-                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
-                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                // Отобразить сообщение об ошибке пользователю
-                            }
-                        } else {
-                            // Обработка пустого тела ответа
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
-
-    private void getUrlToPaymentMono(int amount, String reference, String comment) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.monobank.ua/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        MonoApi monoApi = retrofit.create(MonoApi.class);
-
-        RequestPayMono paymentRequest = new RequestPayMono(
-                amount,
-                reference,
-                comment
-        );
-
-        Log.d("TAG1", "getUrlToPayment: " + paymentRequest.toString());
-
-        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
-        Call<ResponsePayMono> call = monoApi.invoiceCreate(token, paymentRequest);
-
-        call.enqueue(new Callback<ResponsePayMono>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ResponsePayMono> call, Response<ResponsePayMono> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ResponsePayMono apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                       String pageUrl = response.body().getPageUrl();;
-                       MainActivity.invoiceId = response.body().getInvoiceId();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (pageUrl != null) {
-
-                            // Обработка успешного ответа
-
-                            MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
-                                    pageUrl,
-                                    text_view_cost.getText().toString(),
-                                    "home",
-                                    urlOrder
-                            );
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                        } else {
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                        }
-
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponsePayMono> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
 
     private String pay_system() {
         Retrofit retrofit = new Retrofit.Builder()
@@ -1034,7 +692,7 @@ public class HomeFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+            public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
                 if (isAdded()) {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -1109,7 +767,7 @@ public class HomeFragment extends Fragment {
 
             from = null;
             to = null;
-
+            updateAddCost("0");
             text_view_cost.setText("");
             textViewFrom.setText("");
             from_number.setText("");
@@ -1135,7 +793,7 @@ public class HomeFragment extends Fragment {
             @SuppressLint("ResourceAsColor")
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                updateAddCost("0");
 
                 if (textViewTo.getText().toString().isEmpty()) {
                         to = null;
@@ -1236,6 +894,7 @@ public class HomeFragment extends Fragment {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment;
 
                     if (connected()) {
+                        updateAddCost("0");
                         to = String.valueOf(adapter.getItem(position));
                         if (to.indexOf("/") != -1) {
                             to = to.substring(0, to.indexOf("/"));
@@ -1650,6 +1309,7 @@ public class HomeFragment extends Fragment {
         database.update(MainActivity.ROUT_HOME, cv, "id = ?",
                 new String[] { "1" });
         database.close();
+        updateAddCost("0");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

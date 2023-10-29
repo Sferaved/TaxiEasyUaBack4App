@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.860</string>
-    <string name="version">Версія: 2.860</string>
+    <string name="version_code">2.863</string>
+    <string name="version">Версія: 2.863</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -267,12 +267,14 @@
     <string name="fondy_back">Для замовлення поїздки після успішної оплати або для вибору іншого способу платежу - натисніть на своєму телефоні кнопку \"Повернутись\" (стрілочка \"Назад\").</string>
     <string name="fondy_back_ver">Після успішної перевірки - натисніть на своєму телефоні кнопку \"Повернутись\" (стрілочка \"Назад\").</string>
     <string name="phone_input_error">Без введення номера телефону замовлення не можливе.</string>
-    <string name="pay_failure">Помилка платежу. Спробуйте інший спосіб оплати.</string>
+    <string name="pay_failure">Відбулася помилка платежу. Спробуйте інший спосіб оплати.</string>
     <string name="link_card">Прив\'язати карту</string>
     <string name="delink_card">Видалити прив\'язку</string>
     <string name="link_card_succesfuly">Ваша карта перевірена та готова до оплати подорожей.</string>
     <string name="un_link_token">Прив\'язка платіжної картки видалена з додатку.</string>
     <string name="cancel_card">Завершити</string>
     <string name="mono_payment">Монобанк</string>
+    <string name="pay_to_driver"> Оплата водію готівкою.</string>
+    <string name="call_btn_cancel">Скасувати подорож можна через дзвінок оператору.</string>
 
 </resources>

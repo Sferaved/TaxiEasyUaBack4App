@@ -246,52 +246,10 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                 }
                 orderRout();
                 if (verifyPhone(requireActivity())) {
-                    switch (pay_method) {
-                        case "fondy_payment":
-                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                            messageFondy = getString(R.string.fondy_message);
-                            String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-                            Log.d(TAG, "onClick: tokenCard" + tokenCard);
-                            if (tokenCard == null || tokenCard.equals("")) {
-                                getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
-                            } else {
-                                paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-                            }
-                            break;
-                        case "mono_payment":
-                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                    orderFinished();
 
-                            int amount = Integer.parseInt(text_view_cost.getText().toString() + "00");
-                            String reference = MainActivity.order_id;
-                            String comment = getString(R.string.fondy_message);
-
-                            getUrlToPaymentMono(amount, reference, comment);
-                            break;
-                        default:
-                            orderFinished();
-                    }
 
                 }
-//                if (verifyPhone(requireActivity())) {
-//                    if (pay_method.equals("card_payment")) {
-//                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-//                        messageFondy = getString(R.string.fondy_message);
-//                        String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-//                        Log.d(TAG, "onClick: tokenCard" + tokenCard);
-//                        if (tokenCard == null || tokenCard.equals("")) {
-//                            getUrlToPayment(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00");
-//                        } else {
-//                            paymentByToken(MainActivity.order_id, messageFondy, text_view_cost.getText().toString() + "00", tokenCard);
-//                        }
-//                    } else {
-//                        if (verifyPhone(requireActivity())) {
-//                            orderFinished();
-//                        } else {
-//                            bottomSheetDialogFragment = new MyPhoneDialogFragment("marker", text_view_cost.getText().toString());
-//                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                        }
-//                    }
-//                }
             }
         });
         buttonBonus = view.findViewById(R.id.btnBonus);

@@ -160,10 +160,6 @@ public class CardFragment extends Fragment {
                                 MyBottomSheetCardVerification bottomSheetDialogFragment = new MyBottomSheetCardVerification(checkoutUrl, amount);
                                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
-//                                Intent paymentIntent = new Intent(requireActivity(), FondyVerificationActivity.class);
-//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-//                                paymentIntent.putExtra("amount", amount);
-//                                startActivity(paymentIntent);
 
                             } else if ("failure".equals(responseStatus)) {
                                 // Обработка ответа об ошибке
