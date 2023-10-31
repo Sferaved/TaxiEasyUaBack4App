@@ -58,6 +58,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String[] array, arrayCode;
     AppCompatButton btn_ok;
     int pos;
+    String pay_method;
     private String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetBonusFragment(long cost, String rout, String api) {
@@ -80,6 +81,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
+        pay_system();
+        Log.d("TAG", "onCreateView: " + pay_method);
         listView = view.findViewById(R.id.listViewBonus);
          array = new  String[]{
                 getString(R.string.nal_payment),
@@ -122,6 +125,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 pos = position;
                 paymentType(arrayCode [pos]);
+
             }
 
         });
@@ -130,6 +134,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                paymentType(arrayCode [pos]);
                 dismiss();
             }
         });
@@ -140,33 +145,28 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     private void paymentType(String paymentCode) {
 
         ContentValues cv = new ContentValues();
-        Log.d("TAG", "paymentType: paymentCode " + paymentCode);
+        Log.d("TAG", "paymentType: paymentCode 1111" + paymentCode);
         if (paymentCode.equals("card_payment")) {
-            cv.put("bonusPayment", pay_system());
+            pay_system();
+            Log.d("TAG", "paymentType: paymentCode 2222" + paymentCode);
         } else {
-            cv.put("bonusPayment", paymentCode);
+            cv.put("payment_type", paymentCode);
+            // обновляем по id
+            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                    new String[] { "1" });
+            database.close();
         }
-        // обновляем по id
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
+
     }
 
     @SuppressLint("Range")
     private void fistItem() {
-        String bonusPayment = null;
-        String query = "SELECT bonusPayment FROM " + MainActivity.TABLE_SETTINGS_INFO + " WHERE id = ?";
-        String[] selectionArgs = new String[] { "1" };
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-        @SuppressLint("Recycle") Cursor cursor = database.rawQuery(query, selectionArgs);
+        String payment_type = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
 
-        if (cursor.moveToFirst()) {
-            bonusPayment = cursor.getString(cursor.getColumnIndex("bonusPayment"));
-        }
-        Log.d("TAG", "fistItem: " + bonusPayment);
-        switch (bonusPayment) {
+        Log.d("TAG", "fistItem: " + payment_type);
+        switch (payment_type) {
             case "nal_payment":
                 listView.setItemChecked(0, true);
                 pos = 0;
@@ -185,10 +185,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 paymentType(arrayCode [pos]);
                 break;
         }
-
-        database.close();
-    }
-    public String pay_system() {
+   }
+    public void pay_system() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -205,25 +203,26 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                     ResponsePaySystem responsePaySystem = response.body();
                     assert responsePaySystem != null;
                     String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
 
                     switch (paymentCode) {
                         case "fondy":
-                            paymentCodeNew = "fondy_payment";
+                            pay_method = "fondy_payment";
                             break;
                         case "mono":
-                            paymentCodeNew = "mono_payment";
+                            pay_method = "mono_payment";
                             break;
                     }
-                    if (isAdded()) {
-                        ContentValues cv = new ContentValues();
-                        cv.put("bonusPayment", paymentCodeNew);
-                        // обновляем по id
+                    Log.d("TAG", "onResponse: pay_method " + pay_method);
+                    ContentValues cv = new ContentValues();
+                    cv.put("payment_type", pay_method);
+                    // обновляем по id
+                    if(isAdded()){
                         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[]{"1"});
+                                new String[] { "1" });
                         database.close();
                     }
+
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -239,7 +238,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
             }
         });
-        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
     }
 
     @Override
@@ -381,7 +379,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);
-        String bonusPayment =  stringList.get(4);
+        String payment_type =  stringList.get(4);
 
 
         String parameters = null;
@@ -396,7 +394,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         // Building the url to the web service
@@ -467,7 +465,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);
-        String bonusPayment =  stringList.get(4);
+        String payment_type =  stringList.get(4);
 
         // Building the parameters to the web service
 
@@ -484,7 +482,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         // Building the url to the web service
@@ -544,7 +542,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);
-        String bonusPayment =  stringList.get(4);
+        String payment_type =  stringList.get(4);
 
         // Building the parameters to the web service
 
@@ -561,7 +559,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         // Building the url to the web service

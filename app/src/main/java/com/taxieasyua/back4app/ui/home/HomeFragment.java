@@ -51,7 +51,6 @@ import androidx.navigation.Navigation;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
@@ -61,33 +60,14 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
-import com.taxieasyua.back4app.ui.card.unlink.UnlinkApi;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
-import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
-import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
-import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
-import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
-import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
-import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
-import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
 import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
-import com.taxieasyua.back4app.ui.fondy.token_pay.ApiResponseToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
-import com.taxieasyua.back4app.ui.mono.MonoApi;
-import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
-import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
-import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
-import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
@@ -278,8 +258,6 @@ public class HomeFragment extends Fragment {
 
         btn_order = binding.btnOrder;
 
-        String tokenCard = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6);
-        Log.d(TAG, "onClick: tokenCard" + tokenCard);
         btn_order.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("UseRequireInsteadOfGet")
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -291,7 +269,7 @@ public class HomeFragment extends Fragment {
                 if(connected()) {
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                     List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                    String bonusPayment =  stringListInfo.get(4);
+                    String payment_type =  stringListInfo.get(4);
                     switch (stringList.get(1)) {
                         case "Kyiv City":
                         case "Dnipropetrovsk Oblast":
@@ -300,7 +278,7 @@ public class HomeFragment extends Fragment {
                         case "Cherkasy Oblast":
                             break;
                         case "OdessaTest":
-                            if(bonusPayment.equals("bonus_payment")) {
+                            if(payment_type.equals("bonus_payment")) {
                                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
@@ -675,7 +653,7 @@ public class HomeFragment extends Fragment {
 
                     if(isAdded()) {
                         ContentValues cv = new ContentValues();
-                        cv.put("bonusPayment", paymentCodeNew);
+                        cv.put("payment_type", paymentCodeNew);
                         // обновляем по id
                         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -714,9 +692,7 @@ public class HomeFragment extends Fragment {
         super.onResume();
         progressBar.setVisibility(View.INVISIBLE);
         pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-        if(pay_method.equals("card_payment")){
-            pay_method = pay_system();
-        }
+
         if(bottomSheetDialogFragment != null) {
             bottomSheetDialogFragment.dismiss();
         }
@@ -1349,7 +1325,7 @@ public class HomeFragment extends Fragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
 
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
 
         Log.d("TAG2", "startCost: discountText" + discount);
@@ -1370,14 +1346,14 @@ public class HomeFragment extends Fragment {
             }
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1529,7 +1505,7 @@ public class HomeFragment extends Fragment {
     }
     private void paymentType(String paymentCode) {
         ContentValues cv = new ContentValues();
-        cv.put("bonusPayment", paymentCode);
+        cv.put("payment_type", paymentCode);
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",

@@ -26,6 +26,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.gson.Gson;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.card.CardInfo;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.finish.Status;
@@ -102,6 +103,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.activity_fondy_payment, container, false);
         webView = view.findViewById(R.id.webView);
         email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
+        pay_method =  pay_system();
 
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
@@ -117,10 +119,6 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 String loadedUrl = url;
                 Log.d("WebView", "Загружен URL: " + loadedUrl);
                 if(url.equals("https://m.easy-order-taxi.site/mono/redirectUrl")) {
-                    pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-                    if(pay_method.equals("card_payment")){
-                        pay_method = pay_system();
-                    }
 
                     switch (pay_method) {
                         case "fondy_payment":
@@ -171,7 +169,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
                         String orderStatus = responseData.getOrderStatus();
                         if(orderStatus.equals("approved")){
-                            getCardToken();
+                            getCardTokenFondy();
                             hold = true;
                         } else {
                             hold = false;
@@ -258,11 +256,9 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         String url = baseUrl + "/" + FinishActivity.api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
-        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
 
-        if(pay_method.equals("card_payment")){
-            pay_method = pay_system();
-        }
+
+
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {
@@ -493,7 +489,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     }
                     if(isAdded()){
                         ContentValues cv = new ContentValues();
-                        cv.put("bonusPayment", paymentCodeNew);
+                        cv.put("payment_type", paymentCodeNew);
                         // обновляем по id
                         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -531,9 +527,9 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         }
     }
 
-    private void getCardToken() {
+    private void getCardTokenFondy() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
+                .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -548,35 +544,60 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 if (response.isSuccessful()) {
                     CallbackResponse callbackResponse = response.body();
                     if (callbackResponse != null) {
+                        List<CardInfo> cards = callbackResponse.getCards();
 
-                        String card_token = callbackResponse.getCard_token();//Токен карты
+                        if (cards != null && !cards.isEmpty()) {
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                        Log.d(TAG, "onResponse: card_token: " + card_token);
-                        if(isAdded()) {
-                            ContentValues cv = new ContentValues();
-                            cv.put("rectoken", card_token);
-                            SQLiteDatabase database =  requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                                    new String[] { "1" });
+                            for (CardInfo cardInfo : cards) {
+                                String masked_card = cardInfo.getMasked_card(); // Маска карты
+                                String card_type = cardInfo.getCard_type(); // Тип карты
+                                String bank_name = cardInfo.getBank_name(); // Название банка
+                                String rectoken = cardInfo.getRectoken(); // Токен карты
+
+                                Log.d(TAG, "onResponse: card_token: " + rectoken);
+
+                                if (isAdded()) {
+                                    // Проверяем, есть ли запись с таким rectoken в таблице
+                                    Cursor cursor = database.query(
+                                            MainActivity.TABLE_FONDY_CARDS,
+                                            new String[]{"rectoken"},
+                                            "rectoken = ?",
+                                            new String[]{rectoken},
+                                            null,
+                                            null,
+                                            null
+                                    );
+
+                                    if (cursor.getCount() == 0) {
+                                        // Если нет записи с таким rectoken, добавляем новую запись
+                                        ContentValues cv = new ContentValues();
+                                        cv.put("masked_card", masked_card);
+                                        cv.put("card_type", card_type);
+                                        cv.put("bank_name", bank_name);
+                                        cv.put("rectoken", rectoken);
+                                        database.insert(MainActivity.TABLE_FONDY_CARDS, null, cv);
+                                    }
+
+                                    cursor.close();
+                                }
+                            }
+
                             database.close();
-
-                            Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, requireActivity()));
-                            Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(6));
                         }
-                        dismiss();
                     }
+
                 } else {
                     // Обработка случаев, когда ответ не 200 OK
                 }
             }
 
             @Override
-            public void onFailure(Call<CallbackResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<CallbackResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки запроса
             }
         });
     }
-
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();

@@ -1,7 +1,5 @@
 package com.taxieasyua.back4app.ui.finish;
 
-import static com.taxieasyua.back4app.ui.finish.ApiClient.BASE_URL;
-
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -28,7 +26,6 @@ import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
@@ -47,7 +44,6 @@ import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetFondyPayFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.mono.MonoApi;
@@ -67,7 +63,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -102,9 +97,6 @@ public class FinishActivity extends AppCompatActivity {
         new VerifyUserTask().execute();
         pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
-        if(pay_method.equals("card_payment")){
-            pay_method = pay_system();
-        }
         List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
             case "Kyiv City":
@@ -189,11 +181,7 @@ public class FinishActivity extends AppCompatActivity {
                     }
              }, delayMillis);
          }
-        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
-        if(pay_method.equals("card_payment")){
-            pay_method = pay_system();
-        }
         if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
 
             callOrderIdMemory(MainActivity.order_id, uid, pay_method);
@@ -280,17 +268,14 @@ public class FinishActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
-        if(pay_method.equals("card_payment")){
-            pay_method =  pay_system();
-        }
+
         switch (pay_method) {
             case "fondy_payment":
 
                 MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
                 messageFondy = getString(R.string.fondy_message);
                 String tokenCardFondy = logCursor(MainActivity.TABLE_USER_INFO).get(6);
-
+                Log.d(TAG, "onCreate:tokenCardFondy " + tokenCardFondy);
                 if (tokenCardFondy == null || tokenCardFondy.equals("")) {
                     getUrlToPayment(MainActivity.order_id, messageFondy, amount);
                 } else {
@@ -769,11 +754,7 @@ public class FinishActivity extends AppCompatActivity {
         String url = baseUrl + "/" + api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
-        pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
-        if(pay_method.equals("card_payment")){
-            pay_method = pay_system();
-        }
         call.enqueue(new Callback<Status>() {
             @Override
             public void onResponse(Call<Status> call, Response<Status> response) {
@@ -784,6 +765,7 @@ public class FinishActivity extends AppCompatActivity {
                         Log.d("TAG", "onResponse: result" + result);
                         text_status.setText(result);
                         String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+
                         switch (pay_method) {
                             case "fondy_payment":
                                 getRevers(MainActivity.order_id, comment, amount);
@@ -840,7 +822,7 @@ public class FinishActivity extends AppCompatActivity {
                     }
 
                         ContentValues cv = new ContentValues();
-                        cv.put("bonusPayment", paymentCodeNew);
+                        cv.put("payment_type", paymentCodeNew);
                         // обновляем по id
                         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -957,29 +939,28 @@ public class FinishActivity extends AppCompatActivity {
                     if (apiResponse != null) {
                         String responseData = apiResponse.getStatus();
                         Log.d("TAG2", "onResponse: " + responseData.toString());
-                        if (responseData != null) {
-                            // Обработка успешного ответа
+                        // Обработка успешного ответа
 
-                            switch (responseData) {
-                                case "processing":
-                                    Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
-                                    break;
-                                case "success":
-                                    Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
-                                    break;
-                                case "failure":
-                                    Log.d("TAG2", "onResponse: " + "неуспішне скасування");
-                                    Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
-                                    Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
-                                    break;
-                            }
-
+                        switch (responseData) {
+                            case "processing":
+                                Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
+                                break;
+                            case "success":
+                                Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
+                                break;
+                            case "failure":
+                                Log.d("TAG2", "onResponse: " + "неуспішне скасування");
+                                Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
+                                Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
+                                break;
                         }
+
                     }
                 } else {
                     // Обработка ошибки запроса
                     Log.d("TAG2", "onResponse: Ошибка запроса, код " + response.code());
                     try {
+                        assert response.errorBody() != null;
                         String errorBody = response.errorBody().string();
                         Log.d("TAG2", "onResponse: Тело ошибки: " + errorBody);
                     } catch (IOException e) {

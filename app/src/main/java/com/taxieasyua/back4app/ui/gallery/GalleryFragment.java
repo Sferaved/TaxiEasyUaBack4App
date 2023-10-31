@@ -232,9 +232,7 @@ public class GalleryFragment extends Fragment {
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
 
                 pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-                if(pay_method.equals("card_payment")){
-                    pay_method = pay_system();
-                }
+
                 switch (stringList.get(1)) {
                     case "Kyiv City":
                     case "Dnipropetrovsk Oblast":
@@ -244,8 +242,8 @@ public class GalleryFragment extends Fragment {
                         break;
                     case "OdessaTest":
                         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                        String bonusPayment =  stringListInfo.get(4);
-                        if(bonusPayment.equals("bonus_payment")) {
+                        String payment_type =  stringListInfo.get(4);
+                        if(payment_type.equals("bonus_payment")) {
                             String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                             if(Long.parseLong(bonus) < Long.parseLong(text_view_cost.getText().toString()) * 100 ) {
                                 paymentType("nal_payment");
@@ -282,212 +280,6 @@ public class GalleryFragment extends Fragment {
     }
 
     private String baseUrl = "https://m.easy-order-taxi.site";
-    private String pay_system() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PayApi apiService = retrofit.create(PayApi.class);
-        Call<ResponsePaySystem> call = apiService.getPaySystem();
-        call.enqueue(new Callback<ResponsePaySystem>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
-                if (response.isSuccessful()) {
-                    // Обработка успешного ответа
-                    ResponsePaySystem responsePaySystem = response.body();
-                    assert responsePaySystem != null;
-                    String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
-
-                    switch (paymentCode) {
-                        case "fondy":
-                            paymentCodeNew = "fondy_payment";
-                            break;
-                        case "mono":
-                            paymentCodeNew = "mono_payment";
-                            break;
-                    }
-
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonusPayment", paymentCodeNew);
-                    // обновляем по id
-                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
-                if (isAdded()) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
-        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-    }
-    private void getUrlToPaymentMono(int amount, String reference, String comment) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.monobank.ua/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        MonoApi monoApi = retrofit.create(MonoApi.class);
-
-        RequestPayMono paymentRequest = new RequestPayMono(
-                amount,
-                reference,
-                comment
-        );
-
-        Log.d("TAG1", "getUrlToPayment: " + paymentRequest.toString());
-
-        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
-        Call<ResponsePayMono> call = monoApi.invoiceCreate(token, paymentRequest);
-
-        call.enqueue(new Callback<ResponsePayMono>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ResponsePayMono> call, Response<ResponsePayMono> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ResponsePayMono apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        String pageUrl = response.body().getPageUrl();;
-                        MainActivity.invoiceId = response.body().getInvoiceId();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (pageUrl != null) {
-
-                            // Обработка успешного ответа
-
-                            MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
-                                    pageUrl,
-                                    text_view_cost.getText().toString(),
-                                    "gallery",
-                                    urlOrder
-                            );
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                        } else {
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                        }
-
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponsePayMono> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
-
-
-    private void paymentByToken(
-            String order_id,
-            String orderDescription,
-            String amount,
-            String rectoken
-    ) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-        List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity()));
-        String email = stringList.get(3);
-
-        RequestDataToken paymentRequest = new RequestDataToken(
-                order_id,
-                orderDescription,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword,
-                rectoken,
-                email
-        );
-
-
-        StatusRequestToken statusRequest = new StatusRequestToken(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponseToken<SuccessResponseDataToken>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponseToken<SuccessResponseDataToken>>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ApiResponseToken<SuccessResponseDataToken>> call, Response<ApiResponseToken<SuccessResponseDataToken>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponseToken<SuccessResponseDataToken> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataToken responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (responseBody != null) {
-                            Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
-                            String orderStatus = responseBody.getOrderStatus();
-                            if ("approved".equals(orderStatus)) {
-                                // Обработка успешного ответа
-                                orderFinished();
-                            } else {
-                                // Обработка ответа об ошибке
-                                String errorResponseMessage = responseBody.getErrorMessage();
-                                String errorResponseCode = responseBody.getErrorCode();
-                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
-                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
-                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                // Отобразить сообщение об ошибке пользователю
-                            }
-                        } else {
-                            // Обработка пустого тела ответа
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -550,7 +342,7 @@ public class GalleryFragment extends Fragment {
 
     private void paymentType(String paymentCode) {
         ContentValues cv = new ContentValues();
-        cv.put("bonusPayment", paymentCode);
+        cv.put("payment_type", paymentCode);
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -603,12 +395,6 @@ public class GalleryFragment extends Fragment {
                                         );
                                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
-//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-//                                paymentIntent.putExtra("urlOrder", urlOrder);
-//                                paymentIntent.putExtra("orderCost", text_view_cost.getText().toString());
-//                                paymentIntent.putExtra("fragment_key", "gallery");
-//                                startActivity(paymentIntent);
                             } else if ("failure".equals(responseStatus)) {
                                 // Обработка ответа об ошибке
                                 String errorResponseMessage = responseBody.getErrorMessage();
@@ -793,7 +579,7 @@ public class GalleryFragment extends Fragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
@@ -811,14 +597,14 @@ public class GalleryFragment extends Fragment {
             }
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -870,21 +656,7 @@ public class GalleryFragment extends Fragment {
         return url;
 
     }
-    private boolean verifyOrder(Context context) {
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
-        boolean verify = true;
-        if (cursor.getCount() == 1) {
-
-            if (logCursor(MainActivity.TABLE_USER_INFO, context).get(1).equals("0")) {
-                verify = false;Log.d("TAG", "verifyOrder:verify " +verify);
-            }
-            cursor.close();
-        }
-        database.close();
-        return verify;
-    }
     @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
@@ -1081,6 +853,7 @@ public class GalleryFragment extends Fragment {
         Log.d("TAG", "routMaps: " + routsArr);
         return routsArr;
     }
+
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d(TAG, "updateAddCost: addCost" + addCost);

@@ -149,7 +149,7 @@
     <string name="Odessa">Одесса</string>
     <string name="gps_message">Для использования карты включите GPS</string>
     <string name="city">Город</string>
-    <string name="change_message">"Изменение базы адресов."</string>
+    <string name="change_message">"Изменение базы адресов. "</string>
     <string name="server_error_connected">Сервер не принял запрос, наберите операторов</string>
     <string name="GDPR">GDPR</string>
     <string name="ok_GDPR">Согласиться</string>
@@ -203,7 +203,7 @@
     <string name="sent_bonus">Использовать</string>
     <string name="no_bonus">У Вас нет доступных бонусов</string>
     <string name="btn_bonus">Способ оплаты</string>
-    <string name="nobonuspayment">Недостаточно бонусов. Оплата наличными.</string>
+    <string name="nopayment_type">Недостаточно бонусов. Оплата наличными.</string>
     <string name="nal_payment">Наличными</string>
     <string name="bonus_payment">Бонусы</string>
     <string name="def_status">Уточните у диспетчера</string>
@@ -276,4 +276,5 @@
     <string name="mono_payment">Монобанк</string>
     <string name="pay_to_driver">" Оплата водителю наличными."</string>
     <string name="call_btn_cancel">Отменить поездку возможно через звонок оператору</string>
+    <string name="no_cards">Нет привязанных карт для оплаты</string>
 </resources>

@@ -37,8 +37,11 @@ import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
 import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
 import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
-import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.mono.MonoApi;
+import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
+import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
+import com.taxieasyua.back4app.ui.mono.status.ResponseStatusMono;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
@@ -56,11 +59,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
     private WebView webView;
-    private String TAG = "TAG";
+    private String TAG = "TAG3";
     private String checkoutUrl;
     private String amount;
     private AppCompatButton btnOk;
     String email;
+    String pay_method;
     private final String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetCardVerification(String checkoutUrl, String amount) {
@@ -68,33 +72,32 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         this.amount = amount;
     }
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "SetJavaScriptEnabled"})
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_fondy_payment, container, false);
         webView = view.findViewById(R.id.webView);
         email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
-
+        Log.d(TAG, "onCreateView: "  );
+//        getCardTokenFondy();
+        pay_system();
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // Этот метод вызывается при каждой попытке загрузки новой страницы
-                // внутри WebView. В параметре 'url' будет содержаться URL страницы.
-                // Здесь вы можете сохранить URL или выполнить другие действия.
 
-                // Пример сохранения URL в переменной
-                String loadedUrl = url;
-                Log.d("WebView", "Загружен URL: " + loadedUrl);
+                Log.d("WebView", "Загружен URL: " + url);
                 if(url.equals("https://m.easy-order-taxi.site/mono/redirectUrl")) {
-
-                getStatusFondy();
-
-//                    }
-//                            getStatusMono();
-
+                    switch (pay_method) {
+                        case "fondy_payment":
+                            getStatusFondy();
+                            break;
+                        case "mono_payment":
+                            getStatusMono();
+                            break;
+                    }
                 }
                 // Возвращаем false, чтобы разрешить WebView загрузить страницу.
                 return false;
@@ -104,6 +107,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         return view;
     }
 
+
+
+    /**
+     * Fondy section
+     */
     private void getStatusFondy() {
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -140,8 +148,8 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         Log.d("TAG", "getResponse_description: " + responseData.getResponseDescription());
                         String orderStatus = responseData.getOrderStatus();
                         if(orderStatus.equals("approved")){
-                            getCardToken();
-                            getRevers(MainActivity.order_id,getString(R.string.return_pay), amount);
+                            getCardTokenFondy();
+                            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount);
                         };
                     }
                 } else {
@@ -155,7 +163,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<SuccessfulResponseData>> call, @NonNull Throwable t) {
                 // Обработка ошибки сети или другие ошибки
                 Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
 
@@ -165,8 +173,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         });
 
     }
-
-    private void getCardToken() {
+    private void getCardTokenFondy() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
                 .addConverterFactory(GsonConverterFactory.create())
@@ -174,42 +181,73 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
 
         // Создайте сервис
         CallbackService service = retrofit.create(CallbackService.class);
-
+        Log.d(TAG, "getCardTokenFondy: ");
         // Выполните запрос
         Call<CallbackResponse> call = service.handleCallback(email);
         call.enqueue(new Callback<CallbackResponse>() {
             @Override
             public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {
+                Log.d(TAG, "onResponse: " + response.body());
                 if (response.isSuccessful()) {
                     CallbackResponse callbackResponse = response.body();
                     if (callbackResponse != null) {
+                        List<CardInfo> cards = callbackResponse.getCards();
+                        Log.d(TAG, "onResponse: cards" + cards);
+                        if (cards != null && !cards.isEmpty()) {
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                        String card_token = callbackResponse.getCard_token();//Токен карты
+                            for (CardInfo cardInfo : cards) {
+                                String masked_card = cardInfo.getMasked_card(); // Маска карты
+                                String card_type = cardInfo.getCard_type(); // Тип карты
+                                String bank_name = cardInfo.getBank_name(); // Название банка
+                                String rectoken = cardInfo.getRectoken(); // Токен карты
 
-                        Log.d(TAG, "onResponse: card_token: " + card_token);
+                                Log.d(TAG, "onResponse: card_token: " + rectoken);
 
-                        if(isAdded()) {
-                            ContentValues cv = new ContentValues();
-                            cv.put("rectoken", card_token);
-                            SQLiteDatabase database =  requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                                    new String[] { "1" });
+
+                                    // Проверяем, есть ли запись с таким rectoken в таблице
+                                    Cursor cursor = database.query(
+                                            MainActivity.TABLE_FONDY_CARDS,
+                                            new String[]{"rectoken"},
+                                            "rectoken = ?",
+                                            new String[]{rectoken},
+                                            null,
+                                            null,
+                                            null
+                                    );
+//                                    Log.d(TAG, "onResponse: cursor.getCount() " + cursor.getCount());
+                                    if (cursor.getCount() == 0) {
+                                        // Если нет записи с таким rectoken, добавляем новую запись
+                                        ContentValues cv = new ContentValues();
+                                        cv.put("masked_card", masked_card);
+                                        cv.put("card_type", card_type);
+                                        cv.put("bank_name", bank_name);
+                                        cv.put("rectoken", rectoken);
+                                        database.insert(MainActivity.TABLE_FONDY_CARDS, null, cv);
+                                    }
+
+                                    cursor.close();
+
+
+                            }
+
                             database.close();
                         }
-
                     }
+
                 } else {
                     // Обработка случаев, когда ответ не 200 OK
                 }
             }
 
             @Override
-            public void onFailure(Call<CallbackResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<CallbackResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки запроса
+                Log.d(TAG, "onResponse: failure " + t.toString());
             }
         });
     }
-    private void getRevers(String orderId, String comment, String amount) {
+    private void getReversFondy(String orderId, String comment, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pay.fondy.eu/api/")
@@ -277,15 +315,198 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
 
     }
 
+    /**
+     * Mono section
+     */
+    private void getStatusMono() {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponseStatusMono> call = monoApi.getInvoiceStatus(token, MainActivity.invoiceId);
+
+        call.enqueue(new Callback<ResponseStatusMono>() {
+            @SuppressLint("NewApi")
+            @Override
+            public void onResponse(@NonNull Call<ResponseStatusMono> call, @NonNull Response<ResponseStatusMono> response) {
+                if (response.isSuccessful()) {
+                    ResponseStatusMono apiResponse = response.body();
+                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        String status = apiResponse.getStatus();
+                        Log.d(TAG, "onResponse: " + status);
+                        // Обработка успешного ответа
+
+//                            dismiss();
+//                            getCardToken();
+
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseStatusMono> call, @NonNull Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
+    }
+    private void getReversMono(
+            String invoiceId,
+            String extRef,
+            int amount
+    ) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.monobank.ua/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MonoApi monoApi = retrofit.create(MonoApi.class);
+
+        RequestCancelMono paymentRequest = new RequestCancelMono(
+                invoiceId,
+                extRef,
+                amount
+        );
+        Log.d("TAG1", "getRevers: " + paymentRequest.toString());
+
+        String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
+        Call<ResponseCancelMono> call = monoApi.invoiceCancel(token, paymentRequest);
+
+        call.enqueue(new Callback<ResponseCancelMono>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseCancelMono> call, @NonNull Response<ResponseCancelMono> response) {
+
+                if (response.isSuccessful()) {
+                    ResponseCancelMono apiResponse = response.body();
+                    Log.d("TAG2", "JSON Response: " + new Gson().toJson(apiResponse));
+                    if (apiResponse != null) {
+                        String responseData = apiResponse.getStatus();
+                        Log.d("TAG2", "onResponse: " + responseData.toString());
+                        if (responseData != null) {
+                            // Обработка успешного ответа
+
+                            switch (responseData) {
+                                case "processing":
+                                    Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
+                                    break;
+                                case "success":
+                                    Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
+                                    break;
+                                case "failure":
+                                    Log.d("TAG2", "onResponse: " + "неуспішне скасування");
+                                    Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
+                                    Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
+                                    break;
+                            }
+
+                        }
+                    }
+                } else {
+                    // Обработка ошибки запроса
+                    Log.d("TAG2", "onResponse: Ошибка запроса, код " + response.code());
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Log.d("TAG2", "onResponse: Тело ошибки: " + errorBody);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseCancelMono> call, Throwable t) {
+                // Обработка ошибки сети или другие ошибки
+                Log.d("TAG2", "onFailure: Ошибка сети: " + t.getMessage());
+            }
+        });
+
+    }
+
+    /**
+     *
+     * @param dialog the dialog that was dismissed will be passed into the
+     *               method
+     */
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         CardFragment.progressBar.setVisibility(View.GONE);
         if(MainActivity.order_id !=null) {
-            getRevers(MainActivity.order_id,getString(R.string.return_pay), amount);
+            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount);
         }
     }
 
+    private void pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            pay_method = "fondy_payment";
+                            break;
+                        case "mono":
+                            pay_method = "mono_payment";
+                            break;
+                    }
+                    if(isAdded()){
+                        ContentValues cv = new ContentValues();
+                        cv.put("payment_type", pay_method);
+                        // обновляем по id
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+
+                    }
+
+
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
+                if (isAdded()) {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
+    }
     @SuppressLint("Range")
     public static List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();

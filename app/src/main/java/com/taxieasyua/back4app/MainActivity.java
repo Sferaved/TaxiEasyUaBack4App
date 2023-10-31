@@ -23,7 +23,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -103,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_28102023_3";
+    public static final String DB_NAME = "data_31102023_1";
 
     /**
      * Table section
@@ -119,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ROUT_MARKER = "routMarker";
 
     public static final String TABLE_POSITION_INFO = "myPosition";
+    public static final String TABLE_FONDY_CARDS = "tableFondyCards";
     public static Cursor cursorDb;
     public static boolean verifyPhone;
     private AppBarConfiguration mAppBarConfiguration;
@@ -211,8 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 " phone_number text," +
                 " email text," +
                 " username text," +
-                " bonus text," +
-                " rectoken text);");
+                " bonus text);");
 
         cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -226,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                 " type_auto text," +
                 " tarif text," +
                 " discount text," +
-                " bonusPayment text," +
+                " payment_type text," +
                 " addCost text);");
 
         cursorDb = database.query(TABLE_SETTINGS_INFO, null, null, null, null, null, null);
@@ -351,6 +350,23 @@ public class MainActivity extends AppCompatActivity {
         }
         if (cursorDb != null && !cursorDb.isClosed())
             cursorDb.close();
+
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_FONDY_CARDS + "(id integer primary key autoincrement," +
+                " masked_card text," +
+                " card_type text," +
+                " bank_name text," +
+                " rectoken text);");
+        cursorDb = database.query(TABLE_FONDY_CARDS, null, null, null, null, null, null);
+        if (cursorDb.getCount() == 0) {
+//            List<String> settings = new ArrayList<>();
+//            settings.add(""); //1
+//            settings.add(""); //2
+//            settings.add(""); //3
+//            settings.add(""); //4
+//
+//            insertCard(settings);
+        }
+
         database.close();
         newUser();
     }
@@ -364,9 +380,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d("TAG", "fetchBonus: " + url);
         call.enqueue(new Callback<BonusResponse>() {
             @Override
-            public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
+            public void onResponse(@NonNull Call<BonusResponse> call, @NonNull Response<BonusResponse> response) {
                 BonusResponse bonusResponse = response.body();
                 if (response.isSuccessful()) {
+                    assert bonusResponse != null;
                     String bonus = String.valueOf(bonusResponse.getBonus());
 
                     ContentValues cv = new ContentValues();
@@ -463,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void insertUserInfo() {
 
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -474,7 +491,6 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(4, "email");
             statement.bindString(5, "username");
             statement.bindString(6, "0");
-            statement.bindString(7, "");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -1135,6 +1151,27 @@ public class MainActivity extends AppCompatActivity {
         // обновляем по id
         database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
+        database.close();
+    }
+    private void insertCard(List<String> settings) {
+        String sql = "INSERT INTO " + MainActivity.TABLE_FONDY_CARDS + " VALUES(?,?,?,?,?);";
+
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteStatement statement = database.compileStatement(sql);
+        database.beginTransaction();
+        try {
+            statement.clearBindings();
+            statement.bindString(2, settings.get(0));
+            statement.bindString(3, settings.get(1));
+            statement.bindString(4, settings.get(2));
+            statement.bindString(5, settings.get(3));
+
+            statement.execute();
+            database.setTransactionSuccessful();
+
+        } finally {
+            database.endTransaction();
+        }
         database.close();
     }
     private void insertRoutHome() {

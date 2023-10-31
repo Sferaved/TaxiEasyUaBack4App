@@ -1,10 +1,6 @@
 package com.taxieasyua.back4app.ui.finish;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -14,13 +10,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
-import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
 import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;

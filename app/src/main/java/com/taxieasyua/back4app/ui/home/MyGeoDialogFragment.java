@@ -65,18 +65,11 @@ import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
 import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
 import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
-import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
-import com.taxieasyua.back4app.ui.fondy.status.ApiResponse;
-import com.taxieasyua.back4app.ui.fondy.status.FondyApiService;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequest;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
-import com.taxieasyua.back4app.ui.fondy.status.SuccessfulResponseData;
 import com.taxieasyua.back4app.ui.fondy.token_pay.ApiResponseToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
@@ -96,7 +89,6 @@ import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import org.json.JSONException;
 import org.osmdroid.config.Configuration;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -552,9 +544,6 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
 
                     pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-                    if(pay_method.equals("card_payment")){
-                        pay_method = pay_system();
-                    }
 
                     switch (stringList.get(1)) {
                         case "Kyiv City":
@@ -565,8 +554,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             break;
                         case "OdessaTest":
                             List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                            String bonusPayment =  stringListInfo.get(4);
-                            if(bonusPayment.equals("bonus_payment")) {
+                            String payment_type =  stringListInfo.get(4);
+                            if(payment_type.equals("bonus_payment")) {
                                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
@@ -620,7 +609,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     }
 
                     ContentValues cv = new ContentValues();
-                    cv.put("bonusPayment", paymentCodeNew);
+                    cv.put("payment_type", paymentCodeNew);
                     // обновляем по id
                     SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                     database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -1112,7 +1101,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
@@ -1129,14 +1118,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1757,7 +1746,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
@@ -1774,14 +1763,14 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1855,7 +1844,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     }
     private void paymentType(String paymentCode) {
         ContentValues cv = new ContentValues();
-        cv.put("bonusPayment", paymentCode);
+        cv.put("payment_type", paymentCode);
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",

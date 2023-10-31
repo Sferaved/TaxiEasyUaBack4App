@@ -98,8 +98,7 @@
         <activity
             android:name=".ui.start.GoogleSignInActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".ui.fondy.payment.FondyPaymentActivity"
-            android:screenOrientation="portrait" />
+
         <receiver android:name=".NetworkChangeReceiver" />
 
         <meta-data

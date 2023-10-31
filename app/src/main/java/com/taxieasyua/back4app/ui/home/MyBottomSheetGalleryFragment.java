@@ -453,7 +453,7 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -471,7 +471,7 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
 

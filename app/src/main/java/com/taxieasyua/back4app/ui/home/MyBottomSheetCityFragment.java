@@ -115,7 +115,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     resetRoutHome();
                     navController.navigate(R.id.nav_home);
 
-                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity(), getString(R.string.change_message)  + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
 
                 }
             }

@@ -7,11 +7,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.graphics.BlendMode;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -21,16 +19,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.core.view.ViewCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.gson.Gson;
@@ -39,7 +34,6 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.FondyPaymentActivity;
 import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
@@ -48,8 +42,6 @@ import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
 import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.payment_system.PayApi;
-import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -109,51 +101,19 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     updateRecordsUser(phoneNumber.getText().toString(), requireActivity());
                     String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
-                    if(pay_method.equals("card_payment")){
-                        pay_method = pay_system();
-                    }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         switch (page) {
                             case "home" :
-                                if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
-                                    urlOrder = getTaxiUrlSearch("orderSearch");
-                                    Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
-                                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
-                                    Log.d("TAG1", "onClick: tokenCard" + tokenCard);
-
-                                    getUrlToPayment(amount + "00");
-                                } else {
-                                    orderHome();
-                                    dismiss();
-                                }
+                                orderHome();
+                                dismiss();
                                 break;
                             case "geo" :
-                                if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
-                                    urlOrder = getTaxiUrlSearchGeo("orderSearchGeo");
-                                    Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
-
-                                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
-                                    Log.d("TAG1", "onClick: tokenCard" + tokenCard);
-
-                                    getUrlToPayment(amount + "00");
-                                } else {
-                                    orderGeo();
-                                    dismiss();
-                                }
+                                orderGeo();
+                                dismiss();
                                 break;
                             case "marker" :
-                                if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
-                                    urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers");
-                                    Log.d(TAG, "onClick urlOrder Phone: " + urlOrder);
-
-                                    String tokenCard = logCursor(MainActivity.TABLE_USER_INFO).get(6);
-                                    Log.d("TAG1", "onClick: tokenCard" + tokenCard);
-
-                                    getUrlToPayment(amount + "00");
-                                } else {
-                                    orderMarker();
-                                    dismiss();
-                                }
+                                orderMarker();
+                                dismiss();
                                 break;
                         }
                     }
@@ -163,61 +123,6 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             }
         });
         return view;
-    }
-    private String baseUrl = "https://m.easy-order-taxi.site";
-    private String pay_system() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PayApi apiService = retrofit.create(PayApi.class);
-        Call<ResponsePaySystem> call = apiService.getPaySystem();
-        call.enqueue(new Callback<ResponsePaySystem>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
-                if (response.isSuccessful()) {
-                    // Обработка успешного ответа
-                    ResponsePaySystem responsePaySystem = response.body();
-                    assert responsePaySystem != null;
-                    String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
-
-                    switch (paymentCode) {
-                        case "fondy":
-                            paymentCodeNew = "fondy_payment";
-                            break;
-                        case "mono":
-                            paymentCodeNew = "mono_payment";
-                            break;
-                    }
-                    if(isAdded()){
-                        ContentValues cv = new ContentValues();
-                        cv.put("bonusPayment", paymentCodeNew);
-                        // обновляем по id
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
-                    }
-
-
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
-                if (isAdded()) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
-        return logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
     }
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -274,7 +179,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
                                 String rectoken = responseBody.getRectoken(); //Токен карты
                                 ContentValues cv = new ContentValues();
-                                cv.put("rectoken", rectoken);
+                                cv.put("rectoken_fondy", rectoken);
                                 database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                                 database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                                         new String[] { "1" });
@@ -562,6 +467,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+                    MyGeoMarkerDialogFragment.progressBar.setVisibility(View.INVISIBLE);
                 }
 
 
@@ -571,6 +477,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
             MyGeoMarkerDialogFragment.progressBar.setVisibility(View.INVISIBLE);
         }
     }
@@ -658,7 +565,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
         // Building the parameters to the web service
 
         String parameters = null;
@@ -674,7 +581,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             }
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         if(urlAPI.equals("orderSearch")) {
@@ -683,7 +590,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             String addCost = stringListInfo.get(5);
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -767,7 +674,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -784,14 +691,14 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
 
         if(urlAPI.equals("orderSearchGeo")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
             String addCost = stringListInfo.get(5);
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -866,7 +773,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String bonusPayment =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -883,14 +790,14 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment;
+                    + displayName + "*" + userEmail  + "*" + payment_type;
         }
         if(urlAPI.equals("orderSearchMarkers")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
             String addCost = stringListInfo.get(5);
 
                     parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + bonusPayment + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
 
             ContentValues cv = new ContentValues();
 
@@ -1015,7 +922,6 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        HomeFragment.progressBar.setVisibility(View.INVISIBLE);
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null && requireActivity().getCurrentFocus() != null) {
             imm.hideSoftInputFromWindow(requireActivity().getCurrentFocus().getWindowToken(), 0);

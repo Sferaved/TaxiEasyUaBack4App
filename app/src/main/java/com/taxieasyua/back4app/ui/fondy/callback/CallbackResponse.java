@@ -1,10 +1,15 @@
 package com.taxieasyua.back4app.ui.fondy.callback;
 
+import com.taxieasyua.back4app.ui.card.CardInfo;
+
+import java.util.List;
+
 public class CallbackResponse {
-    private String card_token;
+    private List<CardInfo> cards;
 
-
-    public String getCard_token() {
-        return card_token;
+    public List<CardInfo> getCards() {
+        return cards;
     }
 }
+
+
