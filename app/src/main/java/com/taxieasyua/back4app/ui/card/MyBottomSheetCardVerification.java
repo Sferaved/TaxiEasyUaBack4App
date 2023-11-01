@@ -47,7 +47,9 @@ import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -286,6 +288,14 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                             if (isAdded()) { // Проверяем, что фрагмент присоединен к активности
                                 if (response.isSuccessful()) {
                                     Toast.makeText(requireActivity(), getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
+
+                                    ArrayList<Map<String, String>> cardMaps = getCardMapsFromDatabase();
+                                    Log.d("TAG", "onResume: cardMaps" + cardMaps);
+                                    if (!cardMaps.isEmpty()) {
+                                        // Если массив пустой, отобразите текст "no_routs" вместо списка
+                                        CardFragment.textCard.setVisibility(View.GONE);
+                                        CardFragment.listView.setVisibility(View.VISIBLE);
+                                    }
                                     dismiss();
                                 }
                             }
@@ -315,6 +325,32 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
 
     }
 
+    @SuppressLint("Range")
+    private ArrayList<Map<String, String>> getCardMapsFromDatabase() {
+        ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
+        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        // Выполните запрос к таблице TABLE_FONDY_CARDS и получите данные
+        Cursor cursor = database.query(MainActivity.TABLE_FONDY_CARDS, null, null, null, null, null, null);
+        Log.d("TAG", "getCardMapsFromDatabase: card count: " + cursor.getCount());
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    Map<String, String> cardMap = new HashMap<>();
+                    cardMap.put("card_type", cursor.getString(cursor.getColumnIndex("card_type")));
+                    cardMap.put("bank_name", cursor.getString(cursor.getColumnIndex("bank_name")));
+                    cardMap.put("masked_card", cursor.getString(cursor.getColumnIndex("masked_card")));
+                    cardMap.put("rectoken", cursor.getString(cursor.getColumnIndex("rectoken")));
+
+                    cardMaps.add(cardMap);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+        database.close();
+
+        return cardMaps;
+    }
     /**
      * Mono section
      */

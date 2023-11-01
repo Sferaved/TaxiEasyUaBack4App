@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.card.MyBottomSheetTokenFragment;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
@@ -75,19 +76,22 @@ public class FinishActivity extends AppCompatActivity {
     public static TextView text_status;
 
     public static String api;
-    String baseUrl = "https://m.easy-order-taxi.site";
+    public static String baseUrl = "https://m.easy-order-taxi.site";
     Map<String, String> receivedMap;
-    String uid;
+    public static String uid;
     Thread thread;
     String pay_method;
 
-    String amount;
+    public static String amount;
     public static TextView text_full_message;
     String messageResult;
-    private String messageFondy;
-    private String uid_Double;
+    public static String messageFondy;
+    public static String uid_Double;
     public static Button btn_reset_status;
     public static Button btn_cancel_order;
+    public static String tableToken;
+    public static String tokenCardFondy;
+    public static String tokenCardMono;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -274,13 +278,8 @@ public class FinishActivity extends AppCompatActivity {
 
                 MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
                 messageFondy = getString(R.string.fondy_message);
-                String tokenCardFondy = logCursor(MainActivity.TABLE_USER_INFO).get(6);
-                Log.d(TAG, "onCreate:tokenCardFondy " + tokenCardFondy);
-                if (tokenCardFondy == null || tokenCardFondy.equals("")) {
-                    getUrlToPayment(MainActivity.order_id, messageFondy, amount);
-                } else {
-                    paymentByTokenFondy(MainActivity.order_id, messageFondy, amount, tokenCardFondy);
-                }
+                tableToken = MainActivity.TABLE_FONDY_CARDS;
+                getTokenToPay(tableToken);
                 break;
             case "mono_payment":
 
@@ -295,6 +294,21 @@ public class FinishActivity extends AppCompatActivity {
         }
 
     }
+    @SuppressLint("Range")
+    private void getTokenToPay(String tableToken) {
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+        Cursor cursor = database.query(tableToken, null, null, null, null, null, null);
+        Log.d(TAG, "getCardMapsFromDatabase: tableToken card count: " + cursor.getCount());
+        if (cursor == null) {
+            getUrlToPayment(MainActivity.order_id, messageFondy, amount);
+        } else {
+            MyBottomSheetTokenFragment bottomSheetDialogFragment = new MyBottomSheetTokenFragment(tableToken);
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+        }
+
+    }
+
     private void getUrlToPayment(String order_id, String orderDescription, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -416,91 +430,6 @@ public class FinishActivity extends AppCompatActivity {
                 t.printStackTrace();
                 Log.d("TAG", "onFailure: " + errorMessage);
 
-            }
-        });
-    }
-
-    private void paymentByTokenFondy(
-            String order_id,
-            String orderDescription,
-            String amount,
-            String rectoken
-    ) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-        List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO);
-        String email = stringList.get(3);
-
-        RequestDataToken paymentRequest = new RequestDataToken(
-                order_id,
-                orderDescription,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword,
-                rectoken,
-                email
-        );
-
-
-        StatusRequestToken statusRequest = new StatusRequestToken(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponseToken<SuccessResponseDataToken>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponseToken<SuccessResponseDataToken>>() {
-
-            @Override
-            public void onResponse(@NonNull Call<ApiResponseToken<SuccessResponseDataToken>> call, Response<ApiResponseToken<SuccessResponseDataToken>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponseToken<SuccessResponseDataToken> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataToken responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (responseBody != null) {
-                            Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
-                            String orderStatus = responseBody.getOrderStatus();
-                            if (!"approved".equals(orderStatus)) {
-                                // Обработка ответа об ошибке
-                                String errorResponseMessage = responseBody.getErrorMessage();
-                                String errorResponseCode = responseBody.getErrorCode();
-                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
-                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
-
-                                cancelOrderDismiss(uid);
-                                cancelOrderDismiss(uid_Double);
-                            }
-                        } else {
-                            cancelOrderDismiss(uid);
-                            cancelOrderDismiss(uid_Double);
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                        cancelOrderDismiss(uid);
-                        cancelOrderDismiss(uid_Double);
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                    cancelOrderDismiss(uid);
-                    cancelOrderDismiss(uid_Double);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-                cancelOrderDismiss(uid);
-                cancelOrderDismiss(uid_Double);
             }
         });
     }

@@ -34,6 +34,8 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentCardBinding;
+import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
+import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
@@ -73,9 +75,9 @@ public class CardFragment extends Fragment {
     String email;
     String amount = "100";
     private String[] array;
-    TextView textCard;
+    public static TextView textCard;
     private ArrayAdapter<String> listAdapter;
-    private ListView listView;
+    public static ListView listView;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -100,13 +102,21 @@ public class CardFragment extends Fragment {
         progressBar.setVisibility(View.INVISIBLE);
         btnCardLink  = binding.btnCardLink;
         pay_system();
-
-
+        String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+        switch (pay_method) {
+            case "fondy_payment":
+                getCardTokenFondy();
+                break;
+            case "mono_payment":
+//                getUrlToPaymentMono(MainActivity.order_id, messageFondy);
+                break;
+        }
+       
         btnCardLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 progressBar.setVisibility(View.VISIBLE);
-                String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+
                 Log.d(TAG, "onClick: " + pay_method);
                 if (connected()) {
                     MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
@@ -162,7 +172,7 @@ public class CardFragment extends Fragment {
     }
 
     @SuppressLint("Range")
-    public ArrayList<Map<String, String>> getCardMapsFromDatabase() {
+    private ArrayList<Map<String, String>> getCardMapsFromDatabase() {
         ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         // Выполните запрос к таблице TABLE_FONDY_CARDS и получите данные
@@ -397,6 +407,82 @@ public class CardFragment extends Fragment {
 
         });
     }
+
+    private void getCardTokenFondy() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        // Создайте сервис
+        CallbackService service = retrofit.create(CallbackService.class);
+        Log.d(TAG, "getCardTokenFondy: ");
+        // Выполните запрос
+        Call<CallbackResponse> call = service.handleCallback(email);
+        call.enqueue(new Callback<CallbackResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {
+                Log.d(TAG, "onResponse: " + response.body());
+                if (response.isSuccessful()) {
+                    CallbackResponse callbackResponse = response.body();
+                    if (callbackResponse != null) {
+                        List<CardInfo> cards = callbackResponse.getCards();
+                        Log.d(TAG, "onResponse: cards" + cards);
+                        if (cards != null && !cards.isEmpty()) {
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+                            for (CardInfo cardInfo : cards) {
+                                String masked_card = cardInfo.getMasked_card(); // Маска карты
+                                String card_type = cardInfo.getCard_type(); // Тип карты
+                                String bank_name = cardInfo.getBank_name(); // Название банка
+                                String rectoken = cardInfo.getRectoken(); // Токен карты
+
+                                Log.d(TAG, "onResponse: card_token: " + rectoken);
+
+
+                                // Проверяем, есть ли запись с таким rectoken в таблице
+                                Cursor cursor = database.query(
+                                        MainActivity.TABLE_FONDY_CARDS,
+                                        new String[]{"rectoken"},
+                                        "rectoken = ?",
+                                        new String[]{rectoken},
+                                        null,
+                                        null,
+                                        null
+                                );
+//                                    Log.d(TAG, "onResponse: cursor.getCount() " + cursor.getCount());
+                                if (cursor.getCount() == 0) {
+                                    // Если нет записи с таким rectoken, добавляем новую запись
+                                    ContentValues cv = new ContentValues();
+                                    cv.put("masked_card", masked_card);
+                                    cv.put("card_type", card_type);
+                                    cv.put("bank_name", bank_name);
+                                    cv.put("rectoken", rectoken);
+                                    database.insert(MainActivity.TABLE_FONDY_CARDS, null, cv);
+                                }
+
+                                cursor.close();
+
+
+                            }
+
+                            database.close();
+                        }
+                    }
+
+                } else {
+                    // Обработка случаев, когда ответ не 200 OK
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CallbackResponse> call, @NonNull Throwable t) {
+                // Обработка ошибки запроса
+                Log.d(TAG, "onResponse: failure " + t.toString());
+            }
+        });
+    }
+
     private boolean connected() {
 
         Boolean hasConnect = false;

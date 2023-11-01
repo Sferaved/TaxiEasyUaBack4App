@@ -88,7 +88,6 @@ public class GalleryFragment extends Fragment {
     public static AppCompatButton del_but, btnRouts, btn_minus, btn_plus, btnAdd, buttonBonus;
     int selectedItem;
     String FromAddressString, ToAddressString;
-    private long firstCost;
     public static long  addCost, cost;
     public static Double from_lat;
     public static Double from_lng;
@@ -98,7 +97,6 @@ public class GalleryFragment extends Fragment {
     private String pay_method;
     private long costFirstForMin;
     private ArrayAdapter<String> listAdapter;
-    private String messageFondy;
     private String urlOrder;
     private long discount;
 
@@ -278,8 +276,6 @@ public class GalleryFragment extends Fragment {
 
         return root;
     }
-
-    private String baseUrl = "https://m.easy-order-taxi.site";
 
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -768,7 +764,7 @@ public class GalleryFragment extends Fragment {
 
     }
     private String[] arrayToRoutsAdapter() {
-        ArrayList<Map> routMaps = routMaps(getContext());
+        ArrayList<Map> routMaps = routMaps(requireActivity());
         String[] arrayRouts;
         if(routMaps.size() != 0) {
             arrayRouts = new String[routMaps.size()];

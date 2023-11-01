@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.863</string>
-    <string name="version">Версия: 2.863</string>
+    <string name="version_code">2.864</string>
+    <string name="version">Версия: 2.864</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -277,4 +277,6 @@
     <string name="pay_to_driver">" Оплата водителю наличными."</string>
     <string name="call_btn_cancel">Отменить поездку возможно через звонок оператору</string>
     <string name="no_cards">Нет привязанных карт для оплаты</string>
+    <string name="del_button">Удалить</string>
+    <string name="take_token">Выбрать</string>
 </resources>

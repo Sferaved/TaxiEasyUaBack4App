@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_31102023_1";
+    public static final String DB_NAME = "data_01112023_0";
 
     /**
      * Table section
@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TABLE_POSITION_INFO = "myPosition";
     public static final String TABLE_FONDY_CARDS = "tableFondyCards";
+    public static final String TABLE_MONO_CARDS = "tableMonoCards";
     public static Cursor cursorDb;
     public static boolean verifyPhone;
     private AppBarConfiguration mAppBarConfiguration;
@@ -356,16 +357,13 @@ public class MainActivity extends AppCompatActivity {
                 " card_type text," +
                 " bank_name text," +
                 " rectoken text);");
-        cursorDb = database.query(TABLE_FONDY_CARDS, null, null, null, null, null, null);
-        if (cursorDb.getCount() == 0) {
-//            List<String> settings = new ArrayList<>();
-//            settings.add(""); //1
-//            settings.add(""); //2
-//            settings.add(""); //3
-//            settings.add(""); //4
-//
-//            insertCard(settings);
-        }
+
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_MONO_CARDS + "(id integer primary key autoincrement," +
+                " masked_card text," +
+                " card_type text," +
+                " bank_name text," +
+                " rectoken text);");
+
 
         database.close();
         newUser();

@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.863</string>
-    <string name="version">Версія: 2.863</string>
+    <string name="version_code">2.864</string>
+    <string name="version">Версія: 2.864</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -277,5 +277,7 @@
     <string name="pay_to_driver"> Оплата водію готівкою.</string>
     <string name="call_btn_cancel">Скасувати подорож можна через дзвінок оператору.</string>
     <string name="no_cards">Немає прив\'язаних карток для оплати</string>
+    <string name="del_button">Видалити</string>
+    <string name="take_token">Вибрати</string>
 
 </resources>
