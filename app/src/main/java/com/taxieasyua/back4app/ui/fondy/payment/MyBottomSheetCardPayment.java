@@ -128,9 +128,12 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                             getStatusMono();
                             break;
                     }
+                    return true;
+                } else {
+                    // Возвращаем false, чтобы разрешить WebView загрузить страницу.
+                    return false;
                 }
-                // Возвращаем false, чтобы разрешить WebView загрузить страницу.
-                return false;
+
             }
         });
         webView.loadUrl(Objects.requireNonNull(checkoutUrl));
@@ -169,7 +172,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
                         String orderStatus = responseData.getOrderStatus();
                         if(orderStatus.equals("approved")){
-                            getCardTokenFondy();
+                            getCardToken("fondy");
                             hold = true;
                         } else {
                             hold = false;
@@ -527,7 +530,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         }
     }
 
-    private void getCardTokenFondy() {
+    private void getCardToken(String pay_system) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
                 .addConverterFactory(GsonConverterFactory.create())
@@ -537,7 +540,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         CallbackService service = retrofit.create(CallbackService.class);
 
         // Выполните запрос
-        Call<CallbackResponse> call = service.handleCallback(email);
+        Call<CallbackResponse> call = service.handleCallback(email, pay_system);
         call.enqueue(new Callback<CallbackResponse>() {
             @Override
             public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {
@@ -590,6 +593,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 } else {
                     // Обработка случаев, когда ответ не 200 OK
                 }
+                dismiss();
             }
 
             @Override

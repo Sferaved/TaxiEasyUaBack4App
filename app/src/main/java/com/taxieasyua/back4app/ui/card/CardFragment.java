@@ -78,6 +78,7 @@ public class CardFragment extends Fragment {
     public static TextView textCard;
     private ArrayAdapter<String> listAdapter;
     public static ListView listView;
+    private String table;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -101,16 +102,9 @@ public class CardFragment extends Fragment {
         super.onResume();
         progressBar.setVisibility(View.INVISIBLE);
         btnCardLink  = binding.btnCardLink;
-        pay_system();
+
         String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-        switch (pay_method) {
-            case "fondy_payment":
-                getCardTokenFondy();
-                break;
-            case "mono_payment":
-//                getUrlToPaymentMono(MainActivity.order_id, messageFondy);
-                break;
-        }
+
        
         btnCardLink.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,24 +137,24 @@ public class CardFragment extends Fragment {
 
         // Создайте или откройте базу данных по имени MainActivity.DB_NAME
 
-
+        ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
 // Получите данные из базы данных
-        ArrayList<Map<String, String>> cardMaps = getCardMapsFromDatabase();
+        switch (pay_method) {
+            case "fondy_payment":
+                cardMaps = getCardMapsFromDatabase(MainActivity.TABLE_FONDY_CARDS);
+                table = MainActivity.TABLE_FONDY_CARDS;
+                break;
+            case "mono_payment":
+                cardMaps = getCardMapsFromDatabase(MainActivity.TABLE_MONO_CARDS);
+                table = MainActivity.TABLE_MONO_CARDS;
+                break;
+        }
+
         Log.d(TAG, "onResume: cardMaps" + cardMaps);
         if (!cardMaps.isEmpty()) {
-            CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), cardMaps);
+            CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), cardMaps, table);
             listView.setAdapter(listAdapter);
 
-            listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
-            registerForContextMenu(listView);
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                    // Ваши дополнительные действия при выборе элемента списка
-                }
-            });
         } else {
             textCard.setVisibility(View.VISIBLE);
             listView.setVisibility(View.GONE);
@@ -172,11 +166,11 @@ public class CardFragment extends Fragment {
     }
 
     @SuppressLint("Range")
-    private ArrayList<Map<String, String>> getCardMapsFromDatabase() {
+    private ArrayList<Map<String, String>> getCardMapsFromDatabase(String table) {
         ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         // Выполните запрос к таблице TABLE_FONDY_CARDS и получите данные
-        Cursor cursor = database.query(MainActivity.TABLE_FONDY_CARDS, null, null, null, null, null, null);
+        Cursor cursor = database.query(table, null, null, null, null, null, null);
         Log.d(TAG, "getCardMapsFromDatabase: card count: " + cursor.getCount());
 
         if (cursor != null) {
@@ -187,6 +181,7 @@ public class CardFragment extends Fragment {
                     cardMap.put("bank_name", cursor.getString(cursor.getColumnIndex("bank_name")));
                     cardMap.put("masked_card", cursor.getString(cursor.getColumnIndex("masked_card")));
                     cardMap.put("rectoken", cursor.getString(cursor.getColumnIndex("rectoken")));
+                    cardMap.put("rectoken_check", cursor.getString(cursor.getColumnIndex("rectoken_check")));
 
                     cardMaps.add(cardMap);
                 } while (cursor.moveToNext());
@@ -418,7 +413,7 @@ public class CardFragment extends Fragment {
         CallbackService service = retrofit.create(CallbackService.class);
         Log.d(TAG, "getCardTokenFondy: ");
         // Выполните запрос
-        Call<CallbackResponse> call = service.handleCallback(email);
+        Call<CallbackResponse> call = service.handleCallback(email, "fondy");
         call.enqueue(new Callback<CallbackResponse>() {
             @Override
             public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {

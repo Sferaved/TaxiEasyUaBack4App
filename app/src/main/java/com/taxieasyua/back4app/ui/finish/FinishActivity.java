@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -72,7 +73,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FinishActivity extends AppCompatActivity {
-    private static final String TAG = "TAG";
+    private static final String TAG = "TAG_FINISH";
     public static TextView text_status;
 
     public static String api;
@@ -89,9 +90,7 @@ public class FinishActivity extends AppCompatActivity {
     public static String uid_Double;
     public static Button btn_reset_status;
     public static Button btn_cancel_order;
-    public static String tableToken;
-    public static String tokenCardFondy;
-    public static String tokenCardMono;
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -100,6 +99,7 @@ public class FinishActivity extends AppCompatActivity {
         setContentView(R.layout.activity_finish);
         new VerifyUserTask().execute();
         pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+        messageFondy = getString(R.string.fondy_message);
 
         List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
         switch (stringListArr.get(1)){
@@ -275,11 +275,7 @@ public class FinishActivity extends AppCompatActivity {
 
         switch (pay_method) {
             case "fondy_payment":
-
-                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
-                messageFondy = getString(R.string.fondy_message);
-                tableToken = MainActivity.TABLE_FONDY_CARDS;
-                getTokenToPay(tableToken);
+                payFondy();
                 break;
             case "mono_payment":
 
@@ -295,21 +291,135 @@ public class FinishActivity extends AppCompatActivity {
 
     }
     @SuppressLint("Range")
-    private void getTokenToPay(String tableToken) {
-        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+    private void payFondy() {
 
-        Cursor cursor = database.query(tableToken, null, null, null, null, null, null);
-        Log.d(TAG, "getCardMapsFromDatabase: tableToken card count: " + cursor.getCount());
-        if (cursor == null) {
-            getUrlToPayment(MainActivity.order_id, messageFondy, amount);
+
+        String rectoken = getCheckRectoken(MainActivity.TABLE_FONDY_CARDS);
+
+        if (rectoken.equals("")) {
+            getUrlToPaymentFondy(messageFondy, amount);
         } else {
-            MyBottomSheetTokenFragment bottomSheetDialogFragment = new MyBottomSheetTokenFragment(tableToken);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            paymentByTokenFondy(messageFondy, amount, rectoken);
         }
 
     }
+    private void paymentByTokenFondy(
+            String orderDescription,
+            String amount,
+            String rectoken
+    ) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://pay.fondy.eu/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
-    private void getUrlToPayment(String order_id, String orderDescription, String amount) {
+        PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
+        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO);
+        String email = stringList.get(3);
+        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+        String order_id =  MainActivity.order_id;
+
+        Log.d(TAG, "paymentByTokenFondy: " + rectoken);
+
+        RequestDataToken paymentRequest = new RequestDataToken(
+                order_id,
+                orderDescription,
+                amount,
+                MainActivity.MERCHANT_ID,
+                merchantPassword,
+                rectoken,
+                email
+        );
+
+
+        StatusRequestToken statusRequest = new StatusRequestToken(paymentRequest);
+        Log.d("TAG1", "getUrlToPayment: " + statusRequest);
+
+        Call<ApiResponseToken<SuccessResponseDataToken>> call = paymentApi.makePayment(statusRequest);
+
+        call.enqueue(new Callback<ApiResponseToken<SuccessResponseDataToken>>() {
+
+            @Override
+            public void onResponse(@NonNull Call<ApiResponseToken<SuccessResponseDataToken>> call, Response<ApiResponseToken<SuccessResponseDataToken>> response) {
+                Log.d("TAG1", "onResponse: 1111" + response.code());
+                if (response.isSuccessful()) {
+                    ApiResponseToken<SuccessResponseDataToken> apiResponse = response.body();
+
+                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
+                    try {
+                        SuccessResponseDataToken responseBody = response.body().getResponse();;
+
+                        // Теперь у вас есть объект ResponseBodyRev для обработки
+                        if (responseBody != null) {
+                            Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
+                            String orderStatus = responseBody.getOrderStatus();
+                            if (!"approved".equals(orderStatus)) {
+                                // Обработка ответа об ошибке
+                                String errorResponseMessage = responseBody.getErrorMessage();
+                                String errorResponseCode = responseBody.getErrorCode();
+                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
+                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
+
+                                Toast.makeText(FinishActivity.this, R.string.pay_failure_mes, Toast.LENGTH_SHORT).show();
+                                getUrlToPaymentFondy(messageFondy, amount);
+                            }
+                        } else {
+                            Toast.makeText(FinishActivity.this, R.string.pay_failure_mes, Toast.LENGTH_SHORT).show();
+                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+                            getUrlToPaymentFondy(messageFondy, amount);
+                        }
+                    } catch (JsonSyntaxException e) {
+                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
+                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
+                        Toast.makeText(FinishActivity.this, R.string.pay_failure_mes, Toast.LENGTH_SHORT).show();
+                        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+                        getUrlToPaymentFondy(messageFondy, amount);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.d("TAG1", "onFailure: " + response.code());
+                    Toast.makeText(FinishActivity.this, R.string.pay_failure_mes, Toast.LENGTH_SHORT).show();
+                    
+                    getUrlToPaymentFondy(messageFondy, amount);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseToken<SuccessResponseDataToken>> call, Throwable t) {
+                Log.d("TAG1", "onFailure1111: " + t.toString());
+                Toast.makeText(FinishActivity.this, R.string.pay_failure_mes, Toast.LENGTH_SHORT).show();
+                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+                getUrlToPaymentFondy(messageFondy, amount);
+            }
+        });
+    }
+    @SuppressLint("Range")
+    private String getCheckRectoken(String table) {
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+        String[] columns = {"rectoken"}; // Указываем нужное поле
+        String selection = "rectoken_check = ?";
+        String[] selectionArgs = {"1"};
+        String result = "";
+
+        Cursor cursor = database.query(table, columns, selection, selectionArgs, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    result = cursor.getString(cursor.getColumnIndex("rectoken"));
+                    Log.d("TAG", "Found rectoken with rectoken_check = 1: " + result);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        database.close();
+        return result;
+    }
+
+    private void getUrlToPaymentFondy(String orderDescription, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pay.fondy.eu/api/")
@@ -319,6 +429,8 @@ public class FinishActivity extends AppCompatActivity {
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
         String merchantPassword = getString(R.string.fondy_key_storage);
         String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+        String order_id = MainActivity.order_id;
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,

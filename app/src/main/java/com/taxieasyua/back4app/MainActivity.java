@@ -56,15 +56,21 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
+import com.taxieasyua.back4app.ui.card.CardInfo;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.City;
+import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
+import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.payment_system.PayApi;
+import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -86,13 +92,20 @@ import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     public static final String MERCHANT_ID ="1534178";
-//    public static final String MERCHANT_ID ="1396424";
+    private static final String TAG = "TAG_MAIN";
+    //    public static final String MERCHANT_ID ="1396424";
     public static String order_id;
     public static String invoiceId;
 
@@ -102,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_01112023_0";
+    public static final String DB_NAME = "data_02112023_12";
 
     /**
      * Table section
@@ -168,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pay_system();
         try {
             initDB();
         } catch (MalformedURLException | JSONException | InterruptedException ignored) {
@@ -356,14 +370,16 @@ public class MainActivity extends AppCompatActivity {
                 " masked_card text," +
                 " card_type text," +
                 " bank_name text," +
-                " rectoken text);");
+                " rectoken text," +
+                " rectoken_check text);");
+
 
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_MONO_CARDS + "(id integer primary key autoincrement," +
                 " masked_card text," +
                 " card_type text," +
                 " bank_name text," +
-                " rectoken text);");
-
+                " rectoken text," +
+                " rectoken_check text);");
 
         database.close();
         newUser();
@@ -1076,6 +1092,9 @@ public class MainActivity extends AppCompatActivity {
 
                 fetchBonus(user.getEmail());
 
+                getCardToken("fondy", TABLE_FONDY_CARDS, user.getEmail());
+                getCardToken("mono", TABLE_MONO_CARDS, user.getEmail());
+
                 cv.put("verifyOrder", "1");
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                 database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
@@ -1240,7 +1259,118 @@ public class MainActivity extends AppCompatActivity {
         database.close();
     }
 
+    private void getCardToken(String pay_system, String table, String email) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        String baseUrl = retrofit.baseUrl().toString();
 
+        Log.d(TAG, "Base URL: " + baseUrl);
+        // Создайте сервис
+        CallbackService service = retrofit.create(CallbackService.class);
+
+        Log.d(TAG, "getCardTokenFondy: ");
+
+        // Выполните запрос
+        Call<CallbackResponse> call = service.handleCallback(email, pay_system);
+        String requestUrl = call.request().toString();
+        Log.d(TAG, "Request URL: " + requestUrl);
+
+        call.enqueue(new Callback<CallbackResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {
+                Log.d(TAG, "onResponse: " + response.body());
+                if (response.isSuccessful()) {
+                    CallbackResponse callbackResponse = response.body();
+                    if (callbackResponse != null) {
+                        List<CardInfo> cards = callbackResponse.getCards();
+                        Log.d(TAG, "onResponse: cards" + cards);
+                        if (cards != null && !cards.isEmpty()) {
+                            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            for (CardInfo cardInfo : cards) {
+                                ContentValues cv = new ContentValues();
+                                String masked_card = cardInfo.getMasked_card(); // Маска карты
+                                String card_type = cardInfo.getCard_type(); // Тип карты
+                                String bank_name = cardInfo.getBank_name(); // Название банка
+                                String rectoken = cardInfo.getRectoken(); // Токен карты
+
+                                Log.d(TAG, "onResponse: card_token: " + rectoken);
+
+                                cv.put("masked_card", masked_card);
+                                cv.put("card_type", card_type);
+                                cv.put("bank_name", bank_name);
+                                cv.put("rectoken", rectoken);
+                                cv.put("rectoken_check", "-1");
+                                database.insert(table, null, cv);
+                            }
+                            ContentValues cv = new ContentValues();
+                            cv.put("rectoken_check", "1");
+                            database.update(table, cv, "id = ?",
+                                    new String[] { "1" });
+                            database.close();
+                        }
+                    }
+
+                } else {
+                    // Обработка случаев, когда ответ не 200 OK
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CallbackResponse> call, @NonNull Throwable t) {
+                // Обработка ошибки запроса
+                Log.d(TAG, "onResponse: failure " + t.toString());
+            }
+        });
+
+    }
+
+    private void pay_system() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PayApi apiService = retrofit.create(PayApi.class);
+        Call<ResponsePaySystem> call = apiService.getPaySystem();
+        call.enqueue(new Callback<ResponsePaySystem>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                if (response.isSuccessful()) {
+                    // Обработка успешного ответа
+                    ResponsePaySystem responsePaySystem = response.body();
+                    assert responsePaySystem != null;
+                    String paymentCode = responsePaySystem.getPay_system();
+                    String paymentCodeNew = "fondy";
+
+                    switch (paymentCode) {
+                        case "fondy":
+                            paymentCodeNew = "fondy_payment";
+                            break;
+                        case "mono":
+                            paymentCodeNew = "mono_payment";
+                            break;
+                    }
+
+                    ContentValues cv = new ContentValues();
+                    cv.put("payment_type", paymentCodeNew);
+                    // обновляем по id
+                    SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
+
+            }
+        });
+
+    }
 
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted

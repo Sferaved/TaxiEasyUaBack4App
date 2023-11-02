@@ -185,7 +185,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         CallbackService service = retrofit.create(CallbackService.class);
         Log.d(TAG, "getCardTokenFondy: ");
         // Выполните запрос
-        Call<CallbackResponse> call = service.handleCallback(email);
+        Call<CallbackResponse> call = service.handleCallback(email, "fondy");
         call.enqueue(new Callback<CallbackResponse>() {
             @Override
             public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {

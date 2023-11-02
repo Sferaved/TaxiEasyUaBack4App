@@ -1,9 +1,9 @@
 package com.taxieasyua.back4app.ui.card;
 
 import static android.content.Context.MODE_PRIVATE;
-import static androidx.core.content.res.TypedArrayUtils.getString;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +23,6 @@ import androidx.annotation.NonNull;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.card.unlink.UnlinkApi;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,11 +36,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
     private ArrayList<Map<String, String>> cardMaps;
+    private int selectedPosition = 0;
+    public static String rectoken;
+    public static String table;
 
     private String baseUrl = "https://m.easy-order-taxi.site";
-    public CustomCardAdapter(Context context, ArrayList<Map<String, String>> cardMaps) {
+    public CustomCardAdapter(Context context, ArrayList<Map<String, String>> cardMaps, String table) {
         super(context, R.layout.cards_adapter_layout, cardMaps);
         this.cardMaps = cardMaps;
+        this.table = table;
     }
 
     @Override
@@ -58,6 +61,7 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
             holder.cardText = view.findViewById(R.id.cardText);
             holder.bankText = view.findViewById(R.id.bankText);
             holder.deleteButton = view.findViewById(R.id.deleteButton);
+            holder.checkBox = view.findViewById(R.id.checkBox);
 
             view.setTag(holder);
         } else {
@@ -81,6 +85,23 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
             String bank_name = cardMap.get("bank_name");
             holder.bankText.setText(bank_name);
 
+            selectedPosition = getCheckRectoken(table);
+            
+            holder.checkBox.setChecked(position == selectedPosition);
+            rectoken = cardMap.get("rectoken");
+            notifyDataSetChanged();
+//            Toast.makeText(getContext(), "rectoken 1: " + rectoken, Toast.LENGTH_SHORT).show();
+            holder.checkBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectedPosition = position;
+                    notifyDataSetChanged();
+
+                    rectoken = cardMap.get("rectoken");
+                    updateRectokenCheck(table,  selectedPosition + 1);
+//                    Toast.makeText(getContext(), "rectoken срусл: " + rectoken, Toast.LENGTH_SHORT).show();
+                }
+            });
             // Обработчик для кнопки удаления
             holder.deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -108,6 +129,60 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
 
         return view;
     }
+
+    private int getCheckRectoken(String table) {
+        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+        String[] columns = {"id"};
+        String selection = "rectoken_check = ?";
+        String[] selectionArgs = {"1"};
+        int result = 1;
+
+        Cursor cursor = database.query(table, columns, selection, selectionArgs, null, null, null);
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                do {
+                    @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
+                    // В этом месте вы можете обрабатывать найденные id
+                    result = id-1;
+                    Log.d("TAG", "Found id with rectoken_check = 1: " + id);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }
+
+        database.close();
+        return result;
+    }
+
+    private void updateRectokenCheck(String table, int targetId) {
+        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+        // Устанавливаем -1 для всех записей
+        ContentValues allOtherValues = new ContentValues();
+        allOtherValues.put("rectoken_check", -1);
+
+        database.update(table, allOtherValues, null, null);
+
+        // Устанавливаем 1 для целевой записи
+        ContentValues targetValue = new ContentValues();
+        targetValue.put("rectoken_check", 1);
+
+        String whereClause = "id = ?";
+        String[] whereArgs = {String.valueOf(targetId)};
+
+        int rowsUpdated = database.update(table, targetValue, whereClause, whereArgs);
+
+        if (rowsUpdated > 0) {
+            Log.d("TAG", "Updated rectoken_check for id " + targetId + " to 1");
+        } else {
+            Log.d("TAG", "No rows were updated. ID " + targetId + " may not exist.");
+        }
+
+        database.close();
+    }
+
 
     public void deleteCardTokenFondy(String rectoken) {
         Retrofit retrofit = new Retrofit.Builder()
@@ -210,6 +285,7 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
         ImageView cardImage;
         TextView cardText, bankText;
         Button deleteButton;
+        CheckBox checkBox;
     }
 
 }
