@@ -21,6 +21,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -39,6 +40,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
@@ -48,6 +50,7 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.room.Room;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
@@ -66,11 +69,12 @@ import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestData;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversRequestSent;
 import com.taxieasyua.back4app.ui.fondy.revers.SuccessResponseDataRevers;
+import com.taxieasyua.back4app.ui.home.room.AppDatabase;
+import com.taxieasyua.back4app.ui.home.room.RouteCost;
+import com.taxieasyua.back4app.ui.home.room.RouteCostDao;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.payment_system.PayApi;
-import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
 import org.json.JSONException;
@@ -93,15 +97,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class HomeFragment extends Fragment {
 
-    private static String messageFondy;;
-
     private FragmentHomeBinding binding;
     public static String from, to;
     public static EditText from_number, to_number;
     String messageResult;
 
     FloatingActionButton fab_call;
-    private final String TAG = "TAG";
+    private static final String TAG = "TAG_HOME";
     Button gpsbut;
     public static AppCompatButton btn_order;
     public static AppCompatButton buttonAddServices;
@@ -125,6 +127,7 @@ public class HomeFragment extends Fragment {
     private MyPhoneDialogFragment bottomSheetDialogFragment;
     private String baseUrl = "https://m.easy-order-taxi.site";
     private Map<String, String> sendUrlMap;
+    private int routeIdToCheck = 123;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -157,7 +160,7 @@ public class HomeFragment extends Fragment {
         View root = binding.getRoot();
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        NavController navController;
+       
         progressBar = binding.progressBar;
         buttonBonus = binding.btnBonus;
 
@@ -165,7 +168,7 @@ public class HomeFragment extends Fragment {
         updateAddCost(String.valueOf(addCost));
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        Log.d("TAG", "onViewCreated: " + stringList);
+        Log.d(TAG, "onViewCreated: " + stringList);
         if(stringList.size() !=0 ) {
             switch (stringList.get(1)){
                 case "Dnipropetrovsk Oblast":
@@ -428,10 +431,10 @@ public class HomeFragment extends Fragment {
                     }
                 } else {
                     // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
                     try {
                         String errorBody = response.errorBody().string();
-                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                        Log.d(TAG, "onResponse: Тело ошибки: " + errorBody);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -441,7 +444,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+                Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
             }
         });
 
@@ -491,7 +494,7 @@ public class HomeFragment extends Fragment {
                         );
                     }
                 }
-
+                insertRouteCostToDatabase();
                 Intent intent = new Intent(requireActivity(), FinishActivity.class);
                 intent.putExtra("messageResult_key", messageResult);
                 intent.putExtra("messageCost_key", orderWeb);
@@ -621,63 +624,6 @@ public class HomeFragment extends Fragment {
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
-    }
-
-
-    private String pay_system() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PayApi apiService = retrofit.create(PayApi.class);
-        Call<ResponsePaySystem> call = apiService.getPaySystem();
-        call.enqueue(new Callback<ResponsePaySystem>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
-                if (response.isSuccessful()) {
-                    // Обработка успешного ответа
-                    ResponsePaySystem responsePaySystem = response.body();
-                    assert responsePaySystem != null;
-                    String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
-
-                    switch (paymentCode) {
-                        case "fondy":
-                            paymentCodeNew = "fondy_payment";
-                            break;
-                        case "mono":
-                            paymentCodeNew = "mono_payment";
-                            break;
-                    }
-
-                    if(isAdded()) {
-                        ContentValues cv = new ContentValues();
-                        cv.put("payment_type", paymentCodeNew);
-                        // обновляем по id
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
-                    }
-
-
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
-                if (isAdded()) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
-        return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
     }
 
     public void checkPermission(String permission, int requestCode) {
@@ -936,7 +882,7 @@ public class HomeFragment extends Fragment {
 
     }
     @SuppressLint("ResourceAsColor")
-    private void cost(){
+    private void cost() {
         textViewTo.setVisibility(View.VISIBLE);
         binding.textwhere.setVisibility(View.VISIBLE);
         binding.num2.setVisibility(View.VISIBLE);
@@ -944,42 +890,27 @@ public class HomeFragment extends Fragment {
         from = textViewFrom.getText().toString();
 
         if (numberFlagFrom.equals("1") && from_number.getText().toString().equals(" ")) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                from_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                from_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-                from_number.requestFocus();
-            } else {
-                ViewCompat.setBackgroundTintList(from_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                from_number.requestFocus();
-            }
+            setEditTextBackgroundTint(from_number, R.color.selected_text_color);
             from_numberCost = "1";
         } else {
-
             if (numberFlagFrom.equals("0")) {
                 from_numberCost = " ";
-            } else{
+            } else {
                 from_numberCost = from_number.getText().toString();
             }
         }
 
         if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-                to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-                to_number.requestFocus();
-            } else {
-                ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-            }
+            setEditTextBackgroundTint(to_number, R.color.selected_text_color);
             to_numberCost = "1";
         } else {
             if (numberFlagTo.equals("0")) {
                 to_numberCost = " ";
-            } else{
+            } else {
                 to_numberCost = to_number.getText().toString();
             }
-
         }
+
         Log.d(TAG, "cost: numberFlagTo " + numberFlagTo);
 
         if (to == null) {
@@ -989,88 +920,203 @@ public class HomeFragment extends Fragment {
             toCost = to;
         }
 
-
         try {
             String urlCost = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
                 List<String> settings = new ArrayList<>();
                 settings.add(from);
                 settings.add(from_numberCost);
                 settings.add(toCost);
                 settings.add(to_numberCost);
-
                 updateRoutHome(settings);
-
                 urlCost = getTaxiUrlSearch("costSearch", requireActivity());
             }
 
             Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlCost);
 
-            String message = sendUrlMapCost.get("message");
-            String orderCostStr = sendUrlMapCost.get("order_cost");
-
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
-            long addCost = Long.parseLong(stringListInfo.get(5));
-
-            assert orderCostStr != null;
-            long orderCostLong =  Long.parseLong(orderCostStr);
-
-            String orderCost = String.valueOf(orderCostLong + addCost);
-
-            if (!orderCost.equals("0")) {
-
-                text_view_cost.setVisibility(View.VISIBLE);
-                btn_minus.setVisibility(View.VISIBLE);
-                btn_plus.setVisibility(View.VISIBLE);
-                buttonAddServices.setVisibility(View.VISIBLE);
-                buttonBonus.setVisibility(View.VISIBLE);
-                btn_order.setVisibility(View.VISIBLE);
-
-                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
-                long discountInt = Integer.parseInt(discountText);
-                Log.d("TAG2", "discountInt: " + discountInt);
-                cost = Long.parseLong(orderCost);
-                Log.d("TAG2", "cost: " + cost);
-                discount = cost * discountInt / 100;
-                Log.d("TAG2", "discount: " + discount);
-                cost += discount;
-
-                updateAddCost(String.valueOf(discount));
-                text_view_cost.setText(Long.toString(cost));
-
-                costFirstForMin = cost;
-                MIN_COST_VALUE = (long) (cost*0.6);
-                Log.d(TAG, "cost: MIN_COST_VALUE "  + MIN_COST_VALUE);
-            } else {
-                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                text_view_cost.setVisibility(View.INVISIBLE);
-                btn_minus.setVisibility(View.INVISIBLE);
-                btn_plus.setVisibility(View.INVISIBLE);
-                buttonAddServices.setVisibility(View.INVISIBLE);
-                buttonBonus.setVisibility(View.INVISIBLE);
-            }
-
+            handleCostResponse(sendUrlMapCost);
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
 
+    private void handleCostResponse(Map<String, String> response) {
+        String message = response.get("message");
+        String orderCostStr = response.get("order_cost");
+
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
+        long addCost = Long.parseLong(stringListInfo.get(5));
+
+        assert orderCostStr != null;
+        long orderCostLong = Long.parseLong(orderCostStr);
+
+        String orderCost = String.valueOf(orderCostLong + addCost);
+
+        if (!orderCost.equals("0")) {
+            text_view_cost.setVisibility(View.VISIBLE);
+            btn_minus.setVisibility(View.VISIBLE);
+            btn_plus.setVisibility(View.VISIBLE);
+            buttonAddServices.setVisibility(View.VISIBLE);
+            buttonBonus.setVisibility(View.VISIBLE);
+            btn_order.setVisibility(View.VISIBLE);
+
+            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+            long discountInt = Integer.parseInt(discountText);
+            Log.d("TAG2", "discountInt: " + discountInt);
+            cost = Long.parseLong(orderCost);
+            Log.d("TAG2", "cost: " + cost);
+            discount = cost * discountInt / 100;
+            Log.d("TAG2", "discount: " + discount);
+            cost += discount;
+
+            updateAddCost(String.valueOf(discount));
+            text_view_cost.setText(Long.toString(cost));
+
+            costFirstForMin = cost;
+            MIN_COST_VALUE = (long) (cost * 0.6);
+            Log.d(TAG, "cost: MIN_COST_VALUE "  + MIN_COST_VALUE);
+
+            insertRouteCostToDatabase();
+
+        } else {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+            text_view_cost.setVisibility(View.INVISIBLE);
+            btn_minus.setVisibility(View.INVISIBLE);
+            btn_plus.setVisibility(View.INVISIBLE);
+            buttonAddServices.setVisibility(View.INVISIBLE);
+            buttonBonus.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void insertRouteCostToDatabase() {
+        AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database").build();
+        RouteCostDao routeCostDao = db.routeCostDao();
+        int routeId = routeIdToCheck; // Получите routeId
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                RouteCost existingRouteCost = routeCostDao.getRouteCost(routeId);
+                if (existingRouteCost == null) {
+                    // Записи с таким routeId ещё нет, выполните вставку
+                    RouteCost routeCost = new RouteCost();
+                    routeCost.routeId = routeId; // установите уникальный идентификатор
+                    routeCost.from = textViewFrom.getText().toString();
+                    routeCost.fromNumber = from_number.getText().toString();
+                    routeCost.to = textViewTo.getText().toString();
+                    routeCost.toNumber = to_number.getText().toString();
+                    routeCost.text_view_cost = text_view_cost.getText().toString();
+                    routeCostDao.insert(routeCost);
+                } else {
+                    // Запись с таким routeId уже существует, выполните обновление
+                    existingRouteCost.from = textViewFrom.getText().toString();
+                    existingRouteCost.fromNumber = from_number.getText().toString();
+                    existingRouteCost.to = textViewTo.getText().toString();
+                    existingRouteCost.toNumber = to_number.getText().toString();
+                    existingRouteCost.text_view_cost = text_view_cost.getText().toString();
+                    routeCostDao.update(existingRouteCost); // Обновление существующей записи
+                }
+            }
+        });
+    }
+
+
+
+
+    private void setEditTextBackgroundTint(EditText editText, @ColorRes int colorResId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            editText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(colorResId)));
+            editText.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
+            editText.requestFocus();
+        } else {
+            ViewCompat.setBackgroundTintList(editText, ColorStateList.valueOf(getResources().getColor(colorResId)));
+            editText.requestFocus();
+        }
+    }
+
+
     @SuppressLint("SetTextI18n")
-    private void costRoutHome(List<String> stringListRoutHome ){
-        Log.d(TAG, "costRoutHome: " + stringListRoutHome);
+    private void costRoutHome(final List<String> stringListRoutHome) {
+        progressBar.setVisibility(View.VISIBLE);
+
+      new AsyncTask<Integer, Void, RouteCost>() {
+            @Override
+            protected RouteCost doInBackground(Integer... params) {
+                int routeIdToCheck = params[0];
+                AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database").build();
+                RouteCostDao routeCostDao = db.routeCostDao();
+                return routeCostDao.getRouteCost(routeIdToCheck);
+            }
+
+            @SuppressLint("StaticFieldLeak")
+            @Override
+            protected void onPostExecute(RouteCost retrievedRouteCost) {
+                progressBar.setVisibility(View.INVISIBLE);
+                if (retrievedRouteCost != null) {
+                    // Данные с указанным routeId существуют в базе данных
+                    textViewFrom.setText(retrievedRouteCost.from);
+                    from_number.setText(retrievedRouteCost.fromNumber);
+                    textViewTo.setText(retrievedRouteCost.to);
+                    to_number.setText(retrievedRouteCost.toNumber);
+                    text_view_cost.setText(retrievedRouteCost.text_view_cost);
+
+                    textViewTo.setVisibility(View.VISIBLE);
+                    binding.textwhere.setVisibility(View.VISIBLE);
+                    binding.num2.setVisibility(View.VISIBLE);
+
+                    text_view_cost.setVisibility(View.VISIBLE);
+                    btn_minus.setVisibility(View.VISIBLE);
+                    btn_plus.setVisibility(View.VISIBLE);
+                    buttonAddServices.setVisibility(View.VISIBLE);
+                    buttonBonus.setVisibility(View.VISIBLE);
+                    btn_clear.setVisibility(View.VISIBLE);
+
+                    Log.d(TAG, "Route ID: " + retrievedRouteCost.routeId);
+                    Log.d(TAG, "From: " + retrievedRouteCost.from);
+                    Log.d(TAG, "From Number: " + retrievedRouteCost.fromNumber);
+                    Log.d(TAG, "To: " + retrievedRouteCost.to);
+                    Log.d(TAG, "To Number: " + retrievedRouteCost.toNumber);
+                    Log.d(TAG, "Text View Cost: " + retrievedRouteCost.text_view_cost);
+                    if (!retrievedRouteCost.fromNumber.equals(" ")) {
+                        from_number.setVisibility(View.VISIBLE);
+                    }
+                    if (!retrievedRouteCost.toNumber.equals(" ")) {
+                        to_number.setVisibility(View.VISIBLE);
+                    }
+                    if (!retrievedRouteCost.from.equals(retrievedRouteCost.to)) {
+                        textViewTo.setVisibility(View.VISIBLE);
+                        binding.textwhere.setVisibility(View.VISIBLE);
+                        binding.num2.setVisibility(View.VISIBLE);
+                    } else {
+                        to_number.setVisibility(View.INVISIBLE);
+                    }
+
+                    MIN_COST_VALUE = (long) (Long.parseLong(retrievedRouteCost.text_view_cost) * 0.6);
+
+                    btn_order.setVisibility(View.VISIBLE);
+                } else {
+                    // Данные с указанным routeId отсутствуют в базе данных
+                    updateUIFromList(stringListRoutHome);
+                }
+            }
+        }.execute(routeIdToCheck);
+    }
+
+    private void updateUIFromList(List<String> stringListRoutHome) {
         textViewFrom.setText(stringListRoutHome.get(1));
-        if(!stringListRoutHome.get(2).equals(" ")) {
+
+        if (!stringListRoutHome.get(2).equals(" ")) {
             from_number.setVisibility(View.VISIBLE);
             from_number.setText(stringListRoutHome.get(2));
-        }if(!stringListRoutHome.get(4).equals(" ")) {
+        }
+        if (!stringListRoutHome.get(4).equals(" ")) {
             to_number.setText(stringListRoutHome.get(4));
             to_number.setVisibility(View.VISIBLE);
         }
-        if(!stringListRoutHome.get(1).equals(stringListRoutHome.get(3))) {
+        if (!stringListRoutHome.get(1).equals(stringListRoutHome.get(3))) {
             textViewTo.setText(stringListRoutHome.get(3));
             textViewTo.setVisibility(View.VISIBLE);
             binding.textwhere.setVisibility(View.VISIBLE);
@@ -1080,11 +1126,8 @@ public class HomeFragment extends Fragment {
         }
 
         textViewTo.setVisibility(View.VISIBLE);
-
         binding.textwhere.setVisibility(View.VISIBLE);
         binding.num2.setVisibility(View.VISIBLE);
-
-
 
         text_view_cost.setVisibility(View.VISIBLE);
         btn_minus.setVisibility(View.VISIBLE);
@@ -1094,6 +1137,7 @@ public class HomeFragment extends Fragment {
         btn_clear.setVisibility(View.VISIBLE);
 
         btn_order.setVisibility(View.VISIBLE);
+
         try {
             String urlCost = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1107,11 +1151,8 @@ public class HomeFragment extends Fragment {
             long addCost = Long.parseLong(stringListInfo.get(5));
 
             assert orderCostStr != null;
-            long orderCostLong =  Long.parseLong(orderCostStr);
-
+            long orderCostLong = Long.parseLong(orderCostStr);
             String orderCost = String.valueOf(orderCostLong + addCost);
-
-
             String message = (String) sendUrlMapCost.get("message");
 
             if (orderCost.equals("0")) {
@@ -1135,32 +1176,29 @@ public class HomeFragment extends Fragment {
                 btn_order.setVisibility(View.VISIBLE);
                 btn_clear.setVisibility(View.VISIBLE);
 
-///////////////////////////////////////////////////////////////////////////////////
                 String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
                 long discountInt = Integer.parseInt(discountText);
                 Log.d(TAG, "costRoutHome:discountInt " + discountInt);
 
                 cost = Long.parseLong(orderCost);
-
                 discount = cost * discountInt / 100;
-
-
                 cost = cost + discount;
                 updateAddCost(String.valueOf(discount));
                 text_view_cost.setText(Long.toString(cost));
 
                 costFirstForMin = cost;
-                MIN_COST_VALUE = (long) (cost*0.6);
+                MIN_COST_VALUE = (long) (cost * 0.6);
             } else {
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
-
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
+
+
 
     private boolean verifyOrder(Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1170,7 +1208,7 @@ public class HomeFragment extends Fragment {
         if (cursor.getCount() == 1) {
 
             if (logCursor(MainActivity.TABLE_USER_INFO, context).get(1).equals("0")) {
-                verify = false;Log.d("TAG", "verifyOrder:verify " +verify);
+                verify = false;Log.d(TAG, "verifyOrder:verify " +verify);
             }
             cursor.close();
         }
@@ -1201,7 +1239,7 @@ public class HomeFragment extends Fragment {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         int updCount = database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
                 new String[] { "1" });
-        Log.d("TAG", "updated rows count = " + updCount);
+        Log.d(TAG, "updated rows count = " + updCount);
         database.close();
 
     }
@@ -1231,7 +1269,7 @@ public class HomeFragment extends Fragment {
             }
         }
         database.close();
-        Log.d("TAG", "routMaps: " + routsArr);
+        Log.d(TAG, "routMaps: " + routsArr);
         return routsArr;
     }
 
@@ -1391,7 +1429,7 @@ public class HomeFragment extends Fragment {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
@@ -1399,7 +1437,7 @@ public class HomeFragment extends Fragment {
         String api =  stringListCity.get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
-        Log.d("TAG", "getTaxiUrlSearch: " + url);
+        Log.d(TAG, "getTaxiUrlSearch: " + url);
 
         database.close();
 
@@ -1433,8 +1471,8 @@ public class HomeFragment extends Fragment {
         TelephonyManager tMgr = (TelephonyManager) requireActivity().getSystemService(Context.TELEPHONY_SERVICE);
 
         if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("TAG", "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS));
-            Log.d("TAG", "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE));
+            Log.d(TAG, "Manifest.permission.READ_PHONE_NUMBERS: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_NUMBERS));
+            Log.d(TAG, "Manifest.permission.READ_PHONE_STATE: " + ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_PHONE_STATE));
             return;
         }
         mPhoneNumber = tMgr.getLine1Number();
@@ -1442,10 +1480,10 @@ public class HomeFragment extends Fragment {
         if(mPhoneNumber != null) {
             String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
             boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
-            Log.d("TAG", "onClick No validate: " + val);
+            Log.d(TAG, "onClick No validate: " + val);
             if (val == false) {
                 Toast.makeText(requireActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
-                Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
+                Log.d(TAG, "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
 //                requireActivity().finish();
 
             } else {

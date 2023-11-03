@@ -79,6 +79,7 @@ public class CardFragment extends Fragment {
     private ArrayAdapter<String> listAdapter;
     public static ListView listView;
     private String table;
+    String pay_method;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -87,6 +88,7 @@ public class CardFragment extends Fragment {
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         progressBar = binding.progressBar;
+        progressBar.setVisibility(View.VISIBLE);
         textCard = binding.textCard;
         listView = binding.listView;
 
@@ -100,69 +102,75 @@ public class CardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        progressBar.setVisibility(View.INVISIBLE);
+
         btnCardLink  = binding.btnCardLink;
 
-        String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-
-       
-        btnCardLink.setOnClickListener(new View.OnClickListener() {
+        paySystem(new PaySystemCallback() {
             @Override
-            public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
+            public void onPaySystemResult(String paymentCode) {
+                // Здесь вы можете использовать полученное значение paymentCode
+                pay_method = paymentCode;
+                btnCardLink.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        progressBar.setVisibility(View.VISIBLE);
 
-                Log.d(TAG, "onClick: " + pay_method);
-                if (connected()) {
-                    MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-                    messageFondy = getString(R.string.fondy_message);
+                        Log.d(TAG, "onClick: " + pay_method);
+                        if (connected()) {
+                            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
+                            messageFondy = getString(R.string.fondy_message);
 
-                    switch (pay_method) {
-                        case "fondy_payment":
-                            getUrlToPaymentFondy(MainActivity.order_id, messageFondy);
-                            break;
-                        case "mono_payment":
-                            getUrlToPaymentMono(MainActivity.order_id, messageFondy);
-                            break;
+                            switch (pay_method) {
+                                case "fondy_payment":
+                                    getUrlToPaymentFondy(MainActivity.order_id, messageFondy);
+                                    break;
+                                case "mono_payment":
+                                    getUrlToPaymentMono(MainActivity.order_id, messageFondy);
+                                    break;
+                            }
+
+                        } else {
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        }
                     }
+                });
+                Log.d(TAG, "onResume: " + logCursor(MainActivity.TABLE_FONDY_CARDS, requireActivity()));
+
+                // Создайте или откройте базу данных по имени MainActivity.DB_NAME
+
+                ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
+
+                switch (pay_method) {
+                    case "fondy_payment":
+                        cardMaps = getCardMapsFromDatabase(MainActivity.TABLE_FONDY_CARDS);
+                        table = MainActivity.TABLE_FONDY_CARDS;
+                        break;
+                    case "mono_payment":
+                        cardMaps = getCardMapsFromDatabase(MainActivity.TABLE_MONO_CARDS);
+                        table = MainActivity.TABLE_MONO_CARDS;
+                        break;
+                }
+
+                Log.d(TAG, "onResume: cardMaps" + cardMaps);
+                if (!cardMaps.isEmpty()) {
+                    CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), cardMaps, table);
+                    listView.setAdapter(listAdapter);
 
                 } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    textCard.setVisibility(View.VISIBLE);
+                    listView.setVisibility(View.GONE);
+                    textCard.setText(R.string.no_cards);
                 }
+                progressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onPaySystemFailure(String errorMessage) {
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(errorMessage);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-
-
-        Log.d(TAG, "onResume: " + logCursor(MainActivity.TABLE_FONDY_CARDS, requireActivity()));
-
-        // Создайте или откройте базу данных по имени MainActivity.DB_NAME
-
-        ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
-// Получите данные из базы данных
-        switch (pay_method) {
-            case "fondy_payment":
-                cardMaps = getCardMapsFromDatabase(MainActivity.TABLE_FONDY_CARDS);
-                table = MainActivity.TABLE_FONDY_CARDS;
-                break;
-            case "mono_payment":
-                cardMaps = getCardMapsFromDatabase(MainActivity.TABLE_MONO_CARDS);
-                table = MainActivity.TABLE_MONO_CARDS;
-                break;
-        }
-
-        Log.d(TAG, "onResume: cardMaps" + cardMaps);
-        if (!cardMaps.isEmpty()) {
-            CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), cardMaps, table);
-            listView.setAdapter(listAdapter);
-
-        } else {
-            textCard.setVisibility(View.VISIBLE);
-            listView.setVisibility(View.GONE);
-            textCard.setText(R.string.no_cards);
-        }
-
-
-
     }
 
     @SuppressLint("Range")
@@ -267,7 +275,7 @@ public class CardFragment extends Fragment {
         });
 
     }
-    private void pay_system() {
+    private void paySystem(final PaySystemCallback callback) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -283,7 +291,8 @@ public class CardFragment extends Fragment {
                     ResponsePaySystem responsePaySystem = response.body();
                     assert responsePaySystem != null;
                     String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
+
+                    String paymentCodeNew = "fondy"; // Изначально устанавливаем значение
 
                     switch (paymentCode) {
                         case "fondy":
@@ -294,31 +303,28 @@ public class CardFragment extends Fragment {
                             break;
                     }
 
-                    ContentValues cv = new ContentValues();
-                    cv.put("payment_type", paymentCodeNew);
-                    // обновляем по id
-                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-
-
-
+                    // Вызываем обработчик, передавая полученное значение
+                    callback.onPaySystemResult(paymentCodeNew);
                 } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
+                    // Обработка ошибки
+                    callback.onPaySystemFailure(getString(R.string.verify_internet));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
-                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                // Обработка ошибки
+                callback.onPaySystemFailure(getString(R.string.verify_internet));
             }
         });
-
     }
+
+    // Интерфейс для обработки результата и ошибки
+    public interface PaySystemCallback {
+        void onPaySystemResult(String paymentCode);
+        void onPaySystemFailure(String errorMessage);
+    }
+
 
 
     private void getUrlToPaymentFondy(String order_id, String orderDescription) {

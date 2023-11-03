@@ -26,6 +26,9 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.card.CardFragment;
+import com.taxieasyua.back4app.ui.card.CustomCardAdapter;
+import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -49,6 +52,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
+    private static final String TAG = "TAG_BON";
     long cost;
     String rout;
     String api;
@@ -81,18 +85,18 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
-        pay_system();
-        Log.d("TAG", "onCreateView: " + pay_method);
+
+
         listView = view.findViewById(R.id.listViewBonus);
-         array = new  String[]{
+        array = new  String[]{
                 getString(R.string.nal_payment),
                 getString(R.string.bonus_payment),
                 getString(R.string.card_payment),
         };
-         arrayCode = new  String[]{
-                 "nal_payment",
-                 "bonus_payment",
-                 "card_payment",
+        arrayCode = new  String[]{
+                "nal_payment",
+                "bonus_payment",
+                "card_payment",
         };
 
         CustomArrayAdapter adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
@@ -114,6 +118,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 case "Cherkasy Oblast":
                     adapter.setItemEnabled(1, false);
                     listView.setItemChecked(0, true);
+                    paymentType(arrayCode [0]);
                     break;
             }
         } else {
@@ -124,7 +129,25 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 pos = position;
-                paymentType(arrayCode [pos]);
+                Log.d(TAG, "onItemClick: pos " + pos);
+                if (pos == 2) {
+                    paySystem(new CardFragment.PaySystemCallback() {
+                        @Override
+                        public void onPaySystemResult(String paymentCode) {
+                            Log.d(TAG, "onPaySystemResult: paymentCode" + paymentCode);
+                            // Здесь вы можете использовать полученное значение paymentCode
+                            paymentType(paymentCode);
+
+                        }
+
+                        @Override
+                        public void onPaySystemFailure(String errorMessage) {
+                        }
+                    });
+
+                } else {
+                    paymentType(arrayCode [pos]);
+                }
 
             }
 
@@ -134,7 +157,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                paymentType(arrayCode [pos]);
                 dismiss();
             }
         });
@@ -145,19 +167,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     private void paymentType(String paymentCode) {
 
         ContentValues cv = new ContentValues();
-        Log.d("TAG", "paymentType: paymentCode 1111" + paymentCode);
-        if (paymentCode.equals("card_payment")) {
-            pay_system();
-            Log.d("TAG", "paymentType: paymentCode 2222" + paymentCode);
-        } else {
-            cv.put("payment_type", paymentCode);
-            // обновляем по id
-            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                    new String[] { "1" });
-            database.close();
-        }
+        Log.d(TAG, "paymentType: paymentCode 1111" + paymentCode);
 
+        cv.put("payment_type", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
 
     @SuppressLint("Range")
@@ -165,7 +182,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         String payment_type = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
 
-        Log.d("TAG", "fistItem: " + payment_type);
+        Log.d(TAG, "fistItem: " + payment_type);
         switch (payment_type) {
             case "nal_payment":
                 listView.setItemChecked(0, true);
@@ -182,11 +199,24 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             case "mono_payment":
                 listView.setItemChecked(2, true);
                 pos = 2;
-                paymentType(arrayCode [pos]);
+                paySystem(new CardFragment.PaySystemCallback() {
+                    @Override
+                    public void onPaySystemResult(String paymentCode) {
+                        Log.d(TAG, "onPaySystemResult: paymentCode" + paymentCode);
+                        // Здесь вы можете использовать полученное значение paymentCode
+                        paymentType(paymentCode);
+
+                    }
+
+                    @Override
+                    public void onPaySystemFailure(String errorMessage) {
+                    }
+                });
+
                 break;
         }
    }
-    public void pay_system() {
+    private void paySystem(final CardFragment.PaySystemCallback callback) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -194,7 +224,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         PayApi apiService = retrofit.create(PayApi.class);
         Call<ResponsePaySystem> call = apiService.getPaySystem();
-
         call.enqueue(new Callback<ResponsePaySystem>() {
             @Override
             public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
@@ -204,46 +233,45 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                     assert responsePaySystem != null;
                     String paymentCode = responsePaySystem.getPay_system();
 
+                    String paymentCodeNew = "fondy"; // Изначально устанавливаем значение
+
                     switch (paymentCode) {
                         case "fondy":
-                            pay_method = "fondy_payment";
+                            paymentCodeNew = "fondy_payment";
                             break;
                         case "mono":
-                            pay_method = "mono_payment";
+                            paymentCodeNew = "mono_payment";
                             break;
                     }
-                    Log.d("TAG", "onResponse: pay_method " + pay_method);
-                    ContentValues cv = new ContentValues();
-                    cv.put("payment_type", pay_method);
-                    // обновляем по id
-                    if(isAdded()){
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
-                    }
 
+                    // Вызываем обработчик, передавая полученное значение
+                    callback.onPaySystemResult(paymentCodeNew);
                 } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
+                    // Обработка ошибки
+                    callback.onPaySystemFailure(getString(R.string.verify_internet));
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
-                if (isAdded()) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
+            public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
+                // Обработка ошибки
+                callback.onPaySystemFailure(getString(R.string.verify_internet));
             }
         });
     }
 
+    // Интерфейс для обработки результата и ошибки
+    public interface PaySystemCallback {
+        void onPaySystemResult(String paymentCode);
+        void onPaySystemFailure(String errorMessage);
+    }
+
+
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        Log.d("TAG", "onDismiss: rout " + rout);
+
+        Log.d(TAG, "onDismiss: rout " + rout);
         if(rout.equals("home")) {
             String urlCost = null;
             Map<String, String> sendUrlMapCost = null;
@@ -320,7 +348,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
             assert sendUrlMapCost != null;
             String orderCost = (String) sendUrlMapCost.get("order_cost");
-            Log.d("TAG", "onDismiss: orderCost " + orderCost);
+            Log.d(TAG, "onDismiss: orderCost " + orderCost);
             assert orderCost != null;
             if (!orderCost.equals("0")) {
                 String costUpdate;
@@ -342,7 +370,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
-        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        Log.d(TAG, "updateAddCost: addCost" + addCost);
         cv.put("addCost", addCost);
 
         // обновляем по id
@@ -420,14 +448,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
 
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
-        Log.d("TAG", "getTaxiUrlSearch: " + url);
+        Log.d(TAG, "getTaxiUrlSearch: " + url);
 
 
 
@@ -508,13 +536,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
 
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-        Log.d("TAG", "getTaxiUrlSearch services: " + url);
+        Log.d(TAG, "getTaxiUrlSearch services: " + url);
 
         return url;
 
@@ -524,7 +552,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     private String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
 
         List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);
-        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+        Log.d(TAG, "getTaxiUrlSearch: stringListRout" + stringListRout);
 
         double originLatitude = Double.parseDouble(stringListRout.get(1));
         double originLongitude = Double.parseDouble(stringListRout.get(2));
@@ -585,7 +613,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
