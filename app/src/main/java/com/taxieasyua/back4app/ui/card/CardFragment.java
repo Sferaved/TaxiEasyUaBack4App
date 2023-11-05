@@ -304,7 +304,10 @@ public class CardFragment extends Fragment {
                     }
 
                     // Вызываем обработчик, передавая полученное значение
-                    callback.onPaySystemResult(paymentCodeNew);
+                    if (getActivity() != null) {
+                        // Fragment is attached to an activity, it's safe to call onPaySystemResult
+                        callback.onPaySystemResult(paymentCodeNew);
+                    }
                 } else {
                     // Обработка ошибки
                     callback.onPaySystemFailure(getString(R.string.verify_internet));

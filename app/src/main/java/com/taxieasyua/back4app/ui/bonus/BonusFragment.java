@@ -17,8 +17,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,21 +31,14 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentBonusBinding;
-import com.taxieasyua.back4app.databinding.FragmentUidBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.TimeZone;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -60,13 +51,14 @@ public class BonusFragment extends Fragment {
     private TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
     private ProgressBar progressBar;
+    private TextView text0;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentBonusBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+        text0 =  binding.text0;
         networkChangeReceiver = new NetworkChangeReceiver();
         progressBar = binding.progressBar;
         return root;
@@ -171,8 +163,8 @@ public class BonusFragment extends Fragment {
 
                     textView.setText(getString(R.string.my_bonus) + bonus);
                     textView.setVisibility(View.VISIBLE);
-                    binding.text0.setVisibility(View.VISIBLE);
-                    binding.text0.setText(R.string.bonus_upd_mes);
+                    text0.setVisibility(View.VISIBLE);
+                    text0.setText(R.string.bonus_upd_mes);
 
 
                     Log.d("TAG", "onResponse: " + bonus);
