@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_02112023_12";
+    public static final String DB_NAME = "data_05112023_7";
 
     /**
      * Table section
@@ -181,9 +181,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pay_system();
+
         try {
             initDB();
+//            pay_system();
         } catch (MalformedURLException | JSONException | InterruptedException ignored) {
 
         }
@@ -995,8 +996,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("Range")
     public List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(table, null, null, null, null, null, null);
+        SQLiteDatabase db = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor c = db.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
                 String str;
@@ -1011,7 +1012,7 @@ public class MainActivity extends AppCompatActivity {
                 } while (c.moveToNext());
             }
         }
-        database.close();
+        db.close();
         return list;
     }
     public void newUser() {
@@ -1327,49 +1328,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pay_system() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        String payment_type = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
-        PayApi apiService = retrofit.create(PayApi.class);
-        Call<ResponsePaySystem> call = apiService.getPaySystem();
-        call.enqueue(new Callback<ResponsePaySystem>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
-                if (response.isSuccessful()) {
-                    // Обработка успешного ответа
-                    ResponsePaySystem responsePaySystem = response.body();
-                    assert responsePaySystem != null;
-                    String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
+        Log.d(TAG, "fistItem: " + payment_type);
+        if (payment_type.equals("card_payment")) {
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(baseUrl)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
 
-                    switch (paymentCode) {
-                        case "fondy":
-                            paymentCodeNew = "fondy_payment";
-                            break;
-                        case "mono":
-                            paymentCodeNew = "mono_payment";
-                            break;
+            PayApi apiService = retrofit.create(PayApi.class);
+            Call<ResponsePaySystem> call = apiService.getPaySystem();
+            call.enqueue(new Callback<ResponsePaySystem>() {
+                @Override
+                public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
+                    if (response.isSuccessful()) {
+                        // Обработка успешного ответа
+                        ResponsePaySystem responsePaySystem = response.body();
+                        assert responsePaySystem != null;
+                        String paymentCode = responsePaySystem.getPay_system();
+                        String paymentCodeNew = "fondy";
+
+                        switch (paymentCode) {
+                            case "fondy":
+                                paymentCodeNew = "fondy_payment";
+                                break;
+                            case "mono":
+                                paymentCodeNew = "mono_payment";
+                                break;
+                        }
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("payment_type", paymentCodeNew);
+                        // обновляем по id
+                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                                new String[] { "1" });
+                        database.close();
+
                     }
+                }
 
-                    ContentValues cv = new ContentValues();
-                    cv.put("payment_type", paymentCodeNew);
-                    // обновляем по id
-                    SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
+                @Override
+                public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
 
                 }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
-
-            }
-        });
-
+            });
+        };
     }
 
     public void checkPermission(String permission, int requestCode) {

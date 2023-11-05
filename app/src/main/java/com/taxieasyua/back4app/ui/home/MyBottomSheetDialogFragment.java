@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,10 +31,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.room.Room;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.home.room.AppDatabase;
+import com.taxieasyua.back4app.ui.home.room.RouteCost;
+import com.taxieasyua.back4app.ui.home.room.RouteCostDao;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 
@@ -262,7 +267,7 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         cv.put("date", formattedDate);
 
         // Обновляем по id
-        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?", new String[] { "1" });
         database.close();
     }
@@ -270,12 +275,12 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
     @Override
     public void onPause() {
         super.onPause();
-        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, getContext());
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, requireActivity());
 
-        for (int i = 0; i < services.size()-1; i++) {
+        for (int i = 0; i < Math.min(services.size(), arrayServiceCode.length); i++) {
             ContentValues cv = new ContentValues();
             cv.put(arrayServiceCode[i], "0");
-            SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(MainActivity.TABLE_SERVICE_INFO, cv, "id = ?",
                     new String[] { "1" });
             database.close();
@@ -391,7 +396,9 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
             database.close();
         }
         try {
-            HomeFragment.text_view_cost.setText(changeCost());
+            String newCost = changeCost();
+            HomeFragment.text_view_cost.setText(newCost);
+            insertRouteCostToDatabase(newCost);
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -435,6 +442,45 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                 new String[] { "1" });
         database.close();
+    }
+    private void insertRouteCostToDatabase(String text_view_cost) {
+        AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database")
+                .addMigrations(AppDatabase.MIGRATION_1_3) // Добавьте миграцию
+                .build();
+        RouteCostDao routeCostDao = db.routeCostDao();
+        int routeId = HomeFragment.routeIdToCheck; // Получите routeId
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+        String tarif =  stringListInfo.get(2);
+        String payment_type =  stringListInfo.get(4);
+        String addCost = stringListInfo.get(5);
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                RouteCost existingRouteCost = routeCostDao.getRouteCost(routeId);
+                if (existingRouteCost == null) {
+                    // Записи с таким routeId ещё нет, выполните вставку
+                    RouteCost routeCost = new RouteCost();
+                    routeCost.routeId = routeId; // установите уникальный идентификатор
+
+                    routeCost.text_view_cost = text_view_cost;
+                    routeCost.tarif = tarif;
+                    routeCost.payment_type = payment_type;
+                    routeCost.addCost = addCost;
+
+                    routeCostDao.insert(routeCost);
+                } else {
+                    // Запись с таким routeId уже существует, выполните обновление
+
+                    existingRouteCost.text_view_cost = text_view_cost;
+                    existingRouteCost.tarif = tarif;
+                    existingRouteCost.payment_type = payment_type;
+                    existingRouteCost.addCost = addCost;
+
+                    routeCostDao.update(existingRouteCost); // Обновление существующей записи
+                }
+            }
+        });
     }
     private String getTaxiUrlSearch(String urlAPI, Context context) throws UnsupportedEncodingException {
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);

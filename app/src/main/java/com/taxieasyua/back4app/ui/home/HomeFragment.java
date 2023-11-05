@@ -28,6 +28,7 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,7 +128,7 @@ public class HomeFragment extends Fragment {
     private MyPhoneDialogFragment bottomSheetDialogFragment;
     private String baseUrl = "https://m.easy-order-taxi.site";
     private Map<String, String> sendUrlMap;
-    private int routeIdToCheck = 123;
+    public static int routeIdToCheck = 123;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -359,8 +360,8 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231102141126818_EIVB", "повернення замовлення", "3900");
-//                getRevers("V_20231029113207393_BAYD", "повернення замовлення", "100");
+                getRevers("V_20231104132538342_84SR", "повернення замовлення", "20800");
+                getRevers("V_20231104132747541_LMOS", "повернення замовлення", "21800");
 
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -963,11 +964,11 @@ public class HomeFragment extends Fragment {
 
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
             long discountInt = Integer.parseInt(discountText);
-            Log.d("TAG2", "discountInt: " + discountInt);
+            Log.d(TAG, "discountInt: " + discountInt);
             cost = Long.parseLong(orderCost);
-            Log.d("TAG2", "cost: " + cost);
+            Log.d(TAG, "cost: " + cost);
             discount = cost * discountInt / 100;
-            Log.d("TAG2", "discount: " + discount);
+            Log.d(TAG, "discount: " + discount);
             cost += discount;
 
             updateAddCost(String.valueOf(discount));
@@ -992,13 +993,21 @@ public class HomeFragment extends Fragment {
     }
 
     private void insertRouteCostToDatabase() {
-        AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database").build();
+        AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database")
+                .addMigrations(AppDatabase.MIGRATION_1_3) // Добавьте миграцию
+                .build();
         RouteCostDao routeCostDao = db.routeCostDao();
         int routeId = routeIdToCheck; // Получите routeId
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+        String tarif =  stringListInfo.get(2);
+        String payment_type =  stringListInfo.get(4);
+        String addCost = stringListInfo.get(5);
 
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
+//                List<String> servicesChecked = logCursor(MainActivity.TABLE_SERVICE_INFO, requireActivity());
+//                Log.d(TAG, "insertRouteCostToDatabase: " + servicesChecked.toString());
                 RouteCost existingRouteCost = routeCostDao.getRouteCost(routeId);
                 if (existingRouteCost == null) {
                     // Записи с таким routeId ещё нет, выполните вставку
@@ -1009,6 +1018,11 @@ public class HomeFragment extends Fragment {
                     routeCost.to = textViewTo.getText().toString();
                     routeCost.toNumber = to_number.getText().toString();
                     routeCost.text_view_cost = text_view_cost.getText().toString();
+                    routeCost.tarif = tarif;
+                    routeCost.payment_type = payment_type;
+                    routeCost.addCost = addCost;
+//                    routeCost.servicesChecked = servicesChecked;
+
                     routeCostDao.insert(routeCost);
                 } else {
                     // Запись с таким routeId уже существует, выполните обновление
@@ -1017,6 +1031,10 @@ public class HomeFragment extends Fragment {
                     existingRouteCost.to = textViewTo.getText().toString();
                     existingRouteCost.toNumber = to_number.getText().toString();
                     existingRouteCost.text_view_cost = text_view_cost.getText().toString();
+                    existingRouteCost.tarif = tarif;
+                    existingRouteCost.payment_type = payment_type;
+                    existingRouteCost.addCost = addCost;
+//                    existingRouteCost.servicesChecked = servicesChecked;
                     routeCostDao.update(existingRouteCost); // Обновление существующей записи
                 }
             }
@@ -1046,7 +1064,9 @@ public class HomeFragment extends Fragment {
             @Override
             protected RouteCost doInBackground(Integer... params) {
                 int routeIdToCheck = params[0];
-                AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database").build();
+                AppDatabase db = Room.databaseBuilder(requireActivity(), AppDatabase.class, "app-database")
+                        .addMigrations(AppDatabase.MIGRATION_1_3) // Добавьте миграцию
+                        .build();
                 RouteCostDao routeCostDao = db.routeCostDao();
                 return routeCostDao.getRouteCost(routeIdToCheck);
             }
@@ -1062,6 +1082,7 @@ public class HomeFragment extends Fragment {
                     textViewTo.setText(retrievedRouteCost.to);
                     to_number.setText(retrievedRouteCost.toNumber);
                     text_view_cost.setText(retrievedRouteCost.text_view_cost);
+                    updateAddCost(retrievedRouteCost.addCost);
 
                     textViewTo.setVisibility(View.VISIBLE);
                     binding.textwhere.setVisibility(View.VISIBLE);
@@ -1074,26 +1095,22 @@ public class HomeFragment extends Fragment {
                     buttonBonus.setVisibility(View.VISIBLE);
                     btn_clear.setVisibility(View.VISIBLE);
 
-                    Log.d(TAG, "Route ID: " + retrievedRouteCost.routeId);
-                    Log.d(TAG, "From: " + retrievedRouteCost.from);
-                    Log.d(TAG, "From Number: " + retrievedRouteCost.fromNumber);
-                    Log.d(TAG, "To: " + retrievedRouteCost.to);
-                    Log.d(TAG, "To Number: " + retrievedRouteCost.toNumber);
-                    Log.d(TAG, "Text View Cost: " + retrievedRouteCost.text_view_cost);
                     if (!retrievedRouteCost.fromNumber.equals(" ")) {
                         from_number.setVisibility(View.VISIBLE);
                     }
-                    if (!retrievedRouteCost.toNumber.equals(" ")) {
-                        to_number.setVisibility(View.VISIBLE);
-                    }
+                    Log.d(TAG, "onPostExecute: retrievedRouteCost.toNumber/" + retrievedRouteCost.toNumber +"/");
+
                     if (!retrievedRouteCost.from.equals(retrievedRouteCost.to)) {
                         textViewTo.setVisibility(View.VISIBLE);
                         binding.textwhere.setVisibility(View.VISIBLE);
                         binding.num2.setVisibility(View.VISIBLE);
+
+                    }
+                    if (!retrievedRouteCost.toNumber.equals(" ")) {
+                        to_number.setVisibility(View.VISIBLE);
                     } else {
                         to_number.setVisibility(View.INVISIBLE);
                     }
-
                     MIN_COST_VALUE = (long) (Long.parseLong(retrievedRouteCost.text_view_cost) * 0.6);
 
                     btn_order.setVisibility(View.VISIBLE);
@@ -1328,7 +1345,7 @@ public class HomeFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private String getTaxiUrlSearch(String urlAPI, Context context) throws UnsupportedEncodingException {
-        Log.d("TAG2", "startCost: discountText" + logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).toString());
+        Log.d(TAG, "startCost: discountText" + logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).toString());
 
         List<String> stringListRout = logCursor(MainActivity.ROUT_HOME, context);
         Log.d(TAG, "getTaxiUrlSearch: stringListRout" + stringListRout);
@@ -1366,9 +1383,9 @@ public class HomeFragment extends Fragment {
         String payment_type =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
 
-        Log.d("TAG2", "startCost: discountText" + discount);
+        Log.d(TAG, "startCost: discountText" + discount);
 
-        Log.d("TAG2", "getTaxiUrlSearch: addCost11111" + addCost);
+        Log.d(TAG, "getTaxiUrlSearch: addCost11111" + addCost);
         // Building the parameters to the web service
 
         String parameters = null;

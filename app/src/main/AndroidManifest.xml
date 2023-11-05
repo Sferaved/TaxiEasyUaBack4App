@@ -66,6 +66,9 @@
         <meta-data
             android:name="visicom.API_KEY"
             android:value="@string/visicom_key_storage" />
+        <meta-data
+            android:name="androidx.room.RoomDatabase.VERSION"
+            android:value="3" />
 
         <activity
             android:name=".MainActivity"
