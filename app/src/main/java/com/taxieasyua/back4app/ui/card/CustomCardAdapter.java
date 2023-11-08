@@ -86,11 +86,11 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
             holder.bankText.setText(bank_name);
 
             selectedPosition = getCheckRectoken(table);
-            
+            Log.d("TAG", "getView: " + selectedPosition);
             holder.checkBox.setChecked(position == selectedPosition);
             rectoken = cardMap.get("rectoken");
             notifyDataSetChanged();
-//            Toast.makeText(getContext(), "rectoken 1: " + rectoken, Toast.LENGTH_SHORT).show();
+
             holder.checkBox.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -98,8 +98,7 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
                     notifyDataSetChanged();
 
                     rectoken = cardMap.get("rectoken");
-                    updateRectokenCheck(table,  selectedPosition + 1);
-//                    Toast.makeText(getContext(), "rectoken срусл: " + rectoken, Toast.LENGTH_SHORT).show();
+                    updateRectokenCheck(table,  rectoken);
                 }
             });
             // Обработчик для кнопки удаления
@@ -131,32 +130,38 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
     }
 
     private int getCheckRectoken(String table) {
-        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-        String[] columns = {"id"};
+        String[] columns = {"id", "rectoken"};
         String selection = "rectoken_check = ?";
         String[] selectionArgs = {"1"};
-        int result = 1;
-
+        int result = 0;
+        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.query(table, columns, selection, selectionArgs, null, null, null);
 
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                do {
-                    @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
-                    // В этом месте вы можете обрабатывать найденные id
-                    result = id-1;
-                    Log.d("TAG", "Found id with rectoken_check = 1: " + id);
-                } while (cursor.moveToNext());
+                Log.d("TAG", "getCheckRectoken: cursor.getCount() " + cursor.getCount());
+                if (cursor.getCount() == 1) {
+                    int rectokenColumnIndex = cursor.getColumnIndex("rectoken");
+                    Log.d("TAG", "getCheckRectoken: " + cursor.getString(rectokenColumnIndex));
+                    updateRectokenCheck(table, cursor.getString(rectokenColumnIndex));
+                } else {
+                    do {
+                        @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
+                        // В этом месте вы можете обрабатывать найденные id
+                        result = id - 1;
+                        Log.d("TAG", "Found id with rectoken_check = 1: " + id);
+                    } while (cursor.moveToNext());
+                }
             }
             cursor.close();
         }
 
         database.close();
         return result;
+
     }
 
-    private void updateRectokenCheck(String table, int targetId) {
+    private void updateRectokenCheck(String table, String rectoken) {
         SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
         // Устанавливаем -1 для всех записей
@@ -169,15 +174,15 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
         ContentValues targetValue = new ContentValues();
         targetValue.put("rectoken_check", 1);
 
-        String whereClause = "id = ?";
-        String[] whereArgs = {String.valueOf(targetId)};
+        String whereClause = "rectoken = ?";
+        String[] whereArgs = {rectoken};
 
         int rowsUpdated = database.update(table, targetValue, whereClause, whereArgs);
 
         if (rowsUpdated > 0) {
-            Log.d("TAG", "Updated rectoken_check for id " + targetId + " to 1");
+            Log.d("TAG", "Updated rectoken_check for rectoken " + rectoken + " to 1");
         } else {
-            Log.d("TAG", "No rows were updated. ID " + targetId + " may not exist.");
+            Log.d("TAG", "No rows were updated. " + rectoken + " may not exist.");
         }
 
         database.close();
@@ -213,32 +218,43 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
     }
     private void reIndexCardsFondy() {
         SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        database.execSQL("CREATE TABLE  temp_table" + "(id integer primary key autoincrement," +
+
+        // Проверяем, существует ли таблица temp_table, и если она существует, удаляем её
+        if (isTableExists(database, "temp_table")) {
+            database.execSQL("DROP TABLE IF EXISTS temp_table");
+        }
+
+        // Создаем таблицу temp_table
+        database.execSQL("CREATE TABLE temp_table (id integer primary key autoincrement," +
                 " masked_card text," +
                 " card_type text," +
                 " bank_name text," +
-                " rectoken text);");
+                " rectoken text," +
+                " rectoken_check text);");
+
         // Копирование данных из старой таблицы во временную
         database.execSQL("INSERT INTO temp_table SELECT * FROM " + MainActivity.TABLE_FONDY_CARDS);
 
         // Удаление старой таблицы
-        database.execSQL("DROP TABLE " + MainActivity.TABLE_FONDY_CARDS);
+        database.execSQL("DROP TABLE IF EXISTS " + MainActivity.TABLE_FONDY_CARDS);
 
         // Создание новой таблицы
         database.execSQL("CREATE TABLE " + MainActivity.TABLE_FONDY_CARDS + "(id integer primary key autoincrement," +
                 " masked_card text," +
                 " card_type text," +
                 " bank_name text," +
-                " rectoken text);");
+                " rectoken text," +
+                " rectoken_check text);");
 
-        String query = "INSERT INTO " + MainActivity.TABLE_FONDY_CARDS + " (masked_card, card_type, bank_name, rectoken) " +
-                "SELECT masked_card, card_type, bank_name, rectoken FROM temp_table";
+        String query = "INSERT INTO temp_table (masked_card, card_type, bank_name, rectoken, rectoken_check) " +
+                "SELECT masked_card, card_type, bank_name, rectoken, rectoken_check FROM " + MainActivity.TABLE_FONDY_CARDS;
+
 
         // Копирование данных из временной таблицы в новую
         database.execSQL(query);
 
         // Удаление временной таблицы
-        database.execSQL("DROP TABLE temp_table");
+        database.execSQL("DROP TABLE IF EXISTS temp_table");
         database.close();
 
         ArrayList<Map<String, String>> cardMaps = getCardMapsFromDatabase();
@@ -249,8 +265,16 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
             CardFragment.listView.setVisibility(View.GONE);
             CardFragment.textCard.setText(R.string.no_cards);
         }
-
     }
+
+    // Проверка наличия таблицы в базе данных
+    private boolean isTableExists(SQLiteDatabase db, String tableName) {
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{tableName});
+        boolean tableExists = cursor.moveToFirst();
+        cursor.close();
+        return tableExists;
+    }
+
 
     @SuppressLint("Range")
     private ArrayList<Map<String, String>> getCardMapsFromDatabase() {

@@ -169,10 +169,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         cv.put("payment_type", paymentCode);
         // обновляем по id
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
+        if(isAdded()){
+            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                    new String[] { "1" });
+            database.close();
+        }
+
     }
 
     @SuppressLint("Range")

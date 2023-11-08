@@ -17,8 +17,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -65,7 +63,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class CardFragment extends Fragment {
 
     private @NonNull FragmentCardBinding binding;
-    private AppCompatButton btnCardLink, btnCardUnLink;
+    private AppCompatButton btnCardLink;
 
     private NetworkChangeReceiver networkChangeReceiver;
     private String baseUrl = "https://m.easy-order-taxi.site";
@@ -74,11 +72,10 @@ public class CardFragment extends Fragment {
     private String TAG = "TAG3";
     String email;
     String amount = "100";
-    private String[] array;
     public static TextView textCard;
-    private ArrayAdapter<String> listAdapter;
+
     public static ListView listView;
-    private String table;
+    public static String table;
     String pay_method;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -153,7 +150,7 @@ public class CardFragment extends Fragment {
                 }
 
                 Log.d(TAG, "onResume: cardMaps" + cardMaps);
-                if (!cardMaps.isEmpty()) {
+                if (cardMaps != null && !cardMaps.isEmpty()) {
                     CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), cardMaps, table);
                     listView.setAdapter(listAdapter);
 
@@ -195,6 +192,7 @@ public class CardFragment extends Fragment {
                 } while (cursor.moveToNext());
             }
             cursor.close();
+
         }
         database.close();
 

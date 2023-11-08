@@ -20,6 +20,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.gson.Gson;
@@ -100,9 +102,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                             getStatusMono();
                             break;
                     }
+                    return true;
+                } else {
+                    // Возвращаем false, чтобы разрешить WebView загрузить страницу.
+                    return false;
                 }
-                // Возвращаем false, чтобы разрешить WebView загрузить страницу.
-                return false;
             }
         });
         webView.loadUrl(Objects.requireNonNull(checkoutUrl));
@@ -294,7 +298,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                                     if (!cardMaps.isEmpty()) {
                                         // Если массив пустой, отобразите текст "no_routs" вместо списка
                                         CardFragment.textCard.setVisibility(View.GONE);
+
+                                        CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), getCardMapsFromDatabase(), CardFragment.table);
+                                        CardFragment.listView.setAdapter(listAdapter);
                                         CardFragment.listView.setVisibility(View.VISIBLE);
+                                        updateCardFragment();
                                     }
                                     dismiss();
                                 }
@@ -322,6 +330,27 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
 
             }
         });
+
+    }
+
+    private void updateCardFragment() {
+        // Создаем новый экземпляр фрагмента
+        CardFragment newFragment = new CardFragment();
+
+// Получаем менеджер фрагментов
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager(); // Если вы используете AppCompatActivity
+
+// Начинаем транзакцию фрагментов
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+// Заменяем текущий фрагмент новым
+        transaction.replace(R.id.fragment_card, newFragment); // R.id.fragment_container - это ID контейнера, в котором находится ваш фрагмент
+
+// Добавляем транзакцию в стек возврата
+        transaction.addToBackStack(null);
+
+// Применяем транзакцию
+        transaction.commit();
 
     }
 
