@@ -229,6 +229,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                                         cv.put("card_type", card_type);
                                         cv.put("bank_name", bank_name);
                                         cv.put("rectoken", rectoken);
+                                        cv.put("rectoken_check", "1");
                                         database.insert(MainActivity.TABLE_FONDY_CARDS, null, cv);
                                     }
 

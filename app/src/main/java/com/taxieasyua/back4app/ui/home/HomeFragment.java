@@ -360,7 +360,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231108094016352_SYPS", "повернення замовлення", "3900");
+//                getRevers("V_20231108094016352_SYPS", "повернення замовлення", "3900");
 
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());

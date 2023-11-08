@@ -89,6 +89,7 @@ public class CustomCardAdapter extends ArrayAdapter<Map<String, String>> {
             Log.d("TAG", "getView: " + selectedPosition);
             holder.checkBox.setChecked(position == selectedPosition);
             rectoken = cardMap.get("rectoken");
+
             notifyDataSetChanged();
 
             holder.checkBox.setOnClickListener(new View.OnClickListener() {

@@ -187,7 +187,10 @@ public class FinishActivity extends AppCompatActivity {
          }
 
         if (pay_method.equals("fondy_payment") || pay_method.equals("mono_payment")) {
-
+            /**
+             * Записываем номер заказа
+             */
+            MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
             callOrderIdMemory(MainActivity.order_id, uid, pay_method);
 
             handler.postDelayed(new Runnable() {
@@ -279,7 +282,7 @@ public class FinishActivity extends AppCompatActivity {
                 break;
             case "mono_payment":
 
-                MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+
 
                 String reference = MainActivity.order_id;
                 String comment = getString(R.string.fondy_message);
@@ -295,7 +298,7 @@ public class FinishActivity extends AppCompatActivity {
 
 
         String rectoken = getCheckRectoken(MainActivity.TABLE_FONDY_CARDS);
-
+        Log.d(TAG, "payFondy: rectoken " + rectoken);
         if (rectoken.equals("")) {
             getUrlToPaymentFondy(messageFondy, amount);
         } else {
@@ -317,7 +320,7 @@ public class FinishActivity extends AppCompatActivity {
         String merchantPassword = getString(R.string.fondy_key_storage);
         List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO);
         String email = stringList.get(3);
-        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+
         String order_id =  MainActivity.order_id;
 
         Log.d(TAG, "paymentByTokenFondy: " + rectoken);
@@ -429,7 +432,7 @@ public class FinishActivity extends AppCompatActivity {
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
         String merchantPassword = getString(R.string.fondy_key_storage);
         String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
+
         String order_id = MainActivity.order_id;
         RequestData paymentRequest = new RequestData(
                 order_id,
@@ -636,7 +639,10 @@ public class FinishActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (pay_method.equals("bonus_payment") || pay_method.equals("card_payment")) {
+        if (pay_method.equals("bonus_payment")
+                || pay_method.equals("card_payment")
+                || pay_method.equals("fondy_payment")
+                || pay_method.equals("mono_payment")) {
            thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
