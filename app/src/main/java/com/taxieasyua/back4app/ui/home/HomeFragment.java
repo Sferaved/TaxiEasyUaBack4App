@@ -1081,8 +1081,9 @@ public class HomeFragment extends Fragment {
                     from_number.setText(retrievedRouteCost.fromNumber);
                     textViewTo.setText(retrievedRouteCost.to);
                     to_number.setText(retrievedRouteCost.toNumber);
-                    text_view_cost.setText(retrievedRouteCost.text_view_cost);
-                    updateAddCost(retrievedRouteCost.addCost);
+                    text_view_cost.setVisibility(View.INVISIBLE);
+//                    text_view_cost.setText(retrievedRouteCost.text_view_cost);
+//                    updateAddCost(retrievedRouteCost.addCost);
 
                     textViewTo.setVisibility(View.VISIBLE);
                     binding.textwhere.setVisibility(View.VISIBLE);
@@ -1118,12 +1119,12 @@ public class HomeFragment extends Fragment {
                     MIN_COST_VALUE = (long) ((Long.parseLong(retrievedRouteCost.text_view_cost) - addCostforMin) * 0.6);
                     Log.d(TAG, "onPostExecute: MIN_COST_VALUE" + MIN_COST_VALUE);
                     btn_order.setVisibility(View.VISIBLE);
-                } else {
-                    // Данные с указанным routeId отсутствуют в базе данных
-                    updateUIFromList(stringListRoutHome);
                 }
+                updateAddCost("0");
+                updateUIFromList(stringListRoutHome);
             }
         }.execute(routeIdToCheck);
+
     }
 
     private void updateUIFromList(List<String> stringListRoutHome) {
