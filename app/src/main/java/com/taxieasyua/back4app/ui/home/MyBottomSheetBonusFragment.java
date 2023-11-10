@@ -85,18 +85,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
-                    paySystem(new CardFragment.PaySystemCallback() {
-                        @Override
-                        public void onPaySystemResult(String paymentCode) {
-                            Log.d(TAG, "onPaySystemResult: paymentCode" + paymentCode);
-                            // Здесь вы можете использовать полученное значение paymentCode
-                            pay_method = paymentCode;
-                        }
 
-                        @Override
-                        public void onPaySystemFailure(String errorMessage) {
-                        }
-                    });
 
         listView = view.findViewById(R.id.listViewBonus);
         array = new  String[]{
@@ -142,7 +131,18 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 pos = position;
                 Log.d(TAG, "onItemClick: pos " + pos);
                 if (pos == 2) {
-                    paymentType(pay_method);
+                    paySystem(new CardFragment.PaySystemCallback() {
+                        @Override
+                        public void onPaySystemResult(String paymentCode) {
+                            Log.d(TAG, "onPaySystemResult: paymentCode" + paymentCode);
+                            // Здесь вы можете использовать полученное значение paymentCode
+                             paymentType(paymentCode);
+                        }
+
+                        @Override
+                        public void onPaySystemFailure(String errorMessage) {
+                        }
+                    });
                 } else {
                     paymentType(arrayCode [pos]);
                 }

@@ -75,7 +75,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     private WebView webView;
-    private String TAG = "TAG";
+    private String TAG = "MyBottomSheetCardPayment";
     private String checkoutUrl;
     private String amount;
     private AppCompatButton btnOk;
@@ -541,6 +541,17 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
         // Выполните запрос
         Call<CallbackResponse> call = service.handleCallback(email, pay_system);
+
+        String tableCard = new String();
+        switch (pay_system) {
+            case "fondy":
+                tableCard = MainActivity.TABLE_FONDY_CARDS;
+                break;
+            case "mono":
+                tableCard = MainActivity.TABLE_MONO_CARDS;
+                break;
+        }
+        String finalTableCard = tableCard;
         call.enqueue(new Callback<CallbackResponse>() {
             @Override
             public void onResponse(@NonNull Call<CallbackResponse> call, @NonNull Response<CallbackResponse> response) {
@@ -558,12 +569,12 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                                 String bank_name = cardInfo.getBank_name(); // Название банка
                                 String rectoken = cardInfo.getRectoken(); // Токен карты
 
-                                Log.d(TAG, "onResponse: card_token: " + rectoken);
+                                Log.d(TAG, "onResponse: card_token 11111: " + rectoken);
 
                                 if (isAdded()) {
                                     // Проверяем, есть ли запись с таким rectoken в таблице
                                     Cursor cursor = database.query(
-                                            MainActivity.TABLE_FONDY_CARDS,
+                                            finalTableCard,
                                             new String[]{"rectoken"},
                                             "rectoken = ?",
                                             new String[]{rectoken},
@@ -579,7 +590,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                                         cv.put("card_type", card_type);
                                         cv.put("bank_name", bank_name);
                                         cv.put("rectoken", rectoken);
-                                        database.insert(MainActivity.TABLE_FONDY_CARDS, null, cv);
+                                        cv.put("rectoken_check", "1");
+                                        database.insert(finalTableCard, null, cv);
                                     }
 
                                     cursor.close();

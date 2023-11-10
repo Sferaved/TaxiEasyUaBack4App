@@ -221,17 +221,18 @@ public class HomeFragment extends Fragment {
         btn_plus= binding.btnPlus;
 
         btn_minus.setOnClickListener(v -> {
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-            addCost = Long.parseLong(stringListInfo.get(5));
-            cost = Long.parseLong(text_view_cost.getText().toString());
-            cost -= 5;
-            addCost -= 5;
-            if (cost <= MIN_COST_VALUE) {
-                cost = MIN_COST_VALUE;
-                addCost = MIN_COST_VALUE - costFirstForMin;
+            Log.d(TAG, "onCreateView: cost " +cost);
+            Log.d(TAG, "onCreateView: MIN_COST_VALUE " +MIN_COST_VALUE);
+            if (cost >= MIN_COST_VALUE) {
+                List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                addCost = Long.parseLong(stringListInfo.get(5));
+                cost = Long.parseLong(text_view_cost.getText().toString());
+                cost -= 5;
+                addCost -= 5;
+
+                updateAddCost(String.valueOf(addCost));
+                text_view_cost.setText(String.valueOf(cost));
             }
-            updateAddCost(String.valueOf(addCost));
-            text_view_cost.setText(String.valueOf(cost));
         });
 
         btn_plus.setOnClickListener(new View.OnClickListener() {
@@ -360,7 +361,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                getRevers("V_20231108094016352_SYPS", "повернення замовлення", "3900");
+                getRevers("V_20231110093309411_ZAJ6", "повернення замовлення", "3500");
 
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -1093,8 +1094,8 @@ public class HomeFragment extends Fragment {
                     buttonAddServices.setVisibility(View.VISIBLE);
                     buttonBonus.setVisibility(View.VISIBLE);
                     btn_clear.setVisibility(View.VISIBLE);
-
-                    if (!retrievedRouteCost.fromNumber.equals(" ")) {
+                    Log.d(TAG, "onPostExecute: from_number.getText().toString()" + from_number.getText().toString());
+                    if (!from_number.getText().toString().equals(" ")) {
                         from_number.setVisibility(View.VISIBLE);
                     }
                     Log.d(TAG, "onPostExecute: retrievedRouteCost.toNumber/" + retrievedRouteCost.toNumber +"/");
@@ -1103,15 +1104,19 @@ public class HomeFragment extends Fragment {
                         textViewTo.setVisibility(View.VISIBLE);
                         binding.textwhere.setVisibility(View.VISIBLE);
                         binding.num2.setVisibility(View.VISIBLE);
+                        to_number.setText(" ");
 
                     }
-                    if (!retrievedRouteCost.toNumber.equals(" ")) {
+                    if (!to_number.getText().toString().equals(" ")) {
                         to_number.setVisibility(View.VISIBLE);
                     } else {
                         to_number.setVisibility(View.INVISIBLE);
                     }
-                    MIN_COST_VALUE = (long) (Long.parseLong(retrievedRouteCost.text_view_cost) * 0.6);
-
+                    List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                    long addCostforMin = Long.parseLong(stringListInfo.get(5));
+                    Log.d(TAG, "onPostExecute: addCostforMin" + addCostforMin);
+                    MIN_COST_VALUE = (long) ((Long.parseLong(retrievedRouteCost.text_view_cost) - addCostforMin) * 0.6);
+                    Log.d(TAG, "onPostExecute: MIN_COST_VALUE" + MIN_COST_VALUE);
                     btn_order.setVisibility(View.VISIBLE);
                 } else {
                     // Данные с указанным routeId отсутствуют в базе данных
