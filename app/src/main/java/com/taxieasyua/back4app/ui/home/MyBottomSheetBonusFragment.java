@@ -65,18 +65,11 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String pay_method;
     private String baseUrl = "https://m.easy-order-taxi.site";
 
-    public MyBottomSheetBonusFragment(long cost, String rout, String api) {
-        this.cost = cost;
-        this.rout = rout;
-        this.api = api;
-
-    }
-    public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView, String fragment) {
+    public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView) {
         this.cost = cost;
         this.rout = rout;
         this.api = api;
         this.textView = textView;
-        this.fragment = fragment;
     }
 
     @SuppressLint({"MissingInflatedId", "Range"})
@@ -146,7 +139,11 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 } else {
                     paymentType(arrayCode [pos]);
                 }
+                List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+                String paymentType = stringList.get(4);
 
+                String textCost = textView.getText().toString();
+                changePayMethodMax(textCost, paymentType);
             }
 
         });
@@ -261,16 +258,14 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         });
     }
 
-    // Интерфейс для обработки результата и ошибки
-    public interface PaySystemCallback {
-        void onPaySystemResult(String paymentCode);
-        void onPaySystemFailure(String errorMessage);
-    }
-
-
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+        String paymentType = stringList.get(4);
+
+        String textCost = textView.getText().toString();
+        changePayMethodMax(textCost, paymentType);
 
         Log.d(TAG, "onDismiss: rout " + rout);
         if(rout.equals("home")) {
@@ -302,7 +297,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
                 HomeFragment.costFirstForMin = firstCost;
                 String costUpdate = String.valueOf(firstCost);
-                HomeFragment.text_view_cost.setText(costUpdate);
+                textView.setText(costUpdate);
+
             }
         }
         if(rout.equals("geo")) {
@@ -408,8 +404,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);
-        String payment_type =  stringList.get(4);
-
+        String payment_type = stringList.get(4);
 
         String parameters = null;
         String phoneNumber = "no phone";
@@ -458,10 +453,38 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         Log.d(TAG, "getTaxiUrlSearch: " + url);
 
-
-
         return url;
     }
+
+    private String changePayMethodMax(String textCost, String paymentType) {
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+        String card_max_pay =  stringListCity.get(4);
+        String bonus_max_pay =  stringListCity.get(5);
+        String payment_type = "nal_payment";
+
+        switch (paymentType) {
+            case "bonus_payment":
+                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            default:
+                payment_type = "nal_payment";
+        }
+        Log.d(TAG, "changePayMethodMax: " + payment_type);
+        return  payment_type;
+    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("Range")
@@ -494,7 +517,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);
-        String payment_type =  stringList.get(4);
+        String payment_type = stringList.get(4);
 
         // Building the parameters to the web service
 
@@ -571,7 +594,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringList.get(2);
-        String payment_type =  stringList.get(4);
+        String payment_type = stringList.get(4);
 
         // Building the parameters to the web service
 

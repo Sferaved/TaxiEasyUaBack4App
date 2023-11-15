@@ -99,6 +99,7 @@ public class FinishActivity extends AppCompatActivity {
         setContentView(R.layout.activity_finish);
         new VerifyUserTask().execute();
         pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
+        Log.d(TAG, "onCreate: " + pay_method);
         messageFondy = getString(R.string.fondy_message);
 
         List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
@@ -651,6 +652,11 @@ public class FinishActivity extends AppCompatActivity {
                 }
             });
            thread.start();
+        } else {
+            String message = getString(R.string.nal_pay_message);
+
+            MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
 

@@ -28,7 +28,6 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,7 +128,6 @@ public class HomeFragment extends Fragment {
     private String baseUrl = "https://m.easy-order-taxi.site";
     private Map<String, String> sendUrlMap;
     public static int routeIdToCheck = 123;
-
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -299,6 +297,7 @@ public class HomeFragment extends Fragment {
                     }
 
                     if (verifyPhone(requireActivity())) {
+                        pay_method = changePayMethodMax(text_view_cost.getText().toString(), pay_method);
                         Log.d(TAG, "onClick: pay_method "+ pay_method);
                         orderFinished();
                     }
@@ -361,7 +360,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231110093309411_ZAJ6", "повернення замовлення", "3500");
+                getRevers("V_20231111101558754_3SV9", "повернення замовлення", "2500");
 
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -384,7 +383,12 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String api =  stringList.get(2);
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "home", api);
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(
+                        Long.parseLong(text_view_cost.getText().toString()),
+                        "home",
+                        api,
+                        text_view_cost
+                );
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -639,6 +643,10 @@ public class HomeFragment extends Fragment {
         super.onResume();
         progressBar.setVisibility(View.INVISIBLE);
         pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+        if(!text_view_cost.getText().equals("")){
+            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+        }
+
 
         if(bottomSheetDialogFragment != null) {
             bottomSheetDialogFragment.dismiss();
@@ -1346,6 +1354,7 @@ public class HomeFragment extends Fragment {
                 new String[] { "1" });
         database.close();
         updateAddCost("0");
+        paymentType("nal_payment");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -1380,13 +1389,23 @@ public class HomeFragment extends Fragment {
         // Destination of route
         String str_dest = to + "/" + to_number;
 
+        //City Table
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String api =  stringListCity.get(2);
+
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
 
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String paymentType =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
+        String payment_type = paymentType;
+
+        String textCost = text_view_cost.getText().toString();
+        if(!textCost.equals("")) {
+            payment_type = changePayMethodMax(textCost, paymentType);
+        }
 
         Log.d(TAG, "startCost: discountText" + discount);
 
@@ -1408,6 +1427,7 @@ public class HomeFragment extends Fragment {
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName + "*" + userEmail  + "*" + payment_type;
         }
+
 
         if(urlAPI.equals("orderSearch")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
@@ -1455,8 +1475,8 @@ public class HomeFragment extends Fragment {
         } else {
             result = "no_extra_charge_codes";
         }
-        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String api =  stringListCity.get(2);
+
+
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         Log.d(TAG, "getTaxiUrlSearch: " + url);
@@ -1464,6 +1484,35 @@ public class HomeFragment extends Fragment {
         database.close();
 
         return url;
+    }
+
+    private String changePayMethodMax(String textCost, String paymentType) {
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+        String card_max_pay =  stringListCity.get(4);
+        String bonus_max_pay =  stringListCity.get(5);
+        String payment_type = "nal_payment";
+
+        switch (paymentType) {
+            case "bonus_payment":
+                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            default:
+                payment_type = "nal_payment";
+        }
+        Log.d(TAG, "changePayMethodMax: " + payment_type);
+        return  payment_type;
     }
 
     @SuppressLint("Range")
@@ -1572,8 +1621,5 @@ public class HomeFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
-
-
-
 
 }

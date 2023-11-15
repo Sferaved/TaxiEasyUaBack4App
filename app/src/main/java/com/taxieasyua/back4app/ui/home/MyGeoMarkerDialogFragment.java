@@ -231,7 +231,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
                         break;
                     case "OdessaTest":
                         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                        String payment_type =  stringListInfo.get(4);
+                        String payment_type = stringListInfo.get(4);
                         if(payment_type.equals("bonus_payment")) {
                             String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                             if(Long.parseLong(bonus) < cost * 100 ) {
@@ -251,7 +251,7 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
 
         buttonBonus.setOnClickListener(v -> {
-            MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost, "GeoMarker");
+            MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost);
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         });
         return view;
@@ -764,8 +764,15 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
 
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
-        String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String tarif = stringListInfo.get(2);
+        String paymentType = stringListInfo.get(4);
+        String payment_type = paymentType;
+
+        String textCost = text_view_cost.getText().toString();
+        if(!textCost.equals("")) {
+            payment_type = changePayMethodMax(textCost , paymentType );
+        }
+
         String addCost = stringListInfo.get(5);
 
         // Building the parameters to the web service
@@ -1141,6 +1148,34 @@ public class MyGeoMarkerDialogFragment extends BottomSheetDialogFragment {
         }
 
     }
+    private String changePayMethodMax(String textCost, String paymentType) {
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+        String card_max_pay =  stringListCity.get(4);
+        String bonus_max_pay =  stringListCity.get(5);
+        String payment_type = "nal_payment";
+
+        switch (paymentType) {
+            case "bonus_payment":
+                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            default:
+                payment_type = paymentType;
+        }
+        return  payment_type;
+    }
+
 }
 
 

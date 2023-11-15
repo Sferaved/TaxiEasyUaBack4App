@@ -262,7 +262,7 @@ public class GalleryFragment extends Fragment {
             public void onClick(View v) {
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                 String api =  stringList.get(2);
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost, "Gallery") ;
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), "marker", api, text_view_cost) ;
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -575,7 +575,11 @@ public class GalleryFragment extends Fragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String paymentType =  stringListInfo.get(4);
+
+        String textCost = text_view_cost.getText().toString();
+        String payment_type = changePayMethodMax(textCost , paymentType );
+
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
@@ -644,14 +648,38 @@ public class GalleryFragment extends Fragment {
         List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
         String api =  stringListCity.get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-
-
         database.close();
-
-
         return url;
-
     }
+
+    private String changePayMethodMax(String textCost, String paymentType) {
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+        String card_max_pay =  stringListCity.get(4);
+        String bonus_max_pay =  stringListCity.get(5);
+        String payment_type = "nal_payment";
+
+        switch (paymentType) {
+            case "bonus_payment":
+                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            default:
+                payment_type = "nal_payment";
+        }
+        return  payment_type;
+    }
+
 
     @SuppressLint("Range")
     public List<String> logCursor(String table, Context context) {

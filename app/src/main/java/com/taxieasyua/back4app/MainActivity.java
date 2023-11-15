@@ -55,6 +55,9 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.taxieasyua.back4app.cities.api.CityApiClient;
+import com.taxieasyua.back4app.cities.api.CityResponse;
+import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.card.CardInfo;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
@@ -115,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_10112023_3";
+    public static final String DB_NAME = "data_15112023_0";
 
     /**
      * Table section
@@ -316,14 +319,20 @@ public class MainActivity extends AppCompatActivity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + CITY_INFO + "(id integer primary key autoincrement," +
                 " city text," +
                 " api text," +
-                " phone text);");
+                " phone text," +
+                " card_max_pay text," +
+                " bonus_max_pay text);");
         cursorDb = database.query(CITY_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
             settings.add("Kyiv City"); //1
             settings.add(apiKyiv); //2
             settings.add(Kyiv_City_phone); //3
+            settings.add("5000"); //4
+            settings.add("500000"); //5
             insertCity(settings);
+
+            cityMaxPay("Kyiv City");
         }
         cursorDb = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         verifyPhone = cursorDb.getCount() == 1;
@@ -575,7 +584,7 @@ public class MainActivity extends AppCompatActivity {
     }
 //
     private void insertCity(List<String> settings) {
-        String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?,?,?);";
+        String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -584,6 +593,8 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(2, settings.get(0));
             statement.bindString(3, settings.get(1));
             statement.bindString(4, settings.get(2));
+            statement.bindString(5, settings.get(3));
+            statement.bindString(6, settings.get(4));
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -791,7 +802,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         builder.setPositiveButton(R.string.cheng, (dialog, which) -> {
-            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
 
             String api, phone;
             switch (cityNew) {
@@ -824,10 +835,12 @@ public class MainActivity extends AppCompatActivity {
             cv.put("city", cityNew);
             cv.put("api", api);
             cv.put("phone", phone);
+            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(MainActivity.CITY_INFO, cv, "id = ?",
                 new String[] { "1" });
 
             Log.d("TAG", "cityChange: " + logCursor(MainActivity.CITY_INFO).toString());
+
             cv = new ContentValues();
             cv.put("tarif", " ");
             database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
@@ -835,7 +848,11 @@ public class MainActivity extends AppCompatActivity {
 
             database.close();
 
+            cityMaxPay(cityNew);
+
             Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
+
+            Log.d(TAG, "cityChange: " + logCursor(CITY_INFO).toString());
 
             NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
             resetRoutHome();
@@ -1463,6 +1480,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void cityMaxPay(String $city) {
+        CityService cityService = CityApiClient.getClient().create(CityService.class);
 
+        // Замените "your_city" на фактическое название города
+        Call<CityResponse> call = cityService.getMaxPayValues($city);
+
+        call.enqueue(new Callback<CityResponse>() {
+            @Override
+            public void onResponse(Call<CityResponse> call, Response<CityResponse> response) {
+                if (response.isSuccessful()) {
+                    CityResponse cityResponse = response.body();
+                    if (cityResponse != null) {
+                        int cardMaxPay = cityResponse.getCardMaxPay();
+                        int bonusMaxPay = cityResponse.getBonusMaxPay();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("card_max_pay", cardMaxPay);
+                        cv.put("bonus_max_pay", bonusMaxPay);
+
+                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                new String[] { "1" });
+
+                        database.close();
+
+                        Log.d(TAG, "onResponse: cardMaxPay" + cardMaxPay);
+                        Log.d(TAG, "onResponse: bonus_max_pay" + bonusMaxPay);
+                        Log.d(TAG, "onResponse: " + logCursor(CITY_INFO).toString());
+
+                        // Добавьте здесь код для обработки полученных значений
+                    }
+                } else {
+                    Log.e("Request", "Failed. Error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CityResponse> call, Throwable t) {
+                Log.e("Request", "Failed. Error message: " + t.getMessage());
+            }
+        });
+    }
 
 }

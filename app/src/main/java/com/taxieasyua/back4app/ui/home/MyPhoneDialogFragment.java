@@ -565,7 +565,11 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String paymentType =  stringListInfo.get(4);
+
+        String textCost = HomeFragment.text_view_cost.getText().toString();
+        String payment_type = changePayMethodMax(textCost , paymentType );
+
         // Building the parameters to the web service
 
         String parameters = null;
@@ -674,7 +678,10 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String paymentType =  stringListInfo.get(4);
+
+        String textCost = MyGeoDialogFragment.text_view_cost.getText().toString();
+        String payment_type = changePayMethodMax(textCost , paymentType );
 
         // Building the parameters to the web service
 
@@ -773,7 +780,10 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String paymentType =  stringListInfo.get(4);
+
+        String textCost = MyGeoMarkerDialogFragment.text_view_cost.getText().toString();
+        String payment_type = changePayMethodMax(textCost , paymentType );
 
         // Building the parameters to the web service
 
@@ -847,6 +857,45 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         return url;
 
+    }
+
+
+    private String changePayMethodMax(String textCost, String paymentType) {
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO);
+
+        String card_max_pay =  stringListCity.get(4);
+        String bonus_max_pay =  stringListCity.get(5);
+        String payment_type = "nal_payment";
+
+        switch (paymentType) {
+            case "bonus_payment":
+                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            default:
+                payment_type = paymentType;
+        }
+        return  payment_type;
+    }
+
+    private void paymentType(String paymentCode) {
+        ContentValues cv = new ContentValues();
+        cv.put("payment_type", paymentCode);
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
     }
 
     @SuppressLint("Range")

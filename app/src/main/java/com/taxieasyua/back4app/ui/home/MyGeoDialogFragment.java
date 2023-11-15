@@ -105,7 +105,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
-    private static final String TAG = "TAG";
+    private static final String TAG = "TAG_GEO";
     public TextView geoText;
     public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
     public String[] arrayStreet;
@@ -213,7 +213,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
         buttonBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost, "geo");
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -1069,7 +1069,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("Range")
-    public static String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+    public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
 
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1101,7 +1101,15 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+        String paymentType = stringListInfo.get(4);
+        String payment_type = paymentType;
+
+        String textCost = text_view_cost.getText().toString();
+        if(!textCost.equals("")) {
+            payment_type = changePayMethodMax(textCost, paymentType);
+        }
+
+
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
@@ -1746,8 +1754,17 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String payment_type =  stringListInfo.get(4);
+
         String addCost = stringListInfo.get(5);
+        String paymentType = stringListInfo.get(4);
+        String payment_type = paymentType;
+
+        String textCost = text_view_cost.getText().toString();
+        if(!textCost.equals("")) {
+            payment_type = changePayMethodMax(textCost, paymentType);
+        }
+
+
         // Building the parameters to the web service
 
         String parameters = null;
@@ -1818,6 +1835,36 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
 
     }
+
+    private String changePayMethodMax(String textCost, String paymentType) {
+        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+        String card_max_pay =  stringListCity.get(4);
+        String bonus_max_pay =  stringListCity.get(5);
+        String payment_type = "nal_payment";
+
+        switch (paymentType) {
+            case "bonus_payment":
+                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            case "card_payment":
+            case "fondy_payment":
+            case "mono_payment":
+                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
+                    paymentType("nal_payment");
+                    payment_type = "nal_payment";
+                }
+                break;
+            default:
+                payment_type = paymentType;
+        }
+        Log.d(TAG, "changePayMethodMax: " + payment_type);
+        return  payment_type;
+    }
+
 
     private void stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
