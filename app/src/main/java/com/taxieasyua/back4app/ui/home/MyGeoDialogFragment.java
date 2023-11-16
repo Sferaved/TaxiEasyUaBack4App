@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -32,6 +33,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -89,6 +91,7 @@ import com.taxieasyua.back4app.ui.start.ResultSONParser;
 import org.json.JSONException;
 import org.osmdroid.config.Configuration;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -553,9 +556,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         case "Cherkasy Oblast":
                             break;
                         case "OdessaTest":
-                            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                            String payment_type =  stringListInfo.get(4);
-                            if(payment_type.equals("bonus_payment")) {
+                            if(pay_method.equals("bonus_payment")) {
                                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
@@ -563,11 +564,23 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             }
                             break;
                     }
-                    orderRout();
+
                     if (verifyPhone(requireActivity())) {
-                        try {
-                            orderFinished();
-                        } catch (MalformedURLException ignored) {
+                        switch (pay_method) {
+                            case "bonus_payment":
+                            case "card_payment":
+                            case "fondy_payment":
+                            case "mono_payment":
+                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                break;
+                            default:
+                                orderRout();
+                                try {
+                                    orderFinished();
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                break;
                         }
                     }
                 }
@@ -1101,15 +1114,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-        String paymentType = stringListInfo.get(4);
-        String payment_type = paymentType;
-
-        String textCost = text_view_cost.getText().toString();
-        if(!textCost.equals("")) {
-            payment_type = changePayMethodMax(textCost, paymentType);
-        }
-
-
+        String payment_type = stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
 
@@ -1754,16 +1759,8 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
-
+        String payment_type = stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
-        String paymentType = stringListInfo.get(4);
-        String payment_type = paymentType;
-
-        String textCost = text_view_cost.getText().toString();
-        if(!textCost.equals("")) {
-            payment_type = changePayMethodMax(textCost, paymentType);
-        }
-
 
         // Building the parameters to the web service
 
@@ -1836,33 +1833,66 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
 
     }
 
-    private String changePayMethodMax(String textCost, String paymentType) {
+    private void changePayMethodMax(String textCost, String paymentType) {
         List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
 
         String card_max_pay =  stringListCity.get(4);
         String bonus_max_pay =  stringListCity.get(5);
-        String payment_type = "nal_payment";
+        // Инфлейтим макет для кастомного диалога
+        LayoutInflater inflater = LayoutInflater.from(requireActivity());
+        View dialogView = inflater.inflate(R.layout.custom_dialog_layout, null);
 
-        switch (paymentType) {
-            case "bonus_payment":
-                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
+        AlertDialog alertDialog = new AlertDialog.Builder(requireActivity()).create();
+        alertDialog.setView(dialogView);
+        alertDialog.setCancelable(false);
+        // Настраиваем элементы макета
+
+
+        TextView messageTextView = dialogView.findViewById(R.id.dialog_message);
+        messageTextView.setText(R.string.max_limit_message);
+
+        Button okButton = dialogView.findViewById(R.id.dialog_ok_button);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (paymentType) {
+                    case "bonus_payment":
+                        if (Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100) {
+                            paymentType("nal_payment");
+                        }
+                        break;
+                    case "card_payment":
+                    case "fondy_payment":
+                    case "mono_payment":
+                        if (Long.parseLong(card_max_pay) <= Long.parseLong(textCost)) {
+                            paymentType("nal_payment");
+                        }
+                        break;
                 }
-                break;
-            case "card_payment":
-            case "fondy_payment":
-            case "mono_payment":
-                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
+
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    orderRout();
+                    }
+                    orderFinished();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
                 }
-                break;
-            default:
-                payment_type = paymentType;
-        }
-        Log.d(TAG, "changePayMethodMax: " + payment_type);
-        return  payment_type;
+                progressBar.setVisibility(View.GONE);
+                alertDialog.dismiss();
+            }
+        });
+
+        Button cancelButton = dialogView.findViewById(R.id.dialog_cancel_button);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                progressBar.setVisibility(View.GONE);
+                alertDialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
     }
 
 

@@ -3,6 +3,7 @@ package com.taxieasyua.back4app.ui.home;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,8 +20,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,6 +46,7 @@ import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,9 +83,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.phone_verify_layout, container, false);
         phoneNumber = view.findViewById(R.id.phoneNumber);
-//        phoneNumber.setVisibility(View.INVISIBLE);
         button = view.findViewById(R.id.ok_button);
-//        button.setVisibility(View.INVISIBLE);
         checkBox = view.findViewById(R.id.checkbox);
         messageFondy = getString(R.string.fondy_message);
         button.setOnClickListener(new View.OnClickListener() {
@@ -102,20 +104,30 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        switch (page) {
-                            case "home" :
-                                orderHome();
-                                dismiss();
+                        switch (pay_method) {
+                            case "bonus_payment":
+                            case "card_payment":
+                            case "fondy_payment":
+                            case "mono_payment":
+                                changePayMethodMax(amount, pay_method);
                                 break;
-                            case "geo" :
-                                orderGeo();
-                                dismiss();
-                                break;
-                            case "marker" :
-                                orderMarker();
-                                dismiss();
-                                break;
+                            default:
+                                switch (page) {
+                                    case "home" :
+                                        orderHome();
+                                        dismiss();
+                                        break;
+                                    case "geo" :
+                                        orderGeo();
+                                        dismiss();
+                                        break;
+                                    case "marker" :
+                                        orderMarker();
+                                        dismiss();
+                                        break;
+                                }
                         }
+
                     }
 
 
@@ -129,116 +141,6 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         // Получаем контекст активности
         database = context.openOrCreateDatabase(MainActivity.DB_NAME, Context.MODE_PRIVATE, null);
     }
-    private void getUrlToPayment(String amount) {
-        MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(getActivity());
-        String order_id = MainActivity.order_id;
-        String orderDescription = messageFondy;
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://pay.fondy.eu/api/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
-        String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-        RequestData paymentRequest = new RequestData(
-                order_id,
-                orderDescription,
-                amount,
-                MainActivity.MERCHANT_ID,
-                merchantPassword,
-                email
-        );
-
-
-        StatusRequestPay statusRequest = new StatusRequestPay(paymentRequest);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
-
-        Call<ApiResponsePay<SuccessResponseDataPay>> call = paymentApi.makePayment(statusRequest);
-
-        call.enqueue(new Callback<ApiResponsePay<SuccessResponseDataPay>>() {
-
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onResponse(@NonNull Call<ApiResponsePay<SuccessResponseDataPay>> call, Response<ApiResponsePay<SuccessResponseDataPay>> response) {
-                Log.d("TAG1", "onResponse: 1111" + response.code());
-                if (response.isSuccessful()) {
-                    ApiResponsePay<SuccessResponseDataPay> apiResponse = response.body();
-
-                    Log.d("TAG1", "onResponse: " +  new Gson().toJson(apiResponse));
-                    try {
-                        SuccessResponseDataPay responseBody = response.body().getResponse();;
-
-                        // Теперь у вас есть объект ResponseBodyRev для обработки
-                        if (responseBody != null) {
-                            String responseStatus = responseBody.getResponseStatus();
-                            String checkoutUrl = responseBody.getCheckoutUrl();
-                            if ("success".equals(responseStatus)) {
-                                // Обработка успешного ответа
-
-                                String rectoken = responseBody.getRectoken(); //Токен карты
-                                ContentValues cv = new ContentValues();
-                                cv.put("rectoken_fondy", rectoken);
-                                database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                                        new String[] { "1" });
-                                database.close();
-                                
-                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO));
-                                Log.d(TAG, "onResponse: " + logCursor(MainActivity.TABLE_USER_INFO).get(6));
-
-                                Log.d(TAG, "onResponse: urlOrder &&&77777777777777" + urlOrder);
-
-                                MyBottomSheetCardPayment bottomSheetDialogFragment = new MyBottomSheetCardPayment(
-                                        checkoutUrl,
-                                        HomeFragment.text_view_cost.getText().toString(),
-                                        "home",
-                                        urlOrder
-                                );
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-
-
-//                                Intent paymentIntent = new Intent(requireActivity(), FondyPaymentActivity.class);
-//                                paymentIntent.putExtra("checkoutUrl", checkoutUrl);
-//                                paymentIntent.putExtra("urlOrder", urlOrder);
-//                                paymentIntent.putExtra("orderCost", HomeFragment.text_view_cost.getText().toString());
-//                                paymentIntent.putExtra("fragment_key", "home");
-//                                startActivity(paymentIntent);
-                            } else if ("failure".equals(responseStatus)) {
-                                // Обработка ответа об ошибке
-                                String errorResponseMessage = responseBody.getErrorMessage();
-                                String errorResponseCode = responseBody.getErrorCode();
-                                Log.d("TAG1", "onResponse: errorResponseMessage " + errorResponseMessage);
-                                Log.d("TAG1", "onResponse: errorResponseCode" + errorResponseCode);
-                                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.pay_failure));
-                                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                                // Отобразить сообщение об ошибке пользователю
-                            } else {
-                                // Обработка других возможных статусов ответа
-                            }
-                        } else {
-                            // Обработка пустого тела ответа
-                        }
-                    } catch (JsonSyntaxException e) {
-                        // Возникла ошибка при разборе JSON, возможно, сервер вернул неправильный формат ответа
-                        Log.e("TAG1", "Error parsing JSON response: " + e.getMessage());
-                    }
-                } else {
-                    // Обработка ошибки
-                    Log.d("TAG1", "onFailure: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponsePay<SuccessResponseDataPay>> call, Throwable t) {
-                Log.d("TAG1", "onFailure1111: " + t.toString());
-            }
-
-
-        });
-    }
-
     private void orderHome() {
         if (connected()) {
             try {
@@ -565,10 +467,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String paymentType =  stringListInfo.get(4);
-
-        String textCost = HomeFragment.text_view_cost.getText().toString();
-        String payment_type = changePayMethodMax(textCost , paymentType );
+        String payment_type =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -678,10 +577,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String paymentType =  stringListInfo.get(4);
-
-        String textCost = MyGeoDialogFragment.text_view_cost.getText().toString();
-        String payment_type = changePayMethodMax(textCost , paymentType );
+        String payment_type =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -780,10 +676,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringListInfo.get(2);
-        String paymentType =  stringListInfo.get(4);
-
-        String textCost = MyGeoMarkerDialogFragment.text_view_cost.getText().toString();
-        String payment_type = changePayMethodMax(textCost , paymentType );
+        String payment_type =  stringListInfo.get(4);
 
         // Building the parameters to the web service
 
@@ -860,34 +753,75 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
     }
 
 
-    private String changePayMethodMax(String textCost, String paymentType) {
+    private void changePayMethodMax(String textCost, String paymentType) {
         List<String> stringListCity = logCursor(MainActivity.CITY_INFO);
+        String card_max_pay = stringListCity.get(4);
+        String bonus_max_pay = stringListCity.get(5);
 
-        String card_max_pay =  stringListCity.get(4);
-        String bonus_max_pay =  stringListCity.get(5);
-        String payment_type = "nal_payment";
+        // Инфлейтим макет для кастомного диалога
+        LayoutInflater inflater = LayoutInflater.from(requireActivity());
+        View dialogView = inflater.inflate(R.layout.custom_dialog_layout, null);
 
-        switch (paymentType) {
-            case "bonus_payment":
-                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
+        AlertDialog alertDialog = new AlertDialog.Builder(requireActivity()).create();
+        alertDialog.setView(dialogView);
+        alertDialog.setCancelable(false);
+        // Настраиваем элементы макета
+
+
+        TextView messageTextView = dialogView.findViewById(R.id.dialog_message);
+        messageTextView.setText(R.string.max_limit_message);
+
+        Button okButton = dialogView.findViewById(R.id.dialog_ok_button);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (paymentType) {
+                    case "bonus_payment":
+                        if (Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100) {
+                            paymentType("nal_payment");
+                        }
+                        break;
+                    case "card_payment":
+                    case "fondy_payment":
+                    case "mono_payment":
+                        if (Long.parseLong(card_max_pay) <= Long.parseLong(textCost)) {
+                            paymentType("nal_payment");
+                        }
+                        break;
                 }
-                break;
-            case "card_payment":
-            case "fondy_payment":
-            case "mono_payment":
-                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
+                switch (page) {
+                    case "home" :
+                        orderHome();
+                        dismiss();
+                        break;
+                    case "geo" :
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            orderGeo();
+                        }
+                        dismiss();
+                        break;
+                    case "marker" :
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            orderMarker();
+                        }
+                        dismiss();
+                        break;
                 }
-                break;
-            default:
-                payment_type = paymentType;
-        }
-        return  payment_type;
+                alertDialog.dismiss();
+            }
+        });
+
+        Button cancelButton = dialogView.findViewById(R.id.dialog_cancel_button);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                alertDialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
     }
-
     private void paymentType(String paymentCode) {
         ContentValues cv = new ContentValues();
         cv.put("payment_type", paymentCode);

@@ -139,11 +139,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 } else {
                     paymentType(arrayCode [pos]);
                 }
-                List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                String paymentType = stringList.get(4);
 
-                String textCost = textView.getText().toString();
-                changePayMethodMax(textCost, paymentType);
             }
 
         });
@@ -261,11 +257,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-        String paymentType = stringList.get(4);
-
-        String textCost = textView.getText().toString();
-        changePayMethodMax(textCost, paymentType);
 
         Log.d(TAG, "onDismiss: rout " + rout);
         if(rout.equals("home")) {
@@ -454,35 +445,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         Log.d(TAG, "getTaxiUrlSearch: " + url);
 
         return url;
-    }
-
-    private String changePayMethodMax(String textCost, String paymentType) {
-        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-
-        String card_max_pay =  stringListCity.get(4);
-        String bonus_max_pay =  stringListCity.get(5);
-        String payment_type = "nal_payment";
-
-        switch (paymentType) {
-            case "bonus_payment":
-                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
-                }
-                break;
-            case "card_payment":
-            case "fondy_payment":
-            case "mono_payment":
-                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
-                }
-                break;
-            default:
-                payment_type = "nal_payment";
-        }
-        Log.d(TAG, "changePayMethodMax: " + payment_type);
-        return  payment_type;
     }
 
 

@@ -7,8 +7,10 @@ import static com.taxieasyua.back4app.R.string.address_error_message;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -40,6 +42,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.IntentSenderRequest;
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -128,6 +131,8 @@ public class HomeFragment extends Fragment {
     private String baseUrl = "https://m.easy-order-taxi.site";
     private Map<String, String> sendUrlMap;
     public static int routeIdToCheck = 123;
+    private boolean finiched;
+
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -157,6 +162,7 @@ public class HomeFragment extends Fragment {
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        finiched = true;
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
        
@@ -272,7 +278,7 @@ public class HomeFragment extends Fragment {
                 if(connected()) {
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
                     List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                    String payment_type =  stringListInfo.get(4);
+                    pay_method =  stringListInfo.get(4);
                     switch (stringList.get(1)) {
                         case "Kyiv City":
                         case "Dnipropetrovsk Oblast":
@@ -281,7 +287,7 @@ public class HomeFragment extends Fragment {
                         case "Cherkasy Oblast":
                             break;
                         case "OdessaTest":
-                            if(payment_type.equals("bonus_payment")) {
+                            if(pay_method.equals("bonus_payment")) {
                                 String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
                                 if(Long.parseLong(bonus) < cost * 100 ) {
                                     paymentType("nal_payment");
@@ -291,15 +297,24 @@ public class HomeFragment extends Fragment {
                     }
                     progressBar.setVisibility(View.VISIBLE);
 
-                    try {
-                        orderRout();
-                    } catch (UnsupportedEncodingException ignored) {
-                    }
-
                     if (verifyPhone(requireActivity())) {
-                        pay_method = changePayMethodMax(text_view_cost.getText().toString(), pay_method);
-                        Log.d(TAG, "onClick: pay_method "+ pay_method);
-                        orderFinished();
+                        Log.d(TAG, "onClick: pay_method" + pay_method);
+                        switch (pay_method) {
+                            case "bonus_payment":
+                            case "card_payment":
+                            case "fondy_payment":
+                            case "mono_payment":
+                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                break;
+                            default:
+                                try {
+                                    orderRout();
+                                } catch (UnsupportedEncodingException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                orderFinished();
+                                break;
+                        }
                     }
 
                 } else {
@@ -1398,14 +1413,8 @@ public class HomeFragment extends Fragment {
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext());
 
         String tarif =  stringListInfo.get(2);
-        String paymentType =  stringListInfo.get(4);
+        String payment_type =  stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
-        String payment_type = paymentType;
-
-        String textCost = text_view_cost.getText().toString();
-        if(!textCost.equals("")) {
-            payment_type = changePayMethodMax(textCost, paymentType);
-        }
 
         Log.d(TAG, "startCost: discountText" + discount);
 
@@ -1486,33 +1495,68 @@ public class HomeFragment extends Fragment {
         return url;
     }
 
-    private String changePayMethodMax(String textCost, String paymentType) {
+    private void changePayMethodMax(String textCost, String paymentType) {
         List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String card_max_pay = stringListCity.get(4);
+        String bonus_max_pay = stringListCity.get(5);
 
-        String card_max_pay =  stringListCity.get(4);
-        String bonus_max_pay =  stringListCity.get(5);
-        String payment_type = "nal_payment";
+        // Инфлейтим макет для кастомного диалога
+        LayoutInflater inflater = LayoutInflater.from(requireActivity());
+        View dialogView = inflater.inflate(R.layout.custom_dialog_layout, null);
 
-        switch (paymentType) {
-            case "bonus_payment":
-                if(Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100 ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
+        AlertDialog alertDialog = new AlertDialog.Builder(requireActivity()).create();
+        alertDialog.setView(dialogView);
+        alertDialog.setCancelable(false);
+        // Настраиваем элементы макета
+
+
+        TextView messageTextView = dialogView.findViewById(R.id.dialog_message);
+        messageTextView.setText(R.string.max_limit_message);
+
+        Button okButton = dialogView.findViewById(R.id.dialog_ok_button);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (paymentType) {
+                    case "bonus_payment":
+                        if (Long.parseLong(bonus_max_pay) <= Long.parseLong(textCost) * 100) {
+                            paymentType("nal_payment");
+                        }
+                        break;
+                    case "card_payment":
+                    case "fondy_payment":
+                    case "mono_payment":
+                        if (Long.parseLong(card_max_pay) <= Long.parseLong(textCost)) {
+                            paymentType("nal_payment");
+                        }
+                        break;
                 }
-                break;
-            case "card_payment":
-            case "fondy_payment":
-            case "mono_payment":
-                if(Long.parseLong(card_max_pay) <= Long.parseLong(textCost) ) {
-                    paymentType("nal_payment");
-                    payment_type = "nal_payment";
+
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        orderRout();
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
                 }
-                break;
-            default:
-                payment_type = "nal_payment";
-        }
-        Log.d(TAG, "changePayMethodMax: " + payment_type);
-        return  payment_type;
+
+                orderFinished();
+                progressBar.setVisibility(View.GONE);
+                alertDialog.dismiss();
+            }
+        });
+
+        Button cancelButton = dialogView.findViewById(R.id.dialog_cancel_button);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.GONE);
+                alertDialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
     }
 
     @SuppressLint("Range")
