@@ -51,12 +51,11 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyGeoDialogFragment;
+import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
 import com.taxieasyua.back4app.ui.home.MyGeoMarkerDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
-
 import org.json.JSONException;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
@@ -107,7 +106,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     public static ProgressBar progressBar;
     @SuppressLint("StaticFieldLeak")
-    public static MyGeoDialogFragment bottomSheetDialogFragment;
+    public static GeoDialogVisicomFragment bottomSheetDialogFragment;
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -384,7 +383,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 map.getController().setCenter(initialGeoPoint);
                 setMarker(startLat, startLan, FromAdressString);
 
-                bottomSheetDialogFragment = MyGeoDialogFragment.newInstance();
+                bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 map.invalidate();
             } else {
@@ -432,7 +431,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             }
                         }
                         updateMyPosition(startLat, startLan, FromAdressString);
-                        bottomSheetDialogFragment = MyGeoDialogFragment.newInstance();
+                        bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
                         map.getOverlays().add(markerOverlay);
@@ -502,7 +501,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         }
                     }
                     updateMyPosition(startLat, startLan, FromAdressString);
-                    bottomSheetDialogFragment = MyGeoDialogFragment.newInstance();
+                    bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
                     map.getOverlays().add(markerOverlay);
