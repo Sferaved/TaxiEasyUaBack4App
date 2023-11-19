@@ -102,7 +102,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_GEO";
     public TextView geoText;
     public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus, btnSearch;
-    public String[] arrayStreet;
+//    public String[] arrayStreet;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
     long firstCost;
@@ -140,8 +140,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private final String apiKey = "77bb21fd8ee6cbfde9bc5733e01eaf59"; // Впишіть апі ключ
     private final OkHttpClient client = new OkHttpClient();
 
-    List<double[]> coordinatesList;
-    List<String> addresses;
+    private static List<double[]> coordinatesList;
+    private static List<String> addresses;
+    private String citySearch;
 
     public static GeoDialogVisicomFragment newInstance() {
         fragment = new GeoDialogVisicomFragment();
@@ -161,22 +162,24 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         api =  stringList.get(2);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
-                arrayStreet = Dnipro.arrayStreet();
+//                arrayStreet = Dnipro.arrayStreet();
                 break;
             case "Odessa":
-                arrayStreet = Odessa.arrayStreet();
+                citySearch = "Одеса";
+//                arrayStreet = Odessa.arrayStreet();
                 break;
             case "Zaporizhzhia":
-                arrayStreet = Zaporizhzhia.arrayStreet();
+//                arrayStreet = Zaporizhzhia.arrayStreet();
                 break;
             case "Cherkasy Oblast":
-                arrayStreet = Cherkasy.arrayStreet();
+//                arrayStreet = Cherkasy.arrayStreet();
                 break;
             case "OdessaTest":
-                arrayStreet = OdessaTest.arrayStreet();
+                citySearch = "Одеса";
+//                arrayStreet = OdessaTest.arrayStreet();
                 break;
             default:
-                arrayStreet = KyivCity.arrayStreet();
+//                arrayStreet = KyivCity.arrayStreet();
                 break;
         }
 
@@ -225,7 +228,29 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         });
 
         textViewTo = view.findViewById(R.id.text_to);
-        btnSearch = view.findViewById(R.id.search_btn);
+        textViewTo.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Вызывается перед изменением текста
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // Вызывается при изменении текста
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Вызывается после изменения текста
+                String inputText = editable.toString();
+                if (inputText.length() >= 10) {
+                    // Вызвать метод обработки для введенных 10 символов
+                    performAddressSearch(inputText);
+
+                }
+            }
+        });
+
 
         btn_minus = view.findViewById(R.id.btn_minus);
         btn_plus = view.findViewById(R.id.btn_plus);
@@ -265,28 +290,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 dismiss();
-            }
-        });
-        adapter = new ArrayAdapter<>(requireActivity(), R.layout.drop_down_layout, arrayStreet);
-
-//         textViewTo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//             @Override
-//             public void onFocusChange(View v, boolean hasFocus) {
-//                 if (!hasFocus) {
-//                     // Вызывается, когда фокус уходит с EditText
-//                     String searchText = textViewTo.getText().toString();
-//                     // Здесь вы можете выполнить нужные действия с текстом, например, обновить TextView
-//                     geoVisicomSearch(searchText);
-//                 }
-//             }
-//         });
-
-        btnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: " + textViewTo.getText().toString());
-                performAddressSearch(textViewTo.getText().toString());
-
             }
         });
 
@@ -331,8 +334,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
                                 }
                                 OpenStreetMapActivity.FromAdressString = (String) sendUrlFrom.get("route_address_from");
-                                Log.d("TAG", "onLocationResult: OpenStreetMapActivity.startLat111111111" + OpenStreetMapActivity.startLat);
-                                Log.d("TAG", "onLocationResult: OpenStreetMapActivity.startLan111111111" + OpenStreetMapActivity.startLan);
+
                                 updateMyPosition(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString);
                                     requireActivity().finish();
                                  startActivity(new Intent(requireActivity(), OpenStreetMapActivity.class));
@@ -457,7 +459,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
     private void performAddressSearch(String inputText) {
         try {
-            String url = apiUrl + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
+//            String url = apiUrl + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
+            String url = apiUrl + "?text=" + inputText + "&key=" + apiKey;
 
             Request request = new Request.Builder()
                     .url(url)
@@ -490,51 +493,68 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         try {
             JSONObject jsonResponse = new JSONObject(responseData);
             JSONArray features = jsonResponse.getJSONArray("features");
-
+            Log.d(TAG, "processAddressData: features" + features);
             addresses = new ArrayList<>();
             coordinatesList = new ArrayList<>(); // Список для хранения координат
 
 
             for (int i = 0; i < Math.min(features.length(), 10); i++) {
                 JSONObject properties = features.getJSONObject(i).getJSONObject("properties");
+                Log.d(TAG, "processAddressData: properties" + properties);
                 JSONObject geoCentroid = features.getJSONObject(i).getJSONObject("geo_centroid");
 
-                if (!properties.getString("country").equals("Україна")) {
+                if (!properties.getString("country_code").equals("ua")) {
+                    Log.d(TAG, "processAddressData: Skipped address - Country is not Україна");
                     continue;
                 }
 
-                String address = String.format("%s %s, %s %s",
+                if (properties.getString("categories").equals("adr_address")) {
 
-                        properties.getString("type"),
-                        properties.getString("name"),
-                        properties.getString("settlement_type"),
-                        properties.getString("settlement"));
+                    String settlement = properties.optString("settlement", "").toLowerCase();
+                    String city = citySearch.toLowerCase();
 
-                addresses.add(address);
+                    if (settlement.contains(city)) {
+                        String address = String.format("%s %s, %s, %s %s",
+
+                                properties.getString("street"),
+                                properties.getString("street_type"),
+                                properties.getString("name"),
+                                properties.getString("settlement_type"),
+                                properties.getString("settlement"));
+
+                        addresses.add(address);
+                    }
+                }
+
 
                 double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
                 double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
                 coordinatesList.add(new double[]{longitude, latitude});
-            }
-            Log.d(TAG, "processAddressData: " + addresses);
-            new Handler(Looper.getMainLooper()).post(() -> {
-                addressAdapter.clear();
-                addressAdapter.addAll(addresses);
-                addressAdapter.notifyDataSetChanged();
-                // Проверка, не пуст ли адаптер
-                if (addressAdapter.getCount() > 0) {
-                    // Если есть значения, сделать ListView видимым
-                    addressListView.setVisibility(View.VISIBLE);
 
-                    Log.d(TAG, "processAddressData: ArrayAdapter contents");
-                    for (int i = 0; i < addressAdapter.getCount(); i++) {
-                        Log.d(TAG, "Item " + i + ": " + addressAdapter.getItem(i));
+            }
+
+            if (addresses.size() != 0) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    Log.d(TAG, "processAddressData: " + addresses);
+                    addressAdapter.clear();
+                    addressAdapter.addAll(addresses);
+                    addressAdapter.notifyDataSetChanged();
+                    // Проверка, не пуст ли адаптер
+                    if (addressAdapter.getCount() > 0) {
+                        // Если есть значения, сделать ListView видимым
+                        addressListView.setVisibility(View.VISIBLE);
+
+                        Log.d(TAG, "processAddressData: ArrayAdapter contents");
+                        for (int i = 0; i < addressAdapter.getCount(); i++) {
+                            Log.d(TAG, "Item " + i + ": " + addressAdapter.getItem(i));
+                        }
+                    } else {
+                        // Если нет значений, скрыть ListView
+                        addressListView.setVisibility(View.GONE); // или View.INVISIBLE, в зависимости от требований
                     }
-                } else {
-                    // Если нет значений, скрыть ListView
-                    addressListView.setVisibility(View.GONE); // или View.INVISIBLE, в зависимости от требований
-                }
-            });
+                });
+            }
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1120,69 +1140,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             return;
         }
-//        boolean stop = false;
-//
-//        if (numberFlagTo.equals("1") && to_number.getText().toString().equals(" ")) {
-//            to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-//                to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-//            } else {
-//                ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.selected_text_color)));
-//            }
-//            stop = true;
-//
-//        }
-//        if(stop) {return;}
-//
-//        if (numberFlagTo.equals("1") && !to_number.getText().toString().equals(" ")) {
-//            to_number.setBackgroundTintList(ColorStateList.valueOf(R.color.selected_text_color));
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                to_number.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.edit)));
-//                to_number.setBackgroundTintBlendMode(BlendMode.SRC_IN); // Устанавливаем режим смешивания цветов
-//            } else {
-//                ViewCompat.setBackgroundTintList(to_number, ColorStateList.valueOf(getResources().getColor(R.color.edit)));
-//            }
-//        }
-//
-//        if (TextUtils.isEmpty(textViewTo.getText())) {
-//            toCost = String.valueOf(OpenStreetMapActivity.startLat);
-//            to_numberCost = " ";
-//        } else {
-//            toCost = String.valueOf(textViewTo.getText());
-//            if (toCost.indexOf("/") != -1) {
-//                toCost = toCost.substring(0,  toCost.indexOf("/"));
-//            };
-//
-//            if (GeoDialogVisicomFragment.to_number.getText().equals(" ")) {
-//                to_numberCost = "1";
-//            } else {
-//                to_numberCost = to_number.getText().toString();
-//            }
-//        }
-//
-//        if(urlAddress == null) {
-//            List<String> settings = new ArrayList<>();
-//            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-//            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-//            settings.add(toCost);
-//            settings.add(to_numberCost);
-//
-//            updateRoutGeo(settings);
-//            if(geo_marker.equals("geo")) {
-//                urlOrder = getTaxiUrlSearchGeo("orderSearchGeo", requireActivity());
-//            } else {
-//                urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
-//            }
-//        } else {
-//            List<String> settings = new ArrayList<>();
-//            settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-//            settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-//            settings.add(String.valueOf(to_lat));
-//            settings.add(String.valueOf(to_lng));
-//            updateRoutMarker(settings);
-//            urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
-//        }
+
         urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
         Log.d(TAG, "order: urlOrder "  + urlOrder);
         if (!verifyPhone(requireContext())) {
@@ -1630,48 +1588,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
     }
 
-    public void geoVisicomSearch(String searchText) {
-        GeocodeApiClient geocodeApiClient = new GeocodeApiClient();
-
-// "Харків, науки 45б"
-
-        geocodeApiClient.getApiService().getGeocode(
-                "adr_address",
-                searchText,
-                "77bb21fd8ee6cbfde9bc5733e01eaf59"
-        ).enqueue(new Callback<GeocodeResponse>() {
-            @Override
-            public void onResponse(Call<GeocodeResponse> call, Response<GeocodeResponse> response) {
-                if (response.isSuccessful()) {
-                    GeocodeResponse geocodeResponse = response.body();
-                    if (geocodeResponse != null) {
-                        GeocodeGeoCentroid geoCentroid = geocodeResponse.getGeoCentroid();
-                        List<Double> coordinates = geoCentroid.getCoordinates();
-                        if (coordinates.size() == 2) {
-                            double longitude = coordinates.get(0);
-                            double latitude = coordinates.get(1);
-                            Log.d(TAG, "geoVisicomSearch: Долгота: " + longitude);
-                            Log.d(TAG, "geoVisicomSearch: Широта: " + latitude);
-                            to_number.setVisibility(View.VISIBLE);
-                            to_number.setText(longitude + " " + latitude );
-                        } else {
-                            Log.d(TAG, "Ошибка: Некорректные координаты в ответе");
-                        }
-                    } else {
-                        Log.d(TAG, "GeocodeResponse is null");
-                    }
-                } else {
-                    Log.d(TAG, "Error: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<GeocodeResponse> call, Throwable t) {
-                Log.d(TAG, "geoVisicomSearch: Ошибка: " + t.getMessage());
-            }
-        });
-
-    }
 }
 
 
