@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_15112023_0";
+    public static final String DB_NAME = "data_19112023_9";
 
     /**
      * Table section
@@ -368,7 +368,9 @@ public class MainActivity extends AppCompatActivity {
                 " startLat double," +
                 " startLan double," +
                 " to_lat double," +
-                " to_lng double);");
+                " to_lng double," +
+                " start text," +
+                " finish text);");
         cursorDb = database.query(ROUT_MARKER, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertRoutMarker();
@@ -1255,7 +1257,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void insertRoutMarker() {
-        String sql = "INSERT INTO " + MainActivity.ROUT_MARKER + " VALUES(?,?,?,?,?);";
+        String sql = "INSERT INTO " + MainActivity.ROUT_MARKER + " VALUES(?,?,?,?,?,?,?);";
 
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
@@ -1266,6 +1268,8 @@ public class MainActivity extends AppCompatActivity {
             statement.bindDouble(3, 0);
             statement.bindDouble(4, 0);
             statement.bindDouble(5, 0);
+            statement.bindString(6, "");
+            statement.bindString(7, "");
 
 
             statement.execute();

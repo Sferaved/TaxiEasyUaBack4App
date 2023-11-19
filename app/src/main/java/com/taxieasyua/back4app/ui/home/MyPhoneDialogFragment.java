@@ -228,22 +228,22 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     settings.add(String.valueOf(OpenStreetMapActivity.startLan));
                     settings.add(MyGeoDialogFragment.toCost);
                     settings.add(MyGeoDialogFragment.to_numberCost);
-
+                    settings.add(OpenStreetMapActivity.FromAdressString);
+//                    settings.add(MyGeoDialogFragment.textViewTo.getText().toString());
                     updateRoutGeo(settings);
-                    if(MyGeoDialogFragment.geo_marker.equals("geo")) {
-                        urlOrder = getTaxiUrlSearchGeo("orderSearchGeo");
-                    } else {
-                        urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers");
-                    }
-                } else {
-                    List<String> settings = new ArrayList<>();
-                    settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-                    settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-                    settings.add(String.valueOf(MyGeoDialogFragment.to_lat));
-                    settings.add(String.valueOf(MyGeoDialogFragment.to_lng));
 
-                    updateRoutMarker(settings);
-                    urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers");
+                    urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkersVisicom");
+                } else {
+//                    List<String> settings = new ArrayList<>();
+//                    settings.add(String.valueOf(OpenStreetMapActivity.startLat));
+//                    settings.add(String.valueOf(OpenStreetMapActivity.startLan));
+//                    settings.add(String.valueOf(MyGeoDialogFragment.to_lat));
+//                    settings.add(String.valueOf(MyGeoDialogFragment.to_lng));
+//                    settings.add(OpenStreetMapActivity.FromAdressString);
+//                    settings.add(MyGeoDialogFragment.textViewTo.getText().toString());
+//
+//                    updateRoutMarker(settings);
+                    urlOrder = MyGeoDialogFragment.urlAddress;
 
                 }
 
@@ -298,7 +298,10 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
 
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    MyGeoDialogFragment.progressBar.setVisibility(View.INVISIBLE);
+                    if(MyGeoDialogFragment.progressBar != null){
+                        MyGeoDialogFragment.progressBar.setVisibility(View.GONE);
+                    }
+
                 }
 
 
@@ -657,7 +660,8 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         double originLongitude = Double.parseDouble(stringListRout.get(2));
         double toLatitude = Double.parseDouble(stringListRout.get(3));
         double toLongitude = Double.parseDouble(stringListRout.get(4));
-
+        String start = stringListRout.get(5);
+        String finish = stringListRout.get(6);
 
 
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO);
@@ -678,6 +682,8 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         String tarif =  stringListInfo.get(2);
         String payment_type =  stringListInfo.get(4);
 
+        String api = logCursor(MainActivity.CITY_INFO).get(2);
+
         // Building the parameters to the web service
 
         String parameters = null;
@@ -695,12 +701,13 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName + "*" + userEmail  + "*" + payment_type;
         }
-        if(urlAPI.equals("orderSearchMarkers")) {
+        if(urlAPI.equals("orderSearchMarkersVisicom")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
             String addCost = stringListInfo.get(5);
 
-                    parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/"
+                    + time + "/" + comment + "/" + date+ "/" + start + "/" + finish;
 
             ContentValues cv = new ContentValues();
 
@@ -742,7 +749,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
             result = "no_extra_charge_codes";
         }
 
-        String url = "https://m.easy-order-taxi.site/" + MyGeoDialogFragment.api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
 
         database.close();

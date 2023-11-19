@@ -275,7 +275,12 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 settings.add(Double.toString(OpenStreetMapActivity.startLan));
                 settings.add(Double.toString(coordinates[1]));
                 settings.add(Double.toString(coordinates[0]));
+
+                settings.add(geoText.getText().toString());
+                settings.add(textViewTo.getText().toString());
+
                 Log.d(TAG, "startCost: marker " + settings);
+
                 updateRoutMarker(settings);
 
                 // Здесь вы можете выполнить дополнительные действия с полученными координатами
@@ -428,23 +433,25 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                             break;
                     }
 
-                    if (verifyPhone(requireActivity())) {
-                        switch (pay_method) {
-                            case "bonus_payment":
-                            case "card_payment":
-                            case "fondy_payment":
-                            case "mono_payment":
-                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
-                                break;
-                            default:
-                                orderRout();
+                    Log.d(TAG, "onClick: pay_method " + pay_method );
+                    switch (pay_method) {
+                        case "bonus_payment":
+                        case "card_payment":
+                        case "fondy_payment":
+                        case "mono_payment":
+                            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                            break;
+                        default:
+                            orderRout();
+                            if (verifyPhone(requireContext())) {
                                 try {
                                     orderFinished();
                                 } catch (MalformedURLException e) {
                                     throw new RuntimeException(e);
                                 }
-                                break;
-                        }
+                            }
+                            break;
+
                     }
                 }
             }
@@ -610,6 +617,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             settings.add(Double.toString(OpenStreetMapActivity.startLan));
             settings.add(Double.toString(OpenStreetMapActivity.startLat));
             settings.add(Double.toString(OpenStreetMapActivity.startLan));
+            settings.add(geoText.getText().toString());
+            settings.add(geoText.getText().toString());
             Log.d(TAG, "startCost: marker " + settings);
             updateRoutMarker(settings);
 
@@ -794,6 +803,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("Range")
     public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+        Log.d(TAG, "getTaxiUrlSearchMarkers: " + urlAPI);
 
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -807,6 +817,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
         double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
         double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+        String start = cursor.getString(cursor.getColumnIndex("start"));
+        String finish = cursor.getString(cursor.getColumnIndex("finish"));
+
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
 
@@ -844,12 +857,13 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName + "*" + userEmail  + "*" + payment_type;
         }
-        if(urlAPI.equals("orderSearchMarkers")) {
+        if(urlAPI.equals("orderSearchMarkersVisicom")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/"
+                    + time + "/" + comment + "/" + date+ "/" + start + "/" + finish;
 
             ContentValues cv = new ContentValues();
 
@@ -886,7 +900,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
@@ -1044,6 +1058,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
                 settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
 
+                settings.add(geoText.getText().toString());
+                settings.add(textViewTo.getText().toString());
+
                 updateRoutMarker(settings);
                 geo_marker = "marker";
 
@@ -1141,7 +1158,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             return;
         }
 
-        urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkers", requireActivity());
+        urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkersVisicom", requireActivity());
         Log.d(TAG, "order: urlOrder "  + urlOrder);
         if (!verifyPhone(requireContext())) {
             getPhoneNumber();
@@ -1245,6 +1262,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         cv.put("startLan", Double.parseDouble(settings.get(1)));
         cv.put("to_lat", Double.parseDouble(settings.get(2)));
         cv.put("to_lng", Double.parseDouble(settings.get(3)));
+        cv.put("start", settings.get(4));
+        cv.put("finish", settings.get(5));
 
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1281,7 +1300,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             }
             cursor.close();
         }
-
+        Log.d(TAG, "verifyPhone: " + verify);
         return verify;
     }
     private void getPhoneNumber () {
@@ -1369,117 +1388,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         cursor_from.close();
         cursor_to.close();
-
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @SuppressLint("Range")
-    private String getTaxiUrlSearchGeo(String urlAPI, Context context) {
-
-        String query = "SELECT * FROM " + MainActivity.ROUT_GEO + " LIMIT 1";
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery(query, null);
-
-        cursor.moveToFirst();
-
-        // Получите значения полей из первой записи
-
-        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
-        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
-        String to = cursor.getString(cursor.getColumnIndex("toCost"));
-        String to_number = cursor.getString(cursor.getColumnIndex("to_numberCost"));
-
-        cursor.close();
-
-         if(to_number.equals("XXX")) {
-             to_number = " ";
-         }
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
-
-        // Origin of route
-        String str_origin = originLatitude + "/" + originLongitude;
-
-        // Destination of route
-        String str_dest = to + "/" + to_number;
-
-
-
-        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
-        String tarif =  stringListInfo.get(2);
-        String payment_type = stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
-
-        // Building the parameters to the web service
-
-        String parameters = null;
-        String phoneNumber = "no phone";
-        String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
-        String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
-
-        if(urlAPI.equals("costSearchGeo")) {
-            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-
-            if (c.getCount() == 1) {
-                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-                c.close();
-            }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type;
-        }
-
-        if(urlAPI.equals("orderSearchGeo")) {
-            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
-
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
-
-            ContentValues cv = new ContentValues();
-
-            cv.put("time", "no_time");
-            cv.put("comment", "no_comment");
-            cv.put("date", "no_date");
-
-            // обновляем по id
-            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                    new String[] { "1" });
-        }
-
-        // Building the url to the web service
-        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO, context);
-        List<String> servicesChecked = new ArrayList<>();
-        String result;
-        boolean servicesVer = false;
-        for (int i = 1; i < services.size()-1 ; i++) {
-            if(services.get(i).equals("1")) {
-                servicesVer = true;
-                break;
-            }
-        }
-        if(servicesVer) {
-            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
-                if(services.get(i+1).equals("1")) {
-                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
-                }
-            }
-            for (int i = 0; i < servicesChecked.size(); i++) {
-                if(servicesChecked.get(i).equals("CHECK_OUT")) {
-                    servicesChecked.set(i, "CHECK");
-                }
-            }
-            result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
-        } else {
-            result = "no_extra_charge_codes";
-        }
-
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-        Log.d("TAG", "getTaxiUrlSearch services: " + url);
-
-        return url;
-
 
     }
 

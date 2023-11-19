@@ -109,7 +109,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MyGeoDialogFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_GEO";
-    public TextView geoText;
+    public static TextView geoText;
     public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus;
     public String[] arrayStreet;
     static String api;
