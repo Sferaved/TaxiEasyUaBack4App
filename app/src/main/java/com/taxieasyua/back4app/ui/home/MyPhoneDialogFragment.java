@@ -662,7 +662,9 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         double toLongitude = Double.parseDouble(stringListRout.get(4));
         String start = stringListRout.get(5);
         String finish = stringListRout.get(6);
-
+        // Заменяем символ '/' в строках
+        start = start.replace("/", "%2F");
+        finish = finish.replace("/", "%2F");
 
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO);
         String time = stringList.get(1);

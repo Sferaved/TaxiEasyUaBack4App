@@ -33,10 +33,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +56,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.taxieasyua.back4app.MainActivity;
@@ -101,8 +105,7 @@ import retrofit2.Response;
 public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_GEO";
     public TextView geoText;
-    public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, btnMarker,  buttonBonus, btnSearch;
-//    public String[] arrayStreet;
+    public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
     long firstCost;
@@ -113,7 +116,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     public static EditText textViewTo;
     @SuppressLint("StaticFieldLeak")
     public static EditText to_number;
-    ArrayAdapter<String> adapter;
     public static String numberFlagTo;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
@@ -143,6 +145,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static List<double[]> coordinatesList;
     private static List<String> addresses;
     private String citySearch;
+    BottomSheetBehavior<View> bottomSheetBehavior;
 
     public static GeoDialogVisicomFragment newInstance() {
         fragment = new GeoDialogVisicomFragment();
@@ -228,34 +231,12 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         });
 
         textViewTo = view.findViewById(R.id.text_to);
-        textViewTo.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Вызывается перед изменением текста
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Вызывается при изменении текста
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // Вызывается после изменения текста
-                String inputText = editable.toString();
-                if (inputText.length() >= 10) {
-                    // Вызвать метод обработки для введенных 10 символов
-                    performAddressSearch(inputText);
-
-                }
-            }
-        });
-
+        addresses = new ArrayList<>();
 
         btn_minus = view.findViewById(R.id.btn_minus);
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);
-        btnMarker = view.findViewById(R.id.btnMarker);
+
 
         addressListView = view.findViewById(R.id.addressListView);
 
@@ -264,6 +245,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         addressListView.setAdapter(addressAdapter);
 
         addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
+
             // Получить координаты по позиции элемента в списке
             if (position < coordinatesList.size()) {
                 double[] coordinates = coordinatesList.get(position);
@@ -283,6 +265,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
                 updateRoutMarker(settings);
 
+                textViewTo.setSelection(textViewTo.getText().toString().length());
+
                 // Здесь вы можете выполнить дополнительные действия с полученными координатами
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -290,11 +274,21 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 }
             }
         });
-
-        btnMarker.setOnClickListener(new View.OnClickListener() {
+        textViewTo.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onClick(View v) {
-                dismiss();
+            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
+                // Вызывается перед изменением текста
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                // Вызывается при изменении текста
+                performAddressSearch(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Вызывается после изменения текста
             }
         });
 
@@ -466,8 +460,18 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
     private void performAddressSearch(String inputText) {
         try {
-//            String url = apiUrl + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
-            String url = apiUrl + "?text=" + inputText + "&key=" + apiKey;
+            int charCount = inputText.length();
+            String url = apiUrl;
+
+            if (charCount > 3) {
+                // Если символов больше 4 и отсутствует ",N", то выполняем первую строку
+                if (!inputText.substring(4).contains(", ")) {
+                    url = apiUrl + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
+                } else {
+                    // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
+                    url = apiUrl + "?text=" + inputText + "&key=" + apiKey;
+                }
+            }
 
             Request request = new Request.Builder()
                     .url(url)
@@ -505,7 +509,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             coordinatesList = new ArrayList<>(); // Список для хранения координат
 
 
-            for (int i = 0; i < Math.min(features.length(), 10); i++) {
+            for (int i = 0; i < Math.min(features.length(), 5); i++) {
                 JSONObject properties = features.getJSONObject(i).getJSONObject("properties");
                 Log.d(TAG, "processAddressData: properties" + properties);
                 JSONObject geoCentroid = features.getJSONObject(i).getJSONObject("geo_centroid");
@@ -515,7 +519,19 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                     continue;
                 }
 
-                if (properties.getString("categories").equals("adr_address")) {
+                if (properties.getString("categories").equals("adr_street")) {
+
+                    String settlement = properties.optString("settlement", "").toLowerCase();
+                    String city = citySearch.toLowerCase();
+
+                    if (settlement.contains(city)) {
+                        String address = String.format("%s %s, ",
+                                properties.getString("name"),
+                                properties.getString("type"));
+                        addresses.add(address);
+                    }
+                }
+                 else if (properties.getString("categories").equals("adr_address")) {
 
                     String settlement = properties.optString("settlement", "").toLowerCase();
                     String city = citySearch.toLowerCase();
@@ -539,25 +555,23 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 coordinatesList.add(new double[]{longitude, latitude});
 
             }
-
+            Log.d(TAG, "processAddressData: " + addresses);
             if (addresses.size() != 0) {
                 new Handler(Looper.getMainLooper()).post(() -> {
                     Log.d(TAG, "processAddressData: " + addresses);
+                    addressListView.setVisibility(View.VISIBLE);
+                    button.setVisibility(View.GONE);
+                    old_address.setVisibility(View.GONE);
                     addressAdapter.clear();
                     addressAdapter.addAll(addresses);
                     addressAdapter.notifyDataSetChanged();
+
                     // Проверка, не пуст ли адаптер
                     if (addressAdapter.getCount() > 0) {
-                        // Если есть значения, сделать ListView видимым
-                        addressListView.setVisibility(View.VISIBLE);
-
                         Log.d(TAG, "processAddressData: ArrayAdapter contents");
                         for (int i = 0; i < addressAdapter.getCount(); i++) {
                             Log.d(TAG, "Item " + i + ": " + addressAdapter.getItem(i));
                         }
-                    } else {
-                        // Если нет значений, скрыть ListView
-                        addressListView.setVisibility(View.GONE); // или View.INVISIBLE, в зависимости от требований
                     }
                 });
             }
@@ -566,7 +580,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     @SuppressLint("UseRequireInsteadOfGet")
@@ -707,7 +720,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             Log.d("TAG", "startCost: firstCost " + firstCost);
             Log.d("TAG", "startCost: addCost " + addCost);
 
-            }
+        }
+//        addressAdapter.clear();
+//        addressAdapter.notifyDataSetChanged();
     }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
@@ -819,6 +834,10 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
         String start = cursor.getString(cursor.getColumnIndex("start"));
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
+
+        // Заменяем символ '/' в строках
+        start = start.replace("/", "%2F");
+        finish = finish.replace("/", "%2F");
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;

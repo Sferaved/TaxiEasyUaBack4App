@@ -85,7 +85,7 @@
     <ListView
         android:id="@+id/addressListView"
         android:layout_width="match_parent"
-        android:layout_height="105sp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/text_to"
@@ -132,7 +132,8 @@
         android:textColor="#D9D9D9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnMarker" />
+        app:layout_constraintTop_toBottomOf="@+id/addressListView"
+        />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnBonus"
@@ -149,22 +150,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnMarker"
-        android:layout_width="293sp"
-        android:layout_height="wrap_content"
-
-        android:layout_marginTop="12dp"
-        android:background="@drawable/buttons"
-        android:fontFamily="@font/regular"
-        android:text="@string/set_marker"
-
-        android:textAlignment="center"
-        android:textColor="#D9D9D9"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addressListView" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/old_address"
