@@ -318,7 +318,10 @@ public class FinishActivity extends AppCompatActivity {
                 .build();
 
         PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO);
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
+
         List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO);
         String email = stringList.get(3);
 
@@ -330,7 +333,7 @@ public class FinishActivity extends AppCompatActivity {
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 rectoken,
                 email
@@ -431,7 +434,9 @@ public class FinishActivity extends AppCompatActivity {
                 .build();
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO);
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
         String email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
 
         String order_id = MainActivity.order_id;
@@ -439,7 +444,7 @@ public class FinishActivity extends AppCompatActivity {
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 email
         );
@@ -908,13 +913,15 @@ public class FinishActivity extends AppCompatActivity {
                 .build();
 
         ReversApi apiService = retrofit.create(ReversApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO);
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
 
         ReversRequestData reversRequestData = new ReversRequestData(
                 orderId,
                 comment,
                 amount,
-                MainActivity.MERCHANT_ID,
+               MERCHANT_ID,
                 merchantPassword
         );
         Log.d("TAG1", "getRevers: " + reversRequestData.toString());

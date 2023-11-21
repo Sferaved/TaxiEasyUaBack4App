@@ -80,13 +80,15 @@ public class ErrorPayActivity extends AppCompatActivity {
                 .build();
 
         ReversApi apiService = retrofit.create(ReversApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO);
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
 
         ReversRequestData reversRequestData = new ReversRequestData(
                 orderId,
                 comment,
                 amount,
-                MainActivity.MERCHANT_ID,
+               MERCHANT_ID,
                 merchantPassword
         );
 

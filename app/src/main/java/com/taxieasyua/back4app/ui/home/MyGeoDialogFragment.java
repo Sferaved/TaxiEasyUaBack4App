@@ -565,18 +565,49 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             break;
                     }
 
-                    if (verifyPhone(requireActivity())) {
+
+                        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+                        String card_max_pay = stringListCity.get(4);
+                        String bonus_max_pay = stringListCity.get(5);
                         switch (pay_method) {
                             case "bonus_payment":
+                                if (Long.parseLong(bonus_max_pay) <= Long.parseLong(text_view_cost.getText().toString()) * 100) {
+                                    changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                } else {
+                                    orderRout();
+
+                                    try {
+                                        if (verifyPhone(requireContext())) {
+                                            orderFinished();
+                                        }
+                                    } catch (MalformedURLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                                break;
                             case "card_payment":
                             case "fondy_payment":
                             case "mono_payment":
-                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                if (Long.parseLong(card_max_pay) <= Long.parseLong(text_view_cost.getText().toString())) {
+                                    changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                } else {
+                                    orderRout();
+
+                                    try {
+                                        if (verifyPhone(requireContext())) {
+                                            orderFinished();
+                                        }
+                                    } catch (MalformedURLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
                                 break;
                             default:
                                 orderRout();
                                 try {
-                                    orderFinished();
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
                                 } catch (MalformedURLException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -584,7 +615,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                         }
                     }
                 }
-            }
+
         });
 
 
@@ -727,13 +758,16 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 .build();
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
+
         String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 email
         );
@@ -822,7 +856,10 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 .build();
 
         PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
+
         List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity()));
         String email = stringList.get(3);
 
@@ -830,7 +867,7 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 rectoken,
                 email
@@ -860,7 +897,9 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                             String orderStatus = responseBody.getOrderStatus();
                             if ("approved".equals(orderStatus)) {
                                 // Обработка успешного ответа
-                                orderFinished();
+                                if (verifyPhone(requireContext())) {
+                                    orderFinished();
+                                }
                             } else {
                                 // Обработка ответа об ошибке
                                 String errorResponseMessage = responseBody.getErrorMessage();
@@ -1874,7 +1913,9 @@ public class MyGeoDialogFragment extends BottomSheetDialogFragment {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     orderRout();
                     }
-                    orderFinished();
+                    if (verifyPhone(requireContext())) {
+                        orderFinished();
+                    }
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }

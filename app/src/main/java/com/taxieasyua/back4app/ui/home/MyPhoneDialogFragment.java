@@ -104,12 +104,51 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     String pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        List<String> stringListCity = logCursor(MainActivity.CITY_INFO);
+                        String card_max_pay = stringListCity.get(4);
+                        String bonus_max_pay = stringListCity.get(5);
                         switch (pay_method) {
                             case "bonus_payment":
+                                if (Long.parseLong(bonus_max_pay) <= Long.parseLong(amount) * 100) {
+                                    changePayMethodMax(amount, pay_method);
+                                } else {
+                                    switch (page) {
+                                        case "home" :
+                                            orderHome();
+                                            dismiss();
+                                            break;
+                                        case "geo" :
+                                            orderGeo();
+                                            dismiss();
+                                            break;
+                                        case "marker" :
+                                            orderMarker();
+                                            dismiss();
+                                            break;
+                                    }
+                                }
+                                break;
                             case "card_payment":
                             case "fondy_payment":
                             case "mono_payment":
-                                changePayMethodMax(amount, pay_method);
+                                if (Long.parseLong(card_max_pay) <= Long.parseLong(amount)) {
+                                    changePayMethodMax(amount, pay_method);
+                                } else {
+                                    switch (page) {
+                                        case "home" :
+                                            orderHome();
+                                            dismiss();
+                                            break;
+                                        case "geo" :
+                                            orderGeo();
+                                            dismiss();
+                                            break;
+                                        case "marker" :
+                                            orderMarker();
+                                            dismiss();
+                                            break;
+                                    }
+                                }
                                 break;
                             default:
                                 switch (page) {
@@ -129,6 +168,11 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                         }
 
                     }
+
+
+
+
+
 
 
                 }

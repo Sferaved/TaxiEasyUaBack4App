@@ -66,6 +66,9 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.databinding.FragmentHomeBinding;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.ApiService;
+import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.fondy.revers.ApiResponseRev;
 import com.taxieasyua.back4app.ui.fondy.revers.ReversApi;
@@ -128,8 +131,7 @@ public class HomeFragment extends Fragment {
     public static String urlOrder;
     public static long discount;
     private MyPhoneDialogFragment bottomSheetDialogFragment;
-    private String baseUrl = "https://m.easy-order-taxi.site";
-    private Map<String, String> sendUrlMap;
+
     public static int routeIdToCheck = 123;
     private boolean finiched;
 
@@ -297,14 +299,41 @@ public class HomeFragment extends Fragment {
                     }
                     progressBar.setVisibility(View.VISIBLE);
 
-                    if (verifyPhone(requireActivity())) {
+
                         Log.d(TAG, "onClick: pay_method" + pay_method);
+                        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+                        String card_max_pay = stringListCity.get(4);
+                        String bonus_max_pay = stringListCity.get(5);
                         switch (pay_method) {
                             case "bonus_payment":
+                                if (Long.parseLong(bonus_max_pay) <= Long.parseLong(text_view_cost.getText().toString()) * 100) {
+                                    changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                } else {
+                                    try {
+                                        orderRout();
+                                    } catch (UnsupportedEncodingException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
+                                }
+                                break;
                             case "card_payment":
                             case "fondy_payment":
                             case "mono_payment":
-                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                if (Long.parseLong(card_max_pay) <= Long.parseLong(text_view_cost.getText().toString())) {
+                                    changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                                } else {
+                                    try {
+                                        orderRout();
+                                    } catch (UnsupportedEncodingException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    if (verifyPhone(requireContext())) {
+                                            orderFinished();
+                                    }
+                                }
                                 break;
                             default:
                                 try {
@@ -312,10 +341,11 @@ public class HomeFragment extends Fragment {
                                 } catch (UnsupportedEncodingException e) {
                                     throw new RuntimeException(e);
                                 }
-                                orderFinished();
+                                if (verifyPhone(requireContext())) {
+                                    orderFinished();
+                                }
                                 break;
                         }
-                    }
 
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
@@ -407,6 +437,7 @@ public class HomeFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
+        getLocalIpAddress();
         return root;
     }
 
@@ -418,13 +449,15 @@ public class HomeFragment extends Fragment {
                 .build();
 
         ReversApi apiService = retrofit.create(ReversApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
 
         ReversRequestData reversRequestData = new ReversRequestData(
                 orderId,
                 comment,
                 amount,
-                MainActivity.MERCHANT_ID,
+               MERCHANT_ID,
                 merchantPassword
         );
         Log.d("TAG1", "getRevers: " + reversRequestData.toString());
@@ -1540,7 +1573,9 @@ public class HomeFragment extends Fragment {
                     throw new RuntimeException(e);
                 }
 
-                orderFinished();
+                if (verifyPhone(requireContext())) {
+                    orderFinished();
+                }
                 progressBar.setVisibility(View.GONE);
                 alertDialog.dismiss();
             }
@@ -1665,5 +1700,43 @@ public class HomeFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
+    private void getLocalIpAddress() {
 
+        List<String> city = logCursor(MainActivity.CITY_INFO, requireActivity());
+        Log.d(TAG, "getLocalIpAddress: city.get(1)" + city.get(1));
+        if(city.size() != 0 && city.get(1).equals("")) {
+            HomeFragment.progressBar.setVisibility(View.VISIBLE);
+            ApiService apiService = ApiClient.getApiService();
+
+            Call<City> call = apiService.cityOrder();
+
+            call.enqueue(new Callback<City>() {
+                @Override
+                public void onResponse(@NonNull Call<City> call, @NonNull Response<City> response) {
+                    if (response.isSuccessful()) {
+                        City status = response.body();
+                        if (status != null) {
+                            String result = status.getResponse();
+                            Log.d("TAG", "onResponse:result " + result);
+                            MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
+                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        }
+                    } else {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<City> call, Throwable t) {
+                    // Обработка ошибок сети или других ошибок
+                    String errorMessage = t.getMessage();
+                    t.printStackTrace();
+                    Log.d("TAG", "onFailure: " + errorMessage);
+
+                }
+            });
+        }
+
+    }
 }

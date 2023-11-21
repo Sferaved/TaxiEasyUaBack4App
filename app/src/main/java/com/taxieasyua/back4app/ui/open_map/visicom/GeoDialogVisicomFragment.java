@@ -36,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -104,7 +105,7 @@ import retrofit2.Response;
 
 public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_GEO";
-    public TextView geoText;
+    public EditText geoText;
     public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
@@ -134,19 +135,16 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private long MIN_COST_VALUE;
     public static long firstCostForMin;
     private static long discount;
-
-    private ListView addressListView;
-    private ArrayAdapter<String> addressAdapter;
-
     private final String apiUrl = "https://api.visicom.ua/data-api/5.0/uk/geocode.json";
-    private final String apiKey = "77bb21fd8ee6cbfde9bc5733e01eaf59"; // Впишіть апі ключ
+    private String apiKey; // Впишіть апі ключ
     private final OkHttpClient client = new OkHttpClient();
 
     private static List<double[]> coordinatesList;
     private static List<String> addresses;
     private String citySearch;
-    BottomSheetBehavior<View> bottomSheetBehavior;
+    private String startPoint, finishPoint;
 
+    private ImageButton btn_clear_from, btn_clear_to;
     public static GeoDialogVisicomFragment newInstance() {
         fragment = new GeoDialogVisicomFragment();
         return fragment;
@@ -158,31 +156,25 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.geo_visicom_layout, container, false);
         buttonBonus = view.findViewById(R.id.btnBonus);
-
-
+        apiKey = requireActivity().getString(R.string.visicom_key_storage);
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         api =  stringList.get(2);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
-//                arrayStreet = Dnipro.arrayStreet();
                 break;
             case "Odessa":
                 citySearch = "Одеса";
-//                arrayStreet = Odessa.arrayStreet();
                 break;
             case "Zaporizhzhia":
-//                arrayStreet = Zaporizhzhia.arrayStreet();
                 break;
             case "Cherkasy Oblast":
-//                arrayStreet = Cherkasy.arrayStreet();
                 break;
             case "OdessaTest":
                 citySearch = "Одеса";
-//                arrayStreet = OdessaTest.arrayStreet();
                 break;
             default:
-//                arrayStreet = KyivCity.arrayStreet();
+                citySearch = "Київ";
                 break;
         }
 
@@ -196,29 +188,43 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         numberFlagTo = "2";
         progressBar = view.findViewById(R.id.progress_bar);
+
         geoText = view.findViewById(R.id.textGeo);
-        Log.d("TAG", "onCreateView: OpenStreetMapActivity.FromAdressString" + OpenStreetMapActivity.FromAdressString);
         geoText.setText(OpenStreetMapActivity.FromAdressString);
-        text_view_cost = view.findViewById(R.id.text_view_cost);
-        text_view_cost.addTextChangedListener(new TextWatcher() {
+        startPoint = OpenStreetMapActivity.FromAdressString;
+        geoText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Вызывается перед изменением текста
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Вызывается во время изменения текста
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                String inputString = charSequence.toString();
+                int charCount = inputString.length();
+                Log.d(TAG, "onTextChanged: inputString" + inputString);
+                Log.d(TAG, "onTextChanged: finishPoint" + startPoint);
+                if (charCount > 2) {
+                    if (startPoint == null) {
+                        performAddressSearch(inputString, "start");
+                    } else if (!startPoint.equals(inputString)) {
+                        performAddressSearch(inputString, "start");
+                    }
+                }
+                btn_clear_from.setVisibility(View.VISIBLE);
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-                // Вызывается после изменения текста
-                String newText = editable.toString();
-                // Здесь вы можете обработать новый текст
-                firstCost = Long.parseLong(newText);
+            public void afterTextChanged(Editable s) {
+
             }
         });
+
+        Log.d("TAG", "onCreateView: OpenStreetMapActivity.FromAdressString" + OpenStreetMapActivity.FromAdressString);
+
+
+        text_view_cost = view.findViewById(R.id.text_view_cost);
+
         geo_marker = "geo";
 
         Log.d(TAG, "onCreateView: geo_marker " + geo_marker);
@@ -237,43 +243,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);
 
-
-        addressListView = view.findViewById(R.id.addressListView);
-
-        List<String> addresses = new ArrayList<>();
-        addressAdapter = new ArrayAdapter<>(requireActivity(), R.layout.drop_down_layout, addresses);
-        addressListView.setAdapter(addressAdapter);
-
-        addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
-
-            // Получить координаты по позиции элемента в списке
-            if (position < coordinatesList.size()) {
-                double[] coordinates = coordinatesList.get(position);
-                Log.d(TAG, "Clicked item at position " + position + ": [" + coordinates[0] + ", " + coordinates[1] + "]");
-                textViewTo.setText(addresses.get(position));
-
-                List<String> settings = new ArrayList<>();
-                settings.add(Double.toString(OpenStreetMapActivity.startLat));
-                settings.add(Double.toString(OpenStreetMapActivity.startLan));
-                settings.add(Double.toString(coordinates[1]));
-                settings.add(Double.toString(coordinates[0]));
-
-                settings.add(geoText.getText().toString());
-                settings.add(textViewTo.getText().toString());
-
-                Log.d(TAG, "startCost: marker " + settings);
-
-                updateRoutMarker(settings);
-
-                textViewTo.setSelection(textViewTo.getText().toString().length());
-
-                // Здесь вы можете выполнить дополнительные действия с полученными координатами
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    visicomCost();
-                }
-            }
-        });
         textViewTo.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
@@ -283,7 +252,18 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
                 // Вызывается при изменении текста
-                performAddressSearch(charSequence.toString());
+                String inputString = charSequence.toString();
+                int charCount = inputString.length();
+                Log.d(TAG, "onTextChanged: inputString" + inputString);
+                Log.d(TAG, "onTextChanged: finishPoint" + finishPoint);
+                if (charCount > 2) {
+                    if (finishPoint == null) {
+                        performAddressSearch(inputString, "finish");
+                    } else if (!finishPoint.equals(inputString)) {
+                        performAddressSearch(inputString,"finish");
+                    }
+                }
+                btn_clear_to.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -428,18 +408,49 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                     }
 
                     Log.d(TAG, "onClick: pay_method " + pay_method );
+                    List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+                    String card_max_pay = stringListCity.get(4);
+                    String bonus_max_pay = stringListCity.get(5);
                     switch (pay_method) {
                         case "bonus_payment":
+                            if (Long.parseLong(bonus_max_pay) <= Long.parseLong(text_view_cost.getText().toString()) * 100) {
+                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                            } else {
+                                orderRout();
+
+                                try {
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            break;
                         case "card_payment":
                         case "fondy_payment":
                         case "mono_payment":
-                            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                            if (Long.parseLong(card_max_pay) <= Long.parseLong(text_view_cost.getText().toString())) {
+                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                            } else {
+                                orderRout();
+
+                                try {
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
                             break;
                         default:
                             orderRout();
                             if (verifyPhone(requireContext())) {
                                 try {
-                                    orderFinished();
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
                                 } catch (MalformedURLException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -450,7 +461,22 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 }
             }
         });
-
+        btn_clear_from = view.findViewById(R.id.btn_clear_from);
+        btn_clear_from.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                geoText.setText("");
+                btn_clear_from.setVisibility(View.INVISIBLE);
+            }
+        });
+        btn_clear_to = view.findViewById(R.id.btn_clear_to);
+        btn_clear_to.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textViewTo.setText("");
+                btn_clear_to.setVisibility(View.INVISIBLE);
+            }
+        });
 
         startCost();
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
@@ -458,19 +484,14 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         return view;
     }
 
-    private void performAddressSearch(String inputText) {
+    private void performAddressSearch(String inputText, String point) {
         try {
-            int charCount = inputText.length();
             String url = apiUrl;
-
-            if (charCount > 3) {
-                // Если символов больше 4 и отсутствует ",N", то выполняем первую строку
-                if (!inputText.substring(4).contains(", ")) {
-                    url = apiUrl + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
-                } else {
-                    // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
-                    url = apiUrl + "?text=" + inputText + "&key=" + apiKey;
-                }
+            if (!inputText.substring(3).contains(", ")) {
+                url = url + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
+            } else {
+                // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
+                url = url + "?text=" + inputText + "&key=" + apiKey;
             }
 
             Request request = new Request.Builder()
@@ -483,14 +504,14 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                     try {
                         String responseData = response.body().string();
                         Log.d(TAG, "onResponse: " + responseData);
-                        processAddressData(responseData);
+                        processAddressData(responseData, point);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
 
                 @Override
-                public void onFailure(okhttp3.Call call, IOException e) {
+                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
                     e.printStackTrace();
                 }
             });
@@ -500,7 +521,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private void processAddressData(String responseData) {
+    private void processAddressData(String responseData, String point) {
         try {
             JSONObject jsonResponse = new JSONObject(responseData);
             JSONArray features = jsonResponse.getJSONArray("features");
@@ -509,7 +530,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             coordinatesList = new ArrayList<>(); // Список для хранения координат
 
 
-            for (int i = 0; i < Math.min(features.length(), 5); i++) {
+            for (int i = 0; i < features.length(); i++) {
                 JSONObject properties = features.getJSONObject(i).getJSONObject("properties");
                 Log.d(TAG, "processAddressData: properties" + properties);
                 JSONObject geoCentroid = features.getJSONObject(i).getJSONObject("geo_centroid");
@@ -559,12 +580,97 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             if (addresses.size() != 0) {
                 new Handler(Looper.getMainLooper()).post(() -> {
                     Log.d(TAG, "processAddressData: " + addresses);
-                    addressListView.setVisibility(View.VISIBLE);
-                    button.setVisibility(View.GONE);
-                    old_address.setVisibility(View.GONE);
-                    addressAdapter.clear();
-                    addressAdapter.addAll(addresses);
-                    addressAdapter.notifyDataSetChanged();
+
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity(), R.style.AlertDialogTheme);
+                    LayoutInflater inflater = this.getLayoutInflater();
+                    View view = inflater.inflate(R.layout.from_to_geo_adress_layout, null);
+                    builder.setView(view);
+                    ListView addressListView = view.findViewById(R.id.listAddress);
+
+                    ArrayAdapter<String> addressAdapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, addresses);
+                    addressListView.setAdapter(addressAdapter);
+                    addressListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                    addressListView.setItemChecked(0, true);
+
+                    addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
+                        if(point.equals("start")) {
+                            startPoint = addresses.get(position);
+                        } else {
+                            finishPoint = addresses.get(position);
+                        }
+
+                    });
+
+                    builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.O)
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            int position = addressListView.getCheckedItemPosition();
+                            if (position < coordinatesList.size()) {
+                                double[] coordinates = coordinatesList.get(position);
+                                Log.d(TAG, "Clicked item at position " + position + ": [" + coordinates[0] + ", " + coordinates[1] + "]");
+                                if(point.equals("start")) {
+                                    startPoint = addresses.get(position);
+                                    geoText.setText(addresses.get(position));
+
+                                    List<String> settings = new ArrayList<>();
+
+                                    settings.add(Double.toString(coordinates[1]));
+                                    settings.add(Double.toString(coordinates[0]));
+                                    if(textViewTo.getText().toString().equals("")){
+                                        settings.add(Double.toString(coordinates[1]));
+                                        settings.add(Double.toString(coordinates[0]));
+                                        settings.add(addresses.get(position));
+                                        settings.add(addresses.get(position));
+                                    }  else {
+                                        settings.add("");
+                                        settings.add("");
+                                        settings.add(addresses.get(position));
+                                        settings.add(textViewTo.getText().toString());
+                                    }
+                                    OpenStreetMapActivity.startLat = coordinates[1];
+                                    OpenStreetMapActivity.startLan = coordinates[0];
+
+                                    updateRoutMarker(settings);
+                                    Log.d(TAG, "settings: " + settings);
+                                    geoText.setSelection(addresses.get(position).length());
+
+                                } else {
+                                    textViewTo.setText(addresses.get(position));
+
+                                    List<String> settings = new ArrayList<>();
+                                    if(!geoText.getText().toString().equals("")) {
+                                        settings.add(Double.toString(OpenStreetMapActivity.startLat));
+                                        settings.add(Double.toString(OpenStreetMapActivity.startLan));
+                                        settings.add(Double.toString(coordinates[1]));
+                                        settings.add(Double.toString(coordinates[0]));
+
+                                        settings.add(geoText.getText().toString());
+                                        settings.add(addresses.get(position));
+                                    }
+                                    updateRoutMarker(settings);
+                                    Log.d(TAG, "settings: " + settings);
+                                    textViewTo.setSelection(addresses.get(position).length());
+                                }
+
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    visicomCost();
+                                }
+                            }
+
+                        }
+                    });
+                    builder.setNegativeButton(getString(R.string.cancel_button), null);
+                    builder.setNeutralButton(getString(R.string.on_map), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    fragment.dismiss();
+                                }
+                            }
+                    );
+
+                            builder.show();
 
                     // Проверка, не пуст ли адаптер
                     if (addressAdapter.getCount() > 0) {
@@ -1226,11 +1332,11 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 }
             }
             String messageResult = getString(R.string.thanks_message) +
-                    OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                    sendUrlMap.get("routefrom") + " " + getString(R.string.to_message) +
                     to_name + "." +
                     getString(R.string.call_of_order) + orderWeb + getString(R.string.UAH);
             String messageFondy = getString(R.string.fondy_message) + " " +
-                    OpenStreetMapActivity.FromAdressString + " " + getString(R.string.to_message) +
+                    sendUrlMap.get("routefrom") + " " + getString(R.string.to_message) +
                     to_name + ".";
 
             Intent intent = new Intent(requireActivity(), FinishActivity.class);
@@ -1279,8 +1385,10 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         cv.put("startLat",  Double.parseDouble(settings.get(0)));
         cv.put("startLan", Double.parseDouble(settings.get(1)));
-        cv.put("to_lat", Double.parseDouble(settings.get(2)));
-        cv.put("to_lng", Double.parseDouble(settings.get(3)));
+        if(!settings.get(2).equals("")){
+            cv.put("to_lat", Double.parseDouble(settings.get(2)));
+            cv.put("to_lng", Double.parseDouble(settings.get(3)));
+        }
         cv.put("start", settings.get(4));
         cv.put("finish", settings.get(5));
 
@@ -1451,7 +1559,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     orderRout();
                     }
-                    orderFinished();
+                    if (verifyPhone(requireContext())) {
+                        orderFinished();
+                    }
                 } catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }

@@ -148,11 +148,14 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 .build();
 
         FondyApiService apiService = retrofit.create(FondyApiService.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
 
         StatusRequestBody requestBody = new StatusRequestBody(
                 MainActivity.order_id,
-                MainActivity.MERCHANT_ID,
+               MERCHANT_ID,
                 merchantPassword
         );
         StatusRequest statusRequest = new StatusRequest(requestBody);
@@ -340,13 +343,16 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 .build();
 
         ReversApi apiService = retrofit.create(ReversApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
 
         ReversRequestData reversRequestData = new ReversRequestData(
                 orderId,
                 comment,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword
         );
         Log.d("TAG1", "getRevers: " + reversRequestData.toString());

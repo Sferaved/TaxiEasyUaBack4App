@@ -57,6 +57,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.cities.api.CityApiClient;
 import com.taxieasyua.back4app.cities.api.CityResponse;
+import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.card.CardInfo;
@@ -106,9 +107,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String MERCHANT_ID ="1534178";
     private static final String TAG = "TAG_MAIN";
-    //    public static final String MERCHANT_ID ="1396424";
     public static String order_id;
     public static String invoiceId;
 
@@ -118,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_19112023_9";
+    public static final String DB_NAME = "data_21112023_10";
 
     /**
      * Table section
@@ -321,18 +320,24 @@ public class MainActivity extends AppCompatActivity {
                 " api text," +
                 " phone text," +
                 " card_max_pay text," +
-                " bonus_max_pay text);");
+                " bonus_max_pay text," +
+                " merchant_fondy text," +
+                " fondy_key_storage text);");
         cursorDb = database.query(CITY_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
-            settings.add("Kyiv City"); //1
+            settings.add(""); //1
             settings.add(apiKyiv); //2
             settings.add(Kyiv_City_phone); //3
             settings.add("5000"); //4
             settings.add("500000"); //5
+            settings.add("1534178"); //6
+            settings.add(getString(R.string.fondy_key_storage)); //7
             insertCity(settings);
 
             cityMaxPay("Kyiv City");
+            merchantFondy("Kyiv City");
+
         }
         cursorDb = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
         verifyPhone = cursorDb.getCount() == 1;
@@ -540,53 +545,8 @@ public class MainActivity extends AppCompatActivity {
         database.close();
     }
 
-    private void getLocalIpAddress() {
-        HomeFragment.progressBar.setVisibility(View.VISIBLE);
-        List<String> city = logCursor(CITY_INFO);
-
-
-        if(city.size() != 0) {
-            ApiService apiService = ApiClient.getApiService();
-
-            Call<City> call = apiService.cityOrder();
-
-            call.enqueue(new Callback<City>() {
-                @Override
-                public void onResponse(@NonNull Call<City> call, @NonNull Response<City> response) {
-                    if (response.isSuccessful()) {
-                        City status = response.body();
-                        if (status != null) {
-                            String result = status.getResponse();
-                            Log.d("TAG", "onResponse:result " + result);
-
-                            if (!isFinishing() && !getSupportFragmentManager().isStateSaved()) {
-                                MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
-                                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                            }
-
-
-                        }
-                    } else {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<City> call, Throwable t) {
-                    // Обработка ошибок сети или других ошибок
-                    String errorMessage = t.getMessage();
-                    t.printStackTrace();
-                    Log.d("TAG", "onFailure: " + errorMessage);
-
-                }
-            });
-        }
-
-    }
-//
     private void insertCity(List<String> settings) {
-        String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?,?,?,?,?);";
+        String sql = "INSERT INTO " + CITY_INFO + " VALUES(?,?,?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -597,6 +557,8 @@ public class MainActivity extends AppCompatActivity {
             statement.bindString(4, settings.get(2));
             statement.bindString(5, settings.get(3));
             statement.bindString(6, settings.get(4));
+            statement.bindString(7, settings.get(5));
+            statement.bindString(8, settings.get(6));
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -851,6 +813,8 @@ public class MainActivity extends AppCompatActivity {
             database.close();
 
             cityMaxPay(cityNew);
+                    Log.d(TAG, "cityChange: " + cityNew);
+            merchantFondy(cityNew);
 
             Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
 
@@ -1108,7 +1072,7 @@ public class MainActivity extends AppCompatActivity {
 
                 addUser(user.getDisplayName(), user.getEmail()) ;
 
-                getLocalIpAddress();
+
 
                 fetchBonus(user.getEmail());
 
@@ -1522,6 +1486,50 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<CityResponse> call, Throwable t) {
+                Log.e("Request", "Failed. Error message: " + t.getMessage());
+            }
+        });
+    }
+    private void merchantFondy(String $city) {
+        CityService cityService = CityApiClient.getClient().create(CityService.class);
+
+        // Замените "your_city" на фактическое название города
+        Call<CityResponseMerchantFondy> call = cityService.getMerchantFondy($city);
+
+        call.enqueue(new Callback<CityResponseMerchantFondy>() {
+            @Override
+            public void onResponse(Call<CityResponseMerchantFondy> call, Response<CityResponseMerchantFondy> response) {
+                if (response.isSuccessful()) {
+                    CityResponseMerchantFondy cityResponse = response.body();
+                    Log.d(TAG, "onResponse: cityResponse" + cityResponse);
+                    if (cityResponse != null) {
+                        String merchant_fondy = cityResponse.getMerchantFondy();
+                        String fondy_key_storage = cityResponse.getFondyKeyStorage();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("merchant_fondy", merchant_fondy);
+                        cv.put("fondy_key_storage", fondy_key_storage);
+
+                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                new String[] { "1" });
+
+                        database.close();
+
+                        Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
+                        Log.d(TAG, "onResponse: fondy_key_storage" + fondy_key_storage);
+
+                        Log.d(TAG, "onResponse: " + logCursor(CITY_INFO).toString());
+
+                        // Добавьте здесь код для обработки полученных значений
+                    }
+                } else {
+                    Log.e("Request", "Failed. Error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CityResponseMerchantFondy> call, Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
             }
         });

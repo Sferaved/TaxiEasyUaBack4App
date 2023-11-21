@@ -252,13 +252,27 @@ public class GalleryFragment extends Fragment {
                         break;
                 }
                 progressbar.setVisibility(View.VISIBLE);
+                List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+                String card_max_pay = stringListCity.get(4);
+                String bonus_max_pay = stringListCity.get(5);
                 switch (pay_method) {
                     case "bonus_payment":
+                        if (Long.parseLong(bonus_max_pay) <= Long.parseLong(text_view_cost.getText().toString()) * 100) {
+                            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                        } else {
+                            orderRout();
+                            orderFinished();
+                        }
+                        break;
                     case "card_payment":
                     case "fondy_payment":
                     case "mono_payment":
-                        changePayMethodMax(text_view_cost.getText().toString(), pay_method);
-
+                        if (Long.parseLong(card_max_pay) <= Long.parseLong(text_view_cost.getText().toString())) {
+                            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                        } else {
+                            orderRout();
+                            orderFinished();
+                        }
                         break;
                     default:
                         orderRout();
@@ -366,13 +380,16 @@ public class GalleryFragment extends Fragment {
                 .build();
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
+
         String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 email
         );

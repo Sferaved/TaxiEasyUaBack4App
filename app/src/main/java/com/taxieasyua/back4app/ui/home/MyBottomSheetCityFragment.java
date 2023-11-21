@@ -27,12 +27,21 @@ import androidx.navigation.Navigation;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.cities.api.CityApiClient;
+import com.taxieasyua.back4app.cities.api.CityResponse;
+import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
+import com.taxieasyua.back4app.cities.api.CityService;
 
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
+    private static final String TAG = "TAG_CITY";
     ListView listView;
     String city;
     AppCompatButton btn_ok;
@@ -67,18 +76,16 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
+        View view = inflater.inflate(R.layout.cities_list_layout, container, false);
         listView = view.findViewById(R.id.listViewBonus);
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, cityList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
+
         if (city != null) {
             switch (this.city) {
-                case "Kyiv City":
-                    positionFirst = 0;
-                    break;
                 case "Dnipropetrovsk Oblast":
                     positionFirst = 1;
                     break;
@@ -93,6 +100,15 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     break;
                 default:
                     positionFirst = 0;
+                    ContentValues cv = new ContentValues();
+                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    cv.put("city", cityCode [positionFirst]);
+                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+
+                    cityMaxPay(cityCode [positionFirst]);
+                    merchantFondy(cityCode [positionFirst]);
                     break;
             }
         }
@@ -111,41 +127,126 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                             new String[] { "1" });
                     database.close();
 
+                    cityMaxPay(cityCode [positionFirst]);
+                    merchantFondy(cityCode [positionFirst]);
+
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
                     resetRoutHome();
                     navController.navigate(R.id.nav_home);
 
                     Toast.makeText(requireActivity(), getString(R.string.change_message)  + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
-
                 }
             }
         });
 
-        btn_ok = view.findViewById(R.id.btn_ok);
-        btn_ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(positionFirstOld != positionFirst){
-                    ContentValues cv = new ContentValues();
-                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-
-                    cv.put("city", cityCode [positionFirst]);
-                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-                    resetRoutHome();
-                    navController.navigate(R.id.nav_home);
-
-                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
-
-                }
-               dismiss();
-            }
-        });
+//        btn_ok = view.findViewById(R.id.btn_ok);
+//        btn_ok.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(positionFirstOld != positionFirst){
+//                    ContentValues cv = new ContentValues();
+//                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//
+//                    cv.put("city", cityCode [positionFirst]);
+//                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
+//                            new String[] { "1" });
+//                    database.close();
+//
+//                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+//                    resetRoutHome();
+//                    navController.navigate(R.id.nav_home);
+//
+//                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
+//
+//                }
+//               dismiss();
+//            }
+//        });
         return view;
     }
+
+    private void cityMaxPay(String $city) {
+        CityService cityService = CityApiClient.getClient().create(CityService.class);
+
+        // Замените "your_city" на фактическое название города
+        Call<CityResponse> call = cityService.getMaxPayValues($city);
+
+        call.enqueue(new Callback<CityResponse>() {
+            @Override
+            public void onResponse(Call<CityResponse> call, Response<CityResponse> response) {
+                if (response.isSuccessful()) {
+                    CityResponse cityResponse = response.body();
+                    if (cityResponse != null) {
+                        int cardMaxPay = cityResponse.getCardMaxPay();
+                        int bonusMaxPay = cityResponse.getBonusMaxPay();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("card_max_pay", cardMaxPay);
+                        cv.put("bonus_max_pay", bonusMaxPay);
+
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                new String[] { "1" });
+
+                        database.close();
+
+                        // Добавьте здесь код для обработки полученных значений
+                    }
+                } else {
+                    Log.e("Request", "Failed. Error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CityResponse> call, Throwable t) {
+                Log.e("Request", "Failed. Error message: " + t.getMessage());
+            }
+        });
+    }
+    private void merchantFondy(String $city) {
+        CityService cityService = CityApiClient.getClient().create(CityService.class);
+
+        // Замените "your_city" на фактическое название города
+        Call<CityResponseMerchantFondy> call = cityService.getMerchantFondy($city);
+
+        call.enqueue(new Callback<CityResponseMerchantFondy>() {
+            @Override
+            public void onResponse(Call<CityResponseMerchantFondy> call, Response<CityResponseMerchantFondy> response) {
+                if (response.isSuccessful()) {
+                    CityResponseMerchantFondy cityResponse = response.body();
+                    Log.d(TAG, "onResponse: cityResponse" + cityResponse);
+                    if (cityResponse != null) {
+                        String merchant_fondy = cityResponse.getMerchantFondy();
+                        String fondy_key_storage = cityResponse.getFondyKeyStorage();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("merchant_fondy", merchant_fondy);
+                        cv.put("fondy_key_storage", fondy_key_storage);
+
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                new String[] { "1" });
+
+                        database.close();
+
+                        Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
+                        Log.d(TAG, "onResponse: fondy_key_storage" + fondy_key_storage);
+
+
+                        // Добавьте здесь код для обработки полученных значений
+                    }
+                } else {
+                    Log.e("Request", "Failed. Error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CityResponseMerchantFondy> call, Throwable t) {
+                Log.e("Request", "Failed. Error message: " + t.getMessage());
+            }
+        });
+    }
+
     public void resetRoutHome() {
         ContentValues cv = new ContentValues();
 

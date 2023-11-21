@@ -336,13 +336,15 @@ public class CardFragment extends Fragment {
                 .build();
 
         PaymentApi paymentApi = retrofit.create(PaymentApi.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
 
         RequestData paymentRequest = new RequestData(
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 email
         );

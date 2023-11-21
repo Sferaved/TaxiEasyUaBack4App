@@ -106,7 +106,9 @@ public class MyBottomSheetTokenFragment extends BottomSheetDialogFragment {
                 .build();
 
         PaymentApiToken paymentApi = retrofit.create(PaymentApiToken.class);
-        String merchantPassword = getString(R.string.fondy_key_storage);
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String MERCHANT_ID = arrayList.get(6);
+        String merchantPassword = arrayList.get(7);
         List<String> stringList = logCursor(MainActivity.TABLE_USER_INFO, requireActivity());
         String email = stringList.get(3);
 
@@ -114,7 +116,7 @@ public class MyBottomSheetTokenFragment extends BottomSheetDialogFragment {
                 order_id,
                 orderDescription,
                 amount,
-                MainActivity.MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword,
                 rectoken,
                 email
