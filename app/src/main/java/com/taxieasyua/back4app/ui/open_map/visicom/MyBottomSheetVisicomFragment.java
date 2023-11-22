@@ -356,6 +356,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     }
                                     OpenStreetMapActivity.startLat = coordinates[1];
                                     OpenStreetMapActivity.startLan = coordinates[0];
+                                    OpenStreetMapActivity.FromAdressString = addresses.get(position);
                                     updateRoutMarker(settings);
 
                                     Log.d(TAG, "settings: " + settings);
