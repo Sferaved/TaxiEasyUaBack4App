@@ -105,11 +105,11 @@ import retrofit2.Response;
 
 public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_GEO";
-    public EditText geoText;
+    public static EditText geoText;
     public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
-    long firstCost;
+    static long firstCost;
 
     @SuppressLint("StaticFieldLeak")
     public static TextView text_view_cost;
@@ -132,7 +132,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     public static String geo_marker;
     String pay_method;
     public static String urlOrder;
-    private long MIN_COST_VALUE;
+    public static long MIN_COST_VALUE;
     public static long firstCostForMin;
     private static long discount;
     private final String apiUrl = "https://api.visicom.ua/data-api/5.0/uk/geocode.json";
@@ -141,10 +141,10 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
     private static List<double[]> coordinatesList;
     private static List<String> addresses;
-    private String citySearch;
+    public static String citySearch;
     private String startPoint, finishPoint;
 
-    private ImageButton btn_clear_from, btn_clear_to;
+    public static ImageButton btn_clear_from, btn_clear_to;
     public static GeoDialogVisicomFragment newInstance() {
         fragment = new GeoDialogVisicomFragment();
         return fragment;
@@ -200,17 +200,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                String inputString = charSequence.toString();
-                int charCount = inputString.length();
-                Log.d(TAG, "onTextChanged: inputString" + inputString);
-                Log.d(TAG, "onTextChanged: finishPoint" + startPoint);
-                if (charCount > 2) {
-                    if (startPoint == null) {
-                        performAddressSearch(inputString, "start");
-                    } else if (!startPoint.equals(inputString)) {
-                        performAddressSearch(inputString, "start");
-                    }
-                }
                 btn_clear_from.setVisibility(View.VISIBLE);
             }
 
@@ -220,7 +209,15 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             }
         });
 
-        Log.d("TAG", "onCreateView: OpenStreetMapActivity.FromAdressString" + OpenStreetMapActivity.FromAdressString);
+        geoText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        });
 
 
         text_view_cost = view.findViewById(R.id.text_view_cost);
@@ -243,32 +240,13 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);
 
-        textViewTo.addTextChangedListener(new TextWatcher() {
+        textViewTo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
-                // Вызывается перед изменением текста
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                // Вызывается при изменении текста
-                String inputString = charSequence.toString();
-                int charCount = inputString.length();
-                Log.d(TAG, "onTextChanged: inputString" + inputString);
-                Log.d(TAG, "onTextChanged: finishPoint" + finishPoint);
-                if (charCount > 2) {
-                    if (finishPoint == null) {
-                        performAddressSearch(inputString, "finish");
-                    } else if (!finishPoint.equals(inputString)) {
-                        performAddressSearch(inputString,"finish");
-                    }
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
-                btn_clear_to.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // Вызывается после изменения текста
             }
         });
 
@@ -466,6 +444,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 geoText.setText("");
+                MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 btn_clear_from.setVisibility(View.INVISIBLE);
             }
         });
@@ -474,6 +454,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 textViewTo.setText("");
+                MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 btn_clear_to.setVisibility(View.INVISIBLE);
             }
         });
