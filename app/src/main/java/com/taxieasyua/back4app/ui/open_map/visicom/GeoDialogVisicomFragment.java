@@ -105,7 +105,7 @@ import retrofit2.Response;
 
 public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_GEO";
-    public static EditText geoText;
+    public static TextView geoText;
     public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
@@ -114,7 +114,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     @SuppressLint("StaticFieldLeak")
     public static TextView text_view_cost;
     @SuppressLint("StaticFieldLeak")
-    public static EditText textViewTo;
+    public static TextView textViewTo;
     @SuppressLint("StaticFieldLeak")
     public static EditText to_number;
     public static String numberFlagTo;
@@ -143,6 +143,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     private static List<String> addresses;
     public static String citySearch;
     private String startPoint, finishPoint;
+
 
     public static ImageButton btn_clear_from, btn_clear_to;
     public static GeoDialogVisicomFragment newInstance() {
@@ -191,34 +192,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         geoText = view.findViewById(R.id.textGeo);
         geoText.setText(OpenStreetMapActivity.FromAdressString);
-        startPoint = OpenStreetMapActivity.FromAdressString;
-        geoText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                btn_clear_from.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-
-        geoText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
-
 
         text_view_cost = view.findViewById(R.id.text_view_cost);
 
@@ -239,16 +212,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         btn_minus = view.findViewById(R.id.btn_minus);
         btn_plus = view.findViewById(R.id.btn_plus);
         btnOrder = view.findViewById(R.id.btnOrder);
-
-        textViewTo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
 
         button = view.findViewById(R.id.change);
         button.setOnClickListener(new View.OnClickListener() {
@@ -443,231 +406,24 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                geoText.setText("");
                 MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                btn_clear_from.setVisibility(View.INVISIBLE);
-            }
+             }
         });
         btn_clear_to = view.findViewById(R.id.btn_clear_to);
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                textViewTo.setText("");
                 MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment();
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                btn_clear_to.setVisibility(View.INVISIBLE);
-            }
+             }
         });
+
 
         startCost();
         OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
 
         return view;
-    }
-
-    private void performAddressSearch(String inputText, String point) {
-        try {
-            String url = apiUrl;
-            if (!inputText.substring(3).contains(", ")) {
-                url = url + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
-            } else {
-                // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
-                url = url + "?text=" + inputText + "&key=" + apiKey;
-            }
-
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-            Log.d(TAG, "performAddressSearch: " + url);
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override
-                public void onResponse(okhttp3.Call call, okhttp3.Response response) {
-                    try {
-                        String responseData = response.body().string();
-                        Log.d(TAG, "onResponse: " + responseData);
-                        processAddressData(responseData, point);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Log the exception or display an error message
-        }
-    }
-
-    private void processAddressData(String responseData, String point) {
-        try {
-            JSONObject jsonResponse = new JSONObject(responseData);
-            JSONArray features = jsonResponse.getJSONArray("features");
-            Log.d(TAG, "processAddressData: features" + features);
-            addresses = new ArrayList<>();
-            coordinatesList = new ArrayList<>(); // Список для хранения координат
-
-
-            for (int i = 0; i < features.length(); i++) {
-                JSONObject properties = features.getJSONObject(i).getJSONObject("properties");
-                Log.d(TAG, "processAddressData: properties" + properties);
-                JSONObject geoCentroid = features.getJSONObject(i).getJSONObject("geo_centroid");
-
-                if (!properties.getString("country_code").equals("ua")) {
-                    Log.d(TAG, "processAddressData: Skipped address - Country is not Україна");
-                    continue;
-                }
-
-                if (properties.getString("categories").equals("adr_street")) {
-
-                    String settlement = properties.optString("settlement", "").toLowerCase();
-                    String city = citySearch.toLowerCase();
-
-                    if (settlement.contains(city)) {
-                        String address = String.format("%s %s, ",
-                                properties.getString("name"),
-                                properties.getString("type"));
-                        addresses.add(address);
-                    }
-                }
-                 else if (properties.getString("categories").equals("adr_address")) {
-
-                    String settlement = properties.optString("settlement", "").toLowerCase();
-                    String city = citySearch.toLowerCase();
-
-                    if (settlement.contains(city)) {
-                        String address = String.format("%s %s, %s, %s %s",
-
-                                properties.getString("street"),
-                                properties.getString("street_type"),
-                                properties.getString("name"),
-                                properties.getString("settlement_type"),
-                                properties.getString("settlement"));
-
-                        addresses.add(address);
-                    }
-                }
-
-
-                double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
-                double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
-                coordinatesList.add(new double[]{longitude, latitude});
-
-            }
-            Log.d(TAG, "processAddressData: " + addresses);
-            if (addresses.size() != 0) {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    Log.d(TAG, "processAddressData: " + addresses);
-
-                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity(), R.style.AlertDialogTheme);
-                    LayoutInflater inflater = this.getLayoutInflater();
-                    View view = inflater.inflate(R.layout.from_to_geo_adress_layout, null);
-                    builder.setView(view);
-                    ListView addressListView = view.findViewById(R.id.listAddress);
-
-                    ArrayAdapter<String> addressAdapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, addresses);
-                    addressListView.setAdapter(addressAdapter);
-                    addressListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-                    addressListView.setItemChecked(0, true);
-
-                    addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
-                        if(point.equals("start")) {
-                            startPoint = addresses.get(position);
-                        } else {
-                            finishPoint = addresses.get(position);
-                        }
-
-                    });
-
-                    builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
-                            int position = addressListView.getCheckedItemPosition();
-                            if (position < coordinatesList.size()) {
-                                double[] coordinates = coordinatesList.get(position);
-                                Log.d(TAG, "Clicked item at position " + position + ": [" + coordinates[0] + ", " + coordinates[1] + "]");
-                                if(point.equals("start")) {
-                                    startPoint = addresses.get(position);
-                                    geoText.setText(addresses.get(position));
-
-                                    List<String> settings = new ArrayList<>();
-
-                                    settings.add(Double.toString(coordinates[1]));
-                                    settings.add(Double.toString(coordinates[0]));
-                                    if(textViewTo.getText().toString().equals("")){
-                                        settings.add(Double.toString(coordinates[1]));
-                                        settings.add(Double.toString(coordinates[0]));
-                                        settings.add(addresses.get(position));
-                                        settings.add(addresses.get(position));
-                                    }  else {
-                                        settings.add("");
-                                        settings.add("");
-                                        settings.add(addresses.get(position));
-                                        settings.add(textViewTo.getText().toString());
-                                    }
-                                    OpenStreetMapActivity.startLat = coordinates[1];
-                                    OpenStreetMapActivity.startLan = coordinates[0];
-
-                                    updateRoutMarker(settings);
-                                    Log.d(TAG, "settings: " + settings);
-                                    geoText.setSelection(addresses.get(position).length());
-
-                                } else {
-                                    textViewTo.setText(addresses.get(position));
-
-                                    List<String> settings = new ArrayList<>();
-                                    if(!geoText.getText().toString().equals("")) {
-                                        settings.add(Double.toString(OpenStreetMapActivity.startLat));
-                                        settings.add(Double.toString(OpenStreetMapActivity.startLan));
-                                        settings.add(Double.toString(coordinates[1]));
-                                        settings.add(Double.toString(coordinates[0]));
-
-                                        settings.add(geoText.getText().toString());
-                                        settings.add(addresses.get(position));
-                                    }
-                                    updateRoutMarker(settings);
-                                    Log.d(TAG, "settings: " + settings);
-                                    textViewTo.setSelection(addresses.get(position).length());
-                                }
-
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    visicomCost();
-                                }
-                            }
-
-                        }
-                    });
-                    builder.setNegativeButton(getString(R.string.cancel_button), null);
-                    builder.setNeutralButton(getString(R.string.on_map), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    fragment.dismiss();
-                                }
-                            }
-                    );
-
-                            builder.show();
-
-                    // Проверка, не пуст ли адаптер
-                    if (addressAdapter.getCount() > 0) {
-                        Log.d(TAG, "processAddressData: ArrayAdapter contents");
-                        for (int i = 0; i < addressAdapter.getCount(); i++) {
-                            Log.d(TAG, "Item " + i + ": " + addressAdapter.getItem(i));
-                        }
-                    }
-                });
-            }
-
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     @SuppressLint("UseRequireInsteadOfGet")
@@ -1011,7 +767,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
+        String api =  logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
 
         database.close();

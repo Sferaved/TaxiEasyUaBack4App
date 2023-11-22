@@ -381,7 +381,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
                 GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
                 map.getController().setCenter(initialGeoPoint);
-                setMarker(startLat, startLan, FromAdressString);
+                setMarker(startLat, startLan, FromAdressString, getApplicationContext());
 
                 bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -435,11 +435,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
                         map.getOverlays().add(markerOverlay);
-                        setMarker(startLat, startLan, FromAdressString);
+                        setMarker(startLat, startLan, FromAdressString, getApplicationContext());
                         GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
                         map.getController().setCenter(initialGeoPoint);
 
-                        setMarker(startLat, startLan, FromAdressString);
+                        setMarker(startLat, startLan, FromAdressString, getApplicationContext());
                         map.invalidate();
                     }
                 };
@@ -505,11 +505,11 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
                     map.getOverlays().add(markerOverlay);
-                    setMarker(startLat, startLan, FromAdressString);
+                    setMarker(startLat, startLan, FromAdressString, getApplicationContext());
                     GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
                     map.getController().setCenter(initialGeoPoint);
 
-                    setMarker(startLat, startLan, FromAdressString);
+                    setMarker(startLat, startLan, FromAdressString, getApplicationContext());
                     map.invalidate();
                 }
             };
@@ -534,7 +534,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
        map.onPause();
    }
 
-    public void setMarker(double Lat, double Lan, String title) {
+    public static void setMarker(double Lat, double Lan, String title, Context context) {
         m = new Marker(map);
         m.setPosition(new GeoPoint(Lat, Lan));
 
@@ -547,7 +547,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         m.setTextLabelFontSize(40);
         m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
 
-        @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = getResources().getDrawable(R.drawable.marker_green);
+        @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = context.getResources().getDrawable(R.drawable.marker_green);
 
         // Уменьшите размер до 48 пикселей
         int width = 48;
@@ -555,7 +555,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
 
         // Создайте новый Drawable из уменьшенного изображения
-        Drawable scaledDrawable = new BitmapDrawable(getResources(), bitmap);
+        Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
         m.setIcon(scaledDrawable);
 
 

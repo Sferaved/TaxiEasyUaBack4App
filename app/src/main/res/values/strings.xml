@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.882</string>
-    <string name="version">Версия: 2.882</string>
+    <string name="version_code">2.884</string>
+    <string name="version">Версия: 2.884</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -282,4 +282,5 @@
     <string name="pay_failure_mes">Оплата не прошла</string>
     <string name="nal_pay_message">Способ оплаты поездки - наличными водителю.</string>
     <string name="max_limit_message">Достигнут макисмальный предел суммы заказа этим способом оплаты.\n Заказать оплатой наличными?</string>
+    <string name="house_vis_mes">укажите номер дома</string>
 </resources>

@@ -17,21 +17,28 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -45,6 +52,7 @@ import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.osmdroid.util.GeoPoint;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -70,12 +78,21 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private final OkHttpClient client = new OkHttpClient();
     private String startPoint, finishPoint;
     ListView addressListView;
+    private boolean verifyBuilding;
+    private boolean verifyBuildingStart;
+    private boolean verifyBuildingFinish;
+    private TextView textGeoError, text_toError;
+
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.visicom_address_layout, container, false);
+
+        textGeoError = view.findViewById(R.id.textGeoError);
+        text_toError = view.findViewById(R.id.text_toError);
+
         apiKey = requireActivity().getString(R.string.visicom_key_storage);
         addressListView = view.findViewById(R.id.listAddress);
 
@@ -99,7 +116,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         });
 
         fromEditAddress = view.findViewById(R.id.textGeo);
-        fromEditAddress.setText(GeoDialogVisicomFragment.geoText.getText().toString());
+//        fromEditAddress.setText(GeoDialogVisicomFragment.geoText.getText().toString());
         fromEditAddress.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -118,6 +135,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     } else if (!startPoint.equals(inputString)) {
                         performAddressSearch(inputString, "start");
                     }
+                    textGeoError.setVisibility(View.GONE);
                 }
                 btn_clear_from.setVisibility(View.VISIBLE);
             }
@@ -152,6 +170,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     }
                 }
                 btn_clear_to.setVisibility(View.VISIBLE);
+                text_toError.setVisibility(View.GONE);
             }
 
             @Override
@@ -165,6 +184,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             public void onClick(View v) {
                 fromEditAddress.setText("");
                 btn_clear_from.setVisibility(View.INVISIBLE);
+                textGeoError.setVisibility(View.GONE);
             }
         });
         btn_clear_to = view.findViewById(R.id.btn_clear_to);
@@ -173,37 +193,36 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             public void onClick(View v) {
                 toEditAddress.setText("");
                 btn_clear_to.setVisibility(View.INVISIBLE);
+                text_toError.setVisibility(View.GONE);
             }
         });
+
 
 
         return view;
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
 
-        // Set full-screen layout parameters
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-            );
-        }
-
-        return dialog;
-    }
 
     private void performAddressSearch(String inputText, String point) {
         try {
             String url = apiUrl;
+
             if (!inputText.substring(3).contains(", ")) {
                 url = url + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
+                if(point.equals("start")) {
+                    verifyBuildingStart = true;
+                } else  {
+                    verifyBuildingFinish = true;
+                }
             } else {
                 // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
                 url = url + "?text=" + inputText + "&key=" + apiKey;
+                if(point.equals("start")) {
+                    verifyBuildingStart = false;
+                } else  {
+                    verifyBuildingFinish = false;
+                }
             }
 
             Request request = new Request.Builder()
@@ -262,6 +281,11 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                 properties.getString("name"),
                                 properties.getString("type"));
                         addresses.add(address);
+                        double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                        double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                        Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+
+                        coordinatesList.add(new double[]{longitude, latitude});
                     }
                 }
                 else if (properties.getString("categories").equals("adr_address")) {
@@ -279,19 +303,22 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                 properties.getString("settlement"));
 
                         addresses.add(address);
+
+                        double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                        double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                        Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+
+                        coordinatesList.add(new double[]{longitude, latitude});
                     }
                 }
 
 
-                double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
-                double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
-                coordinatesList.add(new double[]{longitude, latitude});
+
 
             }
             Log.d(TAG, "processAddressData: " + addresses);
             if (addresses.size() != 0) {
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    Log.d(TAG, "processAddressData: " + addresses);
 
                     ArrayAdapter<String> addressAdapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, addresses);
 
@@ -301,29 +328,17 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     addressListView.setItemChecked(0, true);
 
                     addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
-                        if(point.equals("start")) {
-                            startPoint = addresses.get(position);
-                            fromEditAddress.setText(addresses.get(position));
-                            fromEditAddress.setSelection(addresses.get(position).length());
-                        } else {
-                            finishPoint = addresses.get(position);
-                            toEditAddress.setText(addresses.get(position));
-                            toEditAddress.setSelection(addresses.get(position).length());
-                            btn_clear_to.setVisibility(View.VISIBLE);
-                        }
+                        addressListView.setVisibility(View.INVISIBLE);
+                        double[] coordinates = coordinatesList.get(position);
 
-                    });
-                    btn_ok.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            int position = addressListView.getCheckedItemPosition();
-                            if (position < coordinatesList.size()) {
-                                double[] coordinates = coordinatesList.get(position);
-                                Log.d(TAG, "Clicked item at position " + position + ": [" + coordinates[0] + ", " + coordinates[1] + "]");
-                                if (point.equals("start")) {
-                                    startPoint = addresses.get(position);
-                                    fromEditAddress.setText(addresses.get(position));
-                                    GeoDialogVisicomFragment.geoText.setText(addresses.get(position));
+                        if (point.equals("start")) {
+                                startPoint = addresses.get(position);
+                                fromEditAddress.setText(startPoint);
+                                fromEditAddress.setSelection(startPoint.length());
+
+                                if(!verifyBuildingStart) {
+                                    GeoDialogVisicomFragment.geoText.setText(startPoint);
+
                                     List<String> settings = new ArrayList<>();
 
                                     settings.add(Double.toString(coordinates[1]));
@@ -341,15 +356,31 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     }
                                     OpenStreetMapActivity.startLat = coordinates[1];
                                     OpenStreetMapActivity.startLan = coordinates[0];
-
                                     updateRoutMarker(settings);
+
                                     Log.d(TAG, "settings: " + settings);
                                     fromEditAddress.setSelection(addresses.get(position).length());
 
-                                    GeoDialogVisicomFragment.geoText.setSelection(addresses.get(position).length());
-                                    GeoDialogVisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
-                                } else {
-                                    toEditAddress.setText(addresses.get(position));
+                                    double startLat = coordinates[1];
+                                    double startLan = coordinates[0];
+                                    if(OpenStreetMapActivity.m != null) {
+                                        OpenStreetMapActivity.map.getOverlays().remove(OpenStreetMapActivity.m);
+                                        OpenStreetMapActivity.map.invalidate();
+                                        OpenStreetMapActivity.m = null;
+                                    }
+
+                                    GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+                                    OpenStreetMapActivity.map.getController().setCenter(initialGeoPoint);
+
+                                    OpenStreetMapActivity.setMarker(startLat, startLan, startPoint, requireContext());
+                                    OpenStreetMapActivity.map.invalidate();
+                                }
+                            } else if(point.equals("finish")) {
+                                finishPoint = addresses.get(position);
+                                toEditAddress.setText(finishPoint);
+                                toEditAddress.setSelection(finishPoint.length());
+                                btn_clear_to.setVisibility(View.VISIBLE);
+                                if(!verifyBuildingFinish) {
                                     GeoDialogVisicomFragment.textViewTo.setText(addresses.get(position));
                                     List<String> settings = new ArrayList<>();
                                     if (!fromEditAddress.getText().toString().equals("")) {
@@ -364,14 +395,35 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     updateRoutMarker(settings);
                                     Log.d(TAG, "settings: " + settings);
                                     toEditAddress.setSelection(addresses.get(position).length());
-                                    GeoDialogVisicomFragment.textViewTo.setSelection(addresses.get(position).length());
                                     GeoDialogVisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                 }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    visicomCost();
-                                    dismiss();
-                                }
                             }
+                        addresses = null;
+                        coordinatesList = null;
+
+                    });
+                    btn_ok.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                                if(verifyBuildingStart) {
+                                    textGeoError.setVisibility(View.VISIBLE);
+                                    textGeoError.setText(R.string.house_vis_mes);
+
+                                    fromEditAddress.requestFocus();
+                                    fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                                } else if(verifyBuildingFinish) {
+                                    text_toError.setVisibility(View.VISIBLE);
+                                    text_toError.setText(R.string.house_vis_mes);
+
+                                    toEditAddress.requestFocus();
+                                    toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                                } else {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        visicomCost();
+                                        dismiss();
+                                    }
+                                }
+
                         }
                     });
                 });
