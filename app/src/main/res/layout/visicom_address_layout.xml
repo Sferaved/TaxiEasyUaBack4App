@@ -119,7 +119,7 @@
         android:background="@drawable/buttons"
         android:scaleType="centerInside"
         android:src="@drawable/ic_clear_24dp"
-        android:visibility="invisible"
+ 
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.49"
         app:layout_constraintStart_toEndOf="@+id/text_to"

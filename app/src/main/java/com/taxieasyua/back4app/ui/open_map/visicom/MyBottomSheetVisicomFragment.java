@@ -116,7 +116,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         });
 
         fromEditAddress = view.findViewById(R.id.textGeo);
-//        fromEditAddress.setText(GeoDialogVisicomFragment.geoText.getText().toString());
+        fromEditAddress.setText(GeoDialogVisicomFragment.geoText.getText().toString());
         fromEditAddress.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

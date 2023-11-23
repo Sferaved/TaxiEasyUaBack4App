@@ -207,6 +207,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         });
 
         textViewTo = view.findViewById(R.id.text_to);
+        textViewTo.setText(getString(R.string.on_city_tv));
+
         addresses = new ArrayList<>();
 
         btn_minus = view.findViewById(R.id.btn_minus);
