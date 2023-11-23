@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.885</string>
-    <string name="version">Версия: 2.885</string>
+    <string name="version_code">2.886</string>
+    <string name="version">Версия: 2.886</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -122,7 +122,7 @@
     <string name="btn_cost">Заказать</string>
     <string name="texthist">Предыдущие адреса</string>
     <string name="routs">Мои адреса</string>
-    <string name="on_map">По карте</string>
+    <string name="on_map">по карте</string>
     <string name="add_cost_message">Увеличьте стоимость поездки для быстрого поиска машины</string>
     <string name="from_text">Откуда</string>
     <string name="to_text">Куда</string>
@@ -283,4 +283,8 @@
     <string name="nal_pay_message">Способ оплаты поездки - наличными водителю.</string>
     <string name="max_limit_message">Достигнут макисмальный предел суммы заказа этим способом оплаты.\n Заказать оплатой наличными?</string>
     <string name="house_vis_mes">укажите номер дома</string>
+    <string name="address_on_map">определить по карте</string>
+    <string name="address_take">применить</string>
+    <string name="main_page">Главная</string>
+    <string name="search_text">Поиск</string>
 </resources>

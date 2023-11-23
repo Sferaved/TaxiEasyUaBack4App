@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.885</string>
-    <string name="version">Версія: 2.885</string>
+    <string name="version_code">2.886</string>
+    <string name="version">Версія: 2.886</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -122,7 +122,7 @@
     <string name="btn_cost">Замовити</string>
     <string name="texthist">Попередні адреси</string>
     <string name="routs">Мої адреси</string>
-    <string name="on_map">По мапі</string>
+    <string name="on_map">по мапі</string>
     <string name="add_cost_message">Збільшіть вартість поїздки для швидкого пошуку машини</string>
     <string name="from_text">Звідки</string>
     <string name="to_text">Куди</string>
@@ -283,5 +283,9 @@
     <string name="nal_pay_message">Спосіб оплати поїздки - готівкою водію.</string>
     <string name="max_limit_message">Досягнуто максимальну межу суми замовлення цим способом оплати.\n Замовити оплатою готівкою?</string>
     <string name="house_vis_mes">вкажіть номер будинку</string>
+    <string name="address_on_map">визначити за картою</string>
+    <string name="address_take">застосувати</string>
+    <string name="main_page">Головна</string>
+    <string name="search_text">Пошук</string>
 
 </resources>

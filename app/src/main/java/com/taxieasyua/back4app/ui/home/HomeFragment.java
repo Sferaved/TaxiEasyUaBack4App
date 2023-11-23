@@ -437,7 +437,7 @@ public class HomeFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-        getLocalIpAddress();
+//        getLocalIpAddress();
         return root;
     }
 

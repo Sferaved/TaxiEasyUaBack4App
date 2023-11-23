@@ -163,50 +163,30 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_no"
-        android:layout_width="197dp"
+        android:layout_width="150dp"
         android:layout_height="44dp"
+
+        android:layout_margin="8dp"
 
         android:fontFamily="@font/regular"
         android:text="@string/cancel_button"
         android:textAlignment="center"
         android:textColor="@color/black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_ok" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_map"
-        android:layout_width="197sp"
-        android:layout_height="45sp"
-
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="20dp"
-        android:fontFamily="@font/regular"
-        android:text="@string/on_map"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_no"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/listAddress" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_ok"
-        android:layout_width="197sp"
+        android:layout_width="150sp"
         android:layout_height="45sp"
-        android:layout_marginTop="4dp"
-
+        android:layout_margin="8dp"
         android:backgroundTint="@color/colorAccent"
         android:fontFamily="@font/regular"
-        android:text="@string/ok_button"
+        android:text="@string/address_take"
         android:textAlignment="center"
-        android:textColor="@color/white"
 
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/listAddress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
