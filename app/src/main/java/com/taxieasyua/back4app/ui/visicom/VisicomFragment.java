@@ -85,7 +85,7 @@ import retrofit2.Response;
 
 public class VisicomFragment extends Fragment {
 
-    private static ProgressBar progressBar;
+    public static ProgressBar progressBar;
     private FragmentVisicomBinding binding;
     private static final String TAG = "TAG_VISICOM";
     AppCompatButton btnGeo, on_map;
@@ -104,15 +104,10 @@ public class VisicomFragment extends Fragment {
     @SuppressLint("StaticFieldLeak")
     public static EditText to_number;
     public static String numberFlagTo;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationCallback locationCallback;
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
-    @SuppressLint("StaticFieldLeak")
-    static GeoDialogVisicomFragment fragment;
+
     public static long cost;
     public static long addCost;
     public static String to;
-    static String urlAddress;
     public static String geo_marker;
     String pay_method;
     public static String urlOrder;
@@ -122,7 +117,6 @@ public class VisicomFragment extends Fragment {
     private String apiKey; // Впишіть апі ключ
     private final OkHttpClient client = new OkHttpClient();
 
-    private static List<double[]> coordinatesList;
     private static List<String> addresses;
     public static String citySearch;
     public static AppCompatButton btnAdd, btn_clear_from_text;
@@ -151,6 +145,8 @@ public class VisicomFragment extends Fragment {
                 checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
             }
         });
+        progressBar = binding.progressBar;
+
         on_map = binding.btnMap;
         on_map.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
@@ -264,18 +260,18 @@ public class VisicomFragment extends Fragment {
 
         text_view_cost = binding.textViewCost;
 
-        geo_marker = "geo";
+        geo_marker = "visicom";
 
         Log.d(TAG, "onCreateView: geo_marker " + geo_marker);
-        if(!text_view_cost.getText().toString().equals("")) {
-            buttonBonus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            });
-        }
+
+        buttonBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
 
 
         textViewTo = binding.textTo;
@@ -287,29 +283,11 @@ public class VisicomFragment extends Fragment {
         btn_plus = binding.btnPlus;
         btnOrder = binding.btnOrder;
 
-        old_address = binding.oldAddress;
-        String[] array = arrayAdressAdapter();
-        if(array.length == 0) {
-            old_address.setVisibility(View.INVISIBLE);
-        }
-        old_address.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    dialogFromToGeoAdress(array);
-                } catch (MalformedURLException | InterruptedException |
-                         JSONException e) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
-
         btnAdd = binding.btnAdd;
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetGeoFragment bottomSheetDialogFragment = new MyBottomSheetGeoFragment();
+                MyBottomSheetGeoFragment bottomSheetDialogFragment = new MyBottomSheetGeoFragment(text_view_cost);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -480,7 +458,7 @@ public class VisicomFragment extends Fragment {
         List<String> city = logCursor(MainActivity.CITY_INFO, requireActivity());
         Log.d(TAG, "getLocalIpAddress: city.get(1)" + city.get(1));
         if(city.size() != 0 && city.get(1).equals("")) {
-            VisicomFragment.progressBar.setVisibility(View.VISIBLE);
+//            VisicomFragment.progressBar.setVisibility(View.VISIBLE);
             ApiService apiService = ApiClient.getApiService();
 
             Call<City> call = apiService.cityOrder();
@@ -626,8 +604,8 @@ public class VisicomFragment extends Fragment {
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
 
         // Заменяем символ '/' в строках
-        start = start.replace("/", "%2F");
-        finish = finish.replace("/", "%2F");
+        start = start.replace("/", "|");
+        finish = finish.replace("/", "|");
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
@@ -787,148 +765,6 @@ public class VisicomFragment extends Fragment {
         return result;
     }
 
-    static Double to_lat;
-    static Double to_lng;
-    private void dialogFromToGeoAdress(String[] array) throws MalformedURLException, InterruptedException, JSONException {
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity(), R.style.AlertDialogTheme);
-        LayoutInflater inflater = this.getLayoutInflater();
-        View view = inflater.inflate(R.layout.from_to_geo_adress_layout, null);
-        builder.setView(view);
-
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, array);
-        ListView listView = view.findViewById(R.id.listAddress);
-        listView.setAdapter(adapter);
-        listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        listView.setItemChecked(0, true);
-
-
-        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Обработка выбора элемента
-//                selectedItem = position;
-                // Дополнительный код по обработке выбора элемента
-//                 to_lat = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
-//                 to_lng = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Код, если ни один элемент не выбран
-            }
-        });
-        builder.setPositiveButton(R.string.order, new DialogInterface.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                to_lat = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lat"));
-                to_lng = Double.valueOf((String) adressArr.get(listView.getCheckedItemPosition()).get("to_lng"));
-
-                OpenStreetMapActivity.finishLat = to_lat;
-                OpenStreetMapActivity.finishLan = to_lng;
-
-                Log.d("TAG", "onClick: OpenStreetMapActivity.finishLat " + OpenStreetMapActivity.finishLat);
-                Log.d("TAG", "onClick: OpenStreetMapActivity.finishLan " + OpenStreetMapActivity.finishLan);
-
-                List<String> settings = new ArrayList<>();
-                settings.add(String.valueOf(OpenStreetMapActivity.startLat));
-                settings.add(String.valueOf(OpenStreetMapActivity.startLan));
-                settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
-                settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
-
-                settings.add(geoText.getText().toString());
-                settings.add(textViewTo.getText().toString());
-
-                updateRoutMarker(settings);
-                geo_marker = "marker";
-
-                try {
-
-                    urlAddress = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
-
-                    Map<String, String> sendUrlMapCost = CostJSONParser.sendURL(urlAddress);
-
-                    String message = sendUrlMapCost.get("message");
-                    String orderCost = sendUrlMapCost.get("order_cost");
-                    geo_marker = "marker";
-                    Log.d("TAG", "onClick urlAddress: " + urlAddress);
-
-                    if (orderCost.equals("0")) {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-                    if (!orderCost.equals("0")) {
-                        if (!verifyOrder(requireActivity())) {
-                            MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment(orderCost);
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        } else {
-                            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
-
-
-                            long discountInt = Integer.parseInt(discountText);
-                            firstCost = Long.parseLong(orderCost);
-                            discount= firstCost * discountInt / 100;
-                            updateAddCost(String.valueOf(discount));
-                            firstCost = firstCost + discount;
-                            text_view_cost.setText(String.valueOf(firstCost));
-                            MIN_COST_VALUE = (long) (firstCost*0.1);
-                            firstCostForMin = firstCost;
-                            to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
-                            textViewTo.setText(to);
-                            if(connected()) {
-                                if (to.indexOf("/") != -1) {
-                                    to = to.substring(0,  to.indexOf("/"));
-                                };
-                                String urlCost = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
-
-                                Log.d("TAG", "onClick urlCost: " + urlCost);
-
-                                try {
-                                    sendUrlMapCost = ResultSONParser.sendURL(urlCost);
-                                } catch (MalformedURLException | InterruptedException | JSONException ignored) {
-
-                                }
-
-                                orderCost = (String) sendUrlMapCost.get("message");
-                                Log.d("TAG", "onClick Hid : " + orderCost);
-
-                                if (orderCost.equals("1")) {
-                                    to_number.setVisibility(View.VISIBLE);
-                                    to_number.setText(" ");
-                                    to_number.requestFocus();
-                                    numberFlagTo = "1";
-                                }  else if (orderCost.equals("0")) {
-                                    to_number.setText("XXX");
-                                    to_number.setVisibility(View.INVISIBLE);
-                                    numberFlagTo = "0";
-                                }
-                            }
-
-                        }
-
-
-                    }else {
-
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMapCost.get("message"));
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                } catch (MalformedURLException e) {
-
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_firebase_start));
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-        });
-        builder.setNegativeButton(getString(R.string.cancel_button), null);
-        builder.show();
-
-    }
-
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void orderRout() {
@@ -944,7 +780,7 @@ public class VisicomFragment extends Fragment {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            bottomSheetDialogFragment = new MyPhoneDialogFragment("geo", text_view_cost.getText().toString());
+            bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString());
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }

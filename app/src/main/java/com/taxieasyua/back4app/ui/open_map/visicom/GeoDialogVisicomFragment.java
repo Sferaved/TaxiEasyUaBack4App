@@ -294,7 +294,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         buttonAddServicesView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetGeoFragment bottomSheetDialogFragment = new MyBottomSheetGeoFragment();
+                MyBottomSheetGeoFragment bottomSheetDialogFragment = new MyBottomSheetGeoFragment(text_view_cost);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -638,8 +638,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
 
         // Заменяем символ '/' в строках
-        start = start.replace("/", "%2F");
-        finish = finish.replace("/", "%2F");
+        start = start.replace("/", "|");
+        finish = finish.replace("/", "|");
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;

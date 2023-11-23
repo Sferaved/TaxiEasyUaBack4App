@@ -68,7 +68,7 @@ import okhttp3.Request;
 public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
     private static final String TAG = "TAG_VIS_ADDR";
-    AppCompatButton btn_ok, btn_no, btn_map;
+    AppCompatButton btn_ok, btn_no;
     EditText fromEditAddress, toEditAddress;
     private ImageButton btn_clear_from, btn_clear_to;
 
@@ -79,7 +79,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private final OkHttpClient client = new OkHttpClient();
     private String startPoint, finishPoint;
     ListView addressListView;
-    private boolean verifyBuilding;
+
     private boolean verifyBuildingStart;
     private boolean verifyBuildingFinish;
     private TextView textGeoError, text_toError;
@@ -240,6 +240,11 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private void performAddressSearch(String inputText, String point) {
         try {
             String url = apiUrl;
+            if(point.equals("start")) {
+                verifyBuildingStart = false;
+            } else  {
+                verifyBuildingFinish = false;
+            }
 
             if (!inputText.substring(3).contains(", ")) {
                 url = url + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
@@ -443,6 +448,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     switch (fragmentInput) {
                                         case "map":
                                             GeoDialogVisicomFragment.textViewTo.setText(addresses.get(position));
+                                            GeoDialogVisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                             if (!fromEditAddress.getText().toString().equals("")) {
                                                 settings.add(Double.toString(OpenStreetMapActivity.startLat));
                                                 settings.add(Double.toString(OpenStreetMapActivity.startLan));
@@ -451,9 +457,12 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                                 settings.add(fromEditAddress.getText().toString());
                                                 settings.add(addresses.get(position));
+
                                             }
                                             break;
                                         case "home":
+                                            VisicomFragment.textViewTo.setText(addresses.get(position));
+                                            VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                             if (!fromEditAddress.getText().toString().equals("")) {
                                                 settings.add(Double.toString(0));
                                                 settings.add(Double.toString(0));
@@ -463,14 +472,13 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                                 settings.add(fromEditAddress.getText().toString());
                                                 settings.add(addresses.get(position));
                                             }
-                                            VisicomFragment.textViewTo.setText(addresses.get(position));
                                             break;
                                     }
 
                                     updateRoutMarker(settings);
                                     Log.d(TAG, "settings: " + settings);
                                     toEditAddress.setSelection(addresses.get(position).length());
-                                    GeoDialogVisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
+
                                 }
                             }
                         }
@@ -489,13 +497,17 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                     fromEditAddress.requestFocus();
                                     fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
-                                } else if(verifyBuildingFinish) {
+                                }
+                                if(verifyBuildingFinish) {
                                     text_toError.setVisibility(View.VISIBLE);
                                     text_toError.setText(R.string.house_vis_mes);
 
                                     toEditAddress.requestFocus();
                                     toEditAddress.setSelection(toEditAddress.getText().toString().length());
-                                } else {
+                                }
+                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
+                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
+                                if(verifyBuildingStart == false && verifyBuildingFinish == false) {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                         visicomCost();
                                         dismiss();
@@ -554,12 +566,14 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
                     VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost*0.6);
                     VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
+
+
+                    VisicomFragment.geoText.setVisibility(View.VISIBLE);
                     VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
                     VisicomFragment.textwhere.setVisibility(View.VISIBLE);
                     VisicomFragment.num2.setVisibility(View.VISIBLE);
                     VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
                     VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
-                    VisicomFragment.old_address.setVisibility(View.VISIBLE);
                     VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
                     VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
                     VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
@@ -608,8 +622,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
 
         // Заменяем символ '/' в строках
-        start = start.replace("/", "%2F");
-        finish = finish.replace("/", "%2F");
+        start = start.replace("/", "|");
+        finish = finish.replace("/", "|");
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
@@ -714,6 +728,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         if(!settings.get(2).equals("")){
             cv.put("to_lat", Double.parseDouble(settings.get(2)));
             cv.put("to_lng", Double.parseDouble(settings.get(3)));
+        } else {
+            cv.put("to_lat",  Double.parseDouble(settings.get(0)));
+            cv.put("to_lng", Double.parseDouble(settings.get(1)));
         }
         cv.put("start", settings.get(4));
         cv.put("finish", settings.get(5));

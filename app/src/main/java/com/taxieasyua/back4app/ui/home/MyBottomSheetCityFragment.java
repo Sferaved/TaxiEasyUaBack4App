@@ -31,6 +31,7 @@ import com.taxieasyua.back4app.cities.api.CityApiClient;
 import com.taxieasyua.back4app.cities.api.CityResponse;
 import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
+import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import java.util.Objects;
 
@@ -78,7 +79,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.cities_list_layout, container, false);
         listView = view.findViewById(R.id.listViewBonus);
-        HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+        VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, cityList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -132,7 +133,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
                     resetRoutHome();
-                    navController.navigate(R.id.nav_home);
+                    navController.navigate(R.id.nav_visicom);
 
                     Toast.makeText(requireActivity(), getString(R.string.change_message)  + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
                 }

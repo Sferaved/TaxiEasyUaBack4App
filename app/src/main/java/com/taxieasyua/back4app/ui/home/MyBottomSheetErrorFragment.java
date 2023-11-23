@@ -88,7 +88,6 @@ public class MyBottomSheetErrorFragment extends BottomSheetDialogFragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 }
 

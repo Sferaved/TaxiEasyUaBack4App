@@ -34,6 +34,7 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
+import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -290,6 +291,38 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 String costUpdate = String.valueOf(firstCost);
                 textView.setText(costUpdate);
 
+            }
+        }
+        if(rout.equals("visicom")) {
+            String urlCost = null;
+            Map<String, String> sendUrlMapCost = null;
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+                }
+
+                sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+            } catch (MalformedURLException ignored) {
+
+            }
+            assert sendUrlMapCost != null;
+            String orderCost = (String) sendUrlMapCost.get("order_cost");
+            Log.d(TAG, "onDismiss: orderCost " + orderCost);
+            assert orderCost != null;
+            if (!orderCost.equals("0")) {
+                String costUpdate;
+                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                long discountInt = Integer.parseInt(discountText);
+                long discount;
+                long firstCost = Long.parseLong(orderCost);
+                discount = firstCost * discountInt / 100;
+
+                firstCost = firstCost + discount;
+                updateAddCost(String.valueOf(discount));
+
+                VisicomFragment.firstCostForMin = firstCost;
+                costUpdate = String.valueOf(firstCost);
+                textView.setText(costUpdate);
             }
         }
         if(rout.equals("geo")) {

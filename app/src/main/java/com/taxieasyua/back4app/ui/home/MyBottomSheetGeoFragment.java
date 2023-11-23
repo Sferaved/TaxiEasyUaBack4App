@@ -70,6 +70,12 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
     long discountFist;
     final static long MIN_VALUE = -90;
     final static long MAX_VALUE = 200;
+    TextView texViewCost;
+
+    public MyBottomSheetGeoFragment(TextView texViewCost) {
+        this.texViewCost = texViewCost;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
@@ -397,7 +403,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             database.close();
         }
         try {
-            GeoDialogVisicomFragment.text_view_cost.setText(changeCost());
+            texViewCost.setText(changeCost());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -552,8 +558,8 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
 
         // Заменяем символ '/' в строках
-        start = start.replace("/", "%2F");
-        finish = finish.replace("/", "%2F");
+        start = start.replace("/", "|");
+        finish = finish.replace("/", "|");
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;

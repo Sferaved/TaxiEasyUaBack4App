@@ -58,7 +58,7 @@
             android:textColor="#D9D9D9"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.075"
+            app:layout_constraintHorizontal_bias="0.298"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -99,11 +99,13 @@
             android:layout_margin="8dp"
             android:background="@drawable/input"
             android:ems="10"
+            android:visibility="invisible"
+            android:minHeight="48sp"
             android:fontFamily="@font/light"
             android:hint="@string/Street_hint"
             android:textColor="@color/white"
             android:textColorHint="#ABD9D9D9"
-            android:textSize="16sp"
+            android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@+id/num1"
             app:layout_constraintTop_toBottomOf="@+id/textfrom"
             tools:ignore="MissingConstraints" />
@@ -125,19 +127,19 @@
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_clear_from_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
+            android:layout_width="200sp"
+            android:layout_height="48sp"
             android:layout_marginTop="32dp"
+
+
             android:background="@drawable/buttons"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_clear_24dp"
-            android:visibility="gone"
             android:textColor="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.344"
-            app:layout_constraintStart_toEndOf="@+id/textGeo"
+            app:layout_constraintHorizontal_bias="0.298"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnMap" />
+
         <TextView
             android:id="@+id/num2"
             android:layout_width="wrap_content"
@@ -163,9 +165,10 @@
             android:ems="10"
             android:fontFamily="@font/light"
             android:hint="@string/Street_hint"
+            android:minHeight="48sp"
             android:textColor="@color/white"
             android:textColorHint="#ABD9D9D9"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:visibility="invisible"
             app:layout_constraintStart_toEndOf="@+id/num2"
             app:layout_constraintTop_toBottomOf="@+id/textwhere"
@@ -218,18 +221,17 @@
             android:layout_width="293sp"
             android:layout_height="wrap_content"
 
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/buttons"
-            android:fontFamily="@font/regular"
 
+            android:fontFamily="@font/regular"
             android:text="@string/add_services"
             android:textAlignment="center"
             android:textColor="#D9D9D9"
             android:visibility="invisible"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/old_address" />
+            app:layout_constraintTop_toBottomOf="@+id/text_to" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnBonus"
@@ -246,19 +248,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/old_address"
-            android:layout_width="293sp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/buttons"
-            android:text="@string/routs"
-            android:textColor="#D9D9D9"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_to" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_minus"

@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         HomeFragment.progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public static final String DB_NAME = "data_21112023_10";
+    public static final String DB_NAME = "data_23112023_12";
 
     /**
      * Table section
@@ -822,7 +822,7 @@ public class MainActivity extends AppCompatActivity {
 
             NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
             resetRoutHome();
-            navController.navigate(R.id.nav_home);
+            navController.navigate(R.id.nav_visicom);
 
         }).setNegativeButton(cancel_button, null)
                 .show();
