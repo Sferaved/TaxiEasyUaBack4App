@@ -79,7 +79,7 @@ import java.util.Objects;
 
 public class OpenStreetMapActivity extends AppCompatActivity {
     private static final String TAG = "TAG_OPENMAP";
-    private static IMapController mapController;
+    public static IMapController mapController;
     public String[] arrayStreet;
     public static FloatingActionButton fab, fab_call, fab_open_map, fab_open_marker;
 
@@ -249,6 +249,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         fab_open_marker.setOnClickListener(v -> {
 //            MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+            progressBar.setVisibility(View.INVISIBLE);
             GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
             bottomSheet.show(fragmentManager, bottomSheet.getTag());
         });

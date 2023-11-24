@@ -10,6 +10,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,6 +58,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -464,6 +469,10 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                                 settings.add(addresses.get(position));
 
                                             }
+                                            GeoPoint endPoint = new GeoPoint(coordinates[1], coordinates[0]);
+                                            OpenStreetMapActivity.endPoint = endPoint;
+                                            OpenStreetMapActivity.ToAdressString = finishPoint;
+                                            showRoutMap(endPoint);
                                             break;
                                         case "home":
                                             VisicomFragment.textViewTo.setText(addresses.get(position));
@@ -528,6 +537,52 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showRoutMap(GeoPoint geoPoint) {
+        if(OpenStreetMapActivity.marker != null) {
+            OpenStreetMapActivity.map.getOverlays().remove(OpenStreetMapActivity.marker);
+            OpenStreetMapActivity.map.invalidate();
+            OpenStreetMapActivity.marker = null;
+        }
+
+
+        OpenStreetMapActivity.marker = new Marker(OpenStreetMapActivity.map);
+        OpenStreetMapActivity.marker.setPosition(geoPoint);
+        OpenStreetMapActivity.marker.setTextLabelBackgroundColor(
+                Color.TRANSPARENT
+        );
+        OpenStreetMapActivity.marker.setTextLabelForegroundColor(
+                Color.RED
+        );
+        OpenStreetMapActivity.marker.setTextLabelFontSize(40);
+        OpenStreetMapActivity.marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        String unuString = new String(Character.toChars(0x1F449));
+
+        OpenStreetMapActivity.marker.setTitle("2."+ unuString + OpenStreetMapActivity.ToAdressString);
+
+        @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = requireActivity().getResources().getDrawable(R.drawable.marker_green);
+        int width = 48;
+        int height = 48;
+        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+
+        // Создайте новый Drawable из уменьшенного изображения
+        Drawable scaledDrawable = new BitmapDrawable(requireActivity().getResources(), bitmap);
+        OpenStreetMapActivity.marker.setIcon(scaledDrawable);
+
+        OpenStreetMapActivity.marker.showInfoWindow();
+
+        OpenStreetMapActivity.map.getOverlays().add(OpenStreetMapActivity.marker);
+
+        GeoPoint initialGeoPoint = new GeoPoint(geoPoint.getLatitude()-0.01, geoPoint.getLongitude());
+        OpenStreetMapActivity.map.getController().setCenter(initialGeoPoint);
+        OpenStreetMapActivity.mapController.setZoom(16);
+
+        OpenStreetMapActivity.map.invalidate();
+
+        GeoPoint startPoint = new GeoPoint(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan);
+
+        OpenStreetMapActivity.showRout(startPoint, OpenStreetMapActivity.endPoint);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

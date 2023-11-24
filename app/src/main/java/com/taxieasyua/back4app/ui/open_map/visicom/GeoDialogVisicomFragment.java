@@ -14,7 +14,11 @@ import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.graphics.Bitmap;
 import android.graphics.BlendMode;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -86,6 +90,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -154,6 +160,11 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.geo_visicom_layout, container, false);
+
+        if(OpenStreetMapActivity.progressBar != null) {
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        }
+
         buttonBonus = view.findViewById(R.id.btnBonus);
         apiKey = requireActivity().getString(R.string.visicom_key_storage);
 
@@ -400,6 +411,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                             break;
 
                     }
+                    OpenStreetMapActivity.ToAdressString = null;
                 }
             }
         });
@@ -426,6 +438,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         } else {
             textViewTo.setText(OpenStreetMapActivity.ToAdressString);
+
             List<String> settings = new ArrayList<>();
             settings.add(Double.toString(OpenStreetMapActivity.startLat));
             settings.add(Double.toString(OpenStreetMapActivity.startLan));
@@ -440,6 +453,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         return view;
     }
+
+
+
 
     @SuppressLint("UseRequireInsteadOfGet")
     private void startLocationUpdates() {
@@ -540,7 +556,19 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
             }
     }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        if(OpenStreetMapActivity.progressBar != null) {
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
     private void markerCost() {
+
+
+
         String urlCost = null;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -784,7 +812,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         }
         String api =  logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
-
+        Log.d(TAG, "getTaxiUrlSearchMarkers: " + url);
         database.close();
 
         return url;
