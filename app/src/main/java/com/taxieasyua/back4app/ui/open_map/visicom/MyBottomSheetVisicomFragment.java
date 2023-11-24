@@ -401,8 +401,13 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                         settings.add(addresses.get(position));
                                         settings.add(addresses.get(position));
                                     } else {
-                                        settings.add("");
-                                        settings.add("");
+                                        if(OpenStreetMapActivity.finishLan == 0){
+                                            settings.add("");
+                                            settings.add("");
+                                        } else {
+                                            settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
+                                            settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
+                                        }
                                         settings.add(addresses.get(position));
                                         settings.add(toEditAddress.getText().toString());
                                     }
@@ -719,6 +724,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     }
 
     private void updateRoutMarker(List<String> settings) {
+        Log.d(TAG, "updateRoutMarker: " + settings.toString());
         ContentValues cv = new ContentValues();
         if(Double.parseDouble(settings.get(0)) != 0) {
             cv.put("startLat",  Double.parseDouble(settings.get(0)));
