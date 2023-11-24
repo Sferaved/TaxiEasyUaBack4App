@@ -73,6 +73,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
+import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -114,10 +115,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+        if(HomeFragment.progressBar != null) {
+            HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+        }
+        if(VisicomFragment.progressBar != null) {
+            VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+        }
+
     }
 
-    public static final String DB_NAME = "data_23112023_12";
+    public static final String DB_NAME = "data_24112023_1";
 
     /**
      * Table section

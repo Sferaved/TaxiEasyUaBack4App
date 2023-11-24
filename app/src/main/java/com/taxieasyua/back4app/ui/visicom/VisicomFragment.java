@@ -799,8 +799,8 @@ public class VisicomFragment extends Fragment {
                     insertRecordsOrders(
                             sendUrlMap.get("routefrom"), sendUrlMap.get("routefrom"),
                             sendUrlMap.get("routefromnumber"), sendUrlMap.get("routefromnumber"),
-                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                            sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                            sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
                             requireActivity()
                     );
                 }
@@ -816,7 +816,7 @@ public class VisicomFragment extends Fragment {
                     insertRecordsOrders(
                             sendUrlMap.get("routefrom"), to_name,
                             sendUrlMap.get("routefromnumber"), sendUrlMap.get("to_number"),
-                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                            sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
                             sendUrlMap.get("lat"), sendUrlMap.get("lng"),
                             requireActivity()
                     );
@@ -868,26 +868,6 @@ public class VisicomFragment extends Fragment {
         database.close();
 
     }
-
-    private void updateRoutMarker(List<String> settings) {
-        ContentValues cv = new ContentValues();
-
-        cv.put("startLat",  Double.parseDouble(settings.get(0)));
-        cv.put("startLan", Double.parseDouble(settings.get(1)));
-        if(!settings.get(2).equals("")){
-            cv.put("to_lat", Double.parseDouble(settings.get(2)));
-            cv.put("to_lng", Double.parseDouble(settings.get(3)));
-        }
-        cv.put("start", settings.get(4));
-        cv.put("finish", settings.get(5));
-
-        // обновляем по id
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
-    }
-
 
     private boolean verifyOrder(Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -962,6 +942,8 @@ public class VisicomFragment extends Fragment {
                                              String from_number, String to_number,
                                              String from_lat, String from_lng,
                                              String to_lat, String to_lng, Context context) {
+        Log.d(TAG, "insertRecordsOrders: from_lat" + from_lat);
+        Log.d(TAG, "insertRecordsOrders: from_lng" + from_lng);
 
         String selection = "from_street = ?";
         String[] selectionArgs = new String[] {from};

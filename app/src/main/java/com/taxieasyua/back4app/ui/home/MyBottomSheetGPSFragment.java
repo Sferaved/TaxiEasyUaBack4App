@@ -26,6 +26,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,12 @@ public class MyBottomSheetGPSFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 dismiss();
-                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                if(HomeFragment.progressBar != null) {
+                    HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                }
+                if(VisicomFragment.progressBar != null) {
+                    VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+                }
                 requireActivity().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
             }
         });
@@ -60,10 +66,20 @@ public class MyBottomSheetGPSFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 dismiss();
-                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                if(HomeFragment.progressBar != null) {
+                    HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                }
+                if(VisicomFragment.progressBar != null) {
+                    VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+                }
             }
         });
-        HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+        if(HomeFragment.progressBar != null) {
+            HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+        }
+        if(VisicomFragment.progressBar != null) {
+            VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+        }
 
 
 

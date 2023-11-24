@@ -101,7 +101,7 @@ public class BonusFragment extends Fragment {
         btnOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                navController.navigate(R.id.nav_home);
+                navController.navigate(R.id.nav_visicom);
             }
         });
 
@@ -111,7 +111,7 @@ public class BonusFragment extends Fragment {
 
     private boolean connected() {
 
-        Boolean hasConnect = false;
+        boolean hasConnect = false;
 
         ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 CONNECTIVITY_SERVICE);

@@ -80,7 +80,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class GalleryFragment extends Fragment {
 
-    private static final String TAG = "TAG";
+    private static final String TAG = "TAG_GEL";
     @SuppressLint("StaticFieldLeak")
     public static ProgressBar progressbar;
     private FragmentGalleryBinding binding;
@@ -133,7 +133,7 @@ public class GalleryFragment extends Fragment {
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-//        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+//        String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(3);
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
 
@@ -211,13 +211,13 @@ public class GalleryFragment extends Fragment {
                     btn_plus.setVisibility(View.VISIBLE);
                     btnAdd.setVisibility(View.VISIBLE);
                     selectedItem = position + 1;
-
+                    Log.d(TAG, "onItemClick: selectedItem " + selectedItem);
                     try {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             dialogFromToOneRout(routChoice(selectedItem));
                         }
                     } catch (MalformedURLException | InterruptedException | JSONException e) {
-                        Log.d("TAG", "onItemClick: " + e.toString());
+                        Log.d(TAG, "onItemClick: " + e.toString());
                     }
 
 
@@ -309,7 +309,7 @@ public class GalleryFragment extends Fragment {
     private void orderRout() {
 
         if(connected()) {
-            urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkers", requireActivity());
+            urlOrder = getTaxiUrlSearchMarkers("orderSearchMarkersVisicom", requireActivity());
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -319,7 +319,7 @@ public class GalleryFragment extends Fragment {
     private void orderFinished() {
         try {
             Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
-            Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
+            Log.d(TAG, "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
 
             String orderWeb = sendUrlMap.get("order_cost");
 
@@ -456,7 +456,7 @@ public class GalleryFragment extends Fragment {
     }
      private void updateRoutMarker(List<String> settings) {
 
-        Log.d("TAG", "updateRoutMarker: settings - " + settings);
+        Log.d(TAG, "updateRoutMarker: settings - " + settings);
 
         ContentValues cv = new ContentValues();
 
@@ -464,6 +464,8 @@ public class GalleryFragment extends Fragment {
         cv.put("startLan", Double.parseDouble(settings.get(1)));
         cv.put("to_lat", Double.parseDouble(settings.get(2)));
         cv.put("to_lng", Double.parseDouble(settings.get(3)));
+         cv.put("start", settings.get(4));
+         cv.put("finish", settings.get(5));
 
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -475,24 +477,24 @@ public class GalleryFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void dialogFromToOneRout(Map <String, String> rout) throws MalformedURLException, InterruptedException, JSONException {
         if(connected()) {
-            Log.d("TAG", "dialogFromToOneRout: " + rout.toString());
+            Log.d(TAG, "dialogFromToOneRout: " + rout.toString());
             from_lat =  Double.valueOf(rout.get("from_lat"));
             from_lng = Double.valueOf(rout.get("from_lng"));
             to_lat = Double.valueOf(rout.get("to_lat"));
             to_lng = Double.valueOf(rout.get("to_lng"));
 
-            Log.d("TAG", "dialogFromToOneRout: from_lat - " + from_lat);
-            Log.d("TAG", "dialogFromToOneRout: from_lng - " + from_lng);
-            Log.d("TAG", "dialogFromToOneRout: to_lat - " + to_lat);
-            Log.d("TAG", "dialogFromToOneRout: to_lng - " + to_lng);
+            Log.d(TAG, "dialogFromToOneRout: from_lat - " + from_lat);
+            Log.d(TAG, "dialogFromToOneRout: from_lng - " + from_lng);
+            Log.d(TAG, "dialogFromToOneRout: to_lat - " + to_lat);
+            Log.d(TAG, "dialogFromToOneRout: to_lng - " + to_lng);
 
             FromAddressString = rout.get("from_street") + rout.get("from_number") ;
-            Log.d("TAG1", "dialogFromToOneRout: FromAddressString" + FromAddressString);
+            Log.d(TAG, "dialogFromToOneRout: FromAddressString" + FromAddressString);
             ToAddressString = rout.get("to_street") + rout.get("to_number");
             if(rout.get("from_street").equals(rout.get("to_street"))) {
                 ToAddressString =  getString(R.string.on_city_tv);;
             }
-            Log.d("TAG", "dialogFromToOneRout: ToAddressString" + ToAddressString);
+            Log.d(TAG, "dialogFromToOneRout: ToAddressString" + ToAddressString);
             List<String> settings = new ArrayList<>();
 
             settings.add(rout.get("from_lat"));
@@ -500,8 +502,11 @@ public class GalleryFragment extends Fragment {
             settings.add(rout.get("to_lat"));
             settings.add(rout.get("to_lng"));
 
+            settings.add(FromAddressString);
+            settings.add(ToAddressString);
+
             updateRoutMarker(settings);
-            String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getContext());
+            String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
 
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
@@ -511,7 +516,7 @@ public class GalleryFragment extends Fragment {
 
 
             if (!orderCost.equals("0")) {
-                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+                String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(3);
                 long discountInt = Integer.parseInt(discountText);
                 cost = Long.parseLong(orderCost);
                 discount = cost * discountInt / 100;
@@ -540,8 +545,8 @@ public class GalleryFragment extends Fragment {
     }
     private Map <String, String> routChoice(int i) {
         Map <String, String> rout = new HashMap<>();
-        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        @SuppressLint("Recycle") Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
         c.move(i);
         rout.put("id", c.getString(c.getColumnIndexOrThrow ("id")));
         rout.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
@@ -553,12 +558,12 @@ public class GalleryFragment extends Fragment {
         rout.put("to_street", c.getString(c.getColumnIndexOrThrow ("to_street")));
         rout.put("to_number", c.getString(c.getColumnIndexOrThrow ("to_number")));
 
-        Log.d("TAG", "routMaps: " + rout);
+        Log.d(TAG, "routMaps: " + rout);
         return rout;
     }
     private boolean connected() {
 
-        Boolean hasConnect = false;
+        boolean hasConnect = false;
 
         ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
@@ -578,22 +583,28 @@ public class GalleryFragment extends Fragment {
         return hasConnect;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+    @SuppressLint("Range")
+    public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+        Log.d(TAG, "getTaxiUrlSearchMarkers: " + urlAPI);
 
-        List<String> stringListRout = logCursor(MainActivity.ROUT_MARKER, context);
-        Log.d("TAG", "getTaxiUrlSearch: stringListRout" + stringListRout);
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-        double originLatitude = Double.parseDouble(stringListRout.get(1));
-        double originLongitude = Double.parseDouble(stringListRout.get(2));
-        double toLatitude = Double.parseDouble(stringListRout.get(3));
-        double toLongitude = Double.parseDouble(stringListRout.get(4));
+        cursor.moveToFirst();
 
+        // Получите значения полей из первой записи
 
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+        String start = cursor.getString(cursor.getColumnIndex("start"));
+        String finish = cursor.getString(cursor.getColumnIndex("finish"));
 
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
+        // Заменяем символ '/' в строках
+        start = start.replace("/", "|");
+        finish = finish.replace("/", "|");
 
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
@@ -601,13 +612,21 @@ public class GalleryFragment extends Fragment {
         // Destination of route
         String str_dest = toLatitude + "/" + toLongitude;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        cursor.close();
+
+        String api =   logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
+
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
+
+
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
-        String tarif = stringListInfo.get(2);
+        String tarif =  stringListInfo.get(2);
         String payment_type = stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
-
         // Building the parameters to the web service
 
         String parameters = null;
@@ -622,16 +641,16 @@ public class GalleryFragment extends Fragment {
                 phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
                 c.close();
             }
-
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
                     + displayName + "*" + userEmail  + "*" + payment_type;
         }
-        if(urlAPI.equals("orderSearchMarkers")) {
+        if(urlAPI.equals("orderSearchMarkersVisicom")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/" + time + "/" + comment + "/" + date;
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/"
+                    + time + "/" + comment + "/" + date+ "/" + start + "/" + finish;
 
             ContentValues cv = new ContentValues();
 
@@ -668,14 +687,16 @@ public class GalleryFragment extends Fragment {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
-        List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String api =  stringListCity.get(2);
+
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        Log.d(TAG, "getTaxiUrlSearchMarkers: " + url);
+
         database.close();
+
         return url;
     }
 
@@ -871,14 +892,14 @@ public class GalleryFragment extends Fragment {
                     if (!routMaps.get(i).get("from_street").toString().equals(routMaps.get(i).get("from_number").toString())) {
 
 
-                        Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+                        Log.d(TAG, "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
 
                         arrayRouts[i] = from_mes + " " +
                                 routMaps.get(i).get("from_number").toString() + " -> " +
                                 to_mes + " " +
                                 routMaps.get(i).get("to_number").toString();
                     } else if(!routMaps.get(i).get("to_street").toString().equals(routMaps.get(i).get("to_number").toString())) {
-                        Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+                        Log.d(TAG, "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
 
                         arrayRouts[i] = routMaps.get(i).get("from_street").toString() +
                                 getString(R.string.to_message) +
@@ -886,7 +907,7 @@ public class GalleryFragment extends Fragment {
                                 routMaps.get(i).get("to_number").toString();
                     } else {
 
-                        Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+                        Log.d(TAG, "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
 
                         arrayRouts[i] = from_mes + " " +
                                 getString(R.string.to_message) +
@@ -896,7 +917,7 @@ public class GalleryFragment extends Fragment {
 
                 } else {
 
-                    Log.d("TAG", "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
+                    Log.d(TAG, "arrayToRoutsAdapter:   routMaps.get(i).get(\"from_street\").toString()" +  routMaps.get(i).get("from_street").toString());
 
                     arrayRouts[i] = from_mes + " " +
                             routMaps.get(i).get("from_number").toString() + " -> " +
@@ -929,7 +950,7 @@ public class GalleryFragment extends Fragment {
             }
         }
         database.close();
-        Log.d("TAG", "routMaps: " + routsArr);
+        Log.d(TAG, "routMaps: 1111 " + routsArr);
         return routsArr;
     }
 

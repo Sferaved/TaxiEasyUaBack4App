@@ -1003,8 +1003,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                     insertRecordsOrders(
                             sendUrlMap.get("routefrom"), sendUrlMap.get("routefrom"),
                             sendUrlMap.get("routefromnumber"), sendUrlMap.get("routefromnumber"),
-                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
-                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                            sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
+                            sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
                             requireActivity()
                     );
                 }
@@ -1020,7 +1020,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                     insertRecordsOrders(
                             sendUrlMap.get("routefrom"), to_name,
                             sendUrlMap.get("routefromnumber"), sendUrlMap.get("to_number"),
-                            Double.toString(OpenStreetMapActivity.startLat), Double.toString(OpenStreetMapActivity.startLan),
+                            sendUrlMap.get("from_lat"), sendUrlMap.get("from_lng"),
                             sendUrlMap.get("lat"), sendUrlMap.get("lng"),
                             requireActivity()
                     );

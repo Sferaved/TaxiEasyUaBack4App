@@ -184,12 +184,14 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         ContentValues cv = new ContentValues();
                         cv.put("card_max_pay", cardMaxPay);
                         cv.put("bonus_max_pay", bonusMaxPay);
+                        if(isAdded()) {
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                    new String[] { "1" });
 
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                                new String[] { "1" });
+                            database.close();
+                        }
 
-                        database.close();
 
                         // Добавьте здесь код для обработки полученных значений
                     }
