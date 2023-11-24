@@ -966,6 +966,15 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 Log.d("TAG", "onClick: OpenStreetMapActivity.finishLat " + OpenStreetMapActivity.finishLat);
                 Log.d("TAG", "onClick: OpenStreetMapActivity.finishLan " + OpenStreetMapActivity.finishLan);
 
+                to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
+                textViewTo.setText(to);
+
+                GeoPoint endPoint = new GeoPoint(OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan);
+                OpenStreetMapActivity.endPoint = endPoint;
+                OpenStreetMapActivity.ToAdressString = textViewTo.getText().toString();
+                showRout(endPoint);
+
+
                 List<String> settings = new ArrayList<>();
                 settings.add(String.valueOf(OpenStreetMapActivity.startLat));
                 settings.add(String.valueOf(OpenStreetMapActivity.startLan));
@@ -1012,13 +1021,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                             text_view_cost.setText(String.valueOf(firstCost));
                             MIN_COST_VALUE = (long) (firstCost*0.1);
                             firstCostForMin = firstCost;
-                            to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
-                            textViewTo.setText(to);
 
-                            GeoPoint endPoint = new GeoPoint(OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan);
-                            OpenStreetMapActivity.endPoint = endPoint;
-                            OpenStreetMapActivity.ToAdressString = textViewTo.getText().toString();
-                            showRout(endPoint);
 
 
                             if(connected()) {

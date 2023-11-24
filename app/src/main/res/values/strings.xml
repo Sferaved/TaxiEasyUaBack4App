@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="version_code">2.890</string>
-    <string name="version">Версия: 2.890</string>
+    <string name="version_code">2.892</string>
+    <string name="version">Версия: 2.892</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -38,7 +38,7 @@
     <!--<string name="default_web_client_id">356539267738-0v3d1nsci9g7fij8cemnlid7cfalvdo2.apps.googleusercontent.com</string>-->
     <string name="my_phone">Мой телефон</string>
     <string name="open_maps">Заказать по карте</string>
-    <string name="driver">Работа водителем</string>
+    <string name="driver">Работа водителем (реклама)</string>
     <string name="send_email">Поделиться</string>
     <string name="gps_ok">У Вас все хорошо</string>
     <string name="cancel_button">Нет, спасибо</string>

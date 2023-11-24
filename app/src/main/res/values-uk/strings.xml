@@ -1,6 +1,6 @@
 <resources>
-    <string name="version_code">2.890</string>
-    <string name="version">Версія: 2.890</string>
+    <string name="version_code">2.892</string>
+    <string name="version">Версія: 2.892</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -38,7 +38,7 @@
     <!--<string name="default_web_client_id">356539267738-0v3d1nsci9g7fij8cemnlid7cfalvdo2.apps.googleusercontent.com</string>-->
     <string name="my_phone">Мій телефон</string>
     <string name="open_maps">Замовити по мапе</string>
-    <string name="driver">Робота водієм</string>
+    <string name="driver">Робота водієм (реклама)</string>
     <string name="send_email">Поділитися</string>
     <string name="gps_ok">У Вас все добре</string>
     <string name="cancel_button">Ні, дякую</string>
