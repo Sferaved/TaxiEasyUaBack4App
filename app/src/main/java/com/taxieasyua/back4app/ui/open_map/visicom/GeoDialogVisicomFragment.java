@@ -205,7 +205,8 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         });
 
         textViewTo = view.findViewById(R.id.text_to);
-        textViewTo.setText(getString(R.string.on_city_tv));
+
+
 
         addresses = new ArrayList<>();
 
@@ -419,9 +420,23 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
              }
         });
 
-
-        startCost();
-        OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        if(OpenStreetMapActivity.ToAdressString == null) {
+            textViewTo.setText(getString(R.string.on_city_tv));
+            startCost();
+            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+        } else {
+            textViewTo.setText(OpenStreetMapActivity.ToAdressString);
+            List<String> settings = new ArrayList<>();
+            settings.add(Double.toString(OpenStreetMapActivity.startLat));
+            settings.add(Double.toString(OpenStreetMapActivity.startLan));
+            settings.add(Double.toString(OpenStreetMapActivity.finishLat));
+            settings.add(Double.toString(OpenStreetMapActivity.finishLan));
+            settings.add(geoText.getText().toString());
+            settings.add(OpenStreetMapActivity.ToAdressString);
+            Log.d(TAG, "startCost: marker 1111 " + settings);
+            updateRoutMarker(settings);
+            markerCost();
+        }
 
         return view;
     }
@@ -487,6 +502,48 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
             Log.d(TAG, "startCost: Geo" + settings);
             updateRoutGeo(settings);
+            urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+        }
+
+        Map<String, String> sendUrlMapCost = null;
+        try {
+            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String message = sendUrlMapCost.get("message");
+        String orderCost = sendUrlMapCost.get("order_cost");
+        Log.d("TAG", "startCost: orderCost " + orderCost);
+
+        if (orderCost.equals("0")) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+        }
+        if (!orderCost.equals("0")) {
+
+            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, getContext()).get(3);
+            long discountInt = Integer.parseInt(discountText);
+
+            firstCost = Long.parseLong(orderCost);
+            discount = firstCost * discountInt / 100;
+            firstCost = firstCost + discount;
+            updateAddCost(String.valueOf(discount));
+            text_view_cost.setText(String.valueOf(firstCost));
+            MIN_COST_VALUE = (long) (firstCost*0.6);
+            firstCostForMin = firstCost;
+        }
+        if(!text_view_cost.getText().toString().equals("")) {
+            firstCost = Long.parseLong(text_view_cost.getText().toString());
+            Log.d("TAG", "startCost: firstCost " + firstCost);
+            Log.d("TAG", "startCost: addCost " + addCost);
+
+            }
+    }
+    private void markerCost() {
+        String urlCost = null;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
         }
 

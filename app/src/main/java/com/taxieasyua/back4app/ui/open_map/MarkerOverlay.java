@@ -20,8 +20,6 @@ public class MarkerOverlay extends Overlay {
     Marker marker;
     public MarkerOverlay(Context context) {
         super(context);
-//        marker = null;
-//        OpenStreetMapActivity.mEnd = null;
     }
 
     @Override
@@ -56,15 +54,6 @@ public class MarkerOverlay extends Overlay {
         marker.setTitle(title);
         OpenStreetMapActivity.map.getOverlays().add(marker);
         OpenStreetMapActivity.map.invalidate();
-//
-//        if(OpenStreetMapActivity.m != null) {
-//            OpenStreetMapActivity.showRout(OpenStreetMapActivity.m.getPosition(), endPoint);
-//        }
-//
-
-
-
-
 
         try {
 

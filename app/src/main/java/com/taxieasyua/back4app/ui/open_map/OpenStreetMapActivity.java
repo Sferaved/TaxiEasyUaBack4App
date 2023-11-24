@@ -51,11 +51,11 @@ import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
 import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
-import com.taxieasyua.back4app.ui.home.MyGeoMarkerDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
+import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
+
 import org.json.JSONException;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.routing.OSRMRoadManager;
@@ -78,7 +78,7 @@ import java.util.Objects;
 
 
 public class OpenStreetMapActivity extends AppCompatActivity {
-    private final String TAG = "TAG";
+    private static final String TAG = "TAG_OPENMAP";
     private static IMapController mapController;
     public String[] arrayStreet;
     public static FloatingActionButton fab, fab_call, fab_open_map, fab_open_marker;
@@ -185,35 +185,30 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         coo = getString(R.string.cost_of_order);
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, this);
+        api =  stringList.get(2);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
                 arrayStreet = Dnipro.arrayStreet();
-                api = MainActivity.apiDnipro;
                 phone = "tel:0667257070";
                 break;
             case "Odessa":
                 arrayStreet = Odessa.arrayStreet();
-                api = MainActivity.apiOdessa;
                 phone = "tel:0737257070";
                 break;
             case "Zaporizhzhia":
                 arrayStreet = Zaporizhzhia.arrayStreet();
-                api = MainActivity.apiZaporizhzhia;
                 phone = "tel:0687257070";
                 break;
             case "Cherkasy Oblast":
                 arrayStreet = Cherkasy.arrayStreet();
-                api = MainActivity.apiCherkasy;
                 phone = "tel:0962294243";
                 break;
             case "OdessaTest":
                 arrayStreet = OdessaTest.arrayStreet();
-                api = MainActivity.apiTest;
                 phone = "tel:0674443804";
                 break;
             default:
                 arrayStreet = KyivCity.arrayStreet();
-                api = MainActivity.apiKyiv;
                 phone = "tel:0674443804";
                 break;
         }
@@ -253,7 +248,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         });
 
         fab_open_marker.setOnClickListener(v -> {
-            MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+//            MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+            GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
             bottomSheet.show(fragmentManager, bottomSheet.getTag());
         });
     }
@@ -609,7 +605,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             GeoPoint startPoint = new GeoPoint(startLat, startLan);
             showRout(startPoint, endPoint);
 
-            Log.d("TAG", "onResume: endPoint" +  endPoint.getLatitude());
+            Log.d(TAG, "onResume: endPoint" +  endPoint.getLatitude());
 
             List<String> settings = new ArrayList<>();
             settings.add(String.valueOf(startLat));
@@ -631,15 +627,15 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                         Toast.makeText(map.getContext(), message, Toast.LENGTH_SHORT).show();
 
                     } else {
-                        Log.d("TAG", "11111 dialogMarkers: sendUrlMapCost.get(\"routeto\")" + sendUrlMapCost.get("routeto"));
+                        Log.d(TAG, "11111 dialogMarkers: sendUrlMapCost.get(\"routeto\")" + sendUrlMapCost.get("routeto"));
                         if(Objects.requireNonNull(sendUrlMapCost.get("routeto")).equals("Точка на карте")) {
                             ToAdressString = context.getString(R.string.end_point_marker);
                         } else {
                             ToAdressString = sendUrlMapCost.get("routeto") + " " + sendUrlMapCost.get("to_number");
                         }
 
-                        Log.d("TAG", "dialogMarkers: ToAdressString " + ToAdressString);
-                        Log.d("TAG", "dialogMarkers: endPoint " + endPoint.toString());
+                        Log.d(TAG, "dialogMarkers: ToAdressString " + ToAdressString);
+                        Log.d(TAG, "dialogMarkers: endPoint " + endPoint.toString());
                         finishLat = endPoint.getLatitude();
                         finishLan = endPoint.getLongitude();
                         if(marker != null) {
@@ -682,8 +678,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                         map.invalidate();
 
-                        MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
-
+//                        MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+                        GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
                         bottomSheet.show(fragmentManager, bottomSheet.getTag());
                     }
                 }
@@ -796,13 +792,14 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                 }
             }
             result = String.join("*", servicesChecked);
-            Log.d("TAG", "getTaxiUrlSearchGeo result:" + result + "/");
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
         } else {
             result = "no_extra_charge_codes";
         }
 
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
         database.close();
+        Log.d(TAG, "getTaxiUrlSearchMarkers: " + url);
         return url;
     }
 
