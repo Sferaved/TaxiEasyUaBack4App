@@ -566,6 +566,14 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     }
 
     private void markerCost() {
+//        OpenStreetMapActivity.setMarker(
+//                OpenStreetMapActivity.endPoint.getLatitude(),
+//                OpenStreetMapActivity.endPoint.getLongitude(),
+//                OpenStreetMapActivity.ToAdressString,
+//                requireActivity());
+//
+//            GeoPoint startPoint = new GeoPoint(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan);
+//            OpenStreetMapActivity.showRout(startPoint, OpenStreetMapActivity.endPoint);
 
 
 
@@ -968,6 +976,9 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                 settings.add(textViewTo.getText().toString());
 
                 updateRoutMarker(settings);
+
+
+
                 geo_marker = "marker";
 
                 try {
@@ -1003,6 +1014,13 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
                             firstCostForMin = firstCost;
                             to = adressArr.get(listView.getCheckedItemPosition()).get("street").toString();
                             textViewTo.setText(to);
+
+                            GeoPoint endPoint = new GeoPoint(OpenStreetMapActivity.finishLat, OpenStreetMapActivity.finishLan);
+                            OpenStreetMapActivity.endPoint = endPoint;
+                            OpenStreetMapActivity.ToAdressString = textViewTo.getText().toString();
+                            showRout(endPoint);
+
+
                             if(connected()) {
                                 if (to.indexOf("/") != -1) {
                                     to = to.substring(0,  to.indexOf("/"));
@@ -1052,6 +1070,52 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         builder.setNegativeButton(getString(R.string.cancel_button), null);
         builder.show();
 
+    }
+
+    private void showRout(GeoPoint geoPoint) {
+        if(OpenStreetMapActivity.marker != null) {
+            OpenStreetMapActivity.map.getOverlays().remove(OpenStreetMapActivity.marker);
+            OpenStreetMapActivity.map.invalidate();
+            OpenStreetMapActivity.marker = null;
+        }
+
+
+        OpenStreetMapActivity.marker = new Marker(OpenStreetMapActivity.map);
+        OpenStreetMapActivity.marker.setPosition(geoPoint);
+        OpenStreetMapActivity.marker.setTextLabelBackgroundColor(
+                Color.TRANSPARENT
+        );
+        OpenStreetMapActivity.marker.setTextLabelForegroundColor(
+                Color.RED
+        );
+        OpenStreetMapActivity.marker.setTextLabelFontSize(40);
+        OpenStreetMapActivity.marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+        String unuString = new String(Character.toChars(0x1F449));
+
+        OpenStreetMapActivity.marker.setTitle("2."+ unuString + OpenStreetMapActivity.ToAdressString);
+
+        @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = requireActivity().getResources().getDrawable(R.drawable.marker_green);
+        int width = 48;
+        int height = 48;
+        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+
+        // Создайте новый Drawable из уменьшенного изображения
+        Drawable scaledDrawable = new BitmapDrawable(requireActivity().getResources(), bitmap);
+        OpenStreetMapActivity.marker.setIcon(scaledDrawable);
+
+        OpenStreetMapActivity.marker.showInfoWindow();
+
+        OpenStreetMapActivity.map.getOverlays().add(OpenStreetMapActivity.marker);
+
+        GeoPoint initialGeoPoint = new GeoPoint(geoPoint.getLatitude()-0.01, geoPoint.getLongitude());
+        OpenStreetMapActivity.map.getController().setCenter(initialGeoPoint);
+        OpenStreetMapActivity.mapController.setZoom(16);
+
+        OpenStreetMapActivity.map.invalidate();
+
+        GeoPoint startPoint = new GeoPoint(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan);
+
+        OpenStreetMapActivity.showRout(startPoint, OpenStreetMapActivity.endPoint);
     }
 
     @SuppressLint("ResourceAsColor")

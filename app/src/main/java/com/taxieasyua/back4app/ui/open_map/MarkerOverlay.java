@@ -38,23 +38,6 @@ public class MarkerOverlay extends Overlay {
         GeoPoint endPoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
         OpenStreetMapActivity.endPoint = endPoint;
 
-        String title = OpenStreetMapActivity.epm;
-
-
-        marker = new Marker(OpenStreetMapActivity.map);
-        marker.setPosition(new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude()));
-        marker.setTextLabelBackgroundColor(
-                Color.TRANSPARENT
-        );
-        marker.setTextLabelForegroundColor(
-                Color.RED
-        );
-        marker.setTextLabelFontSize(40);
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-        marker.setTitle(title);
-        OpenStreetMapActivity.map.getOverlays().add(marker);
-        OpenStreetMapActivity.map.invalidate();
-
         try {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

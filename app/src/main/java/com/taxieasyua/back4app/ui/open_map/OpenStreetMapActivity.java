@@ -248,7 +248,9 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         });
 
         fab_open_marker.setOnClickListener(v -> {
-//            MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
+
+
+
             progressBar.setVisibility(View.INVISIBLE);
             GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
             bottomSheet.show(fragmentManager, bottomSheet.getTag());
@@ -520,8 +522,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             }
         }
 
-
-
         map.onResume();
     }
 
@@ -679,7 +679,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                         map.invalidate();
 
-//                        MyGeoMarkerDialogFragment bottomSheet = new MyGeoMarkerDialogFragment();
                         GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
                         bottomSheet.show(fragmentManager, bottomSheet.getTag());
                     }
