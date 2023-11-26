@@ -10,12 +10,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
-import android.graphics.BlendMode;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -24,27 +22,19 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,24 +44,16 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
-import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
-import com.taxieasyua.back4app.cities.Odessa.Odessa;
-import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
-import com.taxieasyua.back4app.cities.Zaporizhzhia.Zaporizhzhia;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
@@ -82,18 +64,13 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.open_map.visicom.resp.GeocodeGeoCentroid;
-import com.taxieasyua.back4app.ui.open_map.visicom.resp.GeocodeResponse;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,10 +80,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
@@ -204,7 +177,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         text_view_cost = view.findViewById(R.id.text_view_cost);
 
-        geo_marker = "geo";
+        geo_marker = "visicom";
 
         Log.d(TAG, "onCreateView: geo_marker " + geo_marker);
         buttonBonus.setOnClickListener(new View.OnClickListener() {

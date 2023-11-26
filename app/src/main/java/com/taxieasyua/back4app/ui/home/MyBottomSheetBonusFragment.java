@@ -63,7 +63,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String[] array, arrayCode;
     AppCompatButton btn_ok;
     int pos;
-    String pay_method;
     private String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView) {
