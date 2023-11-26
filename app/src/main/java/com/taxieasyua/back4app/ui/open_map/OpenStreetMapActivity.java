@@ -132,7 +132,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
     public static String phone;
-    MarkerOverlay markerOverlay;
+    public static MarkerOverlay markerOverlay;
     @SuppressLint({"MissingInflatedId", "InflateParams"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -256,8 +256,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             bottomSheet.show(fragmentManager, bottomSheet.getTag());
         });
     }
-    private void updateMyPosition(Double startLat, Double startLan, String position) {
-        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+    private static void updateMyPosition(Double startLat, Double startLan, String position, Context context) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
 
         cv.put("startLat", startLat);
@@ -429,12 +429,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                                 FromAdressString = getString(R.string.startPoint);
                             }
                         }
-                        updateMyPosition(startLat, startLan, FromAdressString);
+                        updateMyPosition(startLat, startLan, FromAdressString, getApplicationContext());
                         bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
                         bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
                         map.getOverlays().add(markerOverlay);
-                        setMarker(startLat, startLan, FromAdressString, getApplicationContext());
+//                        setMarker(startLat, startLan, FromAdressString, getApplicationContext());
                         GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
                         map.getController().setCenter(initialGeoPoint);
 
@@ -499,7 +499,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                             FromAdressString = getString(R.string.startPoint);
                         }
                     }
-                    updateMyPosition(startLat, startLan, FromAdressString);
+                    updateMyPosition(startLat, startLan, FromAdressString, getApplicationContext());
                     bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
                     bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
 
@@ -554,6 +554,63 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         // Создайте новый Drawable из уменьшенного изображения
         Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
         m.setIcon(scaledDrawable);
+
+        // Set the marker as draggable
+        final GeoDialogVisicomFragment bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
+        m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                Toast.makeText(context, R.string.drag_marker, Toast.LENGTH_LONG).show();
+                m.setDraggable(true);
+                return true;
+            }
+        });
+
+        // Set up the drag listener
+        m.setOnMarkerDragListener(new Marker.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+                // Handle drag start event
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+                // Handle drag event
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                // Получаем координаты маркера после завершения перетаскивания
+                GeoPoint newPosition = marker.getPosition();
+
+                // Получаем широту и долготу
+                double newLatitude = newPosition.getLatitude();
+                double newLongitude = newPosition.getLongitude();
+                startLat = newLatitude;
+                startLan = newLongitude;
+                String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+                Map sendUrlFrom = null;
+                try {
+                    sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+
+                } catch (MalformedURLException | InterruptedException |
+                         JSONException ignored) {
+                }
+                assert sendUrlFrom != null;
+                FromAdressString = (String) sendUrlFrom.get("route_address_from");
+
+                updateMyPosition(startLat, startLan, FromAdressString, context);
+
+                if (!bottomSheetDialogFragment.isAdded()) {
+                    // Если нет, используем getSupportFragmentManager()
+                    bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
+                } else {
+                    // Если присоединен, используем getChildFragmentManager()
+                    bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+
+            }
+        });
 
 
         m.showInfoWindow();

@@ -63,6 +63,7 @@ import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
+import com.taxieasyua.back4app.ui.open_map.MarkerOverlay;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
@@ -257,6 +258,37 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
             }
         });
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+////                dismiss();
+//                OpenStreetMapActivity.markerOverlay = new MarkerOverlay(getContext());
+//                OpenStreetMapActivity.map.getOverlays().add(OpenStreetMapActivity.markerOverlay);
+//                OpenStreetMapActivity.startLat = getFromTablePositionInfo(getContext(), "startLat" );
+//                OpenStreetMapActivity.startLan = getFromTablePositionInfo(getContext(), "startLan" );
+//                String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + OpenStreetMapActivity.startLat + "/" + OpenStreetMapActivity.startLan;
+//                Map sendUrlFrom = null;
+//                try {
+//                    sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+//
+//                } catch (MalformedURLException | InterruptedException |
+//                         JSONException e) {
+//
+//                }
+//                assert sendUrlFrom != null;
+//                OpenStreetMapActivity.FromAdressString = (String) sendUrlFrom.get("route_address_from");
+//                if(OpenStreetMapActivity.FromAdressString != null) {
+//                    if (OpenStreetMapActivity.FromAdressString.equals("Точка на карте")) {
+//                        OpenStreetMapActivity.FromAdressString = getString(R.string.startPoint);
+//                    }
+//                }
+//                updateMyPosition(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString);
+//                OpenStreetMapActivity.setMarker(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString, getContext());
+//
+////                GeoDialogVisicomFragment bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
+////                bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//            }
+//        });
         old_address = view.findViewById(R.id.old_address);
         String[] array = arrayAdressAdapter();
         if(array.length == 0) {
