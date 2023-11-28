@@ -258,37 +258,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
             }
         });
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-////                dismiss();
-//                OpenStreetMapActivity.markerOverlay = new MarkerOverlay(getContext());
-//                OpenStreetMapActivity.map.getOverlays().add(OpenStreetMapActivity.markerOverlay);
-//                OpenStreetMapActivity.startLat = getFromTablePositionInfo(getContext(), "startLat" );
-//                OpenStreetMapActivity.startLan = getFromTablePositionInfo(getContext(), "startLan" );
-//                String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + OpenStreetMapActivity.startLat + "/" + OpenStreetMapActivity.startLan;
-//                Map sendUrlFrom = null;
-//                try {
-//                    sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-//
-//                } catch (MalformedURLException | InterruptedException |
-//                         JSONException e) {
-//
-//                }
-//                assert sendUrlFrom != null;
-//                OpenStreetMapActivity.FromAdressString = (String) sendUrlFrom.get("route_address_from");
-//                if(OpenStreetMapActivity.FromAdressString != null) {
-//                    if (OpenStreetMapActivity.FromAdressString.equals("Точка на карте")) {
-//                        OpenStreetMapActivity.FromAdressString = getString(R.string.startPoint);
-//                    }
-//                }
-//                updateMyPosition(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString);
-//                OpenStreetMapActivity.setMarker(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan, OpenStreetMapActivity.FromAdressString, getContext());
-//
-////                GeoDialogVisicomFragment bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
-////                bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//            }
-//        });
+
         old_address = view.findViewById(R.id.old_address);
         String[] array = arrayAdressAdapter();
         if(array.length == 0) {
@@ -564,23 +534,22 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
     @Override
     public void dismiss() {
-        super.dismiss();
-        if(OpenStreetMapActivity.progressBar != null) {
+        try {
+            // Используйте dismissAllowingStateLoss вместо обычного dismiss
+            super.dismissAllowingStateLoss();
+        } catch (IllegalStateException e) {
+            // Ловим исключение, если фрагмент не привязан к менеджеру фрагментов
+            e.printStackTrace();
+        }
+
+        // Добавьте проверку на null для избежания NullPointerException
+        if (OpenStreetMapActivity.progressBar != null) {
             OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
         }
     }
 
+
     private void markerCost() {
-//        OpenStreetMapActivity.setMarker(
-//                OpenStreetMapActivity.endPoint.getLatitude(),
-//                OpenStreetMapActivity.endPoint.getLongitude(),
-//                OpenStreetMapActivity.ToAdressString,
-//                requireActivity());
-//
-//            GeoPoint startPoint = new GeoPoint(OpenStreetMapActivity.startLat, OpenStreetMapActivity.startLan);
-//            OpenStreetMapActivity.showRout(startPoint, OpenStreetMapActivity.endPoint);
-
-
 
         String urlCost = null;
 

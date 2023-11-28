@@ -23,6 +23,7 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -62,6 +63,9 @@ import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -617,7 +621,107 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map.getOverlays().add(m);
         map.invalidate();
     }
-
+//    public static void setMarker(double Lat, double Lan, String title, Context context) {
+//        m = new Marker(map);
+//        m.setPosition(new GeoPoint(Lat, Lan));
+//
+//        // Установите название маркера
+//        String unuString = new String(Character.toChars(0x1F449));
+//        m.setTitle("1." + unuString + title);
+//
+//        m.setTextLabelBackgroundColor(Color.TRANSPARENT);
+//        m.setTextLabelForegroundColor(Color.RED);
+//        m.setTextLabelFontSize(40);
+//        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+//
+//        @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = context.getResources().getDrawable(R.drawable.marker_green);
+//
+//        // Уменьшите размер до 48 пикселей
+//        int width = 48;
+//        int height = 48;
+//        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+//
+//        // Создайте новый Drawable из уменьшенного изображения
+//        Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
+//        m.setIcon(scaledDrawable);
+//
+//        // Set the marker as draggable
+//
+//        m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+//            @Override
+//            public boolean onMarkerClick(Marker marker, MapView mapView) {
+//                Toast.makeText(context, R.string.drag_marker, Toast.LENGTH_LONG).show();
+//                m.setDraggable(false);
+//                final GeoDialogVisicomFragment bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
+//                OpenStreetMapActivity.map.addMapListener(new MapListener() {
+//                    private boolean isScrolling = false;
+//
+//                    @Override
+//                    public boolean onScroll(ScrollEvent event) {
+//                        // Вызывается при каждом движении карты
+//
+//                        // Вы можете выполнить дополнительные действия во время движения,
+//                        // или просто установить флаг, что происходит движение.
+//                        isScrolling = true;
+//                        checkMoveEnd();
+//                        return false;
+//                    }
+//
+//                    @Override
+//                    public boolean onZoom(ZoomEvent event) {
+//                        return false;
+//                    }
+//
+//                    // Дополнительные методы, если необходимо
+//
+//                    // Метод, который проверяет, окончено ли движение
+//                    private void checkMoveEnd() {
+//                        if (isScrolling) {
+//                            // Действия после окончания движения карты
+//
+//                            // Получаем координаты маркера после завершения перетаскивания
+//                            GeoPoint newPosition = marker.getPosition();
+//
+//                            // Получаем широту и долготу
+//                            double newLatitude = newPosition.getLatitude();
+//                            double newLongitude = newPosition.getLongitude();
+//                            startLat = newLatitude;
+//                            startLan = newLongitude;
+//                            String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
+//                            Map sendUrlFrom = null;
+//                            try {
+//                                sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+//
+//                            } catch (MalformedURLException | InterruptedException | JSONException ignored) {
+//                            }
+//                            assert sendUrlFrom != null;
+//                            FromAdressString = (String) sendUrlFrom.get("route_address_from");
+//
+//                            updateMyPosition(startLat, startLan, FromAdressString, context);
+//
+//                            if (!bottomSheetDialogFragment.isAdded()) {
+//                                // Если нет, используем getSupportFragmentManager()
+//                                bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
+//                            } else {
+//                                // Если присоединен, используем getChildFragmentManager()
+//                                bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//                            }
+//
+//                            // Сбрасываем флаг
+//                            isScrolling = false;
+//                        }
+//                    }
+//
+//
+//                });
+//
+//                return true;
+//            }
+//        });
+//        m.showInfoWindow();
+//        map.getOverlays().add(m);
+//        map.invalidate();
+//    }
 
     public static void showRout(GeoPoint startP, GeoPoint endP) {
         map.getOverlays().removeAll(Collections.singleton(roadOverlay));
