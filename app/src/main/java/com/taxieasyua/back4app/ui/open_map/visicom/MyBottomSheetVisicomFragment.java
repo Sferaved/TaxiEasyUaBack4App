@@ -90,6 +90,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private TextView textGeoError, text_toError;
     private String fragmentInput;
     private String citySearch;
+    private String[] resultArray;
 
     public MyBottomSheetVisicomFragment(String fragmentInput) {
         this.fragmentInput = fragmentInput;
@@ -101,13 +102,14 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.visicom_address_layout, container, false);
-
+        setCancelable(false);
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
                 citySearch = "Дніпр";
                 break;
             case "Odessa":
+            case "OdessaTest":
                 citySearch = "Одеса";
                 break;
             case "Zaporizhzhia":
@@ -115,9 +117,6 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 break;
             case "Cherkasy Oblast":
                 citySearch = "Черкас";
-                break;
-            case "OdessaTest":
-                citySearch = "Одеса";
                 break;
             default:
                 citySearch = "Київ";
@@ -255,6 +254,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             }
 
             if (!inputText.substring(3).contains(", ")) {
+
                 url = url + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
                 if(point.equals("start")) {
                     verifyBuildingStart = true;
@@ -263,6 +263,14 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 }
             } else {
                 // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
+                Log.d(TAG, "performAddressSearch: inputText1111 " + inputText);
+                resultArray = removeTextInParentheses(inputText);
+                inputText = resultArray[0];
+
+                // Вывод результатов
+                Log.d(TAG, "performAddressSearch: resultArray[0]" + resultArray[0]);
+                Log.d(TAG, "performAddressSearch: resultArray[1]" + resultArray[1]);
+
                 url = url + "?text=" + inputText + "&key=" + apiKey;
                 if(point.equals("start")) {
                     verifyBuildingStart = false;
@@ -298,6 +306,31 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         }
     }
 
+    private static String[] removeTextInParentheses(String inputText) {
+        // Поиск индекса открывающей и закрывающей скобок
+        int startIndex = inputText.indexOf('(');
+        int endIndex = inputText.indexOf(')');
+
+        // Если обе скобки найдены и закрывающая скобка идет после открывающей
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            // Получение текста в скобках
+            String removedValueInParentheses = inputText.substring(startIndex + 1, endIndex);
+
+            // Удаление текста в круглых скобках из исходной строки
+            String result = inputText.substring(0, startIndex) + inputText.substring(endIndex + 1);
+
+            // Возвращение результатов в виде массива
+            return new String[]{result.trim(), removedValueInParentheses.trim()};
+        } else {
+            // Если скобки не найдены, вернуть исходную строку
+            return new String[]{inputText.trim(), ""};
+        }
+    }
+
+
+
+
+
     @SuppressLint("ResourceType")
     private void processAddressData(String responseData, String point) {
         try {
@@ -322,11 +355,21 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                     String settlement = properties.optString("settlement", "").toLowerCase();
                     String city = citySearch.toLowerCase();
+                    String address;
 
                     if (settlement.contains(city)) {
-                        String address = String.format("%s %s, ",
-                                properties.getString("name"),
-                                properties.getString("type"));
+                        if(properties.has("zone")) {
+                            address = String.format("%s %s (%s), ",
+                                    properties.getString("type"),
+                                    properties.getString("name"),
+                                    properties.getString("zone"));
+                        } else {
+                            address = String.format("%s %s, ",
+                                    properties.getString("type"),
+                                    properties.getString("name"));
+
+                        }
+
                         addresses.add(address);
                         double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
                         double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
@@ -339,24 +382,49 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                     String settlement = properties.optString("settlement", "").toLowerCase();
                     String city = citySearch.toLowerCase();
+                    String address;
+                    if(resultArray[1] != null) {
+                        if (settlement.contains(city)) {
+                            if(properties.has("zone")) {
+                                if(properties.getString("zone").equals(resultArray[1])) {
+                                    address = String.format("%s %s %s, %s, %s %s",
 
-                    if (settlement.contains(city)) {
-                        String address = String.format("%s %s, %s, %s %s",
+                                            properties.getString("street_type"),
+                                            properties.getString("street"),
+                                            properties.getString("name"),
+                                            properties.getString("zone"),
+                                            properties.getString("settlement_type"),
+                                            properties.getString("settlement"));
+                                    addresses.add(address);
 
-                                properties.getString("street"),
-                                properties.getString("street_type"),
-                                properties.getString("name"),
-                                properties.getString("settlement_type"),
-                                properties.getString("settlement"));
+                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                    Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
 
-                        addresses.add(address);
+                                    coordinatesList.add(new double[]{longitude, latitude});
+                                }
 
-                        double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
-                        double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
-                        Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+                            } else {
+                                address = String.format("%s %s, %s, %s %s",
 
-                        coordinatesList.add(new double[]{longitude, latitude});
+                                        properties.getString("street_type"),
+                                        properties.getString("street"),
+                                        properties.getString("name"),
+                                        properties.getString("settlement_type"),
+                                        properties.getString("settlement"));
+                                addresses.add(address);
+
+                                double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+
+                                coordinatesList.add(new double[]{longitude, latitude});
+                            }
+
+
+                        }
                     }
+
                 }
 
 
