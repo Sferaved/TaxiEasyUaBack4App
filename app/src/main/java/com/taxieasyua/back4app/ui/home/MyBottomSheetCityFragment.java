@@ -140,29 +140,6 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             }
         });
 
-//        btn_ok = view.findViewById(R.id.btn_ok);
-//        btn_ok.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(positionFirstOld != positionFirst){
-//                    ContentValues cv = new ContentValues();
-//                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-//
-//                    cv.put("city", cityCode [positionFirst]);
-//                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
-//                            new String[] { "1" });
-//                    database.close();
-//
-//                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-//                    resetRoutHome();
-//                    navController.navigate(R.id.nav_home);
-//
-//                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
-//
-//                }
-//               dismiss();
-//            }
-//        });
         return view;
     }
 
@@ -214,7 +191,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
         call.enqueue(new Callback<CityResponseMerchantFondy>() {
             @Override
-            public void onResponse(Call<CityResponseMerchantFondy> call, Response<CityResponseMerchantFondy> response) {
+            public void onResponse(@NonNull Call<CityResponseMerchantFondy> call, @NonNull Response<CityResponseMerchantFondy> response) {
                 if (response.isSuccessful()) {
                     CityResponseMerchantFondy cityResponse = response.body();
                     Log.d(TAG, "onResponse: cityResponse" + cityResponse);
@@ -226,11 +203,14 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         cv.put("merchant_fondy", merchant_fondy);
                         cv.put("fondy_key_storage", fondy_key_storage);
 
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                                new String[] { "1" });
+                        if (isAdded()) {
+                            SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                    new String[] { "1" });
 
-                        database.close();
+                            database.close();
+                        }
+
 
                         Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
                         Log.d(TAG, "onResponse: fondy_key_storage" + fondy_key_storage);
@@ -259,7 +239,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         cv.put("to_number", " ");
 
         // обновляем по id
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.ROUT_HOME, cv, "id = ?",
                 new String[] { "1" });
         database.close();
