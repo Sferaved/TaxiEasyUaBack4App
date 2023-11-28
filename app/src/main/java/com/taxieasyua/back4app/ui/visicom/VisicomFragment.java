@@ -213,13 +213,16 @@ public class VisicomFragment extends Fragment {
         api =  stringList.get(2);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
+                citySearch = "Дніпр";
                 break;
             case "Odessa":
                 citySearch = "Одеса";
                 break;
             case "Zaporizhzhia":
+                citySearch = "Запорі";
                 break;
             case "Cherkasy Oblast":
+                citySearch = "Черкас";
                 break;
             case "OdessaTest":
                 citySearch = "Одеса";
@@ -691,8 +694,13 @@ public class VisicomFragment extends Fragment {
         } else {
             result = "no_extra_charge_codes";
         }
-        String api =  logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
 
         database.close();
 

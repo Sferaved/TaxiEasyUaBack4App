@@ -957,8 +957,12 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         } else {
             result = "no_extra_charge_codes";
         }
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, context);
+        String city = listCity.get(1);
+        String api = listCity.get(2);
 
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
         database.close();
         Log.d(TAG, "getTaxiUrlSearchMarkers: " + url);
         return url;

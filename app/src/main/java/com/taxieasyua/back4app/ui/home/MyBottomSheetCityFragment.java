@@ -135,7 +135,35 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     resetRoutHome();
                     navController.navigate(R.id.nav_visicom);
 
-                    Toast.makeText(requireActivity(), getString(R.string.change_message)  + cityList [positionFirst]   , Toast.LENGTH_SHORT).show();
+                    String cityMenu;
+                    switch (cityCode [positionFirst]) {
+                        case "Kyiv City":
+                            cityMenu = getString(R.string.city_kyiv);
+                            break;
+                        case "Dnipropetrovsk Oblast":
+                            cityMenu = getString(R.string.city_dnipro);
+                            break;
+                        case "Odessa":
+                            cityMenu = getString(R.string.city_odessa);
+                            break;
+                        case "Zaporizhzhia":
+                            cityMenu = getString(R.string.city_zaporizhzhia);
+                            break;
+                        case "Cherkasy Oblast":
+                            cityMenu = getString(R.string.city_cherkasy);
+                            break;
+                        default:
+                            cityMenu = getString(R.string.city_kyiv);
+                    }
+                    Toast.makeText(requireActivity(), getString(R.string.change_message)  + cityMenu, Toast.LENGTH_SHORT).show();
+
+                    if (MainActivity.navVisicomMenuItem != null) {
+                        // Новый текст элемента меню
+                        String newTitle = cityMenu;
+
+                        // Изменяем текст элемента меню
+                        MainActivity.navVisicomMenuItem.setTitle(newTitle);
+                    }
                 }
             }
         });

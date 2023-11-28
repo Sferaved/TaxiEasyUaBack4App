@@ -792,8 +792,13 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-        String api =  logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
         Log.d(TAG, "getTaxiUrlSearchMarkers: " + url);
         database.close();
 

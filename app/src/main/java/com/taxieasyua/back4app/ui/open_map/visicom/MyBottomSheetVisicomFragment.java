@@ -105,13 +105,16 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
+                citySearch = "Дніпр";
                 break;
             case "Odessa":
                 citySearch = "Одеса";
                 break;
             case "Zaporizhzhia":
+                citySearch = "Запорі";
                 break;
             case "Cherkasy Oblast":
+                citySearch = "Черкас";
                 break;
             case "OdessaTest":
                 citySearch = "Одеса";
@@ -693,8 +696,6 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
         cursor.close();
 
-        String api =   logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
-
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
         String comment = stringList.get(2);
@@ -770,8 +771,11 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
 
         database.close();
 

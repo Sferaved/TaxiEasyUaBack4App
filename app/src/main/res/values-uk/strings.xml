@@ -1,6 +1,8 @@
 <resources>
-    <string name="version_code">2.896</string>
-    <string name="version">Версія: 2.896</string>
+    <string name="application">PAS2</string>
+
+    <string name="version_code">2.897</string>
+    <string name="version">Версія: 2.897</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -288,5 +290,10 @@
     <string name="main_page">Головна</string>
     <string name="search_text">Пошук адреси</string>
     <string name="drag_marker">Пересувайте маркер для уточнення місцезнаходження</string>
+    <string name="city_kyiv">Київ</string>
+    <string name="city_dnipro">Дніпро</string>
+    <string name="city_odessa">Одеса</string>
+    <string name="city_zaporizhzhia">Запоріжжя</string>
+    <string name="city_cherkasy">Черкаси</string>
 
 </resources>

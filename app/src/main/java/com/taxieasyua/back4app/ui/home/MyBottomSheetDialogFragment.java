@@ -555,9 +555,13 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
         } else {
             result = "no_extra_charge_codes";
         }
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String api =  stringList.get(2);
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
+
 
         Log.d("TAG", "getTaxiUrlSearch: " + url);
 

@@ -789,9 +789,10 @@ public class HomeFragment extends Fragment {
                         from = from.substring(0,  from.indexOf("/"));
                     };
                     List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                    String city = stringList.get(1);
                     String api =  stringList.get(2);
 
-                    String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from;
+                    String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + from + "/" + city;
 
                     Map sendUrlMapCost = null;
                     try {
@@ -879,8 +880,10 @@ public class HomeFragment extends Fragment {
                             to = to.substring(0, to.indexOf("/"));
                         }
                         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                        String city = stringList.get(1);
                         String api =  stringList.get(2);
-                         String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to;
+
+                        String url = "https://m.easy-order-taxi.site/" + api + "/android/autocompleteSearchComboHid/" + to + "/" + city;
 
                         Map sendUrlMapCost = null;
                         try {
@@ -1439,6 +1442,7 @@ public class HomeFragment extends Fragment {
 
         //City Table
         List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = stringListCity.get(1);
         String api =  stringListCity.get(2);
 
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1519,7 +1523,8 @@ public class HomeFragment extends Fragment {
         }
 
 
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
 
         Log.d(TAG, "getTaxiUrlSearch: " + url);
 

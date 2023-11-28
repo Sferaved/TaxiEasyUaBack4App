@@ -42,6 +42,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -78,6 +79,7 @@ import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -124,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static final String DB_NAME = "data_24112023_1";
+    public static final String DB_NAME = "data_28112023_4";
 
     /**
      * Table section
@@ -151,11 +153,16 @@ public class MainActivity extends AppCompatActivity {
      * Api section
      */
     public static final String  apiTest = "apiTest";
-    public static final String  apiKyiv = "apiPas2";
-    public static final String  apiDnipro = "apiPas2_Dnipro";
-    public static final String  apiOdessa = "apiPas2_Odessa";
-    public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
-    public static final String  apiCherkasy = "apiPas2_Cherkasy";
+    public static final String  apiKyiv = "apiTest";
+    public static final String  apiDnipro = "apiTest";
+    public static final String  apiOdessa = "apiTest";
+    public static final String  apiZaporizhzhia = "apiTest";
+    public static final String  apiCherkasy = "apiTest";
+//    public static final String  apiKyiv = "apiPas2";
+//    public static final String  apiDnipro = "apiPas2_Dnipro";
+//    public static final String  apiOdessa = "apiPas2_Odessa";
+//    public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
+//    public static final String  apiCherkasy = "apiPas2_Cherkasy";
     /**
      * Phone section
      */
@@ -166,6 +173,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String Cherkasy_Oblast_phone = "tel:0962294243";
 
     public static SQLiteDatabase database;
+    public static Menu navMenu;
+    public static MenuItem navVisicomMenuItem;
+
     /**
      * City section
      */
@@ -190,37 +200,85 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         try {
             initDB();
-//            pay_system();
         } catch (MalformedURLException | JSONException | InterruptedException ignored) {
 
         }
-
         com.taxieasyua.back4app.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
-            setContentView(binding.getRoot());
+        setContentView(binding.getRoot());
 
-            setSupportActionBar(binding.appBarMain.toolbar);
+        setSupportActionBar(binding.appBarMain.toolbar);
 
-            DrawerLayout drawer = binding.drawerLayout;
-            NavigationView navigationView = binding.navView;
+        DrawerLayout drawer = binding.drawerLayout;
+        NavigationView navigationView = binding.navView;
             // Passing each menu ID as a set of Ids because each
             // menu should be considered as top level destinations.
-            mAppBarConfiguration = new AppBarConfiguration.Builder(
-                    R.id.nav_visicom, R.id.nav_home, R.id.nav_gallery, R.id.nav_about, R.id.nav_uid, R.id.nav_bonus, R.id.nav_card)
-                    .setOpenableLayout(drawer)
-                    .build();
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
+              R.id.nav_visicom, R.id.nav_home, R.id.nav_gallery, R.id.nav_about, R.id.nav_uid, R.id.nav_bonus, R.id.nav_card)
+             .setOpenableLayout(drawer)
+             .build();
+        navMenu = navigationView.getMenu();
+        navVisicomMenuItem = navMenu.findItem(R.id.nav_visicom);
 
-            NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-            NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-            NavigationUI.setupWithNavController(navigationView, navController);
-            networkChangeReceiver = new NetworkChangeReceiver();
+
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
+        networkChangeReceiver = new NetworkChangeReceiver();
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        String dbName = MainActivity.DB_NAME;
+
+        // Получаем путь к базе данных
+        String dbPath = getDatabasePath(MainActivity.DB_NAME).getAbsolutePath();
+        File dbFile = new File(dbPath);
+        // Проверяем существование файла базы данных
+        if (dbFile.exists()) {
+            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
+            Cursor c = database.query(CITY_INFO, null, null, null, null, null, null);
+            if(c.getCount() != 0) {
+                List<String> listCity = logCursor(CITY_INFO);
+                String city = listCity.get(1);
+                String cityMenu;
+                switch (city) {
+                    case "Kyiv City":
+                        cityMenu = getString(R.string.city_kyiv);
+                        break;
+                    case "Dnipropetrovsk Oblast":
+                        cityMenu = getString(R.string.city_dnipro);
+                        break;
+                    case "Odessa":
+                        cityMenu = getString(R.string.city_odessa);
+                        break;
+                    case "Zaporizhzhia":
+                        cityMenu = getString(R.string.city_zaporizhzhia);
+                        break;
+                    case "Cherkasy Oblast":
+                        cityMenu = getString(R.string.city_cherkasy);
+                        break;
+                    default:
+                        cityMenu = getString(R.string.city_kyiv);
+                }
+
+
+                if (MainActivity.navVisicomMenuItem != null) {
+                    // Новый текст элемента меню
+                    String newTitle = cityMenu;
+
+                    // Изменяем текст элемента меню
+                    MainActivity.navVisicomMenuItem.setTitle(newTitle);
+                }
+            }
+
+            database.close();
+        }
 
     }
     @SuppressLint("SuspiciousIndentation")
@@ -344,6 +402,14 @@ public class MainActivity extends AppCompatActivity {
 
             cityMaxPay("Kyiv City");
             merchantFondy("Kyiv City");
+            if (MainActivity.navVisicomMenuItem != null) {
+                // Новый текст элемента меню
+                String newTitle = "Kyiv City";
+
+                // Изменяем текст элемента меню
+                MainActivity.navVisicomMenuItem.setTitle(newTitle);
+            }
+
 
         }
         cursorDb = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
@@ -604,6 +670,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
     }
 
@@ -775,31 +842,37 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton(R.string.cheng, (dialog, which) -> {
 
 
-            String api, phone;
+            String api, phone, cityMenu = null;
             switch (cityNew) {
                 case "Kyiv City":
                     api = apiKyiv;
                     phone = Kyiv_City_phone;
+                    cityMenu = getString(R.string.city_kyiv);
                     break;
                 case "Dnipropetrovsk Oblast":
                     api = apiDnipro;
                     phone = Dnipropetrovsk_Oblast_phone;
+                    cityMenu = getString(R.string.city_dnipro);
                     break;
                 case "Odessa":
                     api = apiOdessa;
                     phone = Odessa_phone;
+                    cityMenu = getString(R.string.city_odessa);
                     break;
                 case "Zaporizhzhia":
                     api = apiZaporizhzhia;
                     phone = Zaporizhzhia_phone;
+                    cityMenu = getString(R.string.city_zaporizhzhia);
                     break;
                 case "Cherkasy Oblast":
                     api = apiCherkasy;
                     phone = Cherkasy_Oblast_phone;
+                    cityMenu = getString(R.string.city_cherkasy);
                     break;
                 default:
                     api = apiTest;
                     phone = Kyiv_City_phone;
+                    cityMenu = getString(R.string.city_kyiv);
             }
 
             ContentValues cv = new ContentValues();
@@ -820,12 +893,18 @@ public class MainActivity extends AppCompatActivity {
             database.close();
 
             cityMaxPay(cityNew);
-                    Log.d(TAG, "cityChange: " + cityNew);
+
             merchantFondy(cityNew);
 
             Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
 
-            Log.d(TAG, "cityChange: " + logCursor(CITY_INFO).toString());
+            if (navVisicomMenuItem != null) {
+                        // Новый текст элемента меню
+                 String newTitle = cityMenu;
+
+                        // Изменяем текст элемента меню
+                 navVisicomMenuItem.setTitle(newTitle);
+            }
 
             NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
             resetRoutHome();

@@ -614,7 +614,9 @@ public class GalleryFragment extends Fragment {
 
         cursor.close();
 
-        String api =   logCursor(MainActivity.CITY_INFO, requireActivity()).get(2);
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
 
         List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO, context);
         String time = stringList.get(1);
@@ -692,7 +694,8 @@ public class GalleryFragment extends Fragment {
             result = "no_extra_charge_codes";
         }
 
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/" + parameters + "/" + result;
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
         Log.d(TAG, "getTaxiUrlSearchMarkers: " + url);
 
         database.close();
