@@ -48,6 +48,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.cities.Kyiv.KyivRegion;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
@@ -63,8 +64,11 @@ import org.osmdroid.views.overlay.Marker;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -80,7 +84,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private final String apiUrl = "https://api.visicom.ua/data-api/5.0/uk/geocode.json";
     private String apiKey;
     private static List<double[]> coordinatesList;
-    private static List<String> addresses;
+    private static List<String[]> addresses;
     private final OkHttpClient client = new OkHttpClient();
     private String startPoint, finishPoint;
     ListView addressListView;
@@ -91,6 +95,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private String fragmentInput;
     private String citySearch;
     private String[] resultArray;
+    private String[] kyivRegionArr;
+    private int positionChecked;
+    private String zone;
 
     public MyBottomSheetVisicomFragment(String fragmentInput) {
         this.fragmentInput = fragmentInput;
@@ -120,6 +127,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 break;
             default:
                 citySearch = "Київ";
+                kyivRegionArr = KyivRegion.city();
                 break;
         }
         textGeoError = view.findViewById(R.id.textGeoError);
@@ -146,6 +154,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 fromEditAddress.setText(GeoDialogVisicomFragment.geoText.getText().toString());
                 break;
             case "home":
+                fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
                 break;
         }
 
@@ -264,14 +273,15 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             } else {
                 // Если ", " присутствует после первых четырех символов, то выполняем вторую строку
                 Log.d(TAG, "performAddressSearch: inputText1111 " + inputText);
-                resultArray = removeTextInParentheses(inputText);
-                inputText = resultArray[0];
+                String number = numbers(inputText);
 
-                // Вывод результатов
-                Log.d(TAG, "performAddressSearch: resultArray[0]" + resultArray[0]);
-                Log.d(TAG, "performAddressSearch: resultArray[1]" + resultArray[1]);
 
-                url = url + "?text=" + inputText + "&key=" + apiKey;
+                Log.d(TAG, "performAddressSearch: inputText" + inputTextBuild());
+                inputText = inputTextBuild() + ", " + number;
+
+                url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
+
+                Log.d(TAG, "performAddressSearch: 6666666666 " + url);
                 if(point.equals("start")) {
                     verifyBuildingStart = false;
                 } else  {
@@ -306,30 +316,42 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private static String[] removeTextInParentheses(String inputText) {
-        // Поиск индекса открывающей и закрывающей скобок
-        int startIndex = inputText.indexOf('(');
-        int endIndex = inputText.indexOf(')');
+    private String inputTextBuild() {
+//        Log.d(TAG, "inputTextBuild: positionChecked" + positionChecked);
+//        for (String[] addressArray : addresses) {
+//            Log.d(TAG, "Address: " + Arrays.toString(addressArray));
+//        }
+//        List<String> nameList = new ArrayList<>();
+//
+//        List<String> settlementList = new ArrayList<>();
+//
+//        for (int i = 0; i < addresses.size(); i++) {
+//            if (i == positionChecked) {
+//                String[] addressArray = addresses.get(i);
+//
+//                // Выбираем значения из массива и добавляем их в соответствующие списки
+//
+//                nameList.add(addressArray[1]);
+//
+//                settlementList.add(addressArray[3]);
+//            }
+//        }
+//
+//        Log.d(TAG, "inputTextBuild: nameList" + nameList.toString());
+//        Log.d(TAG, "inputTextBuild: settlementList" + settlementList.toString());
 
-        // Если обе скобки найдены и закрывающая скобка идет после открывающей
-        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
-            // Получение текста в скобках
-            String removedValueInParentheses = inputText.substring(startIndex + 1, endIndex);
 
-            // Удаление текста в круглых скобках из исходной строки
-            String result = inputText.substring(0, startIndex) + inputText.substring(endIndex + 1);
+        String[] selectedAddress = addresses.get(positionChecked);
+        Log.d(TAG, "inputTextBuild: " + Arrays.toString(selectedAddress));
+        // Получение элементов отдельно
+        String name = selectedAddress[1];
+        zone = selectedAddress[2];
+        String settlement = selectedAddress[3];
+        String result = settlement + ", " +  name;
 
-            // Возвращение результатов в виде массива
-            return new String[]{result.trim(), removedValueInParentheses.trim()};
-        } else {
-            // Если скобки не найдены, вернуть исходную строку
-            return new String[]{inputText.trim(), ""};
-        }
+        return result;
+
     }
-
-
-
-
 
     @SuppressLint("ResourceType")
     private void processAddressData(String responseData, String point) {
@@ -343,9 +365,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
             for (int i = 0; i < features.length(); i++) {
                 JSONObject properties = features.getJSONObject(i).getJSONObject("properties");
-                Log.d(TAG, "processAddressData: properties" + properties);
+
                 JSONObject geoCentroid = features.getJSONObject(i).getJSONObject("geo_centroid");
-                Log.d(TAG, "processAddressData: geoCentroid" + geoCentroid);
+
                 if (!properties.getString("country_code").equals("ua")) {
                     Log.d(TAG, "processAddressData: Skipped address - Country is not Україна");
                     continue;
@@ -363,30 +385,66 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     properties.getString("type"),
                                     properties.getString("name"),
                                     properties.getString("zone"));
+                            addresses.add(new String[] {
+                                    address,
+                                    properties.getString("name"),
+                                    properties.getString("zone"),
+                                    properties.getString("settlement"),
+                            });
                         } else {
                             address = String.format("%s %s, ",
                                     properties.getString("type"),
                                     properties.getString("name"));
-
+                            addresses.add(new String[] {
+                                    address,
+                                    properties.getString("name"),
+                                    "",
+                                    properties.getString("settlement"),
+                            });
                         }
 
-                        addresses.add(address);
                         double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
                         double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
-                        Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
 
                         coordinatesList.add(new double[]{longitude, latitude});
                     }
-                }
-                else if (properties.getString("categories").equals("adr_address")) {
 
+                    // Проверка по Киевской области
+
+                    if (citySearch.equals("Київ")) {
+                        if (checkWordInArray(properties.getString("settlement"), kyivRegionArr)) {
+                            address = String.format("%s %s (%s), ",
+                                    properties.getString("type"),
+                                    properties.getString("name"),
+                                    properties.getString("settlement"));
+
+
+                            addresses.add(new String[] {
+                                    address,
+                                    properties.getString("name"),
+                                    "",
+                                    properties.getString("settlement"),
+                            });
+                            double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                            double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+
+                            coordinatesList.add(new double[]{longitude, latitude});
+                        }
+                    }
+
+                }
+                if (properties.getString("categories").equals("adr_address")) {
                     String settlement = properties.optString("settlement", "").toLowerCase();
                     String city = citySearch.toLowerCase();
                     String address;
-                    if(resultArray[1] != null) {
-                        if (settlement.contains(city)) {
-                            if(properties.has("zone")) {
-                                if(properties.getString("zone").equals(resultArray[1])) {
+
+                    if (settlement.contains(city)) {
+                        Log.d(TAG, "processAddressData: properties ййй" + properties);
+                        if(properties.has("zone")) {
+                            // Получение элементов отдельно
+
+                            Log.d(TAG, "processAddressData: zone" + zone);
+                                if(properties.getString("zone").equals(zone)) {
                                     address = String.format("%s %s %s, %s, %s %s",
 
                                             properties.getString("street_type"),
@@ -395,13 +453,13 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                             properties.getString("zone"),
                                             properties.getString("settlement_type"),
                                             properties.getString("settlement"));
-                                    addresses.add(address);
+                                    addresses.add(new String[] {
+                                            address,
+                                            "",
+                                            "",
+                                            "",
+                                    });
 
-                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
-                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
-                                    Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
-
-                                    coordinatesList.add(new double[]{longitude, latitude});
                                 }
 
                             } else {
@@ -412,32 +470,73 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                         properties.getString("name"),
                                         properties.getString("settlement_type"),
                                         properties.getString("settlement"));
-                                addresses.add(address);
-
-                                double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
-                                double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
-                                Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
-
-                                coordinatesList.add(new double[]{longitude, latitude});
+                                addresses.add(new String[] {
+                                        address,
+                                        "",
+                                        "",
+                                        "",
+                                });
                             }
 
 
+                        double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                        double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                        Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+
+                        coordinatesList.add(new double[]{longitude, latitude});
+                        }
+                    // Проверка по Киевской области
+
+                    if (citySearch.equals("Київ")) {
+                        Log.d(TAG, "processAddressData:citySearch " + citySearch);
+                        if (checkWordInArray(properties.getString("settlement"), kyivRegionArr)) {
+                            address = String.format("%s %s %s, %s %s ",
+                                    properties.getString("street_type"),
+                                    properties.getString("street"),
+                                    properties.getString("name"),
+                                    properties.getString("settlement_type"),
+                                    properties.getString("settlement"));
+
+                            Log.d(TAG, "processAddressData: address" + address);
+                            addresses.add(new String[] {
+                                    address,
+                                    "",
+                                    "",
+                                    "",
+                            });
+                            double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                            double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+
+                            coordinatesList.add(new double[]{longitude, latitude});
                         }
                     }
-
                 }
-
-
-
-
             }
-            addresses.add(getString(R.string.address_on_map));
 
-            Log.d(TAG, "processAddressData: " + addresses);
+            addresses.add(new String[] {
+                    getString(R.string.address_on_map),
+                    "",
+                    "",
+                    "",
+            });
+
             if (addresses.size() != 0) {
                 new Handler(Looper.getMainLooper()).post(() -> {
+                    List<String> addressesList = new ArrayList<>();
+                    List<String> nameList = new ArrayList<>();
+                    List<String> zoneList = new ArrayList<>();
+                    List<String> settlementList = new ArrayList<>();
 
-                    ArrayAdapter<String> addressAdapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, addresses);
+                    for (String[] addressArray : addresses) {
+                        // Выбираем значение 'address' из массива и добавляем его в addressesList
+                        addressesList.add(addressArray[0]);
+                        nameList.add(addressArray[1]);
+                        zoneList.add(addressArray[2]);
+                        settlementList.add(addressArray[3]);
+                    }
+
+
+                    ArrayAdapter<String> addressAdapter = new ArrayAdapter<>(requireActivity(), R.layout.custom_list_item, addressesList);
 
                     addressListView.setVisibility(View.VISIBLE);
                     addressListView.setAdapter(addressAdapter);
@@ -445,8 +544,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     addressListView.setItemChecked(0, true);
 
                     addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
-
-                        if (position == addresses.size()-1) {
+                        positionChecked = position;
+                        Log.d(TAG, "processAddressData: waawdad" + positionChecked);
+                        if (position == addressesList.size()-1) {
                             switch (fragmentInput) {
                                 case "map":
                                     GeoDialogVisicomFragment.fragment.dismiss();
@@ -461,7 +561,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                             double[] coordinates = coordinatesList.get(position);
 
                             if (point.equals("start")) {
-                                startPoint = addresses.get(position);
+                                startPoint = addressesList.get(position);
                                 fromEditAddress.setText(startPoint);
                                 fromEditAddress.setSelection(startPoint.length());
 
@@ -474,8 +574,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     if (toEditAddress.getText().toString().equals(R.string.on_city_tv)) {
                                         settings.add(Double.toString(coordinates[1]));
                                         settings.add(Double.toString(coordinates[0]));
-                                        settings.add(addresses.get(position));
-                                        settings.add(addresses.get(position));
+                                        settings.add(addressesList.get(position));
+                                        settings.add(addressesList.get(position));
                                     } else {
                                         if(OpenStreetMapActivity.finishLan == 0){
                                             settings.add("");
@@ -484,7 +584,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                             settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
                                             settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
                                         }
-                                        settings.add(addresses.get(position));
+                                        settings.add(addressesList.get(position));
                                         settings.add(toEditAddress.getText().toString());
                                     }
                                     updateRoutMarker(settings);
@@ -493,11 +593,11 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                             GeoDialogVisicomFragment.geoText.setText(startPoint);
                                             OpenStreetMapActivity.startLat = coordinates[1];
                                             OpenStreetMapActivity.startLan = coordinates[0];
-                                            OpenStreetMapActivity.FromAdressString = addresses.get(position);
+                                            OpenStreetMapActivity.FromAdressString = addressesList.get(position);
 
 
                                             Log.d(TAG, "settings: " + settings);
-                                            fromEditAddress.setSelection(addresses.get(position).length());
+                                            fromEditAddress.setSelection(addressesList.get(position).length());
 
                                             double startLat = coordinates[1];
                                             double startLan = coordinates[0];
@@ -520,7 +620,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                 }
                             } else if(point.equals("finish")) {
-                                finishPoint = addresses.get(position);
+                                finishPoint = addressesList.get(position);
                                 toEditAddress.setText(finishPoint);
                                 toEditAddress.setSelection(finishPoint.length());
                                 btn_clear_to.setVisibility(View.VISIBLE);
@@ -528,7 +628,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     List<String> settings = new ArrayList<>();
                                     switch (fragmentInput) {
                                         case "map":
-                                            GeoDialogVisicomFragment.textViewTo.setText(addresses.get(position));
+                                            GeoDialogVisicomFragment.textViewTo.setText(addressesList.get(position));
                                             GeoDialogVisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                             if (!fromEditAddress.getText().toString().equals("")) {
                                                 settings.add(Double.toString(OpenStreetMapActivity.startLat));
@@ -537,7 +637,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                                 settings.add(Double.toString(coordinates[0]));
 
                                                 settings.add(fromEditAddress.getText().toString());
-                                                settings.add(addresses.get(position));
+                                                settings.add(addressesList.get(position));
 
                                             }
                                             GeoPoint endPoint = new GeoPoint(coordinates[1], coordinates[0]);
@@ -546,7 +646,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                             showRoutMap(endPoint);
                                             break;
                                         case "home":
-                                            VisicomFragment.textViewTo.setText(addresses.get(position));
+                                            VisicomFragment.textViewTo.setText(addressesList.get(position));
                                             VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                             if (!fromEditAddress.getText().toString().equals("")) {
                                                 settings.add(Double.toString(0));
@@ -555,49 +655,49 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                                 settings.add(Double.toString(coordinates[0]));
 
                                                 settings.add(fromEditAddress.getText().toString());
-                                                settings.add(addresses.get(position));
+                                                settings.add(addressesList.get(position));
                                             }
                                             break;
                                     }
 
                                     updateRoutMarker(settings);
                                     Log.d(TAG, "settings: " + settings);
-                                    toEditAddress.setSelection(addresses.get(position).length());
+                                    toEditAddress.setSelection(addressesList.get(position).length());
 
                                 }
                             }
                         }
 
-                        addresses = null;
-                        coordinatesList = null;
+//                        addresses = null;
+//                        coordinatesList = null;
                         addressListView.setVisibility(View.INVISIBLE);
                     });
                     btn_ok.setVisibility(View.VISIBLE);
                     btn_ok.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                                if(verifyBuildingStart) {
-                                    textGeoError.setVisibility(View.VISIBLE);
-                                    textGeoError.setText(R.string.house_vis_mes);
+                            if(verifyBuildingStart) {
+                                textGeoError.setVisibility(View.VISIBLE);
+                                textGeoError.setText(R.string.house_vis_mes);
 
-                                    fromEditAddress.requestFocus();
-                                    fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
-                                }
-                                if(verifyBuildingFinish) {
-                                    text_toError.setVisibility(View.VISIBLE);
-                                    text_toError.setText(R.string.house_vis_mes);
+                                fromEditAddress.requestFocus();
+                                fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                            }
+                            if(verifyBuildingFinish) {
+                                text_toError.setVisibility(View.VISIBLE);
+                                text_toError.setText(R.string.house_vis_mes);
 
-                                    toEditAddress.requestFocus();
-                                    toEditAddress.setSelection(toEditAddress.getText().toString().length());
-                                }
+                                toEditAddress.requestFocus();
+                                toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                            }
                             Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
                             Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
-                                if(verifyBuildingStart == false && verifyBuildingFinish == false) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        visicomCost();
-                                        dismiss();
-                                    }
+                            if(verifyBuildingStart == false && verifyBuildingFinish == false) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    visicomCost();
+                                    dismiss();
                                 }
+                            }
 
                         }
                     });
@@ -609,6 +709,67 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             e.printStackTrace();
         }
     }
+
+    private boolean checkWordInArray(String wordToCheck, String[]  searchArr) {
+
+        boolean result = false;
+        for (String word : searchArr) {
+            if (word.equals(wordToCheck)) {
+                // Слово найдено в массиве
+               result = true;
+               break;
+            }
+        }
+        Log.d(TAG, "checkWordInArray: result" + result);
+        return result;
+    }
+
+    private static String[] removeTextInParentheses(String inputText) {
+        // Поиск индекса открывающей и закрывающей скобок
+        int startIndex = inputText.indexOf('(');
+        int endIndex = inputText.indexOf(')');
+
+        // Если обе скобки найдены и закрывающая скобка идет после открывающей
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            // Получение текста в скобках
+            String removedValueInParentheses = inputText.substring(startIndex + 1, endIndex);
+
+            // Удаление текста в круглых скобках из исходной строки
+            String result = inputText.substring(0, startIndex) + inputText.substring(endIndex + 1);
+
+            // Возвращение результатов в виде массива
+            return new String[]{result.trim(), removedValueInParentheses.trim()};
+        } else {
+            // Если скобки не найдены, вернуть исходную строку
+            return new String[]{inputText.trim(), ""};
+        }
+    }
+
+    private String numbers(String inputString) {
+
+
+        // Регулярное выражение для поиска чисел после запятой и пробела
+        String regex = ".*,\\s*([0-9]+).*";
+
+        // Создание Pattern и Matcher
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(inputString);
+        String numbersAfterComma = null;
+
+        // Поиск соответствия
+        if (matcher.matches()) {
+            // Получение чисел после запятой и пробела
+            numbersAfterComma = matcher.group(1);
+
+            // Вывод чисел
+            Log.d(TAG, "numbers: " + numbersAfterComma);
+
+        }
+        return numbersAfterComma;
+    }
+
+
+
 
     private void showRoutMap(GeoPoint geoPoint) {
         if(OpenStreetMapActivity.marker != null) {

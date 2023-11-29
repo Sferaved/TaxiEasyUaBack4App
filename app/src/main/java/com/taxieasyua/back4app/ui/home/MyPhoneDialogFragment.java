@@ -646,7 +646,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 alertDialog.dismiss();
             }
         });

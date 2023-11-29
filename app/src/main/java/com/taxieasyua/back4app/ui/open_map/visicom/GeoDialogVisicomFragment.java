@@ -63,7 +63,6 @@ import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
-import com.taxieasyua.back4app.ui.open_map.MarkerOverlay;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
@@ -120,7 +119,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
     private static List<double[]> coordinatesList;
     private static List<String> addresses;
-    public static String citySearch;
+
 
 
     public static ImageButton btn_clear_from, btn_clear_to;
@@ -141,27 +140,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
 
         buttonBonus = view.findViewById(R.id.btnBonus);
         apiKey = requireActivity().getString(R.string.visicom_key_storage);
-
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        api =  stringList.get(2);
-        switch (stringList.get(1)){
-            case "Dnipropetrovsk Oblast":
-                break;
-            case "Odessa":
-                citySearch = "Одеса";
-                break;
-            case "Zaporizhzhia":
-                break;
-            case "Cherkasy Oblast":
-                break;
-            case "OdessaTest":
-                citySearch = "Одеса";
-                break;
-            default:
-                citySearch = "Київ";
-                break;
-        }
-
 
         if (!routMaps().isEmpty()) {
             adressArr = new ArrayList<>(routMaps().size());
@@ -1115,7 +1093,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            bottomSheetDialogFragment = new MyPhoneDialogFragment("geo", text_view_cost.getText().toString());
+            bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString());
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
