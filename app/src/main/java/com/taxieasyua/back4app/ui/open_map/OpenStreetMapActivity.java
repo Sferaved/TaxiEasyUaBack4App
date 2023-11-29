@@ -23,7 +23,6 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -46,7 +45,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Cherkasy.Cherkasy;
-import com.taxieasyua.back4app.cities.Dnipro.Dnipro;
+import com.taxieasyua.back4app.cities.Dnipro.Dnipro1;
 import com.taxieasyua.back4app.cities.Kyiv.KyivCity;
 import com.taxieasyua.back4app.cities.Odessa.Odessa;
 import com.taxieasyua.back4app.cities.Odessa.OdessaTest;
@@ -63,9 +62,6 @@ import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -93,9 +89,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public static GeoPoint endPoint;
     @SuppressLint({"StaticFieldLeak", "UseSwitchCompatOrMaterialCode"})
     static Switch gpsSwitch;
-
-    ArrayList<Map> adressArr;
-
     public static Polyline roadOverlay;
     public static Marker m, marker;
     public static String FromAdressString, ToAdressString;
@@ -192,27 +185,19 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         api =  stringList.get(2);
         switch (stringList.get(1)){
             case "Dnipropetrovsk Oblast":
-                arrayStreet = Dnipro.arrayStreet();
-                phone = "tel:0667257070";
+             phone = "tel:0667257070";
                 break;
             case "Odessa":
-                arrayStreet = Odessa.arrayStreet();
                 phone = "tel:0737257070";
                 break;
             case "Zaporizhzhia":
-                arrayStreet = Zaporizhzhia.arrayStreet();
-                phone = "tel:0687257070";
+             phone = "tel:0687257070";
                 break;
             case "Cherkasy Oblast":
-                arrayStreet = Cherkasy.arrayStreet();
                 phone = "tel:0962294243";
                 break;
-            case "OdessaTest":
-                arrayStreet = OdessaTest.arrayStreet();
-                phone = "tel:0674443804";
-                break;
             default:
-                arrayStreet = KyivCity.arrayStreet();
+
                 phone = "tel:0674443804";
                 break;
         }
@@ -221,9 +206,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         progressBar = findViewById(R.id.progressBar);
 
-        if (!routMaps().isEmpty()) {
-            adressArr = new ArrayList<>(routMaps().size());
-        }
 
         fab = findViewById(R.id.fab);
         fab_call = findViewById(R.id.fab_call);
