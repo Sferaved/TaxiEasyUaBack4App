@@ -604,7 +604,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             roadOverlay.setWidth(10); // Измените это значение на желаемую толщину
 
             map.getOverlays().add(roadOverlay);
-            m.showInfoWindow();
+//            m.showInfoWindow();
             map.invalidate();
         });
     }
