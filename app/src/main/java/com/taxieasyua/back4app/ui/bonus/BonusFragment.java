@@ -82,8 +82,8 @@ public class BonusFragment extends Fragment {
                     @SuppressLint("UseRequireInsteadOfGet")
                     String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
                     progressBar.setVisibility(View.VISIBLE);
-                    textView.setVisibility(View.INVISIBLE);
-                    binding.text0.setVisibility(View.INVISIBLE);
+                    textView.setVisibility(View.GONE);
+                    binding.text0.setVisibility(View.GONE);
                     binding.text7.setVisibility(View.GONE);
                     btnBonus.setVisibility(View.GONE);
 
@@ -136,7 +136,6 @@ public class BonusFragment extends Fragment {
     }
 
     String baseUrl = "https://m.easy-order-taxi.site";
-    private List<RouteResponse> routeList = new ArrayList<>();
 
     private void fetchBonus(String value, Context context) {
         String url = baseUrl + "/bonus/bonusUserShow/" + value;
@@ -163,7 +162,7 @@ public class BonusFragment extends Fragment {
 
                     textView.setText(getString(R.string.my_bonus) + bonus);
                     textView.setVisibility(View.VISIBLE);
-                    text0.setVisibility(View.VISIBLE);
+                    text0.setVisibility(View.GONE);
                     text0.setText(R.string.bonus_upd_mes);
 
 

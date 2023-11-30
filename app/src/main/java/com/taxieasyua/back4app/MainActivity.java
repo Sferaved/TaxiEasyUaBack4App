@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static final String DB_NAME = "data_29112023_1";
+    public static final String DB_NAME = "data_30112023_5";
 
     /**
      * Table section
@@ -1160,7 +1160,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                fetchBonus(user.getEmail());
+//                fetchBonus(user.getEmail());
 
                 getCardToken("fondy", TABLE_FONDY_CARDS, user.getEmail());
                 getCardToken("mono", TABLE_MONO_CARDS, user.getEmail());

@@ -54,6 +54,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
+import com.taxieasyua.back4app.utils.KeyboardUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -682,6 +683,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                 fromEditAddress.requestFocus();
                                 fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                                KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
                             }
                             if(verifyBuildingFinish) {
                                 text_toError.setVisibility(View.VISIBLE);
@@ -689,6 +691,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                 toEditAddress.requestFocus();
                                 toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                                KeyboardUtils.showKeyboard(getContext(), toEditAddress);
                             }
                             Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
                             Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
