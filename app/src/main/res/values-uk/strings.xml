@@ -295,5 +295,7 @@
     <string name="city_odessa">Одеса</string>
     <string name="city_zaporizhzhia">Запоріжжя</string>
     <string name="city_cherkasy">Черкаси</string>
+    <string name="tail1">Карти для міста \'</string>
+    <string name="tail2">\' успішно завантажено</string>
 
 </resources>

@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -63,11 +64,13 @@ import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,6 +107,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
     public static ProgressBar progressBar;
     @SuppressLint("StaticFieldLeak")
     public static GeoDialogVisicomFragment bottomSheetDialogFragment;
+    private String city;
+
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",
@@ -150,15 +155,17 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         view = inflater.inflate(R.layout.phone_verify_layout, null);
 
         map = findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+//        map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
 
-        FromAdressString = getString(R.string.startPoint);
-        map.setBuiltInZoomControls(true);
-        map.setMultiTouchControls(true);
-        mapController.setZoom(19);
-        map.setClickable(true);
+        switchToRegion();
 
+//        map.setBuiltInZoomControls(true);
+//        map.setMultiTouchControls(true);
+//        mapController.setZoom(19);
+//        map.setClickable(true);
+
+        FromAdressString = getString(R.string.startPoint);
         cm = getString(R.string.coastMarkersMessage);
         UAH = getString(R.string.UAH);
         em = getString(R.string.error_message);
@@ -180,27 +187,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         cbt = getString(R.string.cancel_button);
         vph = getString(R.string.verify_phone);
         coo = getString(R.string.cost_of_order);
-
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, this);
-        api =  stringList.get(2);
-        switch (stringList.get(1)){
-            case "Dnipropetrovsk Oblast":
-             phone = "tel:0667257070";
-                break;
-            case "Odessa":
-                phone = "tel:0737257070";
-                break;
-            case "Zaporizhzhia":
-             phone = "tel:0687257070";
-                break;
-            case "Cherkasy Oblast":
-                phone = "tel:0962294243";
-                break;
-            default:
-
-                phone = "tel:0674443804";
-                break;
-        }
 
 
 
@@ -234,14 +220,46 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         });
 
         fab_open_marker.setOnClickListener(v -> {
-
-
-
             progressBar.setVisibility(View.INVISIBLE);
             GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
             bottomSheet.show(fragmentManager, bottomSheet.getTag());
         });
     }
+
+    private void switchToRegion() {
+
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, this);
+        city = stringList.get(1);
+        api =  stringList.get(2);
+
+        map.setBuiltInZoomControls(true);
+        map.setMultiTouchControls(true);
+        mapController.setZoom(19);
+        map.setClickable(true);
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        switch (city){
+            case "Dnipropetrovsk Oblast":
+                // Днепр
+                phone = "tel:0667257070";
+                break;
+            case "Odessa":
+                // Одесса
+                phone = "tel:0737257070";
+                break;
+            case "Zaporizhzhia":
+                // Запорожье
+                phone = "tel:0687257070";
+                break;
+            case "Cherkasy Oblast":
+                // Черкассы
+                phone = "tel:0962294243";
+                break;
+            default:
+                phone = "tel:0674443804";
+                break;
+        }
+    }
+
     private static void updateMyPosition(Double startLat, Double startLan, String position, Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
@@ -294,38 +312,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
-    }
-
-   ArrayList<Map> routMaps() {
-        Map <String, String> routs;
-        ArrayList<Map> routsArr = new ArrayList<>();
-        SQLiteDatabase database = this.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
-        int i = 0;
-        if (c != null) {
-            if (c.moveToFirst()) {
-                do {
-                    routs = new HashMap<>();
-                    routs.put("id", c.getString(c.getColumnIndexOrThrow ("id")));
-                    routs.put("from_street", c.getString(c.getColumnIndexOrThrow ("from_street")));
-                    routs.put("from_number", c.getString(c.getColumnIndexOrThrow ("from_number")));
-                    routs.put("to_street", c.getString(c.getColumnIndexOrThrow ("to_street")));
-                    routs.put("to_number", c.getString(c.getColumnIndexOrThrow ("to_number")));
-
-                    routs.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
-                    routs.put("from_lng", c.getString(c.getColumnIndexOrThrow ("from_lng")));
-
-                    routs.put("to_lat", c.getString(c.getColumnIndexOrThrow ("to_lat")));
-                    routs.put("to_lng", c.getString(c.getColumnIndexOrThrow ("to_lng")));
-                    routsArr.add(i++, routs);
-                } while (c.moveToNext());
-            }
-        }
-       assert c != null;
-       c.close();
-        database.close();
-
-        return routsArr;
     }
    private boolean  switchState() {
         LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -603,108 +589,6 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         map.getOverlays().add(m);
         map.invalidate();
     }
-//    public static void setMarker(double Lat, double Lan, String title, Context context) {
-//        m = new Marker(map);
-//        m.setPosition(new GeoPoint(Lat, Lan));
-//
-//        // Установите название маркера
-//        String unuString = new String(Character.toChars(0x1F449));
-//        m.setTitle("1." + unuString + title);
-//
-//        m.setTextLabelBackgroundColor(Color.TRANSPARENT);
-//        m.setTextLabelForegroundColor(Color.RED);
-//        m.setTextLabelFontSize(40);
-//        m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-//
-//        @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = context.getResources().getDrawable(R.drawable.marker_green);
-//
-//        // Уменьшите размер до 48 пикселей
-//        int width = 48;
-//        int height = 48;
-//        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
-//
-//        // Создайте новый Drawable из уменьшенного изображения
-//        Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
-//        m.setIcon(scaledDrawable);
-//
-//        // Set the marker as draggable
-//
-//        m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-//            @Override
-//            public boolean onMarkerClick(Marker marker, MapView mapView) {
-//                Toast.makeText(context, R.string.drag_marker, Toast.LENGTH_LONG).show();
-//                m.setDraggable(false);
-//                final GeoDialogVisicomFragment bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
-//                OpenStreetMapActivity.map.addMapListener(new MapListener() {
-//                    private boolean isScrolling = false;
-//
-//                    @Override
-//                    public boolean onScroll(ScrollEvent event) {
-//                        // Вызывается при каждом движении карты
-//
-//                        // Вы можете выполнить дополнительные действия во время движения,
-//                        // или просто установить флаг, что происходит движение.
-//                        isScrolling = true;
-//                        checkMoveEnd();
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public boolean onZoom(ZoomEvent event) {
-//                        return false;
-//                    }
-//
-//                    // Дополнительные методы, если необходимо
-//
-//                    // Метод, который проверяет, окончено ли движение
-//                    private void checkMoveEnd() {
-//                        if (isScrolling) {
-//                            // Действия после окончания движения карты
-//
-//                            // Получаем координаты маркера после завершения перетаскивания
-//                            GeoPoint newPosition = marker.getPosition();
-//
-//                            // Получаем широту и долготу
-//                            double newLatitude = newPosition.getLatitude();
-//                            double newLongitude = newPosition.getLongitude();
-//                            startLat = newLatitude;
-//                            startLan = newLongitude;
-//                            String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-//                            Map sendUrlFrom = null;
-//                            try {
-//                                sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-//
-//                            } catch (MalformedURLException | InterruptedException | JSONException ignored) {
-//                            }
-//                            assert sendUrlFrom != null;
-//                            FromAdressString = (String) sendUrlFrom.get("route_address_from");
-//
-//                            updateMyPosition(startLat, startLan, FromAdressString, context);
-//
-//                            if (!bottomSheetDialogFragment.isAdded()) {
-//                                // Если нет, используем getSupportFragmentManager()
-//                                bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
-//                            } else {
-//                                // Если присоединен, используем getChildFragmentManager()
-//                                bottomSheetDialogFragment.show(bottomSheetDialogFragment.getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                            }
-//
-//                            // Сбрасываем флаг
-//                            isScrolling = false;
-//                        }
-//                    }
-//
-//
-//                });
-//
-//                return true;
-//            }
-//        });
-//        m.showInfoWindow();
-//        map.getOverlays().add(m);
-//        map.invalidate();
-//    }
-
     public static void showRout(GeoPoint startP, GeoPoint endP) {
         map.getOverlays().removeAll(Collections.singleton(roadOverlay));
 
@@ -720,7 +604,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
             roadOverlay.setWidth(10); // Измените это значение на желаемую толщину
 
             map.getOverlays().add(roadOverlay);
-//            m.showInfoWindow();
+            m.showInfoWindow();
             map.invalidate();
         });
     }

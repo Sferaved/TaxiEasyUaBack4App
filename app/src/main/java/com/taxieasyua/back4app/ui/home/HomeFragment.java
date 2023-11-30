@@ -403,7 +403,7 @@ public class HomeFragment extends Fragment {
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRevers("V_20231111101558754_3SV9", "повернення замовлення", "2500");
+//                getRevers("V_20231111101558754_3SV9", "повернення замовлення", "2500");
 
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
@@ -1703,43 +1703,5 @@ public class HomeFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
-    private void getLocalIpAddress() {
 
-        List<String> city = logCursor(MainActivity.CITY_INFO, requireActivity());
-        Log.d(TAG, "getLocalIpAddress: city.get(1)" + city.get(1));
-        if(city.size() != 0 && city.get(1).equals("")) {
-            HomeFragment.progressBar.setVisibility(View.VISIBLE);
-            ApiService apiService = ApiClient.getApiService();
-
-            Call<City> call = apiService.cityOrder();
-
-            call.enqueue(new Callback<City>() {
-                @Override
-                public void onResponse(@NonNull Call<City> call, @NonNull Response<City> response) {
-                    if (response.isSuccessful()) {
-                        City status = response.body();
-                        if (status != null) {
-                            String result = status.getResponse();
-                            Log.d("TAG", "onResponse:result " + result);
-                            MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
-                            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                        }
-                    } else {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                        bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<City> call, Throwable t) {
-                    // Обработка ошибок сети или других ошибок
-                    String errorMessage = t.getMessage();
-                    t.printStackTrace();
-                    Log.d("TAG", "onFailure: " + errorMessage);
-
-                }
-            });
-        }
-
-    }
 }

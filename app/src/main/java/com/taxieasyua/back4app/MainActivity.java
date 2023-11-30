@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static final String DB_NAME = "data_30112023_5";
+    public static final String DB_NAME = "data_30112023_9";
 
     /**
      * Table section
@@ -233,9 +233,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        String dbName = MainActivity.DB_NAME;
-
-        // Получаем путь к базе данных
+         // Получаем путь к базе данных
         String dbPath = getDatabasePath(MainActivity.DB_NAME).getAbsolutePath();
         File dbFile = new File(dbPath);
         // Проверяем существование файла базы данных
@@ -246,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
             if(c.getCount() != 0) {
                 List<String> listCity = logCursor(CITY_INFO);
                 String city = listCity.get(1);
+
                 String cityMenu;
                 switch (city) {
                     case "Kyiv City":
@@ -700,7 +699,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (item.getItemId() == R.id.nav_city) {
-            cityChange();
+//            cityChange();
+            MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment();
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         }
 
         if (item.getItemId() == R.id.send_like) {
