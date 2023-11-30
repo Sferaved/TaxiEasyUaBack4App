@@ -1,8 +1,8 @@
 <resources>
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.901</string>
-    <string name="version">Версія: 2.901</string>
+    <string name="version_code">2.902</string>
+    <string name="version">Версія: 2.902</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -297,5 +297,6 @@
     <string name="city_cherkasy">Черкаси</string>
     <string name="tail1">Карти для міста \'</string>
     <string name="tail2">\' успішно завантажено</string>
+    <string name="rout_fin">Виберіть із списку номер будинку</string>
 
 </resources>
