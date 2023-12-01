@@ -372,6 +372,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                geoText.setText("");
                 MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("map");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
              }
@@ -380,6 +381,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                textViewTo.setText("");
                 MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("map");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
              }
