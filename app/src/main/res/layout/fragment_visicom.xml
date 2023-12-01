@@ -28,7 +28,7 @@
             android:layout_width="55sp"
             android:layout_height="45sp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="8dp"
             android:background="@drawable/buttons"
             android:fontFamily="@font/regular"
             android:insetLeft="0sp"
@@ -58,7 +58,7 @@
             android:textColor="#D9D9D9"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.298"
+            app:layout_constraintHorizontal_bias="0.139"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -129,14 +129,14 @@
             android:id="@+id/btn_clear_from_text"
             android:layout_width="200sp"
             android:layout_height="48sp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="36dp"
 
 
             android:background="@drawable/buttons"
             android:scaleType="centerInside"
             android:textColor="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.298"
+            app:layout_constraintHorizontal_bias="0.139"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnMap" />
 
@@ -202,6 +202,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnMap" />
 
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/change"
+            android:layout_width="200sp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/buttons"
+            android:text="@string/change"
+
+            android:textColor="#D9D9D9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.139"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textGeo" />
+
         <TextView
             android:id="@+id/textwhere"
             android:layout_width="wrap_content"
@@ -214,7 +229,7 @@
             android:textSize="14sp"
             android:visibility="invisible"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textGeo" />
+            app:layout_constraintTop_toBottomOf="@+id/change" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnAdd"

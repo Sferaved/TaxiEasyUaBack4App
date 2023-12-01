@@ -134,7 +134,55 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         addressListView = view.findViewById(R.id.listAddress);
 
         btn_ok = view.findViewById(R.id.btn_ok);
+        btn_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (verifyBuildingStart) {
+                    textGeoError.setVisibility(View.VISIBLE);
+                    textGeoError.setText(R.string.house_vis_mes);
 
+                    fromEditAddress.requestFocus();
+                    fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                    KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
+                } else if (!verifyRoutStart) {
+                    textGeoError.setVisibility(View.VISIBLE);
+                    textGeoError.setText(R.string.rout_fin);
+
+                    fromEditAddress.requestFocus();
+                    fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                    KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
+                }
+                if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
+                    verifyBuildingFinish = false;
+                    verifyRoutFinish = true;
+                }
+
+                if (verifyBuildingFinish) {
+                    text_toError.setVisibility(View.VISIBLE);
+                    text_toError.setText(R.string.house_vis_mes);
+
+                    toEditAddress.requestFocus();
+                    toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                    KeyboardUtils.showKeyboard(getContext(), toEditAddress);
+                } else if (!verifyRoutFinish) {
+                    text_toError.setVisibility(View.VISIBLE);
+                    text_toError.setText(R.string.rout_fin);
+
+                    toEditAddress.requestFocus();
+                    toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                    KeyboardUtils.showKeyboard(getContext(), toEditAddress);
+                }
+//                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
+//                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
+                if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        visicomCost();
+                        dismiss();
+                    }
+                }
+
+            }
+        });
 
         btn_no = view.findViewById(R.id.btn_no);
         btn_ok.setVisibility(View.INVISIBLE);
@@ -166,8 +214,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
                 String inputString = charSequence.toString();
                 int charCount = inputString.length();
-                Log.d(TAG, "onTextChanged: inputString" + inputString);
-                Log.d(TAG, "onTextChanged: finishPoint" + startPoint);
+
                 if (charCount > 2) {
                     if (startPoint == null) {
                         performAddressSearch(inputString, "start");
@@ -208,8 +255,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 // Вызывается при изменении текста
                 String inputString = charSequence.toString();
                 int charCount = inputString.length();
-                Log.d(TAG, "onTextChanged: inputString" + inputString);
-                Log.d(TAG, "onTextChanged: finishPoint" + finishPoint);
+
                 if (charCount > 2) {
                     if (finishPoint == null) {
                         performAddressSearch(inputString, "finish");
@@ -254,8 +300,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onCreateView: 5555 " + fromEditAddress.getText().toString());
-        Log.d(TAG, "onCreateView: 5555 " + toEditAddress.getText().toString());
+
         if (fromEditAddress.getText().toString().equals("")) {
 
             btn_clear_from.setVisibility(View.INVISIBLE);
@@ -587,27 +632,34 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     verifyRoutStart = true;
                                     List<String> settings = new ArrayList<>();
 
-                                    settings.add(Double.toString(coordinates[1]));
-                                    settings.add(Double.toString(coordinates[0]));
-                                    if (toEditAddress.getText().toString().equals(R.string.on_city_tv)) {
-                                        settings.add(Double.toString(coordinates[1]));
-                                        settings.add(Double.toString(coordinates[0]));
-                                        settings.add(addressesList.get(position));
-                                        settings.add(addressesList.get(position));
-                                    } else {
-                                        if (OpenStreetMapActivity.finishLan == 0) {
-                                            settings.add("");
-                                            settings.add("");
-                                        } else {
-                                            settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
-                                            settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
-                                        }
-                                        settings.add(addressesList.get(position));
-                                        settings.add(toEditAddress.getText().toString());
-                                    }
-                                    updateRoutMarker(settings);
+
                                     switch (fragmentInput) {
                                         case "map":
+                                            settings.add(Double.toString(coordinates[1]));
+                                            settings.add(Double.toString(coordinates[0]));
+                                            if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
+                                                settings.add(Double.toString(coordinates[1]));
+                                                settings.add(Double.toString(coordinates[0]));
+                                                settings.add(addressesList.get(position));
+                                                settings.add(getString(R.string.on_city_tv));
+                                            } else {
+                                                Log.d(TAG, "processAddressData: OpenStreetMapActivity.finishLan" + OpenStreetMapActivity.finishLan);
+                                                if (OpenStreetMapActivity.finishLan != 0) {
+                                                    settings.add(String.valueOf(OpenStreetMapActivity.finishLat));
+                                                    settings.add(String.valueOf(OpenStreetMapActivity.finishLan));
+                                                    settings.add(addressesList.get(position));
+                                                    settings.add(toEditAddress.getText().toString());
+                                                } else {
+                                                    settings.add(Double.toString(coordinates[1]));
+                                                    settings.add(Double.toString(coordinates[0]));
+                                                    settings.add(addressesList.get(position));
+                                                    settings.add(getString(R.string.on_city_tv));
+                                                }
+
+                                            }
+                                            Log.d(TAG, "processAddressData:22222 " + settings);
+                                            updateRoutMarker(settings);
+
                                             GeoDialogVisicomFragment.geoText.setText(startPoint);
                                             OpenStreetMapActivity.startLat = coordinates[1];
                                             OpenStreetMapActivity.startLan = coordinates[0];
@@ -633,6 +685,34 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                             break;
                                         case "home":
+                                            settings.add(Double.toString(coordinates[1]));
+                                            settings.add(Double.toString(coordinates[0]));
+                                            if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
+                                                settings.add(Double.toString(coordinates[1]));
+                                                settings.add(Double.toString(coordinates[0]));
+                                                settings.add(addressesList.get(position));
+                                                settings.add(getString(R.string.on_city_tv));
+                                            } else {
+                                                String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                                                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                                Cursor cursor = database.rawQuery(query, null);
+
+                                                cursor.moveToFirst();
+
+                                                // Получите значения полей из первой записи
+
+
+                                                @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                                                @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                                                cursor.close();
+                                                database.close();
+
+                                                settings.add(String.valueOf(toLatitude));
+                                                settings.add(String.valueOf(toLongitude));
+                                                settings.add(addressesList.get(position));
+                                                settings.add(toEditAddress.getText().toString());
+                                            }
+                                            updateRoutMarker(settings);
                                             VisicomFragment.geoText.setText(startPoint);
 
                                             break;
@@ -652,14 +732,29 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                             GeoDialogVisicomFragment.textViewTo.setText(addressesList.get(position));
                                             GeoDialogVisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                             if (!fromEditAddress.getText().toString().equals("")) {
-                                                settings.add(Double.toString(OpenStreetMapActivity.startLat));
-                                                settings.add(Double.toString(OpenStreetMapActivity.startLan));
+                                                String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                                                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                                Cursor cursor = database.rawQuery(query, null);
+
+                                                cursor.moveToFirst();
+
+                                                // Получите значения полей из первой записи
+
+
+                                                @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                                                @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                                                cursor.close();
+                                                database.close();
+
                                                 settings.add(Double.toString(coordinates[1]));
                                                 settings.add(Double.toString(coordinates[0]));
+                                                settings.add(String.valueOf(toLatitude));
+                                                settings.add(String.valueOf(toLongitude));
 
                                                 settings.add(fromEditAddress.getText().toString());
                                                 settings.add(addressesList.get(position));
 
+                                                updateRoutMarker(settings);
                                             }
                                             GeoPoint endPoint = new GeoPoint(coordinates[1], coordinates[0]);
                                             OpenStreetMapActivity.endPoint = endPoint;
@@ -671,19 +766,33 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                             VisicomFragment.textViewTo.setText(addressesList.get(position));
                                             VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
                                             if (!fromEditAddress.getText().toString().equals("")) {
-                                                settings.add(Double.toString(0));
-                                                settings.add(Double.toString(0));
+                                                String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                                                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                                Cursor cursor = database.rawQuery(query, null);
+
+                                                cursor.moveToFirst();
+
+                                                // Получите значения полей из первой записи
+
+                                                double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+                                                double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+
+                                                cursor.close();
+                                                database.close();
+
+                                                settings.add(Double.toString(originLatitude));
+                                                settings.add(Double.toString(originLongitude));
                                                 settings.add(Double.toString(coordinates[1]));
                                                 settings.add(Double.toString(coordinates[0]));
 
                                                 settings.add(fromEditAddress.getText().toString());
                                                 settings.add(addressesList.get(position));
+                                                updateRoutMarker(settings);
                                             }
-
                                             break;
                                     }
 
-                                    updateRoutMarker(settings);
+
                                     Log.d(TAG, "settings: " + settings);
                                     toEditAddress.setSelection(addressesList.get(position).length());
 
@@ -694,55 +803,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                         addressListView.setVisibility(View.INVISIBLE);
                     });
                     btn_ok.setVisibility(View.VISIBLE);
-                    btn_ok.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (verifyBuildingStart) {
-                                textGeoError.setVisibility(View.VISIBLE);
-                                textGeoError.setText(R.string.house_vis_mes);
 
-                                fromEditAddress.requestFocus();
-                                fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
-                                KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
-                            } else if (!verifyRoutStart) {
-                                textGeoError.setVisibility(View.VISIBLE);
-                                textGeoError.setText(R.string.rout_fin);
-
-                                fromEditAddress.requestFocus();
-                                fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
-                                KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
-                            }
-                            if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
-                                verifyBuildingFinish = false;
-                                verifyRoutFinish = true;
-                            }
-
-                            if (verifyBuildingFinish) {
-                                text_toError.setVisibility(View.VISIBLE);
-                                text_toError.setText(R.string.house_vis_mes);
-
-                                toEditAddress.requestFocus();
-                                toEditAddress.setSelection(toEditAddress.getText().toString().length());
-                                KeyboardUtils.showKeyboard(getContext(), toEditAddress);
-                            } else if (!verifyRoutFinish) {
-                                text_toError.setVisibility(View.VISIBLE);
-                                text_toError.setText(R.string.rout_fin);
-
-                                toEditAddress.requestFocus();
-                                toEditAddress.setSelection(toEditAddress.getText().toString().length());
-                                KeyboardUtils.showKeyboard(getContext(), toEditAddress);
-                            }
-//                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
-//                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
-                            if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    visicomCost();
-                                    dismiss();
-                                }
-                            }
-
-                        }
-                    });
                 });
             }
 
@@ -938,6 +999,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
         Log.d(TAG, "getTaxiUrlSearchMarkers: " + urlAPI);
 
+//        List<String> stringList11 = logCursor(MainActivity.ROUT_MARKER, requireContext());
+//        Log.d(TAG, "getTaxiUrlSearchMarkers:stringList " + stringList11.toString());
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.rawQuery(query, null);
@@ -952,6 +1015,11 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
         String start = cursor.getString(cursor.getColumnIndex("start"));
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
+
+        Log.d(TAG, "getTaxiUrlSearchMarkers: originLatitude" + originLatitude);
+        Log.d(TAG, "getTaxiUrlSearchMarkers: originLongitude" + originLongitude);
+        Log.d(TAG, "getTaxiUrlSearchMarkers: toLatitude" + toLatitude);
+        Log.d(TAG, "getTaxiUrlSearchMarkers: toLongitude" + toLongitude);
 
         // Заменяем символ '/' в строках
         start = start.replace("/", "|");
@@ -1053,18 +1121,11 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private void updateRoutMarker(List<String> settings) {
         Log.d(TAG, "updateRoutMarker: " + settings.toString());
         ContentValues cv = new ContentValues();
-        if (Double.parseDouble(settings.get(0)) != 0) {
-            cv.put("startLat", Double.parseDouble(settings.get(0)));
-            cv.put("startLan", Double.parseDouble(settings.get(1)));
-        }
 
-        if (!settings.get(2).equals("")) {
-            cv.put("to_lat", Double.parseDouble(settings.get(2)));
-            cv.put("to_lng", Double.parseDouble(settings.get(3)));
-        } else {
-            cv.put("to_lat", Double.parseDouble(settings.get(0)));
-            cv.put("to_lng", Double.parseDouble(settings.get(1)));
-        }
+        cv.put("startLat", Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
         cv.put("start", settings.get(4));
         cv.put("finish", settings.get(5));
 

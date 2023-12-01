@@ -20,6 +20,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -94,7 +95,7 @@ public class VisicomFragment extends Fragment {
     AppCompatButton btnGeo, on_map;
     FloatingActionButton fab_call;
 
-    public static AppCompatButton button, old_address, btn_minus, btn_plus, btnOrder, buttonBonus;
+    public static AppCompatButton button, btn_change, btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
     public static TextView geoText;
     static String api;
     private ArrayList<Map> adressArr = new ArrayList<>();
@@ -400,6 +401,16 @@ public class VisicomFragment extends Fragment {
         });
         textwhere = binding.textwhere;
         num2 = binding.num2;
+        btn_change = binding.change;
+        btn_change.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                firstLocation();
+            }
+        });
+
+        gpsbut = binding.gpsbut;
+        gpsbut.setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)));
 
         return root;
     }
@@ -1007,7 +1018,9 @@ public class VisicomFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
         if(newRout()) {
+
             firstLocation();
         } else {
             visicomCost();
@@ -1063,17 +1076,47 @@ public class VisicomFragment extends Fragment {
                     geoText.setVisibility(View.VISIBLE);
 
                     List<String> settings = new ArrayList<>();
+                    String ToAdressString = textViewTo.getText().toString();
+                    if(ToAdressString.equals(getString(R.string.on_city_tv)) ||
+                            ToAdressString.equals("") ) {
+                        settings.add(Double.toString(latitude));
+                        settings.add(Double.toString(longitude));
+                        settings.add(Double.toString(latitude));
+                        settings.add(Double.toString(longitude));
+                        settings.add(FromAdressString);
+                        settings.add(getString(R.string.on_city_tv));
+                    } else {
 
-                    settings.add(Double.toString(latitude));
-                    settings.add(Double.toString(longitude));
-                    settings.add(Double.toString(latitude));
-                    settings.add(Double.toString(longitude));
-                    settings.add(FromAdressString);
-                    settings.add(getString(R.string.on_city_tv));
+                        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        Cursor cursor = database.rawQuery(query, null);
+
+                        cursor.moveToFirst();
+
+                        // Получите значения полей из первой записи
+
+
+                        @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                        @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                        cursor.close();
+                        database.close();
+//
+//                        @SuppressLint("Range") String finish = cursor.getString(cursor.getColumnIndex("finish"));
+
+
+                        settings.add(Double.toString(latitude));
+                        settings.add(Double.toString(longitude));
+                        settings.add(Double.toString(toLatitude));
+                        settings.add(Double.toString(toLongitude));
+                        settings.add(FromAdressString);
+                        settings.add(ToAdressString);
+                    }
+
+
 
                     updateRoutMarker(settings);
                     visicomCost();
-
+                    btn_change.setVisibility(View.VISIBLE);
                 }
             }
         };
