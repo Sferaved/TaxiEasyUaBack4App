@@ -384,6 +384,7 @@ public class VisicomFragment extends Fragment {
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                geoText.setText("");
                 MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
@@ -392,6 +393,7 @@ public class VisicomFragment extends Fragment {
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                textViewTo.setText("");
                 MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
@@ -488,85 +490,33 @@ public class VisicomFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
-    private String[] arrayAdressAdapter() {
-        ArrayList<Map>  routMaps = routMaps();
 
-        HashMap<String, String> adressMap;
-        String[] arrayRouts;
-        ArrayList<Map> adressArrLoc = new ArrayList<>(routMaps().size());
+    private boolean newRout() {
+        boolean result = false;
 
-        int i = 0, k = 0;
-        boolean flag;
-        if(routMaps.size() != 0) {
 
-            for (int j = 0; j < routMaps.size(); j++) {
-                Object toLatObject = routMaps.get(j).get("to_lat");
-                Object fromLatObject = routMaps.get(j).get("from_lat");
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
 
-                if (toLatObject != null && fromLatObject != null) {
-                    String toLat = toLatObject.toString();
-                    String fromLat = fromLatObject.toString();
+        cursor.moveToFirst();
 
-                    if (!toLat.equals(fromLat)) {
-                        if (!Objects.requireNonNull(routMaps.get(j).get("to_lat")).toString().equals(Objects.requireNonNull(routMaps.get(j).get("from_lat")).toString())) {
-                            adressMap = new HashMap<>();
-                            adressMap.put("street", routMaps.get(j).get("from_street").toString());
-                            adressMap.put("number", routMaps.get(j).get("from_number").toString());
-                            adressMap.put("to_lat", routMaps.get(j).get("from_lat").toString());
-                            adressMap.put("to_lng", routMaps.get(j).get("from_lng").toString());
-                            adressArrLoc.add(k++, adressMap);
-                        }
-                        if (!routMaps.get(j).get("to_street").toString().equals("Місце призначення") &&
-                                !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_lat").toString()) &&
-                                !routMaps.get(j).get("to_street").toString().equals(routMaps.get(j).get("to_number").toString())) {
-                            adressMap = new HashMap<>();
-                            adressMap.put("street", routMaps.get(j).get("to_street").toString());
-                            adressMap.put("number", routMaps.get(j).get("to_number").toString());
-                            adressMap.put("to_lat", routMaps.get(j).get("to_lat").toString());
-                            adressMap.put("to_lng", routMaps.get(j).get("to_lng").toString());
-                            adressArrLoc.add(k++, adressMap);
-                        }
-                    }
-                }
+        // Получите значения полей из первой записи
 
-            };
-            Log.d("TAG", "arrayAdressAdapter: adressArrLoc " + adressArrLoc.toString());
+        @SuppressLint("Range") double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        @SuppressLint("Range") String start = cursor.getString(cursor.getColumnIndex("start"));
+        @SuppressLint("Range") String finish = cursor.getString(cursor.getColumnIndex("finish"));
+
+
+        if (originLatitude == 0) {
+            result = true;
         } else {
-            arrayRouts = null;
+            geoText.setText(start);
+            textViewTo.setText(finish);
         }
-        i=0;
-        ArrayList<String> arrayList = new ArrayList<>();
-        for (int j = 0; j <  adressArrLoc.size(); j++) {
-
-            flag = true;
-            for (int l = 0; l <  adressArr.size(); l++) {
-
-                if ( adressArrLoc.get(j).get("street").equals(adressArr.get(l).get("street"))) {
-                    flag = false;
-                    break;
-                }
-            }
-
-            if(adressArrLoc.get(j) != null && flag) {
-                arrayList.add(adressArrLoc.get(j).get("street") + " " +
-                        adressArrLoc.get(j).get("number"));
-                adressMap = new HashMap<>();
-                adressMap.put("street", (String) adressArrLoc.get(j).get("street"));
-                adressMap.put("number", (String) adressArrLoc.get(j).get("number"));
-
-                adressMap.put("to_lat", (String) adressArrLoc.get(j).get("to_lat"));
-                adressMap.put("to_lng", (String) adressArrLoc.get(j).get("to_lng"));
-                adressArr.add(i++, adressMap);
-            };
-
-
-        }
-        arrayRouts = new String[arrayList.size()];
-        for (int l = 0; l < arrayList.size(); l++) {
-            arrayRouts[l] = arrayList.get(l);
-        }
-
-        return arrayRouts;
+        cursor.close();
+        database.close();
+        return result;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("Range")
@@ -1053,10 +1003,16 @@ public class VisicomFragment extends Fragment {
         database.close();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onResume() {
         super.onResume();
-        firstLocation();
+        if(newRout()) {
+            firstLocation();
+        } else {
+            visicomCost();
+        }
+
     }
 
     private void firstLocation() {
@@ -1105,10 +1061,19 @@ public class VisicomFragment extends Fragment {
                     btn_clear_from.setVisibility(View.VISIBLE);
 
                     geoText.setVisibility(View.VISIBLE);
+
+                    List<String> settings = new ArrayList<>();
+
+                    settings.add(Double.toString(latitude));
+                    settings.add(Double.toString(longitude));
+                    settings.add(Double.toString(latitude));
+                    settings.add(Double.toString(longitude));
+                    settings.add(FromAdressString);
+                    settings.add(getString(R.string.on_city_tv));
+
+                    updateRoutMarker(settings);
                     visicomCost();
 
-//                    MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
-//                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
             }
         };
@@ -1120,7 +1085,22 @@ public class VisicomFragment extends Fragment {
         }
 
     }
+    private void updateRoutMarker(List<String> settings) {
+        Log.d(TAG, "updateRoutMarker: " + settings.toString());
+        ContentValues cv = new ContentValues();
+            cv.put("startLat", Double.parseDouble(settings.get(0)));
+            cv.put("startLan", Double.parseDouble(settings.get(1)));
+            cv.put("to_lat", Double.parseDouble(settings.get(0)));
+            cv.put("to_lng", Double.parseDouble(settings.get(1)));
+            cv.put("start", settings.get(4));
+            cv.put("finish", settings.get(5));
 
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[]{"1"});
+        database.close();
+    }
     private static void updateMyPosition(Double startLat, Double startLan, String position, Context context) {
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();

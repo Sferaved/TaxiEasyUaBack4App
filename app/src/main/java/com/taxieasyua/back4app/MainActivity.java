@@ -262,6 +262,9 @@ public class MainActivity extends AppCompatActivity {
                     case "Cherkasy Oblast":
                         cityMenu = getString(R.string.city_cherkasy);
                         break;
+                    case "OdessaTest":
+                        cityMenu = "Test";
+                        break;
                     default:
                         cityMenu = getString(R.string.city_kyiv);
                 }
@@ -805,129 +808,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-    }
-    private void cityChange() {
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.AlertDialogTheme);
-        LayoutInflater inflater = this.getLayoutInflater();
-        View view = inflater.inflate(R.layout.city_change_layout, null);
-        builder.setView(view);
-
-
-        ArrayAdapter<String> adapterCity = new ArrayAdapter<String>(this, R.layout.my_simple_spinner_item, cityList);
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        Spinner spinner = view.findViewById(R.id.list_city);
-        spinner.setAdapter(adapterCity);
-        spinner.setPrompt(getString(R.string.city_change));
-        spinner.setBackgroundResource(R.drawable.spinner_border);
-
-        String cityOld = logCursor(CITY_INFO).get(1);
-        for (int i = 0; i < cityList.length; i++) {
-            if (cityCode[i].equals(cityOld)) {
-                spinner.setSelection(i);
-            }
-        }
-
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                cityNew =  cityCode[position];
-                message = getString(R.string.your_city) + cityList[position];
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-        builder.setPositiveButton(R.string.cheng, (dialog, which) -> {
-
-
-            String api, phone, cityMenu = null;
-            switch (cityNew) {
-                case "Kyiv City":
-                    api = apiKyiv;
-                    phone = Kyiv_City_phone;
-                    cityMenu = getString(R.string.city_kyiv);
-                    break;
-                case "Dnipropetrovsk Oblast":
-                    api = apiDnipro;
-                    phone = Dnipropetrovsk_Oblast_phone;
-                    cityMenu = getString(R.string.city_dnipro);
-                    break;
-                case "Odessa":
-                    api = apiOdessa;
-                    phone = Odessa_phone;
-                    cityMenu = getString(R.string.city_odessa);
-                    break;
-                case "Zaporizhzhia":
-                    api = apiZaporizhzhia;
-                    phone = Zaporizhzhia_phone;
-                    cityMenu = getString(R.string.city_zaporizhzhia);
-                    break;
-                case "Cherkasy Oblast":
-                    api = apiCherkasy;
-                    phone = Cherkasy_Oblast_phone;
-                    cityMenu = getString(R.string.city_cherkasy);
-                    break;
-                default:
-                    api = apiTest;
-                    phone = Kyiv_City_phone;
-                    cityMenu = getString(R.string.city_kyiv);
-            }
-
-            ContentValues cv = new ContentValues();
-            cv.put("city", cityNew);
-            cv.put("api", api);
-            cv.put("phone", phone);
-            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-            database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                new String[] { "1" });
-
-            Log.d("TAG", "cityChange: " + logCursor(MainActivity.CITY_INFO).toString());
-
-            cv = new ContentValues();
-            cv.put("tarif", " ");
-            database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                    new String[] { "1" });
-
-            database.close();
-
-            cityMaxPay(cityNew);
-
-            merchantFondy(cityNew);
-
-            Toast.makeText(MainActivity.this, getString(R.string.change_message) + message   , Toast.LENGTH_SHORT).show();
-
-            if (navVisicomMenuItem != null) {
-                        // Новый текст элемента меню
-                 String newTitle = cityMenu;
-
-                        // Изменяем текст элемента меню
-                 navVisicomMenuItem.setTitle(newTitle);
-            }
-
-            NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
-            resetRoutHome();
-            navController.navigate(R.id.nav_visicom);
-
-        }).setNegativeButton(cancel_button, null)
-                .show();
-
-    }
-    public void resetRoutHome() {
-        ContentValues cv = new ContentValues();
-
-        cv.put("from_street", " ");
-        cv.put("from_number", " ");
-        cv.put("to_street", " ");
-        cv.put("to_number", " ");
-
-        // обновляем по id
-        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        database.update(MainActivity.ROUT_HOME, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
     }
     public void eventGps() {
         LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);

@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -102,6 +103,10 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.visicom_address_layout, container, false);
         setCancelable(false);
+
+
+
+
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         switch (stringList.get(1)) {
             case "Dnipropetrovsk Oblast":
@@ -150,6 +155,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 break;
         }
 
+
         fromEditAddress.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -183,6 +189,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         switch (fragmentInput) {
             case "map":
                 toEditAddress.setText(GeoDialogVisicomFragment.textViewTo.getText().toString());
+
                 break;
             case "home":
                 toEditAddress.setText(VisicomFragment.textViewTo.getText().toString());
@@ -244,6 +251,35 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onCreateView: 5555 " + fromEditAddress.getText().toString());
+        Log.d(TAG, "onCreateView: 5555 " + toEditAddress.getText().toString());
+        if (fromEditAddress.getText().toString().equals("")) {
+
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            fromEditAddress.requestFocus();
+
+            fromEditAddress.post(new Runnable() {
+                @Override
+                public void run() {
+                    KeyboardUtils.showKeyboard(requireContext(), fromEditAddress);
+                }
+            });
+        } else if (toEditAddress.getText().toString().equals("")) {
+            toEditAddress.requestFocus();
+            btn_clear_to.setVisibility(View.INVISIBLE);
+
+            toEditAddress.post(new Runnable() {
+                @Override
+                public void run() {
+                    KeyboardUtils.showKeyboard(requireContext(), toEditAddress);
+                }
+            });
+
+        }
+    }
 
     private void performAddressSearch(String inputText, String point) {
         try {
