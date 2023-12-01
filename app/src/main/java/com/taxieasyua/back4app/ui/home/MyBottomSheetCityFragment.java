@@ -134,7 +134,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                 positionFirst = 5;
                 break;
             default:
-                positionFirst = 6;
+                positionFirst = 0;
                 break;
         }
         ContentValues cv = new ContentValues();
