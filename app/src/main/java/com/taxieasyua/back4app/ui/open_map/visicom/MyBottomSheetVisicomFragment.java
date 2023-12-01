@@ -530,6 +530,16 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
                         positionChecked = position;
 
+                        if (point.equals("start")) {
+                            fromEditAddress.requestFocus();
+                            fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                            KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
+                        } else if(point.equals("finish")) {
+                            toEditAddress.requestFocus();
+                            toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                            KeyboardUtils.showKeyboard(getContext(), toEditAddress);
+                        }
+
                         if (position == addressesList.size()-1) {
                             switch (fragmentInput) {
                                 case "map":

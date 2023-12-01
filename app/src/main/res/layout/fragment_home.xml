@@ -102,7 +102,7 @@
 
         <AutoCompleteTextView
             android:id="@+id/text_from"
-            android:layout_width="200sp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24sp"
             android:background="@drawable/input"
@@ -240,7 +240,7 @@
 
         <AutoCompleteTextView
             android:id="@+id/text_to"
-            android:layout_width="200sp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24sp"
 
