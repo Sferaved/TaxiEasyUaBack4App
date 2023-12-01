@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -38,6 +39,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
@@ -54,9 +60,14 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorGeoFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGeoFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
+import com.taxieasyua.back4app.ui.maps.CostJSONParser;
+import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
 import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomFragment;
+
+import org.json.JSONException;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -76,6 +87,10 @@ public class VisicomFragment extends Fragment {
     public static ProgressBar progressBar;
     private FragmentVisicomBinding binding;
     private static final String TAG = "TAG_VISICOM";
+    private MyPhoneDialogFragment bottomSheetDialogFragment;
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationCallback locationCallback;
     AppCompatButton btnGeo, on_map;
     FloatingActionButton fab_call;
 
@@ -106,7 +121,7 @@ public class VisicomFragment extends Fragment {
     private final OkHttpClient client = new OkHttpClient();
 
     private static List<String> addresses;
-    public static String citySearch;
+
     public static AppCompatButton btnAdd, btn_clear_from_text;
 
     public static ImageButton btn_clear_from, btn_clear_to;
@@ -199,27 +214,6 @@ public class VisicomFragment extends Fragment {
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         api =  stringList.get(2);
-        switch (stringList.get(1)){
-            case "Dnipropetrovsk Oblast":
-                citySearch = "Дніпр";
-                break;
-            case "Odessa":
-                citySearch = "Одеса";
-                break;
-            case "Zaporizhzhia":
-                citySearch = "Запорі";
-                break;
-            case "Cherkasy Oblast":
-                citySearch = "Черкас";
-                break;
-            case "OdessaTest":
-                citySearch = "Одеса";
-                break;
-            default:
-                citySearch = "Київ";
-                break;
-        }
-
 
         if (!routMaps().isEmpty()) {
             adressArr = new ArrayList<>(routMaps().size());
@@ -1058,5 +1052,178 @@ public class VisicomFragment extends Fragment {
                 new String[] { "1" });
         database.close();
     }
-    private MyPhoneDialogFragment bottomSheetDialogFragment;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        firstLocation();
+    }
+
+    private void firstLocation() {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        locationCallback = new LocationCallback() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                // Обработка полученных местоположений
+                stopLocationUpdates();
+
+                // Обработка полученных местоположений
+                List<Location> locations = locationResult.getLocations();
+                Log.d(TAG, "onLocationResult: locations 222222" + locations);
+
+                if (!locations.isEmpty()) {
+                    Location firstLocation = locations.get(0);
+
+                    double latitude = firstLocation.getLatitude();
+                    double longitude = firstLocation.getLongitude();
+
+
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                    String api =  stringList.get(2);
+
+                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + latitude + "/" + longitude;
+                    Map sendUrlFrom = null;
+                    try {
+                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
+
+                    } catch (MalformedURLException | InterruptedException |
+                             JSONException e) {
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment.show(getParentFragmentManager(), bottomSheetDialogFragment.getTag());
+                    }
+                    assert sendUrlFrom != null;
+                    String FromAdressString = (String) sendUrlFrom.get("route_address_from");
+                    if (FromAdressString != null) {
+                        if (FromAdressString.equals("Точка на карте")) {
+                            FromAdressString = getString(R.string.startPoint);
+                        }
+                    }
+                    updateMyPosition(latitude, longitude, FromAdressString, requireActivity());
+                    geoText.setText(FromAdressString);
+                    btn_clear_from_text.setVisibility(View.INVISIBLE);
+                    btn_clear_from.setVisibility(View.VISIBLE);
+
+                    geoText.setVisibility(View.VISIBLE);
+                    visicomCost();
+
+//                    MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
+//                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+        };
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates();
+        } else {
+            requestLocationPermission();
+        }
+
+    }
+
+    private static void updateMyPosition(Double startLat, Double startLan, String position, Context context) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat", startLat);
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        cv.put("startLan", startLan);
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        cv.put("position", position);
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+
+    }
+
+    private void startLocationUpdates() {
+        LocationRequest locationRequest = createLocationRequest();
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+    }
+
+
+    private void stopLocationUpdates() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    private LocationRequest createLocationRequest() {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setInterval(1000); // Интервал обновления местоположения в миллисекундах
+        locationRequest.setFastestInterval(100); // Самый быстрый интервал обновления местоположения в миллисекундах
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // Приоритет точного местоположения
+        return locationRequest;
+    }
+
+    private void requestLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // Показываем объяснение пользователю, почему мы запрашиваем разрешение
+            // Можно использовать диалоговое окно или другой пользовательский интерфейс
+            MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+        } else {
+            ActivityCompat.requestPermissions(requireActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void visicomCost() {
+        String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+        Log.d(TAG, "visicomCost: " + urlCost);
+        Map<String, String> sendUrlMapCost = null;
+        try {
+            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String message = sendUrlMapCost.get("message");
+        String orderCost = sendUrlMapCost.get("order_cost");
+        Log.d(TAG, "startCost: orderCost " + orderCost);
+
+        assert orderCost != null;
+        if (orderCost.equals("0")) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+        } else {
+            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
+            long discountInt = Integer.parseInt(discountText);
+            long discount;
+
+                    VisicomFragment.firstCost = Long.parseLong(orderCost);
+                    discount = VisicomFragment.firstCost * discountInt / 100;
+                    VisicomFragment.firstCost = VisicomFragment.firstCost + discount;
+                    updateAddCost(String.valueOf(discount));
+                    VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
+                    VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
+                    VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
+
+
+                    VisicomFragment.geoText.setVisibility(View.VISIBLE);
+                    VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
+                    VisicomFragment.textwhere.setVisibility(View.VISIBLE);
+                    VisicomFragment.num2.setVisibility(View.VISIBLE);
+                    VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
+                    VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
+                    VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
+                    VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
+                    VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
+                    VisicomFragment.text_view_cost.setVisibility(View.VISIBLE);
+                    VisicomFragment.btn_plus.setVisibility(View.VISIBLE);
+                    VisicomFragment.btnOrder.setVisibility(View.VISIBLE);
+
+                    VisicomFragment.btn_clear_from_text.setVisibility(View.GONE);
+        }
+
+
+    }
 }

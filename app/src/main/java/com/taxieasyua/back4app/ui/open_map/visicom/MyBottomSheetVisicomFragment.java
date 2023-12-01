@@ -3,10 +3,8 @@ package com.taxieasyua.back4app.ui.open_map.visicom;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,19 +16,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -39,17 +32,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentActivity;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Kyiv.KyivRegion;
-import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -78,6 +67,7 @@ import okhttp3.Request;
 public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
     private static final String TAG = "TAG_VIS_ADDR";
+
     AppCompatButton btn_ok, btn_no;
     EditText fromEditAddress, toEditAddress;
     private ImageButton btn_clear_from, btn_clear_to;
@@ -95,7 +85,6 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private TextView textGeoError, text_toError;
     private String fragmentInput;
     private String citySearch;
-    private String[] resultArray;
     private String[] kyivRegionArr;
     private int positionChecked;
     private String zone;
@@ -114,7 +103,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.visicom_address_layout, container, false);
         setCancelable(false);
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        switch (stringList.get(1)){
+        switch (stringList.get(1)) {
             case "Dnipropetrovsk Oblast":
                 citySearch = "Дніпр";
                 break;
@@ -218,7 +207,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     if (finishPoint == null) {
                         performAddressSearch(inputString, "finish");
                     } else if (!finishPoint.equals(inputString)) {
-                        performAddressSearch(inputString,"finish");
+                        performAddressSearch(inputString, "finish");
                     }
                 }
                 btn_clear_to.setVisibility(View.VISIBLE);
@@ -256,22 +245,21 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     }
 
 
-
     private void performAddressSearch(String inputText, String point) {
         try {
             String url = apiUrl;
-            if(point.equals("start")) {
+            if (point.equals("start")) {
                 verifyBuildingStart = false;
-            } else  {
+            } else {
                 verifyBuildingFinish = false;
             }
 
             if (!inputText.substring(3).contains(", ")) {
 
                 url = url + "?categories=adr_street&text=" + inputText + "&key=" + apiKey;
-                if(point.equals("start")) {
+                if (point.equals("start")) {
                     verifyBuildingStart = true;
-                } else  {
+                } else {
                     verifyBuildingFinish = true;
                 }
             } else {
@@ -286,9 +274,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
 
                 Log.d(TAG, "performAddressSearch: 6666666666 " + url);
-                if(point.equals("start")) {
+                if (point.equals("start")) {
                     verifyBuildingStart = false;
-                } else  {
+                } else {
                     verifyBuildingFinish = false;
                 }
             }
@@ -328,7 +316,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         String name = selectedAddress[1];
         zone = selectedAddress[2];
         String settlement = selectedAddress[3];
-        String result = settlement + ", " +  name;
+        String result = settlement + ", " + name;
 
         return result;
 
@@ -360,12 +348,12 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     String address;
 
                     if (settlement.contains(city)) {
-                        if(properties.has("zone")) {
+                        if (properties.has("zone")) {
                             address = String.format("%s %s (%s), ",
                                     properties.getString("type"),
                                     properties.getString("name"),
                                     properties.getString("zone"));
-                            addresses.add(new String[] {
+                            addresses.add(new String[]{
                                     address,
                                     properties.getString("name"),
                                     properties.getString("zone"),
@@ -375,7 +363,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                             address = String.format("%s %s, ",
                                     properties.getString("type"),
                                     properties.getString("name"));
-                            addresses.add(new String[] {
+                            addresses.add(new String[]{
                                     address,
                                     properties.getString("name"),
                                     "",
@@ -399,7 +387,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     properties.getString("settlement"));
 
 
-                            addresses.add(new String[] {
+                            addresses.add(new String[]{
                                     address,
                                     properties.getString("name"),
                                     "",
@@ -420,43 +408,43 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                     if (settlement.contains(city)) {
                         Log.d(TAG, "processAddressData: properties ййй" + properties);
-                        if(properties.has("zone")) {
+                        if (properties.has("zone")) {
                             // Получение элементов отдельно
 
                             Log.d(TAG, "processAddressData: zone" + zone);
-                                if(properties.getString("zone").equals(zone)) {
-                                    address = String.format("%s %s %s, %s, %s %s",
-
-                                            properties.getString("street_type"),
-                                            properties.getString("street"),
-                                            properties.getString("name"),
-                                            properties.getString("zone"),
-                                            properties.getString("settlement_type"),
-                                            properties.getString("settlement"));
-                                    addresses.add(new String[] {
-                                            address,
-                                            "",
-                                            "",
-                                            "",
-                                    });
-
-                                }
-
-                            } else {
-                                address = String.format("%s %s, %s, %s %s",
+                            if (properties.getString("zone").equals(zone)) {
+                                address = String.format("%s %s %s, %s, %s %s",
 
                                         properties.getString("street_type"),
                                         properties.getString("street"),
                                         properties.getString("name"),
+                                        properties.getString("zone"),
                                         properties.getString("settlement_type"),
                                         properties.getString("settlement"));
-                                addresses.add(new String[] {
+                                addresses.add(new String[]{
                                         address,
                                         "",
                                         "",
                                         "",
                                 });
+
                             }
+
+                        } else {
+                            address = String.format("%s %s, %s, %s %s",
+
+                                    properties.getString("street_type"),
+                                    properties.getString("street"),
+                                    properties.getString("name"),
+                                    properties.getString("settlement_type"),
+                                    properties.getString("settlement"));
+                            addresses.add(new String[]{
+                                    address,
+                                    "",
+                                    "",
+                                    "",
+                            });
+                        }
 
 
                         double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
@@ -464,7 +452,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                         Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
 
                         coordinatesList.add(new double[]{longitude, latitude});
-                        }
+                    }
                     // Проверка по Киевской области
 
                     if (citySearch.equals("Київ")) {
@@ -478,7 +466,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     properties.getString("settlement"));
 
                             Log.d(TAG, "processAddressData: address" + address);
-                            addresses.add(new String[] {
+                            addresses.add(new String[]{
                                     address,
                                     "",
                                     "",
@@ -493,7 +481,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 }
             }
 
-            addresses.add(new String[] {
+            addresses.add(new String[]{
                     getString(R.string.address_on_map),
                     "",
                     "",
@@ -524,7 +512,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     addressListView.setItemChecked(0, true);
                     if (point.equals("start")) {
                         verifyRoutStart = false;
-                    } else if(point.equals("finish")) {
+                    } else if (point.equals("finish")) {
                         verifyRoutFinish = false;
                     }
                     addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
@@ -534,19 +522,19 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                             fromEditAddress.requestFocus();
                             fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
                             KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
-                        } else if(point.equals("finish")) {
+                        } else if (point.equals("finish")) {
                             toEditAddress.requestFocus();
                             toEditAddress.setSelection(toEditAddress.getText().toString().length());
                             KeyboardUtils.showKeyboard(getContext(), toEditAddress);
                         }
 
-                        if (position == addressesList.size()-1) {
+                        if (position == addressesList.size() - 1) {
                             switch (fragmentInput) {
                                 case "map":
                                     GeoDialogVisicomFragment.fragment.dismiss();
                                     dismiss();
                                     break;
-                                case "home" :
+                                case "home":
                                     startActivity(new Intent(requireActivity(), OpenStreetMapActivity.class));
                                     dismiss();
                                     break;
@@ -559,7 +547,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                 fromEditAddress.setText(startPoint);
                                 fromEditAddress.setSelection(startPoint.length());
 
-                                if(!verifyBuildingStart) {
+                                if (!verifyBuildingStart) {
                                     verifyRoutStart = true;
                                     List<String> settings = new ArrayList<>();
 
@@ -571,7 +559,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                         settings.add(addressesList.get(position));
                                         settings.add(addressesList.get(position));
                                     } else {
-                                        if(OpenStreetMapActivity.finishLan == 0){
+                                        if (OpenStreetMapActivity.finishLan == 0) {
                                             settings.add("");
                                             settings.add("");
                                         } else {
@@ -583,7 +571,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                     }
                                     updateRoutMarker(settings);
                                     switch (fragmentInput) {
-                                        case "map" :
+                                        case "map":
                                             GeoDialogVisicomFragment.geoText.setText(startPoint);
                                             OpenStreetMapActivity.startLat = coordinates[1];
                                             OpenStreetMapActivity.startLan = coordinates[0];
@@ -595,32 +583,32 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
                                             double startLat = coordinates[1];
                                             double startLan = coordinates[0];
-                                            if(OpenStreetMapActivity.m != null) {
+                                            if (OpenStreetMapActivity.m != null) {
                                                 OpenStreetMapActivity.map.getOverlays().remove(OpenStreetMapActivity.m);
                                                 OpenStreetMapActivity.map.invalidate();
                                                 OpenStreetMapActivity.m = null;
                                             }
 
-                                            GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
+                                            GeoPoint initialGeoPoint = new GeoPoint(startLat - 0.0009, startLan);
                                             OpenStreetMapActivity.map.getController().setCenter(initialGeoPoint);
 
                                             OpenStreetMapActivity.setMarker(startLat, startLan, startPoint, requireContext());
                                             OpenStreetMapActivity.map.invalidate();
 
                                             break;
-                                        case "home" :
+                                        case "home":
                                             VisicomFragment.geoText.setText(startPoint);
 
                                             break;
                                     }
 
                                 }
-                            } else if(point.equals("finish")) {
+                            } else if (point.equals("finish")) {
                                 finishPoint = addressesList.get(position);
                                 toEditAddress.setText(finishPoint);
                                 toEditAddress.setSelection(finishPoint.length());
                                 btn_clear_to.setVisibility(View.VISIBLE);
-                                if(!verifyBuildingFinish) {
+                                if (!verifyBuildingFinish) {
                                     verifyRoutFinish = true;
                                     List<String> settings = new ArrayList<>();
                                     switch (fragmentInput) {
@@ -673,14 +661,14 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                     btn_ok.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if(verifyBuildingStart) {
+                            if (verifyBuildingStart) {
                                 textGeoError.setVisibility(View.VISIBLE);
                                 textGeoError.setText(R.string.house_vis_mes);
 
                                 fromEditAddress.requestFocus();
                                 fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
                                 KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
-                            } else if(!verifyRoutStart) {
+                            } else if (!verifyRoutStart) {
                                 textGeoError.setVisibility(View.VISIBLE);
                                 textGeoError.setText(R.string.rout_fin);
 
@@ -688,19 +676,19 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                                 fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
                                 KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
                             }
-                            if(toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
+                            if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
                                 verifyBuildingFinish = false;
                                 verifyRoutFinish = true;
                             }
 
-                            if(verifyBuildingFinish) {
+                            if (verifyBuildingFinish) {
                                 text_toError.setVisibility(View.VISIBLE);
                                 text_toError.setText(R.string.house_vis_mes);
 
                                 toEditAddress.requestFocus();
                                 toEditAddress.setSelection(toEditAddress.getText().toString().length());
                                 KeyboardUtils.showKeyboard(getContext(), toEditAddress);
-                            } else if(!verifyRoutFinish) {
+                            } else if (!verifyRoutFinish) {
                                 text_toError.setVisibility(View.VISIBLE);
                                 text_toError.setText(R.string.rout_fin);
 
@@ -710,7 +698,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                             }
 //                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
 //                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
-                            if(!verifyBuildingStart && !verifyBuildingFinish  && verifyRoutStart && verifyRoutFinish) {
+                            if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                     visicomCost();
                                     dismiss();
@@ -728,14 +716,14 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private boolean checkWordInArray(String wordToCheck, String[]  searchArr) {
+    private boolean checkWordInArray(String wordToCheck, String[] searchArr) {
 
         boolean result = false;
         for (String word : searchArr) {
             if (word.equals(wordToCheck)) {
                 // Слово найдено в массиве
-               result = true;
-               break;
+                result = true;
+                break;
             }
         }
         Log.d(TAG, "checkWordInArray: result" + result);
@@ -787,10 +775,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     }
 
 
-
-
     private void showRoutMap(GeoPoint geoPoint) {
-        if(OpenStreetMapActivity.marker != null) {
+        if (OpenStreetMapActivity.marker != null) {
             OpenStreetMapActivity.map.getOverlays().remove(OpenStreetMapActivity.marker);
             OpenStreetMapActivity.map.invalidate();
             OpenStreetMapActivity.marker = null;
@@ -809,7 +795,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         OpenStreetMapActivity.marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
         String unuString = new String(Character.toChars(0x1F449));
 
-        OpenStreetMapActivity.marker.setTitle("2."+ unuString + OpenStreetMapActivity.ToAdressString);
+        OpenStreetMapActivity.marker.setTitle("2." + unuString + OpenStreetMapActivity.ToAdressString);
 
         @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = requireActivity().getResources().getDrawable(R.drawable.marker_green);
         int width = 48;
@@ -824,7 +810,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
         OpenStreetMapActivity.map.getOverlays().add(OpenStreetMapActivity.marker);
 
-        GeoPoint initialGeoPoint = new GeoPoint(geoPoint.getLatitude()-0.01, geoPoint.getLongitude());
+        GeoPoint initialGeoPoint = new GeoPoint(geoPoint.getLatitude() - 0.01, geoPoint.getLongitude());
         OpenStreetMapActivity.map.getController().setCenter(initialGeoPoint);
         OpenStreetMapActivity.mapController.setZoom(16);
 
@@ -859,22 +845,22 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
             long discountInt = Integer.parseInt(discountText);
             long discount;
             switch (fragmentInput) {
-                case "map" :
+                case "map":
                     GeoDialogVisicomFragment.firstCost = Long.parseLong(orderCost);
                     discount = GeoDialogVisicomFragment.firstCost * discountInt / 100;
                     GeoDialogVisicomFragment.firstCost = GeoDialogVisicomFragment.firstCost + discount;
                     updateAddCost(String.valueOf(discount));
                     GeoDialogVisicomFragment.text_view_cost.setText(String.valueOf(GeoDialogVisicomFragment.firstCost));
-                    GeoDialogVisicomFragment.MIN_COST_VALUE = (long) (GeoDialogVisicomFragment.firstCost*0.6);
+                    GeoDialogVisicomFragment.MIN_COST_VALUE = (long) (GeoDialogVisicomFragment.firstCost * 0.6);
                     GeoDialogVisicomFragment.firstCostForMin = GeoDialogVisicomFragment.firstCost;
                     break;
-                case "home" :
+                case "home":
                     VisicomFragment.firstCost = Long.parseLong(orderCost);
                     discount = VisicomFragment.firstCost * discountInt / 100;
                     VisicomFragment.firstCost = VisicomFragment.firstCost + discount;
                     updateAddCost(String.valueOf(discount));
                     VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
-                    VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost*0.6);
+                    VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
                     VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
 
 
@@ -907,7 +893,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                new String[] { "1" });
+                new String[]{"1"});
         database.close();
     }
 
@@ -949,9 +935,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         String date = stringList.get(3);
 
 
-
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
-        String tarif =  stringListInfo.get(2);
+        String tarif = stringListInfo.get(2);
         String payment_type = stringListInfo.get(4);
         String addCost = stringListInfo.get(5);
         // Building the parameters to the web service
@@ -961,7 +946,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         String userEmail = logCursor(MainActivity.TABLE_USER_INFO, context).get(3);
         String displayName = logCursor(MainActivity.TABLE_USER_INFO, context).get(4);
 
-        if(urlAPI.equals("costSearchMarkers")) {
+        if (urlAPI.equals("costSearchMarkers")) {
             Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
 
             if (c.getCount() == 1) {
@@ -969,15 +954,15 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                 c.close();
             }
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type;
+                    + displayName + "*" + userEmail + "*" + payment_type;
         }
-        if(urlAPI.equals("orderSearchMarkersVisicom")) {
+        if (urlAPI.equals("orderSearchMarkersVisicom")) {
             phoneNumber = logCursor(MainActivity.TABLE_USER_INFO, context).get(2);
 
 
             parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/"
-                    + time + "/" + comment + "/" + date+ "/" + start + "/" + finish;
+                    + displayName + "*" + userEmail + "*" + payment_type + "/" + addCost + "/"
+                    + time + "/" + comment + "/" + date + "/" + start + "/" + finish;
 
             ContentValues cv = new ContentValues();
 
@@ -987,7 +972,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
 
             // обновляем по id
             database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                    new String[] { "1" });
+                    new String[]{"1"});
 
         }
 
@@ -996,20 +981,20 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         List<String> servicesChecked = new ArrayList<>();
         String result;
         boolean servicesVer = false;
-        for (int i = 1; i < services.size()-1 ; i++) {
-            if(services.get(i).equals("1")) {
+        for (int i = 1; i < services.size() - 1; i++) {
+            if (services.get(i).equals("1")) {
                 servicesVer = true;
                 break;
             }
         }
-        if(servicesVer) {
+        if (servicesVer) {
             for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
-                if(services.get(i+1).equals("1")) {
+                if (services.get(i + 1).equals("1")) {
                     servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
                 }
             }
             for (int i = 0; i < servicesChecked.size(); i++) {
-                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                if (servicesChecked.get(i).equals("CHECK_OUT")) {
                     servicesChecked.set(i, "CHECK");
                 }
             }
@@ -1022,7 +1007,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         String city = listCity.get(1);
         String api = listCity.get(2);
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
-                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
+                + parameters + "/" + result + "/" + city + "/" + context.getString(R.string.application);
 
         database.close();
 
@@ -1032,16 +1017,16 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     private void updateRoutMarker(List<String> settings) {
         Log.d(TAG, "updateRoutMarker: " + settings.toString());
         ContentValues cv = new ContentValues();
-        if(Double.parseDouble(settings.get(0)) != 0) {
-            cv.put("startLat",  Double.parseDouble(settings.get(0)));
+        if (Double.parseDouble(settings.get(0)) != 0) {
+            cv.put("startLat", Double.parseDouble(settings.get(0)));
             cv.put("startLan", Double.parseDouble(settings.get(1)));
         }
 
-        if(!settings.get(2).equals("")){
+        if (!settings.get(2).equals("")) {
             cv.put("to_lat", Double.parseDouble(settings.get(2)));
             cv.put("to_lng", Double.parseDouble(settings.get(3)));
         } else {
-            cv.put("to_lat",  Double.parseDouble(settings.get(0)));
+            cv.put("to_lat", Double.parseDouble(settings.get(0)));
             cv.put("to_lng", Double.parseDouble(settings.get(1)));
         }
         cv.put("start", settings.get(4));
@@ -1050,7 +1035,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         // обновляем по id
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
-                new String[] { "1" });
+                new String[]{"1"});
         database.close();
     }
 
@@ -1076,5 +1061,6 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         database.close();
         return list;
     }
-   }
+
+}
 

@@ -97,7 +97,6 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             "Zaporizhzhia",
             "Cherkasy Oblast",
             "OdessaTest",
-
     };
 
     int positionFirst;
@@ -135,7 +134,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                 positionFirst = 5;
                 break;
             default:
-                positionFirst = 0;
+                positionFirst = 6;
                 break;
         }
         ContentValues cv = new ContentValues();
