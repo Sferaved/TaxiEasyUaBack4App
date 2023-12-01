@@ -134,55 +134,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         addressListView = view.findViewById(R.id.listAddress);
 
         btn_ok = view.findViewById(R.id.btn_ok);
-        btn_ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (verifyBuildingStart) {
-                    textGeoError.setVisibility(View.VISIBLE);
-                    textGeoError.setText(R.string.house_vis_mes);
 
-                    fromEditAddress.requestFocus();
-                    fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
-                    KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
-                } else if (!verifyRoutStart) {
-                    textGeoError.setVisibility(View.VISIBLE);
-                    textGeoError.setText(R.string.rout_fin);
-
-                    fromEditAddress.requestFocus();
-                    fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
-                    KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
-                }
-                if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
-                    verifyBuildingFinish = false;
-                    verifyRoutFinish = true;
-                }
-
-                if (verifyBuildingFinish) {
-                    text_toError.setVisibility(View.VISIBLE);
-                    text_toError.setText(R.string.house_vis_mes);
-
-                    toEditAddress.requestFocus();
-                    toEditAddress.setSelection(toEditAddress.getText().toString().length());
-                    KeyboardUtils.showKeyboard(getContext(), toEditAddress);
-                } else if (!verifyRoutFinish) {
-                    text_toError.setVisibility(View.VISIBLE);
-                    text_toError.setText(R.string.rout_fin);
-
-                    toEditAddress.requestFocus();
-                    toEditAddress.setSelection(toEditAddress.getText().toString().length());
-                    KeyboardUtils.showKeyboard(getContext(), toEditAddress);
-                }
-//                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
-//                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
-                if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        visicomCost();
-                        dismiss();
-                    }
-                }
-
-            }
-        });
 
         btn_no = view.findViewById(R.id.btn_no);
         btn_ok.setVisibility(View.INVISIBLE);
@@ -803,7 +755,55 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
                         addressListView.setVisibility(View.INVISIBLE);
                     });
                     btn_ok.setVisibility(View.VISIBLE);
+                    btn_ok.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (verifyBuildingStart) {
+                                textGeoError.setVisibility(View.VISIBLE);
+                                textGeoError.setText(R.string.house_vis_mes);
 
+                                fromEditAddress.requestFocus();
+                                fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                                KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
+                            } else if (!verifyRoutStart) {
+                                textGeoError.setVisibility(View.VISIBLE);
+                                textGeoError.setText(R.string.rout_fin);
+
+                                fromEditAddress.requestFocus();
+                                fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                                KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
+                            }
+                            if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
+                                verifyBuildingFinish = false;
+                                verifyRoutFinish = true;
+                            }
+
+                            if (verifyBuildingFinish) {
+                                text_toError.setVisibility(View.VISIBLE);
+                                text_toError.setText(R.string.house_vis_mes);
+
+                                toEditAddress.requestFocus();
+                                toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                                KeyboardUtils.showKeyboard(getContext(), toEditAddress);
+                            } else if (!verifyRoutFinish) {
+                                text_toError.setVisibility(View.VISIBLE);
+                                text_toError.setText(R.string.rout_fin);
+
+                                toEditAddress.requestFocus();
+                                toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                                KeyboardUtils.showKeyboard(getContext(), toEditAddress);
+                            }
+//                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
+//                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
+                            if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    visicomCost();
+                                    dismiss();
+                                }
+                            }
+
+                        }
+                    });
                 });
             }
 
