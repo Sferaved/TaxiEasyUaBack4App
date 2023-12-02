@@ -37,21 +37,20 @@
         app:layout_constraintTop_toBottomOf="@+id/textfrom"
         tools:ignore="MissingConstraints" />
 
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/change"
         android:layout_width="200sp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:background="@drawable/buttons"
-        android:text="@string/change"
 
+        android:text="@string/change"
         android:textColor="#D9D9D9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.124"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textGeo" />
-
-
+        app:layout_constraintTop_toBottomOf="@+id/textGeoError" />
 
     <ImageButton
         android:id="@+id/btn_clear_from"
@@ -100,7 +99,7 @@
 
     <TextView
         android:id="@+id/text_toError"
-        android:layout_width="180dp"
+        android:layout_width="200dp"
         android:layout_height="24dp"
         android:background="@drawable/error"
         android:gravity="center"
@@ -108,7 +107,7 @@
         android:textSize="12sp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.294"
+        app:layout_constraintHorizontal_bias="0.133"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_to"
         tools:ignore="MissingConstraints" />
@@ -156,15 +155,15 @@
 
     <TextView
         android:id="@+id/textGeoError"
-        android:layout_width="180dp"
+        android:visibility="gone"
+        android:layout_width="200dp"
         android:layout_height="24dp"
         android:background="@drawable/error"
         android:gravity="center"
         android:textColor="@color/white"
         android:textSize="12sp"
-        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.292"
+        app:layout_constraintHorizontal_bias="0.124"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textGeo"
         tools:ignore="MissingConstraints" />
@@ -183,23 +182,21 @@
         android:layout_height="44dp"
 
         android:layout_margin="8dp"
-        android:layout_marginTop="8dp"
         android:background="@drawable/buttons"
         android:fontFamily="@font/regular"
         android:text="@string/cancel_button"
         android:textAlignment="center"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.065"
+        app:layout_constraintHorizontal_bias="0.098"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_to" />
+        app:layout_constraintTop_toBottomOf="@+id/text_toError" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_ok"
         android:layout_width="150sp"
         android:layout_height="45sp"
         android:layout_margin="8dp"
-        android:layout_marginTop="12dp"
         android:background="@drawable/buttons"
         android:backgroundTint="@color/colorAccent"
         android:fontFamily="@font/regular"
@@ -207,8 +204,8 @@
         android:textAlignment="center"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.934"
+        app:layout_constraintHorizontal_bias="0.872"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_to" />
+        app:layout_constraintTop_toBottomOf="@+id/text_toError" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
