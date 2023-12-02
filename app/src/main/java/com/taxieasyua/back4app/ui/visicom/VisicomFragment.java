@@ -66,6 +66,7 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
 import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomFragment;
 
@@ -185,7 +186,7 @@ public class VisicomFragment extends Fragment {
                         checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                         checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     }  else {
-                        Intent intent = new Intent(requireActivity(), OpenStreetMapActivity.class);
+                        Intent intent = new Intent(requireActivity(), OpenStreetMapVisicomActivity.class);
                         startActivity(intent);
                     }
 
