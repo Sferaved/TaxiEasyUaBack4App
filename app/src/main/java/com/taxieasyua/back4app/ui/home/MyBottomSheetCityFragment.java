@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -73,6 +74,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     String city;
     AppCompatButton btn_ok;
     private String cityMenu;
+    private String message;
 
     public MyBottomSheetCityFragment() {
         // Пустой конструктор без аргументов
@@ -219,21 +221,28 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     resetRoutHome();
                     navController.navigate(R.id.nav_visicom);
 
-                    Toast.makeText(requireActivity(), getString(R.string.change_message) + cityMenu, Toast.LENGTH_SHORT).show();
+                    message = getString(R.string.change_message) + getString(R.string.hi_mes) + " "+ getString(R.string.menu_city) + " " + cityMenu + ".";
 
                     if (MainActivity.navVisicomMenuItem != null) {
                         // Новый текст элемента меню
-                        String newTitle = cityMenu;
-
+                        String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
                         // Изменяем текст элемента меню
                         MainActivity.navVisicomMenuItem.setTitle(newTitle);
                     }
+
+//                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+//                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
                 dismiss();
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
     }
 
     private void cityMaxPay(String $city) {

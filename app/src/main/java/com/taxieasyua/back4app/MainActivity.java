@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static final String DB_NAME = "data_30112023_9";
+    public static final String DB_NAME = "data_02122023_2";
 
     /**
      * Table section
@@ -247,9 +247,6 @@ public class MainActivity extends AppCompatActivity {
 
                 String cityMenu;
                 switch (city) {
-                    case "Kyiv City":
-                        cityMenu = getString(R.string.city_kyiv);
-                        break;
                     case "Dnipropetrovsk Oblast":
                         cityMenu = getString(R.string.city_dnipro);
                         break;
@@ -272,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (MainActivity.navVisicomMenuItem != null) {
                     // Новый текст элемента меню
-                    String newTitle = cityMenu;
+                    String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
 
                     // Изменяем текст элемента меню
                     MainActivity.navVisicomMenuItem.setTitle(newTitle);
@@ -406,8 +403,8 @@ public class MainActivity extends AppCompatActivity {
             merchantFondy("Kyiv City");
             if (MainActivity.navVisicomMenuItem != null) {
                 // Новый текст элемента меню
-                String newTitle = "Kyiv City";
-
+                String cityMenu = getString(R.string.city_kyiv);
+                String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
                 // Изменяем текст элемента меню
                 MainActivity.navVisicomMenuItem.setTitle(newTitle);
             }
