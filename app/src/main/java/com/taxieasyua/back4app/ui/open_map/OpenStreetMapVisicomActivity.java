@@ -45,6 +45,7 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
@@ -207,11 +208,6 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             gpsSwitch.setChecked(switchState());
         });
 
-        fab_open_marker.setOnClickListener(v -> {
-            progressBar.setVisibility(View.INVISIBLE);
-            GeoDialogVisicomFragment bottomSheet = new GeoDialogVisicomFragment();
-            bottomSheet.show(fragmentManager, bottomSheet.getTag());
-        });
     }
 
     private void switchToRegion() {
@@ -340,6 +336,13 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             } else {
                 ToAdressString = sendUrlMapCost.get("routeto") + " " + sendUrlMapCost.get("to_number");
             }
+            String settlement = ToAdressString.toLowerCase();
+            String city = context.getString(R.string.on_city_tv).toLowerCase();
+
+            if (!settlement.contains(city)) {
+                ToAdressString = context.getString(R.string.end_point_marker);
+            }
+
             marker = new Marker(map);
             marker.setPosition(new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude()));
             marker.setTextLabelBackgroundColor(
@@ -367,9 +370,9 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
 
             map.getOverlays().add(marker);
 
-            GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude()-0.01, endPoint.getLongitude());
+            GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude());
             map.getController().setCenter(initialGeoPoint);
-            mapController.setZoom(16);
+            mapController.setZoom(14);
 
             map.invalidate();
 
@@ -383,10 +386,16 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             settings.add(ToAdressString);
 
             updateRoutMarker(settings, context);
+            MyBottomSheetMapFragment bottomSheetMapFragment = new MyBottomSheetMapFragment();
+            bottomSheetMapFragment.show(fragmentManager, bottomSheetMapFragment.getTag());
+
         }
     }
    public void onResume() {
         super.onResume();
+        MyBottomSheetMessageMapFragment bottomSheetMapFragment = new MyBottomSheetMessageMapFragment(getString(R.string.drag_marker_bottom));
+        bottomSheetMapFragment.show(fragmentManager, bottomSheetMapFragment.getTag());
+
         gpsSwitch.setChecked(switchState());
         markerOverlay = new MarkerOverlayVisicom(OpenStreetMapVisicomActivity.this);
         map.getOverlays().add(markerOverlay);
@@ -585,7 +594,6 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
         m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                Toast.makeText(context, R.string.drag_marker, Toast.LENGTH_LONG).show();
                 m.setDraggable(true);
                 return true;
             }

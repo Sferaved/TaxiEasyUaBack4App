@@ -68,7 +68,7 @@ import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
-import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomFragment;
+import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomOnePageFragment;
 
 import org.json.JSONException;
 
@@ -229,7 +229,7 @@ public class VisicomFragment extends Fragment {
         btn_clear_from_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
+                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -383,7 +383,7 @@ public class VisicomFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 geoText.setText("");
-                MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
+                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
@@ -392,7 +392,7 @@ public class VisicomFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 textViewTo.setText("");
-                MyBottomSheetVisicomFragment bottomSheetDialogFragment = new MyBottomSheetVisicomFragment("home");
+                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });

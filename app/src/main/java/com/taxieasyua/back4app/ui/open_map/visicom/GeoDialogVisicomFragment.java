@@ -115,9 +115,6 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment {
     public static long firstCostForMin;
     private static long discount;
     private String apiKey; // Впишіть апі ключ
-    private final OkHttpClient client = new OkHttpClient();
-
-    private static List<double[]> coordinatesList;
     private static List<String> addresses;
 
 

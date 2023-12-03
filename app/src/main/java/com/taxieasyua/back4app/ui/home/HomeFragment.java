@@ -381,9 +381,7 @@ public class HomeFragment extends Fragment {
                     checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                 }  else {
-                    String message = getString(R.string.gps_ok);
-                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    startActivity(new Intent(requireContext(), OpenStreetMapActivity.class));
                 }
             }
         });
