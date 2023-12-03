@@ -136,63 +136,9 @@ public class VisicomFragment extends Fragment {
 
         binding = FragmentVisicomBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-//        btnGeo = binding.btnGeo;
-//        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            btnGeo.setVisibility(View.VISIBLE);
-//        }  else {
-//            btnGeo.setVisibility(View.INVISIBLE);
-//
-//        }
-//        btnGeo.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-//            }
-//        });
+
         progressBar = binding.progressBar;
 
-        on_map = binding.btnMap;
-        on_map.setOnClickListener(v -> {
-
-            if(!verifyOrder(requireActivity())) {
-
-                MyBottomSheetBlackListFragment bottomSheetDialogFragment = new MyBottomSheetBlackListFragment("orderCost");
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            } else {
-                LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
-                boolean gps_enabled = false;
-                boolean network_enabled = false;
-
-                try {
-                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch(Exception ignored) {
-                }
-
-                try {
-                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                } catch(Exception ignored) {
-                }
-
-                if(!gps_enabled || !network_enabled) {
-                    MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }  else  {
-
-                    // Разрешения уже предоставлены, выполнить ваш код
-                    if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                            && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                        checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    }  else {
-                        Intent intent = new Intent(requireActivity(), OpenStreetMapVisicomActivity.class);
-                        startActivity(intent);
-                    }
-
-                }
-            }
-        });
         fab_call = binding.fabCall;
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override

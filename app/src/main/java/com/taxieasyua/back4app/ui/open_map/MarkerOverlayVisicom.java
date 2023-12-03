@@ -17,6 +17,14 @@ import java.net.MalformedURLException;
 
 public class MarkerOverlayVisicom extends Overlay {
     Marker marker;
+    String point;
+    private String TAG = "TAG_OPENMAP";
+
+
+    public MarkerOverlayVisicom(Context context, String point) {
+        super(context);
+        this.point = point;
+    }
     public MarkerOverlayVisicom(Context context) {
         super(context);
     }
@@ -32,19 +40,39 @@ public class MarkerOverlayVisicom extends Overlay {
             marker = null;
         }
         mapView.invalidate();
-        OpenStreetMapVisicomActivity.m = null;
 
-        GeoPoint endPoint = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
-        OpenStreetMapVisicomActivity.endPoint = endPoint;
+        GeoPoint pointGeo = (GeoPoint) mapView.getProjection().fromPixels((int) event.getX(), (int) event.getY());
+        Log.d(TAG, "onSingleTapConfirmed: point " + point);
+        switch (point) {
+            case "startMarker":
+                OpenStreetMapVisicomActivity.startPoint = pointGeo;
+                try {
 
-        try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        OpenStreetMapVisicomActivity.dialogMarkerStartPoint();
+                    }
+                } catch (MalformedURLException e) {
+                    Log.d("TAG", "onCreate:" + new RuntimeException(e));
+                }
+                break;
+            case "finishMarker":
+                OpenStreetMapVisicomActivity.endPoint = pointGeo;
+                try {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                OpenStreetMapVisicomActivity.dialogMarkers(OpenStreetMapVisicomActivity.fragmentManager, OpenStreetMapVisicomActivity.map.getContext());
-            }
-        } catch (MalformedURLException | JSONException | InterruptedException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        OpenStreetMapVisicomActivity.dialogMarkersEndPoint();
+                    }
+                } catch (MalformedURLException | JSONException | InterruptedException e) {
+                    Log.d("TAG", "onCreate:" + new RuntimeException(e));
+                }
+                break;
+
+
         }
+
+
+
+
 
         return true;
     }

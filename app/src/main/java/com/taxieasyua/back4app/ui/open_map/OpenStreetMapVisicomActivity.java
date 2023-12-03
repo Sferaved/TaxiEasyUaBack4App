@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -49,7 +50,10 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
+import com.taxieasyua.back4app.ui.open_map.api.ApiResponse;
+import com.taxieasyua.back4app.ui.open_map.api.ApiService;
 import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
+import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import org.json.JSONException;
 import org.osmdroid.api.IMapController;
@@ -64,22 +68,35 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     private static final String TAG = "TAG_OPENMAP";
     public static IMapController mapController;
+    private static final String BASE_URL = "https://m.easy-order-taxi.site/";
+    private static ApiService apiService;
+    ;
     public String[] arrayStreet;
     public static FloatingActionButton fab, fab_call, fab_open_map, fab_open_marker;
 
     public static double startLat, startLan, finishLat, finishLan;
     public static MapView map = null;
     public static String api;
+    public static GeoPoint startPoint;
     public static GeoPoint endPoint;
     @SuppressLint({"StaticFieldLeak", "UseSwitchCompatOrMaterialCode"})
     static Switch gpsSwitch;
@@ -92,13 +109,18 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     static View view;
     public static long addCost;
-    public static long cost;
+
     public static FragmentManager fragmentManager;
     @SuppressLint("StaticFieldLeak")
     public static ProgressBar progressBar;
     @SuppressLint("StaticFieldLeak")
 
     private String city;
+    private String messageInfo;
+    private static String  startMarker;
+    private static String finishMarker;
+    private static Drawable originalDrawable;
+    private static Drawable scaledDrawable;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -126,11 +148,26 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     private LocationCallback locationCallback;
     public static String phone;
     public static MarkerOverlayVisicom markerOverlay;
+
+
+
     @SuppressLint({"MissingInflatedId", "InflateParams"})
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.open_street_map_layout);
+
+        messageInfo = getIntent().getStringExtra("messageInfo");
+        startMarker = getIntent().getStringExtra("startMarker");
+        finishMarker = getIntent().getStringExtra("finishMarker");
+
+        originalDrawable = getResources().getDrawable(R.drawable.marker_green);
+        int width = 48;
+        int height = 48;
+        Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+
+        // Создайте новый Drawable из уменьшенного изображения
+        scaledDrawable = new BitmapDrawable(getResources(), bitmap);
 
         new  VerifyUserTask(getApplicationContext()).execute();
 
@@ -146,17 +183,11 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
         view = inflater.inflate(R.layout.phone_verify_layout, null);
 
         map = findViewById(R.id.map);
-//        map.setTileSource(TileSourceFactory.MAPNIK);
         mapController = map.getController();
-
         switchToRegion();
 
-//        map.setBuiltInZoomControls(true);
-//        map.setMultiTouchControls(true);
-//        mapController.setZoom(19);
-//        map.setClickable(true);
-
         FromAdressString = getString(R.string.startPoint);
+        ToAdressString = getString(R.string.end_point_marker);
         cm = getString(R.string.coastMarkersMessage);
         UAH = getString(R.string.UAH);
         em = getString(R.string.error_message);
@@ -313,94 +344,246 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
        return gps_enabled && network_enabled;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static void dialogMarkers(FragmentManager fragmentManager, Context context) throws MalformedURLException, JSONException, InterruptedException {
-        if(endPoint != null) {
-            GeoPoint startPoint = new GeoPoint(startLat, startLan);
-            showRout(startPoint, endPoint);
+    public static void dialogMarkerStartPoint() throws MalformedURLException {
+        Log.d(TAG, "dialogMarkerStartPoint: " + startPoint.toString());
+        if(startPoint != null) {
 
-            Log.d(TAG, "onResume: endPoint" +  endPoint.getLatitude());
-
-            finishLat = endPoint.getLatitude();
-            finishLan = endPoint.getLongitude();
-            if(marker != null) {
-                map.getOverlays().remove(marker);
+            startLat = startPoint.getLatitude();
+            startLan = startPoint.getLongitude();
+            if(m != null) {
+                map.getOverlays().remove(m);
                 map.invalidate();
-                marker = null;
+                m = null;
             }
 
-            String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", map.getContext());
 
-            Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
-            if(Objects.requireNonNull(sendUrlMapCost.get("routeto")).equals("Точка на карте")) {
-                ToAdressString = context.getString(R.string.end_point_marker);
-            } else {
-                ToAdressString = sendUrlMapCost.get("routeto") + " " + sendUrlMapCost.get("to_number");
-            }
-            String settlement = ToAdressString.toLowerCase();
-            String city = context.getString(R.string.on_city_tv).toLowerCase();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
 
-            if (!settlement.contains(city)) {
-                ToAdressString = context.getString(R.string.end_point_marker);
-            }
+            Log.d(TAG, "Request URL: " + retrofit.baseUrl().toString());
 
-            marker = new Marker(map);
-            marker.setPosition(new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude()));
-            marker.setTextLabelBackgroundColor(
-                    Color.TRANSPARENT
-            );
-            marker.setTextLabelForegroundColor(
-                    Color.RED
-            );
-            marker.setTextLabelFontSize(40);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-            String unuString = new String(Character.toChars(0x1F449));
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override
+                public void log(String message) {
+                    // Log the URL
+                    Log.d(TAG, message);
+                }
+            });
 
-            marker.setTitle("2."+ unuString + ToAdressString);
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-            @SuppressLint("UseCompatLoadingForDrawables") Drawable originalDrawable = context.getResources().getDrawable(R.drawable.marker_green);
-            int width = 48;
-            int height = 48;
-            Bitmap bitmap = Bitmap.createScaledBitmap(((BitmapDrawable) originalDrawable).getBitmap(), width, height, false);
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(loggingInterceptor)
+                    .build();
 
-            // Создайте новый Drawable из уменьшенного изображения
-            Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
-            marker.setIcon(scaledDrawable);
+            retrofit = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .client(client)  // Set the client with logging interceptor
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
 
-            marker.showInfoWindow();
+            apiService = retrofit.create(ApiService.class);
 
-            map.getOverlays().add(marker);
-
-            GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude());
-            map.getController().setCenter(initialGeoPoint);
-            mapController.setZoom(14);
-
-            map.invalidate();
-
-
-            List<String> settings = new ArrayList<>();
-            settings.add(String.valueOf(startLat));
-            settings.add(String.valueOf(startLan));
-            settings.add(String.valueOf(endPoint.getLatitude()));
-            settings.add(String.valueOf(endPoint.getLongitude()));
-            settings.add(FromAdressString);
-            settings.add(ToAdressString);
-
-            updateRoutMarker(settings, context);
-            MyBottomSheetMapFragment bottomSheetMapFragment = new MyBottomSheetMapFragment();
-            bottomSheetMapFragment.show(fragmentManager, bottomSheetMapFragment.getTag());
-
+            makeApiCall(startLat, startLan);
         }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static void dialogMarkersEndPoint() throws MalformedURLException, JSONException, InterruptedException {  {
+            if(endPoint != null) {
+                showRout(startPoint, endPoint);
+
+                finishLat = endPoint.getLatitude();
+                finishLan = endPoint.getLongitude();
+                if(marker != null) {
+                    map.getOverlays().remove(marker);
+                    map.invalidate();
+                    marker = null;
+                }
+
+
+
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(BASE_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+
+                Log.d(TAG, "Request URL: " + retrofit.baseUrl().toString());
+
+                HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                    @Override
+                    public void log(String message) {
+                        // Log the URL
+                        Log.d(TAG, message);
+                    }
+                });
+
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .addInterceptor(loggingInterceptor)
+                        .build();
+
+                retrofit = new Retrofit.Builder()
+                        .baseUrl(BASE_URL)
+                        .client(client)  // Set the client with logging interceptor
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+
+                apiService = retrofit.create(ApiService.class);
+
+                makeApiCall(finishLat, finishLan);
+
+
+
+            }
+        }
+    }
+
+    public static void makeApiCall(double latitude, double longitude) {
+        Call<ApiResponse> call = apiService.reverseAddress(latitude, longitude);
+        call.enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful()) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse != null) {
+                        String result = apiResponse.getResult();
+                        if(startMarker.equals("ok")) {
+                            if(!result.equals("404")){
+                                FromAdressString = result;
+                            }
+
+                            m = new Marker(map);
+                            m.setPosition(startPoint);
+                            m.setTextLabelBackgroundColor(
+                                    Color.TRANSPARENT
+                            );
+                            m.setTextLabelForegroundColor(
+                                    Color.RED
+                            );
+                            m.setTextLabelFontSize(40);
+                            m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                            String unuString = new String(Character.toChars(0x1F449));
+
+                            m.setTitle("1."+ unuString + FromAdressString);
+                            m.setIcon(scaledDrawable);
+                            m.showInfoWindow();
+
+                            map.getOverlays().add(m);
+
+                            map.getController().setCenter(startPoint);
+                            mapController.setZoom(14);
+
+                            map.invalidate();
+                            List<String> settings = new ArrayList<>();
+
+                            if (VisicomFragment.textViewTo.getText().toString().equals(map.getContext().getString(R.string.on_city_tv))) {
+
+                                settings.add(String.valueOf(startLat));
+                                settings.add(String.valueOf(startLan));
+                                settings.add(String.valueOf(startLat));
+                                settings.add(String.valueOf(startLan));
+                                settings.add(FromAdressString);
+                                settings.add(map.getContext().getString(R.string.on_city_tv));
+                            } else  {
+                                String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                                SQLiteDatabase database = map.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                Cursor cursor = database.rawQuery(query, null);
+
+                                cursor.moveToFirst();
+                                // Получите значения полей из первой записи
+
+                                @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                                @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                                cursor.close();
+                                database.close();
+
+
+                                settings.add(String.valueOf(startLat));
+                                settings.add(String.valueOf(startLan));
+                                settings.add(String.valueOf(toLatitude));
+                                settings.add(String.valueOf(toLongitude));
+
+                                settings.add(FromAdressString);
+                                settings.add(VisicomFragment.textViewTo.getText().toString());
+                            }
+                            updateRoutMarker(settings, map.getContext());
+                            updateMyPosition(startLat, startLan, FromAdressString, map.getContext());
+
+                        }
+                        if(finishMarker.equals("ok")) {
+                            if(!result.equals("404")){
+                                ToAdressString = result;
+                            }
+                            marker = new Marker(map);
+                            marker.setPosition(new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude()));
+                            marker.setTextLabelBackgroundColor(
+                                    Color.TRANSPARENT
+                            );
+                            marker.setTextLabelForegroundColor(
+                                    Color.RED
+                            );
+                            marker.setTextLabelFontSize(40);
+                            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                            String unuString = new String(Character.toChars(0x1F449));
+
+                            marker.setTitle("2."+ unuString + ToAdressString);
+                            marker.setIcon(scaledDrawable);
+                            marker.showInfoWindow();
+
+                            map.getOverlays().add(marker);
+
+                            GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude());
+                            map.getController().setCenter(initialGeoPoint);
+                            mapController.setZoom(14);
+
+                            map.invalidate();
+
+                            List<String> settings = new ArrayList<>();
+
+                            settings.add(String.valueOf(startLat));
+                            settings.add(String.valueOf(startLan));
+                            settings.add(String.valueOf(endPoint.getLatitude()));
+                            settings.add(String.valueOf(endPoint.getLongitude()));
+                            settings.add(FromAdressString);
+                            settings.add(ToAdressString);
+
+                            updateRoutMarker(settings, map.getContext());
+                        }
+                        // Делайте что-то с результатом
+//                        MyBottomSheetMapFragment bottomSheetMapFragment = new MyBottomSheetMapFragment();
+//                        bottomSheetMapFragment.show(fragmentManager, bottomSheetMapFragment.getTag());
+                    }
+                } else {
+                    // Обработка неуспешного запроса
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Обработка ошибок
+            }
+        });
     }
    public void onResume() {
         super.onResume();
-        MyBottomSheetMessageMapFragment bottomSheetMapFragment = new MyBottomSheetMessageMapFragment(getString(R.string.drag_marker_bottom));
-        bottomSheetMapFragment.show(fragmentManager, bottomSheetMapFragment.getTag());
+
 
         gpsSwitch.setChecked(switchState());
-        markerOverlay = new MarkerOverlayVisicom(OpenStreetMapVisicomActivity.this);
+        Log.d(TAG, "onResume: startMarker" + startMarker);
+        Log.d(TAG, "onResume: finishMarker" + finishMarker);
+        if(startMarker.equals("ok")) {
+            markerOverlay = new MarkerOverlayVisicom(OpenStreetMapVisicomActivity.this, "startMarker");
+        }
+        if(finishMarker.equals("ok")) {
+            markerOverlay = new MarkerOverlayVisicom(OpenStreetMapVisicomActivity.this, "finishMarker");
+        };
+
         map.getOverlays().add(markerOverlay);
         fab_open_map.setOnClickListener(v -> {
-            finish();
+//            finish();
             startActivity(new Intent(OpenStreetMapVisicomActivity.this, MainActivity.class));
         });
         List<String> startList = logCursor(MainActivity.TABLE_POSITION_INFO, this);
@@ -409,6 +592,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
        startLan = getFromTablePositionInfo(this, "startLan" );
 
        FromAdressString = startList.get(3);
+
        if(FromAdressString != null) {
            if (FromAdressString.equals("Точка на карте")) {
                FromAdressString = getString(R.string.startPoint);
@@ -416,8 +600,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
        }
         if (FromAdressString != null) {
             if (!FromAdressString.equals("Палац Спорту, м.Киів")) {
-                GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
-                map.getController().setCenter(initialGeoPoint);
+                startPoint = new GeoPoint(startLat, startLan);
+                map.getController().setCenter(startPoint);
                 setMarker(startLat, startLan, FromAdressString, getApplicationContext());
 
                 map.invalidate();
@@ -469,9 +653,9 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
 
 
                         map.getOverlays().add(markerOverlay);
-//                        setMarker(startLat, startLan, FromAdressString, getApplicationContext());
-                        GeoPoint initialGeoPoint = new GeoPoint(startLat-0.0009, startLan);
-                        map.getController().setCenter(initialGeoPoint);
+
+                        startPoint = new GeoPoint(startLat, startLan);
+                        map.getController().setCenter(startPoint);
 
                         setMarker(startLat, startLan, FromAdressString, getApplicationContext());
                         map.invalidate();
@@ -589,56 +773,6 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
         Drawable scaledDrawable = new BitmapDrawable(context.getResources(), bitmap);
         m.setIcon(scaledDrawable);
 
-        // Set the marker as draggable
-        final GeoDialogVisicomFragment bottomSheetDialogFragment = GeoDialogVisicomFragment.newInstance();
-        m.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker, MapView mapView) {
-                m.setDraggable(true);
-                return true;
-            }
-        });
-
-        // Set up the drag listener
-        m.setOnMarkerDragListener(new Marker.OnMarkerDragListener() {
-            @Override
-            public void onMarkerDragStart(Marker marker) {
-                // Handle drag start event
-            }
-
-            @Override
-            public void onMarkerDrag(Marker marker) {
-                // Handle drag event
-            }
-
-            @Override
-            public void onMarkerDragEnd(Marker marker) {
-                // Получаем координаты маркера после завершения перетаскивания
-                GeoPoint newPosition = marker.getPosition();
-
-                // Получаем широту и долготу
-                double newLatitude = newPosition.getLatitude();
-                double newLongitude = newPosition.getLongitude();
-                startLat = newLatitude;
-                startLan = newLongitude;
-                String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + startLat + "/" + startLan;
-                Map sendUrlFrom = null;
-                try {
-                    sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-
-                } catch (MalformedURLException | InterruptedException |
-                         JSONException ignored) {
-                }
-                assert sendUrlFrom != null;
-                FromAdressString = (String) sendUrlFrom.get("route_address_from");
-
-                updateMyPosition(startLat, startLan, FromAdressString, context);
-
-
-            }
-        });
-
-
         m.showInfoWindow();
         map.getOverlays().add(m);
         map.invalidate();
@@ -658,7 +792,6 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             roadOverlay.setWidth(10); // Измените это значение на желаемую толщину
 
             map.getOverlays().add(roadOverlay);
-//            m.showInfoWindow();
             map.invalidate();
         });
     }

@@ -1,8 +1,8 @@
 <resources>
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.912</string>
-    <string name="version">Версія: 2.912</string>
+    <string name="version_code">2.914</string>
+    <string name="version">Версія: 2.914</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -302,5 +302,6 @@
     <string name="rout_fin">Виберіть із списку номер будинку</string>
     <string name="hi_mes">Вас вітає</string>
     <string name="change_mes">Відсутні результати. Спробуйте змінити параметри пошуку</string>
+    <string name="two_point_mes">2. Вкажіть місце висадки на карті</string>
 
 </resources>

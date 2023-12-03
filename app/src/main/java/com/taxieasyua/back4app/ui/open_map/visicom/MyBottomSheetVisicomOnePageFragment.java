@@ -48,6 +48,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Kyiv.KyivRegion;
+import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
@@ -67,8 +68,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,6 +108,9 @@ public class MyBottomSheetVisicomOnePageFragment extends BottomSheetDialogFragme
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
+    private String messageInfo;
+    private String startMarker;
+    private String finishMarker;
 
     public MyBottomSheetVisicomOnePageFragment(String fragmentInput) {
         this.fragmentInput = fragmentInput;
@@ -804,28 +810,32 @@ public class MyBottomSheetVisicomOnePageFragment extends BottomSheetDialogFragme
                     }
                     addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
                         positionChecked = position;
-
+                        startMarker = "ok";
+                        finishMarker = "no";
                         if (point.equals("start")) {
                             fromEditAddress.requestFocus();
                             fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
                             KeyboardUtils.showKeyboard(getContext(), fromEditAddress);
+                            messageInfo = getString(R.string.drag_marker_bottom);
+
+
                         } else if (point.equals("finish")) {
                             toEditAddress.requestFocus();
                             toEditAddress.setSelection(toEditAddress.getText().toString().length());
                             KeyboardUtils.showKeyboard(getContext(), toEditAddress);
+                            messageInfo = getString(R.string.two_point_mes);
+                            startMarker = "no";
+                            finishMarker = "ok";
                         }
 
                         if (position == addressesList.size() - 1) {
-                            switch (fragmentInput) {
-                                case "map":
-                                    GeoDialogVisicomFragment.fragment.dismiss();
-                                    dismiss();
-                                    break;
-                                case "home":
-                                    startActivity(new Intent(requireActivity(), OpenStreetMapVisicomActivity.class));
-                                    dismiss();
-                                    break;
-                            }
+                            Intent intent = new Intent(requireActivity(), OpenStreetMapVisicomActivity.class);
+                            intent.putExtra("messageInfo", messageInfo);
+                            intent.putExtra("startMarker", startMarker);
+                            intent.putExtra("finishMarker", finishMarker);
+
+                            startActivity(intent);
+                            dismiss();
                         } else {
                             double[] coordinates = coordinatesList.get(position);
 
