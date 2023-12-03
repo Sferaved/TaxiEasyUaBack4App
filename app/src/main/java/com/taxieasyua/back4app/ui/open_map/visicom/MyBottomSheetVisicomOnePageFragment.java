@@ -382,6 +382,7 @@ public class MyBottomSheetVisicomOnePageFragment extends BottomSheetDialogFragme
                     }
                     updateMyPosition(latitude, longitude, FromAdressString, requireActivity());
                     fromEditAddress.setText(FromAdressString);
+                    assert FromAdressString != null;
                     fromEditAddress.setSelection(FromAdressString.length());
                     btn_clear_from.setVisibility(View.VISIBLE);
                     switch (fragmentInput) {
