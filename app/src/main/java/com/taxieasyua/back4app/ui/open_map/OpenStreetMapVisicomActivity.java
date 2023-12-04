@@ -392,7 +392,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static void dialogMarkersEndPoint() throws MalformedURLException, JSONException, InterruptedException {  {
             if(endPoint != null) {
-                showRout(startPoint, endPoint);
+
 
                 finishLat = endPoint.getLatitude();
                 finishLan = endPoint.getLongitude();
@@ -540,7 +540,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
                             mapController.setZoom(14);
 
                             map.invalidate();
-
+                            showRout(startPoint, endPoint);
                             List<String> settings = new ArrayList<>();
 
                             settings.add(String.valueOf(startLat));

@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static final String DB_NAME = "data_02122023_2";
+    public static final String DB_NAME = "data_04122023_15";
 
     /**
      * Table section
@@ -167,35 +167,12 @@ public class MainActivity extends AppCompatActivity {
      * Phone section
      */
     public static final String Kyiv_City_phone = "tel:0674443804";
-    public static final String Dnipropetrovsk_Oblast_phone = "tel:0667257070";
-    public static final String Odessa_phone = "tel:0737257070";
-    public static final String Zaporizhzhia_phone = "tel:0687257070";
-    public static final String Cherkasy_Oblast_phone = "tel:0962294243";
 
     public static SQLiteDatabase database;
     public static Menu navMenu;
     public static MenuItem navVisicomMenuItem;
 
-    /**
-     * City section
-     */
-    private final String[] cityList = new String[]{
-            "Київ",
-            "Дніпро",
-            "Одеса",
-            "Запоріжжя",
-            "Черкаси",
-            "Тест"
-    };
-   private final String[] cityCode = new String[]{
-            "Kyiv City",
-            "Dnipropetrovsk Oblast",
-            "Odessa",
-            "Zaporizhzhia",
-            "Cherkasy Oblast",
-            "OdessaTest"
-    };
-    String message;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

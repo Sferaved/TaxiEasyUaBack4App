@@ -102,6 +102,15 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     };
 
     int positionFirst;
+    /**
+     * Phone section
+     */
+    public static final String Kyiv_City_phone = "tel:0674443804";
+    public static final String Dnipropetrovsk_Oblast_phone = "tel:0667257070";
+    public static final String Odessa_phone = "tel:0737257070";
+    public static final String Zaporizhzhia_phone = "tel:0687257070";
+    public static final String Cherkasy_Oblast_phone = "tel:0962294243";
+    String phoneNumber;
 
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -122,26 +131,39 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         switch (city) {
             case "Dnipropetrovsk Oblast":
                 positionFirst = 1;
+                phoneNumber = Dnipropetrovsk_Oblast_phone;
+                cityMenu = getString(R.string.city_dnipro);
                 break;
             case "Odessa":
                 positionFirst = 2;
+                phoneNumber = Odessa_phone;
+                cityMenu = getString(R.string.city_odessa);
                 break;
             case "Zaporizhzhia":
                 positionFirst = 3;
+                phoneNumber = Zaporizhzhia_phone;
+                cityMenu = getString(R.string.city_zaporizhzhia);
                 break;
             case "Cherkasy Oblast":
                 positionFirst = 4;
+                phoneNumber = Cherkasy_Oblast_phone;
+                cityMenu = getString(R.string.city_cherkasy);
                 break;
             case "OdessaTest":
                 positionFirst = 5;
+                phoneNumber = Kyiv_City_phone;
+                cityMenu = "Test";
                 break;
             default:
+                phoneNumber = Kyiv_City_phone;
                 positionFirst = 0;
+                cityMenu = getString(R.string.city_kyiv);
                 break;
         }
         ContentValues cv = new ContentValues();
         SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         cv.put("city", cityCode[positionFirst]);
+        cv.put("phone", phoneNumber);
         database.update(MainActivity.CITY_INFO, cv, "id = ?",
                 new String[]{"1"});
         database.close();
@@ -151,57 +173,39 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         listView.setItemChecked(positionFirst, true);
         int positionFirstOld = positionFirst;
 
-        switch (cityCode[positionFirst]){
-            case "Dnipropetrovsk Oblast":
-                // Днепр
-                cityMenu = getString(R.string.city_dnipro);
-                break;
-            case "Odessa":
-                // Одесса
-                cityMenu = getString(R.string.city_odessa);
-                break;
-            case "Zaporizhzhia":
-                // Запорожье
-                cityMenu = getString(R.string.city_zaporizhzhia);
-                break;
-            case "Cherkasy Oblast":
-                // Черкассы
-                cityMenu = getString(R.string.city_cherkasy);
-                break;
-            case "OdessaTest":
-                cityMenu = "Test";
-                break;
-            default:
-                cityMenu = getString(R.string.city_kyiv);
-                break;
-        }
-
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 positionFirst = position;
                 switch (cityCode[positionFirst]){
                     case "Dnipropetrovsk Oblast":
-                        // Днепр
+                        positionFirst = 1;
+                        phoneNumber = Dnipropetrovsk_Oblast_phone;
                         cityMenu = getString(R.string.city_dnipro);
                         break;
                     case "Odessa":
-                        // Одесса
+                        positionFirst = 2;
+                        phoneNumber = Odessa_phone;
                         cityMenu = getString(R.string.city_odessa);
                         break;
                     case "Zaporizhzhia":
-                        // Запорожье
+                        positionFirst = 3;
+                        phoneNumber = Zaporizhzhia_phone;
                         cityMenu = getString(R.string.city_zaporizhzhia);
                         break;
                     case "Cherkasy Oblast":
-                        // Черкассы
+                        positionFirst = 4;
+                        phoneNumber = Cherkasy_Oblast_phone;
                         cityMenu = getString(R.string.city_cherkasy);
                         break;
                     case "OdessaTest":
+                        positionFirst = 5;
+                        phoneNumber = Kyiv_City_phone;
                         cityMenu = "Test";
                         break;
                     default:
+                        phoneNumber = Kyiv_City_phone;
+                        positionFirst = 0;
                         cityMenu = getString(R.string.city_kyiv);
                         break;
                 }
@@ -210,6 +214,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
                     cv.put("city", cityCode[positionFirst]);
+                    cv.put("phone", phoneNumber);
                     database.update(MainActivity.CITY_INFO, cv, "id = ?",
                             new String[]{"1"});
                     database.close();
@@ -219,6 +224,8 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
                     NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
                     resetRoutHome();
+                    resetRoutMarker();
+
                     navController.navigate(R.id.nav_visicom);
 
                     message = getString(R.string.change_message) + getString(R.string.hi_mes) + " "+ getString(R.string.menu_city) + " " + cityMenu + ".";
@@ -230,8 +237,8 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         MainActivity.navVisicomMenuItem.setTitle(newTitle);
                     }
 
-//                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-//                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
                 dismiss();
             }
@@ -346,6 +353,32 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         database.update(MainActivity.ROUT_HOME, cv, "id = ?",
                 new String[]{"1"});
         database.close();
+    }
+    private void resetRoutMarker() {
+        List<String> settings = new ArrayList<>();
+
+            settings.add("0");
+            settings.add("0");
+            settings.add("0");
+            settings.add("0");
+            settings.add("");
+            settings.add("");
+
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat", Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
+        cv.put("start", settings.get(4));
+        cv.put("finish", settings.get(5));
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[]{"1"});
+        database.close();
+
     }
 
     @SuppressLint("Range")

@@ -20,7 +20,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,11 +52,9 @@ import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetBlackListFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorGeoFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGeoFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
@@ -66,8 +63,6 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
-import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
 import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomOnePageFragment;
 
 import org.json.JSONException;
@@ -94,7 +89,6 @@ public class VisicomFragment extends Fragment {
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
-    AppCompatButton btnGeo, on_map;
     FloatingActionButton fab_call;
 
     public static AppCompatButton button, btn_change, btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
@@ -152,7 +146,7 @@ public class VisicomFragment extends Fragment {
         });
 
 
-        getLocalIpAddress();
+
         buttonBonus = binding.btnBonus;
         apiKey = requireActivity().getString(R.string.visicom_key_storage);
 
@@ -180,12 +174,12 @@ public class VisicomFragment extends Fragment {
             }
         });
 
-           if(geoText.getText().toString().equals("")) {
-               btn_clear_from_text.setVisibility(View.VISIBLE);
-               String unuString = new String(Character.toChars(0x1F449));
-               unuString += " " + getString(R.string.search_text);
-               btn_clear_from_text.setText(unuString);
-           }
+        if(geoText.getText().toString().equals("")) {
+            btn_clear_from_text.setVisibility(View.VISIBLE);
+            String unuString = new String(Character.toChars(0x1F449));
+            unuString += " " + getString(R.string.search_text);
+            btn_clear_from_text.setText(unuString);
+        }
 
         text_view_cost = binding.textViewCost;
 
@@ -200,8 +194,6 @@ public class VisicomFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
-
-
 
         textViewTo = binding.textTo;
         textViewTo.setText(getString(R.string.on_city_tv));
@@ -528,6 +520,9 @@ public class VisicomFragment extends Fragment {
         }
         cursor.close();
         database.close();
+
+
+
         return result;
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -549,7 +544,7 @@ public class VisicomFragment extends Fragment {
         double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
         String start = cursor.getString(cursor.getColumnIndex("start"));
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
-
+        Log.d(TAG, "getTaxiUrlSearchMarkers: start " + start);
         // Заменяем символ '/' в строках
         start = start.replace("/", "|");
         finish = finish.replace("/", "|");
@@ -567,8 +562,6 @@ public class VisicomFragment extends Fragment {
         String time = stringList.get(1);
         String comment = stringList.get(2);
         String date = stringList.get(3);
-
-
 
         List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, context);
         String tarif =  stringListInfo.get(2);
@@ -1019,10 +1012,33 @@ public class VisicomFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        getLocalIpAddress();
         if(newRout()) {
-            firstLocation();
+
+            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            }  else {
+                firstLocation();
+            }
         } else {
-            visicomCost();
+            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+            SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            Cursor cursor = database.rawQuery(query, null);
+
+            cursor.moveToFirst();
+
+            // Получите значения полей из первой записи
+
+            @SuppressLint("Range") double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+            cursor.close();
+            database.close();
+            Log.d(TAG, "onResume:originLatitude " + originLatitude);
+            if (originLatitude != 0) {
+                visicomCost();
+            }
+
         }
 
     }
@@ -1114,7 +1130,10 @@ public class VisicomFragment extends Fragment {
 
 
                     updateRoutMarker(settings);
-                    visicomCost();
+                    if(!logCursor(MainActivity.TABLE_USER_INFO, getContext()).get(3).equals("email")) {
+                        visicomCost();
+                    }
+
                     btn_change.setVisibility(View.VISIBLE);
                 }
             }
