@@ -119,6 +119,11 @@
             android:name=".ui.start.GoogleSignInActivity"
             android:screenOrientation="portrait" />
         <activity android:name="com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity" />
+        <activity android:name="com.taxieasyua.back4app.ui.open_map.visicom.ActivityVisicomOnePage"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.TaxiEasyUaBack4App.NoActionBar"
+            tools:ignore="Instantiatable" />
 
         <receiver android:name=".NetworkChangeReceiver" />
 

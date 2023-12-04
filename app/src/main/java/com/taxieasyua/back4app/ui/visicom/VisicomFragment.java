@@ -63,6 +63,8 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
+import com.taxieasyua.back4app.ui.open_map.visicom.ActivityVisicomOnePage;
 import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomOnePageFragment;
 
 import org.json.JSONException;
@@ -169,8 +171,13 @@ public class VisicomFragment extends Fragment {
         btn_clear_from_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
+                intent.putExtra("start", "ok");
+                intent.putExtra("end", "no");
+                startActivity(intent);
+
+//                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
+//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
 
@@ -321,8 +328,12 @@ public class VisicomFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 geoText.setText("");
-                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
+                intent.putExtra("start", "ok");
+                intent.putExtra("end", "no");
+                startActivity(intent);
+//                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
+//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
         btn_clear_to = binding.btnClearTo;
@@ -330,8 +341,12 @@ public class VisicomFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 textViewTo.setText("");
-                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
+                intent.putExtra("start", "no");
+                intent.putExtra("end", "ok");
+                startActivity(intent);
+//                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
+//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
         textwhere = binding.textwhere;

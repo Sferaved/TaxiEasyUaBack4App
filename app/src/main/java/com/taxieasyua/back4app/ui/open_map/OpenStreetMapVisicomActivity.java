@@ -116,7 +116,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
 
     private String city;
-    private String messageInfo;
+
     private static String  startMarker;
     private static String finishMarker;
     private static Drawable originalDrawable;
@@ -157,7 +157,6 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.open_street_map_layout);
 
-        messageInfo = getIntent().getStringExtra("messageInfo");
         startMarker = getIntent().getStringExtra("startMarker");
         finishMarker = getIntent().getStringExtra("finishMarker");
 

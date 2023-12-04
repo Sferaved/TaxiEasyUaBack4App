@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,9 +28,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.card.CardFragment;
-import com.taxieasyua.back4app.ui.card.CustomCardAdapter;
-import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
-import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
@@ -38,7 +36,6 @@ import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,11 +55,12 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     String rout;
     String api;
     TextView textView;
-    String fragment;
+
     ListView listView;
     String[] array, arrayCode;
     AppCompatButton btn_ok;
     int pos;
+    ProgressBar progressBar;
     private String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView) {
@@ -78,7 +76,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bonus_list_layout, container, false);
-
+        progressBar = view.findViewById(R.id.progress);
 
         listView = view.findViewById(R.id.listViewBonus);
         array = new  String[]{
@@ -122,6 +120,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                progressBar.setVisibility(View.VISIBLE);
                 pos = position;
                 Log.d(TAG, "onItemClick: pos " + pos);
                 if (pos == 2) {
@@ -153,11 +152,11 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             }
         });
 
+
         return view;
     }
 
     private void paymentType(String paymentCode) {
-
         ContentValues cv = new ContentValues();
         Log.d(TAG, "paymentType: paymentCode 1111" + paymentCode);
 
@@ -169,7 +168,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                     new String[] { "1" });
             database.close();
         }
-
+        reCount();
     }
 
     @SuppressLint("Range")
@@ -238,7 +237,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                             paymentCodeNew = "mono_payment";
                             break;
                     }
-
+                    reCount();
                     // Вызываем обработчик, передавая полученное значение
                     callback.onPaySystemResult(paymentCodeNew);
                 } else {
@@ -259,6 +258,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
 
+    }
+
+    public void reCount() {
         Log.d(TAG, "onDismiss: rout " + rout);
         if(rout.equals("home")) {
             String urlCost = null;
@@ -325,9 +327,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 textView.setText(costUpdate);
             }
         }
-
+        progressBar.setVisibility(View.GONE);
     }
-
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d(TAG, "updateAddCost: addCost" + addCost);
