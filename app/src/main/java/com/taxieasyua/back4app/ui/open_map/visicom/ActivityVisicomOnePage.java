@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -206,7 +207,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
 
         fromEditAddress = findViewById(R.id.textGeo);
         fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
-
+        int inputType = fromEditAddress.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        fromEditAddress.setInputType(inputType);
         fromEditAddress.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -237,7 +239,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
 
         toEditAddress = findViewById(R.id.text_to);
         toEditAddress.setText(VisicomFragment.textViewTo.getText().toString());
-
+        inputType = toEditAddress.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        toEditAddress.setInputType(inputType);
         toEditAddress.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {
