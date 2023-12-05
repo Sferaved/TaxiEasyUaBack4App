@@ -80,33 +80,8 @@ public class MyBottomSheetGPSFragment extends BottomSheetDialogFragment {
         if(VisicomFragment.progressBar != null) {
             VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
         }
-
-
-
         return view;
     }
 
-    @SuppressLint("Range")
-    private List<String> logCursor(String table, Context context) {
-        List<String> list = new ArrayList<>();
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(table, null, null, null, null, null, null);
-        if (c != null) {
-            if (c.moveToFirst()) {
-                String str;
-                do {
-                    str = "";
-                    for (String cn : c.getColumnNames()) {
-                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
-                        list.add(c.getString(c.getColumnIndex(cn)));
-
-                    }
-
-                } while (c.moveToNext());
-            }
-        }
-        database.close();
-        return list;
-    }
-   }
+}
 

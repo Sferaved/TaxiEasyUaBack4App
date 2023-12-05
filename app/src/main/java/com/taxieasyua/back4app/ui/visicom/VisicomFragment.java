@@ -176,8 +176,6 @@ public class VisicomFragment extends Fragment {
                 intent.putExtra("end", "no");
                 startActivity(intent);
 
-//                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
-//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
 
@@ -332,8 +330,6 @@ public class VisicomFragment extends Fragment {
                 intent.putExtra("start", "ok");
                 intent.putExtra("end", "no");
                 startActivity(intent);
-//                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
-//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
         btn_clear_to = binding.btnClearTo;
@@ -345,45 +341,11 @@ public class VisicomFragment extends Fragment {
                 intent.putExtra("start", "no");
                 intent.putExtra("end", "ok");
                 startActivity(intent);
-//                MyBottomSheetVisicomOnePageFragment bottomSheetDialogFragment = new MyBottomSheetVisicomOnePageFragment("home");
-//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
         textwhere = binding.textwhere;
         num2 = binding.num2;
-        btn_change = binding.change;
-        btn_change.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
-                boolean gps_enabled = false;
-                boolean network_enabled = false;
 
-                try {
-                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                } catch(Exception ignored) {
-                }
-
-                try {
-                    network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-                } catch(Exception ignored) {
-                }
-
-                if(!gps_enabled || !network_enabled) {
-                    MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }  else  {
-                    // Разрешения уже предоставлены, выполнить ваш код
-                    if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                            && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                        checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    }  else {
-                        firstLocation();
-                    }
-                }
-            }
-        });
 
         gpsbut = binding.gpsbut;
         gpsbut.setOnClickListener(v -> {
@@ -402,9 +364,8 @@ public class VisicomFragment extends Fragment {
             }
 
             if(!gps_enabled || !network_enabled) {
-//                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//                MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }  else  {
                 // Разрешения уже предоставлены, выполнить ваш код
                 if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -1029,13 +990,9 @@ public class VisicomFragment extends Fragment {
         super.onResume();
         getLocalIpAddress();
         if(newRout()) {
-
-            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            }  else {
-                firstLocation();
+            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                firstLocationGPS();
             }
         } else {
             String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
@@ -1053,12 +1010,11 @@ public class VisicomFragment extends Fragment {
             if (originLatitude != 0) {
                 visicomCost();
             }
-
         }
-
     }
 
-    private void firstLocation() {
+
+    private void firstLocationGPS() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         locationCallback = new LocationCallback() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -1153,14 +1109,16 @@ public class VisicomFragment extends Fragment {
                 }
             }
         };
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates();
-        } else {
-            requestLocationPermission();
-        }
+//        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+//                == PackageManager.PERMISSION_GRANTED) {
+//            startLocationUpdates();
+//        } else {
+////            requestLocationPermission();
+//        }
 
     }
+
+
     private void updateRoutMarker(List<String> settings) {
         Log.d(TAG, "updateRoutMarker: " + settings.toString());
         ContentValues cv = new ContentValues();
@@ -1220,14 +1178,14 @@ public class VisicomFragment extends Fragment {
     private void requestLocationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Показываем объяснение пользователю, почему мы запрашиваем разрешение
-            // Можно использовать диалоговое окно или другой пользовательский интерфейс
-            MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//            // Показываем объяснение пользователю, почему мы запрашиваем разрешение
+//            // Можно использовать диалоговое окно или другой пользовательский интерфейс
+//            MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+//            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
-            ActivityCompat.requestPermissions(requireActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION);
+//            ActivityCompat.requestPermissions(requireActivity(),
+//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+//                    REQUEST_LOCATION_PERMISSION);
         }
     }
 

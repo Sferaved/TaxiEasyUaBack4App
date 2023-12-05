@@ -91,7 +91,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
     private boolean verifyBuildingStart;
     private boolean verifyBuildingFinish;
     private TextView textGeoError, text_toError;
-    private String fragmentInput;
     private String citySearch;
     private String[] kyivRegionArr;
     private int positionChecked;
@@ -511,7 +510,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-
         if (fromEditAddress.getText().toString().equals("")) {
 
             btn_clear_from.setVisibility(View.INVISIBLE);

@@ -71,6 +71,8 @@ import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
@@ -114,19 +116,9 @@ public class MainActivity extends AppCompatActivity {
     public static String order_id;
     public static String invoiceId;
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        if(HomeFragment.progressBar != null) {
-            HomeFragment.progressBar.setVisibility(View.INVISIBLE);
-        }
-        if(VisicomFragment.progressBar != null) {
-            VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
-        }
 
-    }
 
-    public static final String DB_NAME = "data_04122023_15";
+    public static final String DB_NAME = "data_05122023_24";
 
     /**
      * Table section
@@ -171,9 +163,6 @@ public class MainActivity extends AppCompatActivity {
     public static SQLiteDatabase database;
     public static Menu navMenu;
     public static MenuItem navVisicomMenuItem;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -206,7 +195,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -254,6 +242,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
             database.close();
+        }
+
+    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if(HomeFragment.progressBar != null) {
+            HomeFragment.progressBar.setVisibility(View.INVISIBLE);
+        }
+        if(VisicomFragment.progressBar != null) {
+            VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -627,9 +626,9 @@ public class MainActivity extends AppCompatActivity {
         database.beginTransaction();
         try {
             statement.clearBindings();
-            statement.bindDouble(2, 50.4398);
-            statement.bindDouble(3, 30.7233);
-            statement.bindString(4, "Палац Спорту, м.Киів");
+            statement.bindDouble(2, 0);
+            statement.bindDouble(3,0 );
+            statement.bindString(4, "");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -799,24 +798,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d("TAG", "onOptionsItemSelected gps_enabled: " + gps_enabled);
         Log.d("TAG", "onOptionsItemSelected network_enabled: " + network_enabled);
         if(!gps_enabled || !network_enabled) {
-            // notify user
-            MaterialAlertDialogBuilder builder =  new MaterialAlertDialogBuilder(MainActivity.this, R.style.AlertDialogTheme);
-            LayoutInflater inflater = MainActivity.this.getLayoutInflater();
-
-            View view_cost = inflater.inflate(R.layout.message_layout, null);
-            builder.setView(view_cost);
-            TextView message = view_cost.findViewById(R.id.textMessage);
-            message.setText(R.string.gps_info);
-            builder.setPositiveButton(R.string.gps_on, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                        }
-                    })
-                    .setNegativeButton(R.string.cancel_button,null)
-                    .show();
+            MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
-            Toast.makeText(this, getString(R.string.gps_ok), Toast.LENGTH_SHORT).show();
+            String message = getString(R.string.gps_ok);
+            MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
     public void phoneNumberChange() {

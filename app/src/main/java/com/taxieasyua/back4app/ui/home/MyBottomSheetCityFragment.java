@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -226,6 +227,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                     resetRoutHome();
                     resetRoutMarker();
 
+                    updateMyPosition(cityCode[positionFirst]);
                     navController.navigate(R.id.nav_visicom);
 
                     message = getString(R.string.change_message) + getString(R.string.hi_mes) + " "+ getString(R.string.menu_city) + " " + cityMenu + ".";
@@ -247,6 +249,61 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         return view;
     }
 
+    private void updateMyPosition(String city) {
+        Double startLat;
+        Double startLan;
+        String position;
+
+        switch (city){
+            case "Dnipropetrovsk Oblast":
+                // Днепр
+                position = "просп.Дмитра Яворницького (Карла Маркса), буд.52, місто Дніпро";
+                startLat = 48.4647;
+                startLan = 35.0462;
+                break;
+            case "Odessa":
+            case "OdessaTest":
+                // Одесса
+                position = "вул.Пантелеймонівська, буд. 64, місто Одеса";
+                startLat = 46.4694;
+                startLan = 30.7404;
+                break;
+            case "Zaporizhzhia":
+                // Запорожье
+                position = "просп. Соборний, буд. 139, місто Запоріжжя";
+                startLat = 47.84015;
+                startLan = 35.13634;
+                break;
+            case "Cherkasy Oblast":
+                // Черкассы
+                position = "вул.Байди Вишневецького, буд.36, місто Черкаси";
+                startLat = 49.44469;
+                startLan = 32.05728;
+                break;
+            default:
+                position = "вул.Хрещатик, буд.22, місто Київ";
+                startLat = 50.4501;
+                startLan = 30.5234;
+                break;
+        }
+
+
+
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat", startLat);
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        cv.put("startLan", startLan);
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        cv.put("position", position);
+        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                new String[] { "1" });
+        database.close();
+
+    }
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
