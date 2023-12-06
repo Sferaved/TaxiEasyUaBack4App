@@ -93,7 +93,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         CustomArrayAdapter adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
+        btn_ok = view.findViewById(R.id.btn_ok);
+        btn_ok.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
         fistItem();
 
         String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
@@ -121,6 +127,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 progressBar.setVisibility(View.VISIBLE);
+                btn_ok.setVisibility(View.GONE);
+                setCancelable(false);
                 pos = position;
                 Log.d(TAG, "onItemClick: pos " + pos);
                 if (pos == 2) {
@@ -144,13 +152,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         });
 
-        btn_ok = view.findViewById(R.id.btn_ok);
-        btn_ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
+
 
 
         return view;
@@ -300,7 +302,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             Map<String, String> sendUrlMapCost = null;
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+                    urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getContext());
                 }
 
                 sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -328,6 +330,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             }
         }
         progressBar.setVisibility(View.GONE);
+        btn_ok.setVisibility(View.VISIBLE);
     }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();

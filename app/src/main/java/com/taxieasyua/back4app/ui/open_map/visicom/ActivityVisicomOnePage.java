@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -50,6 +51,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
+import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
@@ -77,9 +79,11 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
 
     private static final String TAG = "TAG_VIS_ADDR";
 
-    AppCompatButton btn_ok, btn_no, btn_change, btnOnMap;
+    AppCompatButton  btn_change, btnOnMap;
+
+    ProgressBar progressBar;
     EditText fromEditAddress, toEditAddress;
-    private ImageButton btn_clear_from, btn_clear_to;
+    private ImageButton btn_clear_from, btn_clear_to, btn_ok, btn_no;
 
     private final String apiUrl = "https://api.visicom.ua/data-api/5.0/uk/geocode.json";
     private String apiKey;
@@ -143,15 +147,17 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
 
         apiKey = getString(R.string.visicom_key_storage);
         addressListView = findViewById(R.id.listAddress);
+        progressBar = findViewById(R.id.progress_bar_visicom);
+
+        btn_no = findViewById(R.id.btn_no);
 
         btn_ok = findViewById(R.id.btn_ok);
 
-
-        btn_no = findViewById(R.id.btn_no);
         btn_ok.setVisibility(View.INVISIBLE);
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                progressBar.setVisibility(View.VISIBLE);
                 if (verifyBuildingStart) {
                     textGeoError.setVisibility(View.VISIBLE);
                     textGeoError.setText(R.string.house_vis_mes);
@@ -187,13 +193,10 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                     toEditAddress.setSelection(toEditAddress.getText().toString().length());
                     KeyboardUtils.showKeyboard(getApplicationContext(), toEditAddress);
                 }
-//                            Log.d(TAG, "onClick: verifyBuildingStart" + verifyBuildingStart);
-//                            Log.d(TAG, "onClick: verifyBuildingFinish" + verifyBuildingFinish);
+
                 if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        visicomCost();
-                        finish();
-                    }
+//                    visicomCost();
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 }
 
             }
@@ -354,6 +357,175 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void visicomCost() {
+        String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getApplicationContext());
+        Log.d(TAG, "visicomCost: " + urlCost);
+        Map<String, String> sendUrlMapCost = null;
+        try {
+            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String message = sendUrlMapCost.get("message");
+        String orderCost = sendUrlMapCost.get("order_cost");
+        Log.d(TAG, "startCost: orderCost " + orderCost);
+
+        assert orderCost != null;
+        if (orderCost.equals("0")) {
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+        } else {
+            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(3);
+            long discountInt = Integer.parseInt(discountText);
+            long discount;
+
+            VisicomFragment.firstCost = Long.parseLong(orderCost);
+            discount = VisicomFragment.firstCost * discountInt / 100;
+            VisicomFragment.firstCost = VisicomFragment.firstCost + discount;
+            updateAddCost(String.valueOf(discount));
+            VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
+            VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
+            VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
+
+
+            VisicomFragment.geoText.setVisibility(View.VISIBLE);
+            VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
+            VisicomFragment.textwhere.setVisibility(View.VISIBLE);
+            VisicomFragment.num2.setVisibility(View.VISIBLE);
+            VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
+            VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
+            VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
+            VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
+            VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
+            VisicomFragment.text_view_cost.setVisibility(View.VISIBLE);
+            VisicomFragment.btn_plus.setVisibility(View.VISIBLE);
+            VisicomFragment.btnOrder.setVisibility(View.VISIBLE);
+
+            VisicomFragment.btn_clear_from_text.setVisibility(View.GONE);
+        }
+
+
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("Range")
+    public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
+        Log.d(TAG, "getTaxiUrlSearchMarkers: " + urlAPI);
+
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
+
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+        String start = cursor.getString(cursor.getColumnIndex("start"));
+        String finish = cursor.getString(cursor.getColumnIndex("finish"));
+        Log.d(TAG, "getTaxiUrlSearchMarkers: start " + start);
+        // Заменяем символ '/' в строках
+        start = start.replace("/", "|");
+        finish = finish.replace("/", "|");
+
+        // Origin of route
+        String str_origin = originLatitude + "/" + originLongitude;
+
+        // Destination of route
+        String str_dest = toLatitude + "/" + toLongitude;
+
+        cursor.close();
+
+
+        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO);
+        String time = stringList.get(1);
+        String comment = stringList.get(2);
+        String date = stringList.get(3);
+
+        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
+        String tarif =  stringListInfo.get(2);
+        String payment_type = stringListInfo.get(4);
+        String addCost = stringListInfo.get(5);
+        // Building the parameters to the web service
+
+        String parameters = null;
+        String phoneNumber = "no phone";
+        String userEmail = logCursor(MainActivity.TABLE_USER_INFO).get(3);
+        String displayName = logCursor(MainActivity.TABLE_USER_INFO).get(4);
+
+        if(urlAPI.equals("costSearchMarkers")) {
+            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
+
+            if (c.getCount() == 1) {
+                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
+                c.close();
+            }
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "*" + payment_type;
+        }
+        if(urlAPI.equals("orderSearchMarkersVisicom")) {
+            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
+
+
+            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
+                    + displayName + "*" + userEmail  + "*" + payment_type + "/" + addCost + "/"
+                    + time + "/" + comment + "/" + date+ "/" + start + "/" + finish;
+
+            ContentValues cv = new ContentValues();
+
+            cv.put("time", "no_time");
+            cv.put("comment", "no_comment");
+            cv.put("date", "no_date");
+
+            // обновляем по id
+            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
+                    new String[] { "1" });
+
+        }
+
+        // Building the url to the web service
+        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO);
+        List<String> servicesChecked = new ArrayList<>();
+        String result;
+        boolean servicesVer = false;
+        for (int i = 1; i < services.size()-1 ; i++) {
+            if(services.get(i).equals("1")) {
+                servicesVer = true;
+                break;
+            }
+        }
+        if(servicesVer) {
+            for (int i = 0; i < OpenStreetMapActivity.arrayServiceCode().length; i++) {
+                if(services.get(i+1).equals("1")) {
+                    servicesChecked.add(OpenStreetMapActivity.arrayServiceCode()[i]);
+                }
+            }
+            for (int i = 0; i < servicesChecked.size(); i++) {
+                if(servicesChecked.get(i).equals("CHECK_OUT")) {
+                    servicesChecked.set(i, "CHECK");
+                }
+            }
+            result = String.join("*", servicesChecked);
+            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
+        } else {
+            result = "no_extra_charge_codes";
+        }
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO);
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+                + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
+
+        database.close();
+
+        return url;
+    }
     private void firstLocation() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         locationCallback = new LocationCallback() {
@@ -875,12 +1047,11 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                                                 settings.add(String.valueOf(toLongitude));
                                                 settings.add(addressesList.get(position));
                                                 settings.add(toEditAddress.getText().toString());
-
+                                            }
                                             updateRoutMarker(settings);
+                                            updateMyPosition(coordinates[1], coordinates[0], startPoint, getApplicationContext());
                                             VisicomFragment.geoText.setText(startPoint);
-
-                                    }
-
+                                            Log.d(TAG, "processAddressData: startPoint " + startPoint);
                                 }
                             } else if (point.equals("finish")) {
                                 finishPoint = addressesList.get(position);
@@ -1045,61 +1216,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
         OpenStreetMapVisicomActivity.showRout(startPoint, OpenStreetMapVisicomActivity.endPoint);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void visicomCost() {
-        String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getApplicationContext());
-        Log.d(TAG, "visicomCost: " + urlCost);
-        Map<String, String> sendUrlMapCost = null;
-        try {
-            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
-        String message = sendUrlMapCost.get("message");
-        String orderCost = sendUrlMapCost.get("order_cost");
-        Log.d(TAG, "startCost: orderCost " + orderCost);
-
-        assert orderCost != null;
-        if (orderCost.equals("0")) {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-        } else {
-            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(3);
-            long discountInt = Integer.parseInt(discountText);
-            long discount;
-
-                    VisicomFragment.geoText.setText(fromEditAddress.getText().toString());
-                    VisicomFragment.firstCost = Long.parseLong(orderCost);
-                    discount = VisicomFragment.firstCost * discountInt / 100;
-                    VisicomFragment.firstCost = VisicomFragment.firstCost + discount;
-                    updateAddCost(String.valueOf(discount));
-                    VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
-                    VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
-                    VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
-
-
-                    VisicomFragment.geoText.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
-                    VisicomFragment.textwhere.setVisibility(View.VISIBLE);
-                    VisicomFragment.num2.setVisibility(View.VISIBLE);
-                    VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
-                    VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
-                    VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
-                    VisicomFragment.text_view_cost.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_plus.setVisibility(View.VISIBLE);
-                    VisicomFragment.btnOrder.setVisibility(View.VISIBLE);
-
-                    VisicomFragment.btn_clear_from_text.setVisibility(View.GONE);
-
-        }
-
-
-
-    }
-
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d("TAG", "updateAddCost: addCost" + addCost);
@@ -1111,131 +1227,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                 new String[]{"1"});
         database.close();
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @SuppressLint("Range")
-    public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {
-        Log.d(TAG, "getTaxiUrlSearchMarkers: " + urlAPI);
-
-//        List<String> stringList11 = logCursor(MainActivity.ROUT_MARKER, requireContext());
-//        Log.d(TAG, "getTaxiUrlSearchMarkers:stringList " + stringList11.toString());
-        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery(query, null);
-
-        cursor.moveToFirst();
-
-        // Получите значения полей из первой записи
-
-        double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
-        double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
-        double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
-        double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
-        String start = cursor.getString(cursor.getColumnIndex("start"));
-        String finish = cursor.getString(cursor.getColumnIndex("finish"));
-
-        Log.d(TAG, "getTaxiUrlSearchMarkers: originLatitude" + originLatitude);
-        Log.d(TAG, "getTaxiUrlSearchMarkers: originLongitude" + originLongitude);
-        Log.d(TAG, "getTaxiUrlSearchMarkers: toLatitude" + toLatitude);
-        Log.d(TAG, "getTaxiUrlSearchMarkers: toLongitude" + toLongitude);
-
-        // Заменяем символ '/' в строках
-        start = start.replace("/", "|");
-        finish = finish.replace("/", "|");
-
-        // Origin of route
-        String str_origin = originLatitude + "/" + originLongitude;
-
-        // Destination of route
-        String str_dest = toLatitude + "/" + toLongitude;
-
-        cursor.close();
-
-        List<String> stringList = logCursor(MainActivity.TABLE_ADD_SERVICE_INFO);
-        String time = stringList.get(1);
-        String comment = stringList.get(2);
-        String date = stringList.get(3);
-
-
-        List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO);
-        String tarif = stringListInfo.get(2);
-        String payment_type = stringListInfo.get(4);
-        String addCost = stringListInfo.get(5);
-        // Building the parameters to the web service
-
-        String parameters = null;
-        String phoneNumber = "no phone";
-        String userEmail = logCursor(MainActivity.TABLE_USER_INFO).get(3);
-        String displayName = logCursor(MainActivity.TABLE_USER_INFO).get(4);
-
-        if (urlAPI.equals("costSearchMarkers")) {
-            Cursor c = database.query(MainActivity.TABLE_USER_INFO, null, null, null, null, null, null);
-
-            if (c.getCount() == 1) {
-                phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
-                c.close();
-            }
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail + "*" + payment_type;
-        }
-        if (urlAPI.equals("orderSearchMarkersVisicom")) {
-            phoneNumber = logCursor(MainActivity.TABLE_USER_INFO).get(2);
-
-
-            parameters = str_origin + "/" + str_dest + "/" + tarif + "/" + phoneNumber + "/"
-                    + displayName + "*" + userEmail + "*" + payment_type + "/" + addCost + "/"
-                    + time + "/" + comment + "/" + date + "/" + start + "/" + finish;
-
-            ContentValues cv = new ContentValues();
-
-            cv.put("time", "no_time");
-            cv.put("comment", "no_comment");
-            cv.put("date", "no_date");
-
-            // обновляем по id
-            database.update(MainActivity.TABLE_ADD_SERVICE_INFO, cv, "id = ?",
-                    new String[]{"1"});
-
-        }
-
-        // Building the url to the web service
-        List<String> services = logCursor(MainActivity.TABLE_SERVICE_INFO);
-        List<String> servicesChecked = new ArrayList<>();
-        String result;
-        boolean servicesVer = false;
-        for (int i = 1; i < services.size() - 1; i++) {
-            if (services.get(i).equals("1")) {
-                servicesVer = true;
-                break;
-            }
-        }
-        if (servicesVer) {
-            for (int i = 0; i < OpenStreetMapVisicomActivity.arrayServiceCode().length; i++) {
-                if (services.get(i + 1).equals("1")) {
-                    servicesChecked.add(OpenStreetMapVisicomActivity.arrayServiceCode()[i]);
-                }
-            }
-            for (int i = 0; i < servicesChecked.size(); i++) {
-                if (servicesChecked.get(i).equals("CHECK_OUT")) {
-                    servicesChecked.set(i, "CHECK");
-                }
-            }
-            result = String.join("*", servicesChecked);
-            Log.d(TAG, "getTaxiUrlSearchGeo result:" + result + "/");
-        } else {
-            result = "no_extra_charge_codes";
-        }
-        List<String> listCity = logCursor(MainActivity.CITY_INFO);
-        String city = listCity.get(1);
-        String api = listCity.get(2);
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
-                + parameters + "/" + result + "/" + city + "/" + context.getString(R.string.application);
-
-        database.close();
-
-        return url;
-    }
-
     private void updateRoutMarker(List<String> settings) {
         Log.d(TAG, "updateRoutMarker: " + settings.toString());
         ContentValues cv = new ContentValues();

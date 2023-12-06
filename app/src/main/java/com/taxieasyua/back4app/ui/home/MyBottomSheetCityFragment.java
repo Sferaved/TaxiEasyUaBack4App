@@ -301,9 +301,41 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         cv.put("position", position);
         database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
                 new String[] { "1" });
+
         database.close();
 
+
+        List<String> settings = new ArrayList<>();
+
+
+        settings.add(Double.toString(startLat));
+        settings.add(Double.toString(startLan));
+        settings.add(Double.toString(startLat));
+        settings.add(Double.toString(startLan));
+        settings.add(position);
+        settings.add(getString(R.string.on_city_tv));
+        updateRoutMarker(settings);
+
     }
+
+    private void updateRoutMarker(List<String> settings) {
+        Log.d(TAG, "updateRoutMarker: " + settings.toString());
+        ContentValues cv = new ContentValues();
+
+        cv.put("startLat", Double.parseDouble(settings.get(0)));
+        cv.put("startLan", Double.parseDouble(settings.get(1)));
+        cv.put("to_lat", Double.parseDouble(settings.get(2)));
+        cv.put("to_lng", Double.parseDouble(settings.get(3)));
+        cv.put("start", settings.get(4));
+        cv.put("finish", settings.get(5));
+
+        // обновляем по id
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
+                new String[]{"1"});
+        database.close();
+    }
+
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);

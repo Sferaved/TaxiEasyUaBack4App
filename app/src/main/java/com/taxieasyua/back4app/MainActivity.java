@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_05122023_25";
+    public static final String DB_NAME = "data_06122023_19";
 
     /**
      * Table section
@@ -628,7 +628,7 @@ public class MainActivity extends AppCompatActivity {
             statement.clearBindings();
             statement.bindDouble(2, 0);
             statement.bindDouble(3,0 );
-            statement.bindString(4, "");
+            statement.bindString(4, "вул.Хрещатик, буд.22, місто Київ");
 
             statement.execute();
             database.setTransactionSuccessful();

@@ -127,12 +127,12 @@ public class VisicomFragment extends Fragment {
     public static TextView textwhere, num2;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentVisicomBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
         progressBar = binding.progressBar;
 
         fab_call = binding.fabCall;
@@ -364,8 +364,8 @@ public class VisicomFragment extends Fragment {
             }
 
             if(!gps_enabled || !network_enabled) {
-//                MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }  else  {
                 // Разрешения уже предоставлены, выполнить ваш код
                 if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -380,6 +380,16 @@ public class VisicomFragment extends Fragment {
             }
 
         });
+
+        getLocalIpAddress();
+        if(newRout()) {
+            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                firstLocationGPS();
+            }
+        } else {
+            visicomCost();
+        }
 
         return root;
     }
@@ -497,7 +507,7 @@ public class VisicomFragment extends Fragment {
         cursor.close();
         database.close();
 
-
+        Log.d(TAG, "newRout: result" + result);
 
         return result;
     }
@@ -988,29 +998,7 @@ public class VisicomFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        getLocalIpAddress();
-        if(newRout()) {
-            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                firstLocationGPS();
-            }
-        } else {
-            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
-            SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-            Cursor cursor = database.rawQuery(query, null);
 
-            cursor.moveToFirst();
-
-            // Получите значения полей из первой записи
-
-            @SuppressLint("Range") double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
-            cursor.close();
-            database.close();
-            Log.d(TAG, "onResume:originLatitude " + originLatitude);
-            if (originLatitude != 0) {
-                visicomCost();
-            }
-        }
     }
 
 
@@ -1109,14 +1097,9 @@ public class VisicomFragment extends Fragment {
                 }
             }
         };
-//        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//            startLocationUpdates();
-//        } else {
-////            requestLocationPermission();
-//        }
 
     }
+
 
 
     private void updateRoutMarker(List<String> settings) {
@@ -1191,6 +1174,20 @@ public class VisicomFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void visicomCost() {
+        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery(query, null);
+
+        cursor.moveToFirst();
+
+        // Получите значения полей из первой записи
+
+        @SuppressLint("Range") String start = cursor.getString(cursor.getColumnIndex("start"));
+        @SuppressLint("Range") String finish = cursor.getString(cursor.getColumnIndex("finish"));
+
+        geoText.setText(start);
+        textViewTo.setText(finish);
+
         String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
         Log.d(TAG, "visicomCost: " + urlCost);
         Map<String, String> sendUrlMapCost = null;

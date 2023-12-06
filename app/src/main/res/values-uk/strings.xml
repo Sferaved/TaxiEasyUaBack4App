@@ -1,8 +1,8 @@
 <resources>
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.919</string>
-    <string name="version">Версія: 2.919</string>
+    <string name="version_code">2.924</string>
+    <string name="version">Версія: 2.924</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -285,7 +285,7 @@
     <string name="nal_pay_message">Спосіб оплати поїздки - готівкою водію.</string>
     <string name="max_limit_message">Досягнуто максимальну межу суми замовлення цим способом оплати.\n Замовити оплатою готівкою?</string>
     <string name="house_vis_mes">вкажіть номер будинку</string>
-    <string name="address_on_map">визначити за картою</string>
+    <string name="address_on_map">визначити по мапі</string>
     <string name="address_take">застосувати</string>
     <string name="main_page">Головна</string>
     <string name="search_text">Пошук адреси</string>

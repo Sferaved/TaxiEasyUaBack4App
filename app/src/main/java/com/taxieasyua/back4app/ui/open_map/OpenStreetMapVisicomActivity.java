@@ -83,7 +83,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     public static IMapController mapController;
     private static final String BASE_URL = "https://m.easy-order-taxi.site/";
     private static ApiService apiService;
-    ;
+
     public String[] arrayStreet;
     public static FloatingActionButton fab, fab_call, fab_open_map, fab_open_marker;
 
@@ -244,34 +244,56 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
         List<String> stringList = logCursor(MainActivity.CITY_INFO, this);
         city = stringList.get(1);
         api =  stringList.get(2);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            Cursor cursor = database.rawQuery(query, null);
 
-        switch (city){
-            case "Dnipropetrovsk Oblast":
-                // Днепр
-                FromAdressString = "просп.Дмитра Яворницького (Карла Маркса), буд.52, місто Дніпро";
-                startPoint = new GeoPoint(48.4647,35.0462);
-                break;
-            case "Odessa":
-            case "OdessaTest":
-                // Одесса
-                FromAdressString = "вул.Пантелеймонівська, буд. 64, місто Одеса";
-                startPoint = new GeoPoint(46.4694,30.7404);
-                break;
-            case "Zaporizhzhia":
-                // Запорожье
-                FromAdressString = "просп. Соборний, буд. 139, місто Запоріжжя";
-                startPoint = new GeoPoint(47.84015, 35.13634);
-                break;
-            case "Cherkasy Oblast":
-                // Черкассы
-                FromAdressString = "вул.Байди Вишневецького, буд.36, місто Черкаси";
-                startPoint = new GeoPoint(49.44469,32.05728);
-                break;
-            default:
-                FromAdressString = "вул.Хрещатик, буд.22, місто Київ";
-                startPoint = new GeoPoint(50.4501,30.5234);
-                break;
+            cursor.moveToFirst();
+
+            // Получите значения полей из первой записи
+
+            @SuppressLint("Range") double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+            @SuppressLint("Range") double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+            @SuppressLint("Range") String start = cursor.getString(cursor.getColumnIndex("start"));
+
+            cursor.close();
+            database.close();
+            FromAdressString = start;
+            startPoint = new GeoPoint(originLatitude,originLongitude);
+
+//            switch (city){
+//                case "Dnipropetrovsk Oblast":
+//                    // Днепр
+//                    FromAdressString = "просп.Дмитра Яворницького (Карла Маркса), буд.52, місто Дніпро";
+//                    startPoint = new GeoPoint(48.4647,35.0462);
+//                    break;
+//                case "Odessa":
+//                case "OdessaTest":
+//                    // Одесса
+//                    FromAdressString = "вул.Пантелеймонівська, буд. 64, місто Одеса";
+//                    startPoint = new GeoPoint(46.4694,30.7404);
+//                    break;
+//                case "Zaporizhzhia":
+//                    // Запорожье
+//                    FromAdressString = "просп. Соборний, буд. 139, місто Запоріжжя";
+//                    startPoint = new GeoPoint(47.84015, 35.13634);
+//                    break;
+//                case "Cherkasy Oblast":
+//                    // Черкассы
+//                    FromAdressString = "вул.Байди Вишневецького, буд.36, місто Черкаси";
+//                    startPoint = new GeoPoint(49.44469,32.05728);
+//                    break;
+//                default:
+//                    FromAdressString = "вул.Хрещатик, буд.22, місто Київ";
+//                    startPoint = new GeoPoint(50.4501,30.5234);
+//                    break;
+//            }
+//
+        } else {
+
         }
+
         map = findViewById(R.id.map);
         mapController = map.getController();
         map.setBuiltInZoomControls(true);
@@ -575,6 +597,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         switchToRegion();
+
         gpsSwitch.setChecked(switchState());
         Log.d(TAG, "onResume: startMarker" + startMarker);
         Log.d(TAG, "onResume: finishMarker" + finishMarker);
