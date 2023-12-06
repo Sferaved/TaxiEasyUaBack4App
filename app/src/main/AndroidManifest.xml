@@ -57,9 +57,7 @@
         <activity
             android:name=".ui.payment.MonoBankActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.payment.PayPalActivity"
-            android:exported="false" />
+
         <activity
             android:name=".ui.finish.FinishActivity"
             android:screenOrientation="portrait"
