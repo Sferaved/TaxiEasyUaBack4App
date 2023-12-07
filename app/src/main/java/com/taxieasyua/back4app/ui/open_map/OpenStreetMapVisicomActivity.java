@@ -19,10 +19,13 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -57,9 +60,12 @@ import org.osmdroid.bonuspack.routing.OSRMRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 
@@ -262,45 +268,40 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             FromAdressString = start;
             startPoint = new GeoPoint(originLatitude,originLongitude);
 
-//            switch (city){
-//                case "Dnipropetrovsk Oblast":
-//                    // Днепр
-//                    FromAdressString = "просп.Дмитра Яворницького (Карла Маркса), буд.52, місто Дніпро";
-//                    startPoint = new GeoPoint(48.4647,35.0462);
-//                    break;
-//                case "Odessa":
-//                case "OdessaTest":
-//                    // Одесса
-//                    FromAdressString = "вул.Пантелеймонівська, буд. 64, місто Одеса";
-//                    startPoint = new GeoPoint(46.4694,30.7404);
-//                    break;
-//                case "Zaporizhzhia":
-//                    // Запорожье
-//                    FromAdressString = "просп. Соборний, буд. 139, місто Запоріжжя";
-//                    startPoint = new GeoPoint(47.84015, 35.13634);
-//                    break;
-//                case "Cherkasy Oblast":
-//                    // Черкассы
-//                    FromAdressString = "вул.Байди Вишневецького, буд.36, місто Черкаси";
-//                    startPoint = new GeoPoint(49.44469,32.05728);
-//                    break;
-//                default:
-//                    FromAdressString = "вул.Хрещатик, буд.22, місто Київ";
-//                    startPoint = new GeoPoint(50.4501,30.5234);
-//                    break;
-//            }
-//
-        } else {
-
         }
 
         map = findViewById(R.id.map);
         mapController = map.getController();
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        mapController.setZoom(19);
+
+        double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, getApplicationContext()).get(4));
+        mapController.setZoom(newZoomLevel);
         map.setClickable(true);
         map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    // Обработка изменения масштаба
+                    double newZoomLevel = map.getZoomLevelDouble();
+                    Log.d(TAG, "Zoom level: " + newZoomLevel);
+                    // Добавьте свой код обработки здесь
+                    SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    ContentValues cv = new ContentValues();
+
+                    cv.put("newZoomLevel", newZoomLevel);
+                    database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
+                            new String[] { "1" });
+                    database.close();
+                }
+                return false;
+            }
+        });
+
+
+
         Log.d(TAG, "switchToRegion: FromAdressString" + FromAdressString);
     }
 
@@ -501,7 +502,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
                             map.getOverlays().add(m);
 
                             map.getController().setCenter(startPoint);
-                            mapController.setZoom(14);
+                            double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, fab.getContext()).get(4));
+                            mapController.setZoom(newZoomLevel);
 
                             map.invalidate();
                             List<String> settings = new ArrayList<>();
@@ -564,7 +566,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
 
                             GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude(), endPoint.getLongitude());
                             map.getController().setCenter(initialGeoPoint);
-                            mapController.setZoom(14);
+//                            double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, fab.getContext()).get(4));
+//                            mapController.setZoom(newZoomLevel);
 
                             map.invalidate();
                             showRout(startPoint, endPoint);
@@ -891,6 +894,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             roadOverlay.setWidth(10); // Измените это значение на желаемую толщину
 
             map.getOverlays().add(roadOverlay);
+            // Вычисляем BoundingBox
             map.invalidate();
         });
     }

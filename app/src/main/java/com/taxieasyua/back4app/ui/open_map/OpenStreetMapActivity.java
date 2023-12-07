@@ -224,7 +224,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        mapController.setZoom(19);
+        double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, getApplicationContext()).get(4));
+        mapController.setZoom(newZoomLevel);
         map.setClickable(true);
         map.setTileSource(TileSourceFactory.MAPNIK);
         switch (city){
@@ -692,7 +693,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
                         GeoPoint initialGeoPoint = new GeoPoint(endPoint.getLatitude()-0.01, endPoint.getLongitude());
                         map.getController().setCenter(initialGeoPoint);
-                        mapController.setZoom(16);
+                        double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, context).get(4));
+                        mapController.setZoom(newZoomLevel);
 
                         map.invalidate();
 

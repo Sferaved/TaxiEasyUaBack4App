@@ -1125,7 +1125,8 @@ public class MyBottomSheetVisicomOnePageFragment extends BottomSheetDialogFragme
 
         GeoPoint initialGeoPoint = new GeoPoint(geoPoint.getLatitude() - 0.01, geoPoint.getLongitude());
         OpenStreetMapVisicomActivity.map.getController().setCenter(initialGeoPoint);
-        OpenStreetMapVisicomActivity.mapController.setZoom(16);
+        double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, requireContext()).get(4));
+        OpenStreetMapVisicomActivity.mapController.setZoom(newZoomLevel);
 
         OpenStreetMapVisicomActivity.map.invalidate();
 

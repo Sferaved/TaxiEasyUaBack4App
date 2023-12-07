@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_06122023_19";
+    public static final String DB_NAME = "data_07122023_1";
 
     /**
      * Table section
@@ -301,7 +301,8 @@ public class MainActivity extends AppCompatActivity {
         database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_POSITION_INFO + "(id integer primary key autoincrement," +
                 " startLat double," +
                 " startLan double," +
-                " position text);");
+                " position text," +
+                " newZoomLevel double);");
         cursorDb = database.query(TABLE_POSITION_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
             insertMyPosition();
@@ -618,7 +619,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void insertMyPosition() {
-        String sql = "INSERT INTO " + MainActivity.TABLE_POSITION_INFO + " VALUES(?,?,?,?);";
+        String sql = "INSERT INTO " + MainActivity.TABLE_POSITION_INFO + " VALUES(?,?,?,?,?);";
 
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
@@ -629,6 +630,7 @@ public class MainActivity extends AppCompatActivity {
             statement.bindDouble(2, 0);
             statement.bindDouble(3,0 );
             statement.bindString(4, "вул.Хрещатик, буд.22, місто Київ");
+            statement.bindDouble(5, 19.0);
 
             statement.execute();
             database.setTransactionSuccessful();
