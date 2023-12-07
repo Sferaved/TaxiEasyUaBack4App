@@ -493,8 +493,7 @@ public class HomeFragment extends Fragment {
             Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
             String orderWeb = sendUrlMap.get("order_cost");
-            String message = sendUrlMap.get("message");
-
+            String message = requireActivity().getString(R.string.error_message);
 
             if (!orderWeb.equals("0")) {
 

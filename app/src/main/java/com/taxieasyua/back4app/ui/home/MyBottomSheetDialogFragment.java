@@ -410,12 +410,11 @@ public class MyBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
         Map<String, String> sendUrl = CostJSONParser.sendURL(url);
 
-        String mes = sendUrl.get("message");
+        String message = requireActivity().getString(R.string.error_message);
         String orderC = sendUrl.get("order_cost");
 
-        Log.d("TAG", "onPausedawdddddddwdadwdawdaw orderC : " + orderC );
         if (orderC.equals("0")) {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(mes);
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
         if (!orderC.equals("0")) {

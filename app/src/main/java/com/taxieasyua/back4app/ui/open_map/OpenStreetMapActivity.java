@@ -637,7 +637,7 @@ public class OpenStreetMapActivity extends AppCompatActivity {
 
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
-            String message = sendUrlMapCost.get("message");
+            String message = map.getContext().getString(R.string.error_message);
             String orderCost = sendUrlMapCost.get("order_cost");
 
             if (orderCost != null) {

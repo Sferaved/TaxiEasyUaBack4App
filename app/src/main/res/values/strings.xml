@@ -55,7 +55,7 @@
     <string name="save_button">Сохранить</string>
     <string name="you_this">"Вы сейчас здесь: "</string>
     <string name="make_rout_message">Сформируйте маршрут</string>
-    <string name="error_message">"Ошибка: "</string>
+    <string name="error_message">Произошла ошибка.</string>
     <string name="to_point">"Место назначения: "</string>
     <string name="cost_of_order">" Стоимость поездки: "</string>
     <string name="firebase_false_message">грн. Извините, без проверки Google-аккаунта заказ невозможен.</string>

@@ -721,7 +721,7 @@ public class VisicomFragment extends Fragment {
         Log.d("TAG", "Map sendUrlMap = ToJSONParser.sendURL(urlOrder); " + sendUrlMap);
 
         String orderWeb = sendUrlMap.get("order_cost");
-        String message = sendUrlMap.get("message");
+        String message = requireActivity().getString(R.string.error_message);
         if (!orderWeb.equals("0")) {
             String to_name;
             if (Objects.equals(sendUrlMap.get("routefrom"), sendUrlMap.get("routeto"))) {

@@ -351,8 +351,8 @@ public class GalleryFragment extends Fragment {
                 intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
                 startActivity(intent);
             } else {
-
-                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
+                String message = requireActivity().getString(R.string.error_message);
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
             }
@@ -510,7 +510,7 @@ public class GalleryFragment extends Fragment {
 
             Map<String, String> sendUrlMapCost = ToJSONParser.sendURL(urlCost);
 
-            String message = sendUrlMapCost.get("message");
+            String message = requireActivity().getString(R.string.error_message);
             String orderCost = sendUrlMapCost.get("order_cost");
             Log.d(TAG, "dialogFromToOneRout:orderCost " + orderCost);
 

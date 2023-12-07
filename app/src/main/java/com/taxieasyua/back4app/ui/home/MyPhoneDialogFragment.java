@@ -232,8 +232,8 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     intent.putExtra("UID_key", Objects.requireNonNull(sendUrlMap.get("dispatching_order_uid")));
                     startActivity(intent);
                 } else {
-
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(sendUrlMap.get("message"));
+                    String message = getString(R.string.error_message);
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
                     GeoDialogVisicomFragment.progressBar.setVisibility(View.INVISIBLE);
@@ -384,7 +384,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                 Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
 
                 String orderWeb = sendUrlMap.get("order_cost");
-                String message = sendUrlMap.get("message");
+                String message = requireActivity().getString(R.string.error_message);
                 String messageResult;
                 if (!orderWeb.equals("0")) {
 
