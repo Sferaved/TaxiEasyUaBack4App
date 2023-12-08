@@ -22,17 +22,12 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultCallback;
@@ -42,7 +37,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -63,9 +57,7 @@ import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.card.CardInfo;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.ApiService;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
-import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
@@ -78,7 +70,6 @@ import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import java.io.File;
@@ -101,10 +92,6 @@ import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
