@@ -66,10 +66,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -110,6 +115,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
     private String finishMarker;
     private String start;
     private String end;
+    ArrayAdapter<String> addressAdapter;
+
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
@@ -195,7 +202,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                 }
 
                 if (!verifyBuildingStart && !verifyBuildingFinish && verifyRoutStart && verifyRoutFinish) {
-//                    visicomCost();
                     startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 }
 
@@ -328,6 +334,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
         });
 
         if(start.equals("ok")) {
+            oldAddresses("start");
             toEditAddress.setVisibility(View.GONE);
             btn_clear_to.setVisibility(View.GONE);
             text_toError.setVisibility(View.GONE);
@@ -335,6 +342,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
             findViewById(R.id.num2).setVisibility(View.GONE);
         }
         if(end.equals("ok")) {
+            oldAddresses("finish");
             fromEditAddress.setVisibility(View.GONE);
             btn_clear_from.setVisibility(View.GONE);
             textGeoError.setVisibility(View.GONE);
@@ -355,57 +363,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                 finish();
             }
         });
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void visicomCost() {
-        String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getApplicationContext());
-        Log.d(TAG, "visicomCost: " + urlCost);
-        Map<String, String> sendUrlMapCost = null;
-        try {
-            sendUrlMapCost = CostJSONParser.sendURL(urlCost);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
-        String message = sendUrlMapCost.get("message");
-        String orderCost = sendUrlMapCost.get("order_cost");
-        Log.d(TAG, "startCost: orderCost " + orderCost);
-
-        assert orderCost != null;
-        if (orderCost.equals("0")) {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-        } else {
-            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(3);
-            long discountInt = Integer.parseInt(discountText);
-            long discount;
-
-            VisicomFragment.firstCost = Long.parseLong(orderCost);
-            discount = VisicomFragment.firstCost * discountInt / 100;
-            VisicomFragment.firstCost = VisicomFragment.firstCost + discount;
-            updateAddCost(String.valueOf(discount));
-            VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
-            VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
-            VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
-
-
-            VisicomFragment.geoText.setVisibility(View.VISIBLE);
-            VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
-            VisicomFragment.textwhere.setVisibility(View.VISIBLE);
-            VisicomFragment.num2.setVisibility(View.VISIBLE);
-            VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
-            VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
-            VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
-            VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
-            VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
-            VisicomFragment.text_view_cost.setVisibility(View.VISIBLE);
-            VisicomFragment.btn_plus.setVisibility(View.VISIBLE);
-            VisicomFragment.btnOrder.setVisibility(View.VISIBLE);
-
-            VisicomFragment.btn_clear_from_text.setVisibility(View.GONE);
-        }
-
 
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -793,6 +750,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
             JSONObject jsonResponse = new JSONObject(responseData);
             JSONArray features = jsonResponse.getJSONArray("features");
             Log.d(TAG, "processAddressData: features" + features);
+
+
             addresses = new ArrayList<>();
             coordinatesList = new ArrayList<>(); // Список для хранения координат
 
@@ -968,10 +927,11 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                         settlementList.add(addressArray[3]);
                     }
 
+                    addressAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.custom_list_item, addressesList);
 
-                    ArrayAdapter<String> addressAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.custom_list_item, addressesList);
 
                     addressListView.setVisibility(View.VISIBLE);
+
                     addressListView.setAdapter(addressAdapter);
                     addressListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
                     addressListView.setItemChecked(0, true);
@@ -1269,5 +1229,315 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
         return list;
     }
 
+    private void oldAddresses(String point) {
+        addresses = new ArrayList<>();
+        coordinatesList = new ArrayList<>(); // Список для хранения координат
+
+        SQLiteDatabase db = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        @SuppressLint("Recycle") Cursor c = db.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
+
+//        if (c != null) {
+//            if (c.moveToFirst()) {
+//                do {
+//
+//                    addresses.add(new String[]{
+//                            c.getString(c.getColumnIndexOrThrow ("from_street")),
+//                            "",
+//                            "",
+//                            "",
+//                    });
+//                    double longitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow ("from_lng")));
+//                    double latitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow ("from_lat")));
+//
+//                    coordinatesList.add(new double[]{longitude, latitude});
+//                    addresses.add(new String[]{
+//                            c.getString(c.getColumnIndexOrThrow ("to_street")),
+//                            "",
+//                            "",
+//                            "",
+//                    });
+//                    longitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow ("to_lng")));
+//                    latitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow ("to_lat")));
+//
+//                    coordinatesList.add(new double[]{longitude, latitude});
+//
+//                } while (c.moveToNext());
+//            }
+//            btn_ok.setVisibility(View.VISIBLE);
+//        }
+//        if (c != null) {
+//            if (c.moveToFirst()) {
+//                do {
+//                    // Получаем данные из курсора
+//                    String fromStreet = c.getString(c.getColumnIndexOrThrow("from_street"));
+//                    String toStreet = c.getString(c.getColumnIndexOrThrow("to_street"));
+//
+//                    // Проверяем, есть ли уже такая запись в addresses
+//                    boolean fromAddressExists = addresses.stream().anyMatch(a -> a[0].equals(fromStreet));
+//                    boolean toAddressExists = addresses.stream().anyMatch(a -> a[0].equals(toStreet));
+//
+//                    // Если записи нет, добавляем
+//                    if (!fromAddressExists) {
+//                        addresses.add(new String[]{fromStreet, "", "", ""});
+//                        double fromLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lng")));
+//                        double fromLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lat")));
+//                        coordinatesList.add(new double[]{fromLongitude, fromLatitude});
+//                    }
+//
+//                    if (!toAddressExists) {
+//                        addresses.add(new String[]{toStreet, "", "", ""});
+//                        double toLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lng")));
+//                        double toLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lat")));
+//                        coordinatesList.add(new double[]{toLongitude, toLatitude});
+//                    }
+//
+//                } while (c.moveToNext());
+//            }
+//        }
+//        if (c != null) {
+//            if (c.moveToFirst()) {
+//                Set<String> uniqueAddressesSet = new HashSet<>();
+//
+//                do {
+//                    // Получаем данные из курсора
+//                    String fromStreet = c.getString(c.getColumnIndexOrThrow("from_street"));
+//                    String toStreet = c.getString(c.getColumnIndexOrThrow("to_street"));
+//
+//                    // Проверяем, есть ли уже такая запись в множестве
+//                    if (uniqueAddressesSet.add(fromStreet)) {
+//                        addresses.add(new String[]{fromStreet, "", "", ""});
+//                        double fromLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lng")));
+//                        double fromLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lat")));
+//                        coordinatesList.add(new double[]{fromLongitude, fromLatitude});
+//                    }
+//
+//                    if (uniqueAddressesSet.add(toStreet)) {
+//                        addresses.add(new String[]{toStreet, "", "", ""});
+//                        double toLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lng")));
+//                        double toLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lat")));
+//                        coordinatesList.add(new double[]{toLongitude, toLatitude});
+//                    }
+//
+//                } while (c.moveToNext());
+//            }
+//        }
+        if (c != null) {
+            if (c.moveToFirst()) {
+                Set<String> uniqueAddressesSet = new HashSet<>();
+
+                do {
+                    // Получаем данные из курсора
+                    String fromStreet = c.getString(c.getColumnIndexOrThrow("from_street"));
+                    fromStreet = fromStreet.trim();
+                    String toStreet = c.getString(c.getColumnIndexOrThrow("to_street"));
+                    toStreet = toStreet.trim();
+                    // Проверяем, есть ли уже такая запись в множестве
+                    if (uniqueAddressesSet.add(fromStreet)) {
+                        addresses.add(new String[]{fromStreet});
+                        double fromLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lng")));
+                        double fromLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lat")));
+                        coordinatesList.add(new double[]{fromLongitude, fromLatitude});
+                    }
+                    Log.d(TAG, "oldAddresses: toStreet " + toStreet);
+                    // Проверяем, есть ли уже такая запись в множестве
+                     if (!toStreet.equals("по місту") && !toStreet.equals("по городу")) {
+
+                         if (uniqueAddressesSet.add(toStreet) && !toStreet.equals(fromStreet)) {
+                             addresses.add(new String[]{toStreet});
+                             double toLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lng")));
+                             double toLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lat")));
+                             coordinatesList.add(new double[]{toLongitude, toLatitude});
+                         }
+                     }
+                } while (c.moveToNext());
+            }
+        }
+//
+//       if (c != null && c.moveToFirst()) {
+//            do {
+//                String fromStreet = c.getString(c.getColumnIndexOrThrow("from_street"));
+//                fromStreet = fromStreet.trim();
+//                Log.d(TAG, "oldAddresses:fromStreet " + fromStreet);
+//                String toStreet = c.getString(c.getColumnIndexOrThrow("to_street"));
+//                toStreet = toStreet.trim();
+//                Log.d(TAG, "oldAddresses:toStreet " + toStreet);
+//                addresses.add(new String[]{fromStreet});
+//                double fromLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lng")));
+//                double fromLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lat")));
+//                coordinatesList.add(new double[]{fromLongitude, fromLatitude});
+//                List<String[]> copyOfAddresses = new ArrayList<>(addresses);
+//
+//                for (String[] address : copyOfAddresses) {
+//                        if(!address.equals(fromStreet)) {
+//                            addresses.add(new String[]{fromStreet});
+//                            fromLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lng")));
+//                            fromLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("from_lat")));
+//                            coordinatesList.add(new double[]{fromLongitude, fromLatitude});
+//                        }
+//
+//
+//                        if (!toStreet.equals(getString(R.string.on_city_tv))) {
+//                            // Например, добавление в addresses и coordinatesList
+//                            if(!address.equals(toStreet)) {
+//                                addresses.add(new String[]{toStreet});
+//                                double toLongitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lng")));
+//                                double toLatitude = Double.parseDouble(c.getString(c.getColumnIndexOrThrow("to_lat")));
+//                                coordinatesList.add(new double[]{toLongitude, toLatitude});
+//                            }
+//
+//                        }
+//
+//
+//
+//            }
+//
+//
+//
+//            } while (c.moveToNext());
+//        }
+
+
+
+        btn_ok.setVisibility(View.VISIBLE);
+        db.close();
+        assert c != null;
+        c.close();
+        addresses.add(new String[]{
+                getString(R.string.address_on_map),
+                "",
+                "",
+                "",
+        });
+        List<String> addressesList = new ArrayList<>();
+        for (String[] addressArray : addresses) {
+            // Выбираем значение 'address' из массива и добавляем его в addressesList
+            addressesList.add(addressArray[0]);
+        }
+        Log.d(TAG, "onCreate: " + addressesList.toString());
+        addressAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.custom_list_item, addressesList);
+        addressListView.setVisibility(View.VISIBLE);
+        addressListView.setAdapter(addressAdapter);
+        addressListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        addressListView.setItemChecked(0, true);
+        addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
+            positionChecked = position;
+            startMarker = "ok";
+            finishMarker = "no";
+            if (point.equals("start")) {
+                fromEditAddress.requestFocus();
+                fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+                KeyboardUtils.showKeyboard(getApplicationContext(), fromEditAddress);
+                messageInfo = getString(R.string.drag_marker_bottom);
+
+
+            } else if (point.equals("finish")) {
+                toEditAddress.requestFocus();
+                toEditAddress.setSelection(toEditAddress.getText().toString().length());
+                KeyboardUtils.showKeyboard(getApplicationContext(), toEditAddress);
+                messageInfo = getString(R.string.two_point_mes);
+                startMarker = "no";
+                finishMarker = "ok";
+            }
+
+            if (position == addressesList.size() - 1) {
+                Intent intent = new Intent(getApplicationContext(), OpenStreetMapVisicomActivity.class);
+
+                intent.putExtra("startMarker", startMarker);
+                intent.putExtra("finishMarker", finishMarker);
+
+                startActivity(intent);
+                finish();
+            } else {
+                double[] coordinates = coordinatesList.get(position);
+
+                if (point.equals("start")) {
+                    startPoint = addressesList.get(position);
+                    fromEditAddress.setText(startPoint);
+                    fromEditAddress.setSelection(startPoint.length());
+
+                    if (!verifyBuildingStart) {
+                        verifyRoutStart = true;
+                        List<String> settings = new ArrayList<>();
+
+
+                        settings.add(Double.toString(coordinates[1]));
+                        settings.add(Double.toString(coordinates[0]));
+                        if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
+                            settings.add(Double.toString(coordinates[1]));
+                            settings.add(Double.toString(coordinates[0]));
+                            settings.add(addressesList.get(position));
+                            settings.add(getString(R.string.on_city_tv));
+                        } else {
+                            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            Cursor cursor = database.rawQuery(query, null);
+
+                            cursor.moveToFirst();
+
+                            // Получите значения полей из первой записи
+
+
+                            @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                            @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                            cursor.close();
+                            database.close();
+
+                            settings.add(String.valueOf(toLatitude));
+                            settings.add(String.valueOf(toLongitude));
+                            settings.add(addressesList.get(position));
+                            settings.add(toEditAddress.getText().toString());
+                        }
+                        updateRoutMarker(settings);
+                        updateMyPosition(coordinates[1], coordinates[0], startPoint, getApplicationContext());
+                        VisicomFragment.geoText.setText(startPoint);
+                        Log.d(TAG, "processAddressData: startPoint " + startPoint);
+                    }
+                } else if (point.equals("finish")) {
+                    finishPoint = addressesList.get(position);
+                    toEditAddress.setText(finishPoint);
+                    toEditAddress.setSelection(finishPoint.length());
+                    btn_clear_to.setVisibility(View.VISIBLE);
+                    if (!verifyBuildingFinish) {
+                        verifyRoutFinish = true;
+                        List<String> settings = new ArrayList<>();
+
+                        VisicomFragment.textViewTo.setText(addressesList.get(position));
+                        VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
+                        if (!fromEditAddress.getText().toString().equals("")) {
+                            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            Cursor cursor = database.rawQuery(query, null);
+
+                            cursor.moveToFirst();
+
+                            // Получите значения полей из первой записи
+
+                            @SuppressLint("Range") double originLatitude = cursor.getDouble(cursor.getColumnIndex("startLat"));
+                            @SuppressLint("Range") double originLongitude = cursor.getDouble(cursor.getColumnIndex("startLan"));
+
+                            cursor.close();
+                            database.close();
+
+                            settings.add(Double.toString(originLatitude));
+                            settings.add(Double.toString(originLongitude));
+                            settings.add(Double.toString(coordinates[1]));
+                            settings.add(Double.toString(coordinates[0]));
+
+                            settings.add(fromEditAddress.getText().toString());
+                            settings.add(addressesList.get(position));
+                            updateRoutMarker(settings);
+                        }
+
+
+                        Log.d(TAG, "settings: " + settings);
+                        toEditAddress.setSelection(addressesList.get(position).length());
+
+                    }
+                }
+            }
+
+            addressListView.setVisibility(View.INVISIBLE);
+        });
+    }
 }
 
