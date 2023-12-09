@@ -119,6 +119,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 case "Odessa":
                 case "Zaporizhzhia":
                 case "Cherkasy Oblast":
+                case "OdessaTest":
                     adapter.setItemEnabled(1, false);
                     listView.setItemChecked(0, true);
                     paymentType(arrayCode [0]);

@@ -96,7 +96,7 @@ public class VisicomFragment extends Fragment {
     public static AppCompatButton button, btn_change, btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
     public static TextView geoText;
     static String api;
-    private ArrayList<Map> adressArr = new ArrayList<>();
+
     public static long firstCost;
 
     @SuppressLint("StaticFieldLeak")
@@ -155,9 +155,6 @@ public class VisicomFragment extends Fragment {
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         api =  stringList.get(2);
 
-        if (!routMaps().isEmpty()) {
-            adressArr = new ArrayList<>(routMaps().size());
-        }
 
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
@@ -474,6 +471,7 @@ public class VisicomFragment extends Fragment {
         database.close();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private boolean newRout() {
         boolean result = false;
 
@@ -643,35 +641,6 @@ public class VisicomFragment extends Fragment {
 
         return hasConnect;
     }
-    ArrayList<Map> routMaps() {
-        Map <String, String> routs;
-        ArrayList<Map> routsArr = new ArrayList<>();
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor c = database.query(MainActivity.TABLE_ORDERS_INFO, null, null, null, null, null, null);
-        int i = 0;
-        if (c != null) {
-            if (c.moveToFirst()) {
-                do {
-                    routs = new HashMap<>();
-                    routs.put("id", c.getString(c.getColumnIndexOrThrow ("id")));
-                    routs.put("from_street", c.getString(c.getColumnIndexOrThrow ("from_street")));
-                    routs.put("from_number", c.getString(c.getColumnIndexOrThrow ("from_number")));
-                    routs.put("to_street", c.getString(c.getColumnIndexOrThrow ("to_street")));
-                    routs.put("to_number", c.getString(c.getColumnIndexOrThrow ("to_number")));
-
-                    routs.put("from_lat", c.getString(c.getColumnIndexOrThrow ("from_lat")));
-                    routs.put("from_lng", c.getString(c.getColumnIndexOrThrow ("from_lng")));
-
-                    routs.put("to_lat", c.getString(c.getColumnIndexOrThrow ("to_lat")));
-                    routs.put("to_lng", c.getString(c.getColumnIndexOrThrow ("to_lng")));
-                    routsArr.add(i++, routs);
-                } while (c.moveToNext());
-            }
-        }
-        database.close();
-
-        return routsArr;
-    }
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void orderRout() {
@@ -827,6 +796,8 @@ public class VisicomFragment extends Fragment {
                                              String to_lat, String to_lng, Context context) {
         Log.d(TAG, "insertRecordsOrders: from_lat" + from_lat);
         Log.d(TAG, "insertRecordsOrders: from_lng" + from_lng);
+        Log.d(TAG, "insertRecordsOrders: to_lat" + to_lat);
+        Log.d(TAG, "insertRecordsOrders: to_lng" + to_lng);
 
         String selection = "from_street = ?";
         String[] selectionArgs = new String[] {from};
