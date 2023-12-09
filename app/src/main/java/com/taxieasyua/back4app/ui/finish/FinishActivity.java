@@ -101,31 +101,31 @@ public class FinishActivity extends AppCompatActivity {
         pay_method = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
         Log.d(TAG, "onCreate: " + pay_method);
         messageFondy = getString(R.string.fondy_message);
-
-        List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
-        switch (stringListArr.get(1)){
-            case "Kyiv City":
-                api = MainActivity.apiKyiv;
-                break;
-            case "Dnipropetrovsk Oblast":
-                api = MainActivity.apiDnipro;
-                break;
-            case "Odessa":
-                api = MainActivity.apiOdessa;
-                break;
-            case "Zaporizhzhia":
-                api = MainActivity.apiZaporizhzhia;
-                break;
-            case "Cherkasy Oblast":
-                api = MainActivity.apiCherkasy;
-                break;
-            case "OdessaTest":
-                api = MainActivity.apiTest;
-                break;
-            default:
-                api = MainActivity.apiKyiv;
-                break;
-        }
+        api = MainActivity.api;
+//        List<String> stringListArr = logCursor(MainActivity.CITY_INFO);
+//        switch (stringListArr.get(1)){
+//            case "Kyiv City":
+//
+//                break;
+//            case "Dnipropetrovsk Oblast":
+//                api = MainActivity.apiDnipro;
+//                break;
+//            case "Odessa":
+//                api = MainActivity.apiOdessa;
+//                break;
+//            case "Zaporizhzhia":
+//                api = MainActivity.apiZaporizhzhia;
+//                break;
+//            case "Cherkasy Oblast":
+//                api = MainActivity.apiCherkasy;
+//                break;
+//            case "OdessaTest":
+//                api = MainActivity.apiTest;
+//                break;
+//            default:
+//                api = MainActivity.apiKyiv;
+//                break;
+//        }
         messageResult = getIntent().getStringExtra("messageResult_key");
 
         receivedMap = (HashMap<String, String>) getIntent().getSerializableExtra("sendUrlMap");

@@ -382,15 +382,9 @@ public class VisicomFragment extends Fragment {
         });
 
         getLocalIpAddress();
-        if(newRout()) {
-            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                firstLocationGPS();
-            }
-        } else {
+        if(!newRout()) {
             visicomCost();
         }
-
         return root;
     }
 
@@ -467,7 +461,6 @@ public class VisicomFragment extends Fragment {
                 }
             });
         }
-
     }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
@@ -679,23 +672,6 @@ public class VisicomFragment extends Fragment {
 
         return routsArr;
     }
-    @SuppressLint("Range")
-    private double getFromTablePositionInfo(Context context, String columnName) {
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery("SELECT "+ columnName + " FROM " + MainActivity.TABLE_POSITION_INFO + " WHERE id = ?", new String[]{"1"});
-
-        double result = 0.0; // Значение по умолчанию или обработка, если запись не найдена.
-
-        if (cursor != null && cursor.moveToFirst()) {
-            result = cursor.getDouble(cursor.getColumnIndex(columnName));
-            cursor.close();
-        }
-
-        database.close();
-
-        return result;
-    }
-
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void orderRout() {
@@ -774,30 +750,6 @@ public class VisicomFragment extends Fragment {
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
-    }
-
-    private void updateRoutGeo(List<String> settings) {
-        ContentValues cv = new ContentValues();
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        cv.put("startLat",  Double.parseDouble(settings.get(0)));
-        database.update(MainActivity.ROUT_GEO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("startLan", Double.parseDouble(settings.get(1)));
-        database.update(MainActivity.ROUT_GEO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("toCost", settings.get(2));
-        database.update(MainActivity.ROUT_GEO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("to_numberCost", settings.get(3));
-        database.update(MainActivity.ROUT_GEO, cv, "id = ?",
-                new String[] { "1" });
-
-        // обновляем по id
-
-        database.update(MainActivity.ROUT_GEO, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
-
     }
 
     private boolean verifyOrder(Context context) {
@@ -999,177 +951,6 @@ public class VisicomFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-    }
-
-
-    private void firstLocationGPS() {
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
-        locationCallback = new LocationCallback() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                // Обработка полученных местоположений
-                stopLocationUpdates();
-
-                // Обработка полученных местоположений
-                List<Location> locations = locationResult.getLocations();
-                Log.d(TAG, "onLocationResult: locations 222222" + locations);
-
-                if (!locations.isEmpty()) {
-                    Location firstLocation = locations.get(0);
-
-                    double latitude = firstLocation.getLatitude();
-                    double longitude = firstLocation.getLongitude();
-
-
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-                    String api =  stringList.get(2);
-
-                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + latitude + "/" + longitude;
-                    Map sendUrlFrom = null;
-                    try {
-                        sendUrlFrom = FromJSONParser.sendURL(urlFrom);
-
-                    } catch (MalformedURLException | InterruptedException |
-                             JSONException e) {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                        bottomSheetDialogFragment.show(getParentFragmentManager(), bottomSheetDialogFragment.getTag());
-                    }
-                    assert sendUrlFrom != null;
-                    String FromAdressString = (String) sendUrlFrom.get("route_address_from");
-                    if (FromAdressString != null) {
-                        if (FromAdressString.equals("Точка на карте")) {
-                            FromAdressString = getString(R.string.startPoint);
-                        }
-                    }
-                    updateMyPosition(latitude, longitude, FromAdressString, requireActivity());
-                    geoText.setText(FromAdressString);
-                    btn_clear_from_text.setVisibility(View.INVISIBLE);
-                    btn_clear_from.setVisibility(View.VISIBLE);
-
-                    geoText.setVisibility(View.VISIBLE);
-
-                    List<String> settings = new ArrayList<>();
-                    String ToAdressString = textViewTo.getText().toString();
-                    if(ToAdressString.equals(getString(R.string.on_city_tv)) ||
-                            ToAdressString.equals("") ) {
-                        settings.add(Double.toString(latitude));
-                        settings.add(Double.toString(longitude));
-                        settings.add(Double.toString(latitude));
-                        settings.add(Double.toString(longitude));
-                        settings.add(FromAdressString);
-                        settings.add(getString(R.string.on_city_tv));
-                    } else {
-
-                        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        Cursor cursor = database.rawQuery(query, null);
-
-                        cursor.moveToFirst();
-
-                        // Получите значения полей из первой записи
-
-
-                        @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
-                        @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
-                        cursor.close();
-                        database.close();
-//
-//                        @SuppressLint("Range") String finish = cursor.getString(cursor.getColumnIndex("finish"));
-
-
-                        settings.add(Double.toString(latitude));
-                        settings.add(Double.toString(longitude));
-                        settings.add(Double.toString(toLatitude));
-                        settings.add(Double.toString(toLongitude));
-                        settings.add(FromAdressString);
-                        settings.add(ToAdressString);
-                    }
-
-
-
-                    updateRoutMarker(settings);
-                    if(!logCursor(MainActivity.TABLE_USER_INFO, getContext()).get(3).equals("email")) {
-                        visicomCost();
-                    }
-
-                    btn_change.setVisibility(View.VISIBLE);
-                }
-            }
-        };
-
-    }
-
-
-
-    private void updateRoutMarker(List<String> settings) {
-        Log.d(TAG, "updateRoutMarker: " + settings.toString());
-        ContentValues cv = new ContentValues();
-            cv.put("startLat", Double.parseDouble(settings.get(0)));
-            cv.put("startLan", Double.parseDouble(settings.get(1)));
-            cv.put("to_lat", Double.parseDouble(settings.get(0)));
-            cv.put("to_lng", Double.parseDouble(settings.get(1)));
-            cv.put("start", settings.get(4));
-            cv.put("finish", settings.get(5));
-
-        // обновляем по id
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        database.update(MainActivity.ROUT_MARKER, cv, "id = ?",
-                new String[]{"1"});
-        database.close();
-    }
-    private static void updateMyPosition(Double startLat, Double startLan, String position, Context context) {
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        ContentValues cv = new ContentValues();
-
-        cv.put("startLat", startLat);
-        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("startLan", startLan);
-        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
-                new String[] { "1" });
-        cv.put("position", position);
-        database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
-                new String[] { "1" });
-        database.close();
-
-    }
-
-    private void startLocationUpdates() {
-        LocationRequest locationRequest = createLocationRequest();
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
-    }
-
-
-    private void stopLocationUpdates() {
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
-    }
-
-    private LocationRequest createLocationRequest() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(1000); // Интервал обновления местоположения в миллисекундах
-        locationRequest.setFastestInterval(100); // Самый быстрый интервал обновления местоположения в миллисекундах
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // Приоритет точного местоположения
-        return locationRequest;
-    }
-
-    private void requestLocationPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            // Показываем объяснение пользователю, почему мы запрашиваем разрешение
-//            // Можно использовать диалоговое окно или другой пользовательский интерфейс
-//            MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-//            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-        } else {
-//            ActivityCompat.requestPermissions(requireActivity(),
-//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                    REQUEST_LOCATION_PERMISSION);
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

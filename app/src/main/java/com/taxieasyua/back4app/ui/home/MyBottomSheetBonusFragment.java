@@ -27,6 +27,10 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.cities.api.CityApiClient;
+import com.taxieasyua.back4app.cities.api.CityResponse;
+import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
+import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.ui.card.CardFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
@@ -61,6 +65,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     AppCompatButton btn_ok;
     int pos;
     ProgressBar progressBar;
+    CustomArrayAdapter adapter;
     private String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView) {
@@ -90,7 +95,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 "card_payment",
         };
 
-        CustomArrayAdapter adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
+        adapter = new CustomArrayAdapter(requireActivity(), R.layout.services_adapter_layout, Arrays.asList(array));
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         btn_ok = view.findViewById(R.id.btn_ok);
@@ -104,10 +109,11 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
 
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = stringList.get(1);
+        //
         if(Long.parseLong(bonus) >= cost * 100 ) {
-            List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-
-            switch (stringList.get(1)) {
+            switch (city) {
                 case "Kyiv City":
                 case "Dnipropetrovsk Oblast":
                 case "Odessa":
@@ -120,8 +126,33 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                     break;
             }
         } else {
+            listView.setItemChecked(0, true);
+            paymentType(arrayCode [0]);
             adapter.setItemEnabled(1, false);
+            adapter.setItemEnabled(2, false);
         }
+
+//        switch (city) {
+//            case "Kyiv City":
+//            case "Dnipropetrovsk Oblast":
+//            case "Odessa":
+//            case "Zaporizhzhia":
+//            case "Cherkasy Oblast":
+//                ContentValues cv = new ContentValues();
+//                cv.put("merchant_fondy", "");
+//                cv.put("fondy_key_storage", "");
+//
+//                SQLiteDatabase database = requireContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//                database.update(MainActivity.CITY_INFO, cv, "id = ?",
+//                        new String[]{"1"});
+//                database.close();
+//
+//                break;
+//            case "OdessaTest":
+//                merchantFondy(city);
+//                break;
+//        }
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -151,11 +182,104 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             }
 
         });
-
-
-
-
         return view;
+    }
+
+    private void cityMaxPay(String $city) {
+        CityService cityService = CityApiClient.getClient().create(CityService.class);
+
+        // Замените "your_city" на фактическое название города
+        Call<CityResponse> call = cityService.getMaxPayValues($city);
+
+        call.enqueue(new Callback<CityResponse>() {
+            @Override
+            public void onResponse(Call<CityResponse> call, Response<CityResponse> response) {
+                if (response.isSuccessful()) {
+                    CityResponse cityResponse = response.body();
+                    if (cityResponse != null) {
+                        int cardMaxPay = cityResponse.getCardMaxPay();
+                        int bonusMaxPay = cityResponse.getBonusMaxPay();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("card_max_pay", cardMaxPay);
+                        cv.put("bonus_max_pay", bonusMaxPay);
+                        if (isAdded()) {
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                    new String[]{"1"});
+
+                            database.close();
+                        }
+
+
+                        // Добавьте здесь код для обработки полученных значений
+                    }
+                } else {
+                    Log.e("Request", "Failed. Error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CityResponse> call, @NonNull Throwable t) {
+                Log.e("Request", "Failed. Error message: " + t.getMessage());
+            }
+        });
+    }
+    private void merchantFondy(String city) {
+        CityService cityService = CityApiClient.getClient().create(CityService.class);
+
+        // Замените "your_city" на фактическое название города
+        Call<CityResponseMerchantFondy> call = cityService.getMerchantFondy(city);
+
+        call.enqueue(new Callback<CityResponseMerchantFondy>() {
+            @Override
+            public void onResponse(@NonNull Call<CityResponseMerchantFondy> call, @NonNull Response<CityResponseMerchantFondy> response) {
+                if (response.isSuccessful()) {
+                    CityResponseMerchantFondy cityResponse = response.body();
+                    Log.d(TAG, "onResponse: cityResponse" + cityResponse);
+                    if (cityResponse != null) {
+                        String merchant_fondy = cityResponse.getMerchantFondy();
+                        String fondy_key_storage = cityResponse.getFondyKeyStorage();
+
+                        ContentValues cv = new ContentValues();
+                        cv.put("merchant_fondy", merchant_fondy);
+                        cv.put("fondy_key_storage", fondy_key_storage);
+
+                        if (isAdded()) {
+                            SQLiteDatabase database = requireContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                    new String[]{"1"});
+
+                            database.close();
+                        }
+
+
+                        Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
+                        Log.d(TAG, "onResponse: fondy_key_storage" + fondy_key_storage);
+
+                        if(merchant_fondy == null) {
+                            adapter.setItemEnabled(2, false);
+                            listView.setItemChecked(0, true);
+                            paymentType(arrayCode [0]);
+                        } else {
+                            adapter.setItemEnabled(2, true);
+                            cityMaxPay(city);
+                        }
+
+                        // Добавьте здесь код для обработки полученных значений
+                    }
+                } else {
+                    Log.e("Request", "Failed. Error code: " + response.code());
+                    adapter.setItemEnabled(2, false);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CityResponseMerchantFondy> call, @NonNull Throwable t) {
+                Log.e("Request", "Failed. Error message: " + t.getMessage());
+                adapter.setItemEnabled(2, false);
+            }
+        });
     }
 
     private void paymentType(String paymentCode) {

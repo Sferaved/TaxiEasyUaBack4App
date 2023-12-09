@@ -56,8 +56,6 @@ import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.card.CardInfo;
-import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
@@ -66,8 +64,6 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.payment_system.PayApi;
-import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import org.json.JSONException;
@@ -105,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_07122023_1";
+    public static final String DB_NAME = "data_09122023_20";
 
     /**
      * Table section
@@ -127,21 +123,12 @@ public class MainActivity extends AppCompatActivity {
     public static boolean verifyPhone;
     private AppBarConfiguration mAppBarConfiguration;
     private NetworkChangeReceiver networkChangeReceiver;
-    String  cityNew;
     /**
      * Api section
      */
-    public static final String  apiTest = "apiTest";
-    public static final String  apiKyiv = "apiTest";
-    public static final String  apiDnipro = "apiTest";
-    public static final String  apiOdessa = "apiTest";
-    public static final String  apiZaporizhzhia = "apiTest";
-    public static final String  apiCherkasy = "apiTest";
-//    public static final String  apiKyiv = "apiPas2";
-//    public static final String  apiDnipro = "apiPas2_Dnipro";
-//    public static final String  apiOdessa = "apiPas2_Odessa";
-//    public static final String  apiZaporizhzhia = "apiPas2_Zaporizhzhia";
-//    public static final String  apiCherkasy = "apiPas2_Cherkasy";
+
+    public static final String  api = "apiTest";
+
     /**
      * Phone section
      */
@@ -355,12 +342,12 @@ public class MainActivity extends AppCompatActivity {
         if (cursorDb.getCount() == 0) {
             List<String> settings = new ArrayList<>();
             settings.add(""); //1
-            settings.add(apiKyiv); //2
+            settings.add(api); //2
             settings.add(Kyiv_City_phone); //3
             settings.add("5000"); //4
             settings.add("500000"); //5
-            settings.add("1534178"); //6
-            settings.add(getString(R.string.fondy_key_storage)); //7
+            settings.add(""); //6
+            settings.add(""); //7
             insertCity(settings);
 
             cityMaxPay("Kyiv City");
@@ -438,44 +425,6 @@ public class MainActivity extends AppCompatActivity {
         newUser();
     }
 
-
-
-    String baseUrl = "https://m.easy-order-taxi.site";
-    private void fetchBonus(String value) {
-        String url = baseUrl + "/bonus/bonusUserShow/" + value;
-        Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
-        call.enqueue(new Callback<BonusResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<BonusResponse> call, @NonNull Response<BonusResponse> response) {
-                BonusResponse bonusResponse = response.body();
-                if (response.isSuccessful()) {
-                    assert bonusResponse != null;
-                    String bonus = String.valueOf(bonusResponse.getBonus());
-
-                    ContentValues cv = new ContentValues();
-                    cv.put("bonus", bonus);
-                    SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                    database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?",
-                            new String[] { "1" });
-                    database.close();
-
-                    Log.d("TAG", "onResponse: logCursor(TABLE_USER_INFO).get(4)" + logCursor(TABLE_USER_INFO).get(5));
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BonusResponse> call, Throwable t) {
-                // Обработка ошибок сети или других ошибок
-                String errorMessage = t.getMessage();
-                t.printStackTrace();
-                // Дополнительная обработка ошибки
-            }
-        });
-    }
     private void insertFirstSettings(List<String> settings) {
         String sql = "INSERT INTO " + TABLE_SETTINGS_INFO + " VALUES(?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1228,57 +1177,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
-    private void pay_system() {
-        String payment_type = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
-
-        Log.d(TAG, "fistItem: " + payment_type);
-        if (payment_type.equals("card_payment")) {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(baseUrl)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-
-            PayApi apiService = retrofit.create(PayApi.class);
-            Call<ResponsePaySystem> call = apiService.getPaySystem();
-            call.enqueue(new Callback<ResponsePaySystem>() {
-                @Override
-                public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
-                    if (response.isSuccessful()) {
-                        // Обработка успешного ответа
-                        ResponsePaySystem responsePaySystem = response.body();
-                        assert responsePaySystem != null;
-                        String paymentCode = responsePaySystem.getPay_system();
-                        String paymentCodeNew = "fondy";
-
-                        switch (paymentCode) {
-                            case "fondy":
-                                paymentCodeNew = "fondy_payment";
-                                break;
-                            case "mono":
-                                paymentCodeNew = "mono_payment";
-                                break;
-                        }
-
-                        ContentValues cv = new ContentValues();
-                        cv.put("payment_type", paymentCodeNew);
-                        // обновляем по id
-                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
-
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
-
-                }
-            });
-        };
-    }
-
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {

@@ -250,6 +250,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     }
 
     private void updateMyPosition(String city) {
+
         Double startLat;
         Double startLan;
         String position;
@@ -341,11 +342,11 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         super.onDismiss(dialog);
     }
 
-    private void cityMaxPay(String $city) {
+    private void cityMaxPay(String city) {
         CityService cityService = CityApiClient.getClient().create(CityService.class);
 
         // Замените "your_city" на фактическое название города
-        Call<CityResponse> call = cityService.getMaxPayValues($city);
+        Call<CityResponse> call = cityService.getMaxPayValues(city);
 
         call.enqueue(new Callback<CityResponse>() {
             @Override
@@ -376,17 +377,17 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<CityResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<CityResponse> call, @NonNull Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
             }
         });
     }
 
-    private void merchantFondy(String $city) {
+    private void merchantFondy(String city) {
         CityService cityService = CityApiClient.getClient().create(CityService.class);
 
         // Замените "your_city" на фактическое название города
-        Call<CityResponseMerchantFondy> call = cityService.getMerchantFondy($city);
+        Call<CityResponseMerchantFondy> call = cityService.getMerchantFondy(city);
 
         call.enqueue(new Callback<CityResponseMerchantFondy>() {
             @Override
@@ -403,7 +404,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         cv.put("fondy_key_storage", fondy_key_storage);
 
                         if (isAdded()) {
-                            SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                             database.update(MainActivity.CITY_INFO, cv, "id = ?",
                                     new String[]{"1"});
 
@@ -423,7 +424,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<CityResponseMerchantFondy> call, Throwable t) {
+            public void onFailure(@NonNull Call<CityResponseMerchantFondy> call, @NonNull Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
             }
         });
