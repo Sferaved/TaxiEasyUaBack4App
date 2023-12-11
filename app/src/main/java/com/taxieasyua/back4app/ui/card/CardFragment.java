@@ -5,7 +5,6 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -32,8 +31,6 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentCardBinding;
-import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
-import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
 import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
 import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
@@ -153,13 +150,11 @@ public class CardFragment extends Fragment {
                 if (cardMaps != null && !cardMaps.isEmpty()) {
                     CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), cardMaps, table);
                     listView.setAdapter(listAdapter);
-
                 } else {
                     textCard.setVisibility(View.VISIBLE);
                     listView.setVisibility(View.GONE);
                     textCard.setText(R.string.no_cards);
                 }
-                progressBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -168,6 +163,7 @@ public class CardFragment extends Fragment {
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
+        progressBar.setVisibility(View.GONE);
     }
 
     @SuppressLint("Range")

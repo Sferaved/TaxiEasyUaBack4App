@@ -12,8 +12,6 @@ public class AboutViewModel extends ViewModel {
     private final MutableLiveData<String> mText_build = new MutableLiveData<>();
 
     public AboutViewModel() {
-        mText_author.setValue("автор: Андрей Коржов");
-
         mText_email.setValue("Email: taxi.easy.ua@gmail.com");
         mText_build.setValue("2023");
     }
