@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -39,11 +38,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
@@ -60,14 +54,11 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGeoFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.home.MyPhoneDialogFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.ActivityVisicomOnePage;
-import com.taxieasyua.back4app.ui.open_map.visicom.MyBottomSheetVisicomOnePageFragment;
-
-import org.json.JSONException;
+import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -82,7 +73,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class VisicomFragment extends Fragment {
+public class VisicomFragment extends Fragment  implements ApiCallback{
 
     public static ProgressBar progressBar;
     private FragmentVisicomBinding binding;
@@ -134,6 +125,8 @@ public class VisicomFragment extends Fragment {
         View root = binding.getRoot();
         progressBar = binding.progressBar;
 
+        visicomKey(this);
+
         fab_call = binding.fabCall;
         fab_call.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,7 +142,7 @@ public class VisicomFragment extends Fragment {
 
 
         buttonBonus = binding.btnBonus;
-        apiKey = requireActivity().getString(R.string.visicom_key_storage);
+
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         api =  stringList.get(2);
@@ -993,7 +986,49 @@ public class VisicomFragment extends Fragment {
 
                     VisicomFragment.btn_clear_from_text.setVisibility(View.GONE);
         }
+    }
 
+    private void visicomKey(final ApiCallback callback) {
+        com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful()) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse != null) {
+                        String keyVisicom = apiResponse.getKeyVisicom();
+                        Log.d("ApiResponse", "keyVisicom: " + keyVisicom);
+
+                        // Теперь у вас есть ключ Visicom для дальнейшего использования
+                        callback.onVisicomKeyReceived(keyVisicom);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.e("ApiResponse", "Error: " + response.code());
+                    callback.onApiError(response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Обработка ошибки
+                Log.e("ApiResponse", "Failed to make API call", t);
+                callback.onApiFailure(t);
+            }
+        });
+    }
+    @Override
+    public void onVisicomKeyReceived(String key) {
+        Log.d(TAG, "onVisicomKeyReceived: " + key);
+        apiKey = key;
+    }
+
+    @Override
+    public void onApiError(int errorCode) {
+
+    }
+
+    @Override
+    public void onApiFailure(Throwable t) {
 
     }
 }

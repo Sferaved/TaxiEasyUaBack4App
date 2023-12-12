@@ -55,6 +55,9 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
+import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient;
+import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
 
@@ -75,9 +78,12 @@ import java.util.regex.Pattern;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
-public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
+public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment implements ApiCallback {
 
     private static final String TAG = "TAG_VIS_ADDR";
 
@@ -117,7 +123,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.visicom_address_layout, container, false);
+
         setCancelable(false);
+        visicomKey(this);
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         switch (stringList.get(1)) {
             case "Dnipropetrovsk Oblast":
@@ -141,7 +149,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         textGeoError = view.findViewById(R.id.textGeoError);
         text_toError = view.findViewById(R.id.text_toError);
 
-        apiKey = requireActivity().getString(R.string.visicom_key_storage);
+
         addressListView = view.findViewById(R.id.listAddress);
 
         btn_ok = view.findViewById(R.id.btn_ok);
@@ -1370,6 +1378,48 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment {
         database.close();
         return list;
     }
+    private void visicomKey(final ApiCallback callback) {
+        ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful()) {
+                    ApiResponse apiResponse = response.body();
+                    if (apiResponse != null) {
+                        String keyVisicom = apiResponse.getKeyVisicom();
+                        Log.d("ApiResponse", "keyVisicom: " + keyVisicom);
 
+                        // Теперь у вас есть ключ Visicom для дальнейшего использования
+                        callback.onVisicomKeyReceived(keyVisicom);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.e("ApiResponse", "Error: " + response.code());
+                    callback.onApiError(response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Обработка ошибки
+                Log.e("ApiResponse", "Failed to make API call", t);
+                callback.onApiFailure(t);
+            }
+        });
+    }
+    @Override
+    public void onVisicomKeyReceived(String key) {
+        Log.d(TAG, "onVisicomKeyReceived: " + key);
+        apiKey = key;
+    }
+
+    @Override
+    public void onApiError(int errorCode) {
+
+    }
+
+    @Override
+    public void onApiFailure(Throwable t) {
+
+    }
 }
 
