@@ -85,7 +85,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
         Log.d(TAG, "onCreateView: "  );
 //        getCardTokenFondy();
-        pay_system();
+        pay_system(getContext());
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -157,7 +157,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         String orderStatus = responseData.getOrderStatus();
                         if(orderStatus.equals("approved")){
                             getCardTokenFondy();
-                            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount);
+                            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount, getContext());
                         };
                     }
                 } else {
@@ -256,7 +256,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
             }
         });
     }
-    private void getReversFondy(String orderId, String comment, String amount) {
+    private void getReversFondy(String orderId, String comment, String amount, Context context) {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pay.fondy.eu/api/")
@@ -294,7 +294,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         if (responseData != null) {
                             // Обработка успешного ответа
                             Log.d("TAG1", "onResponse: " + responseData.toString());
-                            if (isAdded()) { // Проверяем, что фрагмент присоединен к активности
+//                            if (isAdded()) { // Проверяем, что фрагмент присоединен к активности
                                 if (response.isSuccessful()) {
                                     Toast.makeText(requireActivity(), getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
 
@@ -304,14 +304,14 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                                         // Если массив пустой, отобразите текст "no_routs" вместо списка
                                         CardFragment.textCard.setVisibility(View.GONE);
 
-                                        CustomCardAdapter listAdapter = new CustomCardAdapter(requireActivity(), getCardMapsFromDatabase(), CardFragment.table);
+                                        CustomCardAdapter listAdapter = new CustomCardAdapter(context, getCardMapsFromDatabase(), CardFragment.table);
                                         CardFragment.listView.setAdapter(listAdapter);
                                         CardFragment.listView.setVisibility(View.VISIBLE);
                                         updateCardFragment();
                                     }
                                     dismiss();
                                 }
-                            }
+//                            }
                         }
                     }
                 } else {
@@ -519,11 +519,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         super.onDismiss(dialog);
         CardFragment.progressBar.setVisibility(View.GONE);
         if(MainActivity.order_id !=null) {
-            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount);
+            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount, getContext());
         }
     }
 
-    private void pay_system() {
+    private void pay_system(Context context) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -549,16 +549,16 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                             pay_method = "mono_payment";
                             break;
                     }
-                    if(isAdded()){
+//                    if(isAdded()){
                         ContentValues cv = new ContentValues();
                         cv.put("payment_type", pay_method);
                         // обновляем по id
-                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                                 new String[] { "1" });
                         database.close();
 
-                    }
+//                    }
 
 
                 } else {
@@ -569,11 +569,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
-                if (isAdded()) {
+            public void onFailure(@NonNull Call<ResponsePaySystem> call, @NonNull Throwable t) {
+//                if (isAdded()) {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
+//                }
             }
         });
     }

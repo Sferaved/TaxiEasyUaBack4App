@@ -88,12 +88,10 @@ public class VisicomFragment extends Fragment {
     private FragmentVisicomBinding binding;
     private static final String TAG = "TAG_VISICOM";
     private MyPhoneDialogFragment bottomSheetDialogFragment;
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private LocationCallback locationCallback;
+
     FloatingActionButton fab_call;
 
-    public static AppCompatButton button, btn_change, btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
+    public static AppCompatButton button,  btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
     public static TextView geoText;
     static String api;
 
@@ -267,6 +265,8 @@ public class VisicomFragment extends Fragment {
                     Log.d(TAG, "onClick: pay_method " + pay_method );
                     List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
                     String card_max_pay = stringListCity.get(4);
+                    Log.d(TAG, "onClick:card_max_pay " + card_max_pay);
+
                     String bonus_max_pay = stringListCity.get(5);
                     switch (pay_method) {
                         case "bonus_payment":

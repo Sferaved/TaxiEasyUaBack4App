@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -122,17 +123,17 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 case "OdessaTest":
                     adapter.setItemEnabled(1, false);
                     listView.setItemChecked(0, true);
-                    paymentType(arrayCode [0]);
+                    paymentType(arrayCode [0], requireContext());
                     adapter.setItemEnabled(2, false);
                     break;
             }
         } else {
             listView.setItemChecked(0, true);
-            paymentType(arrayCode [0]);
+            paymentType(arrayCode [0], requireContext());
             adapter.setItemEnabled(1, false);
-            adapter.setItemEnabled(2, false);
+//            adapter.setItemEnabled(2, false);
         }
-
+        merchantFondy(city, getContext());
 //        switch (city) {
 //            case "Kyiv City":
 //            case "Dnipropetrovsk Oblast":
@@ -147,10 +148,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 //                database.update(MainActivity.CITY_INFO, cv, "id = ?",
 //                        new String[]{"1"});
 //                database.close();
-//
+//                adapter.setItemEnabled(2, false);
 //                break;
 //            case "OdessaTest":
-//                merchantFondy(city);
+//                merchantFondy(city, getContext());
 //                break;
 //        }
 
@@ -169,7 +170,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         public void onPaySystemResult(String paymentCode) {
                             Log.d(TAG, "onPaySystemResult: paymentCode" + paymentCode);
                             // Здесь вы можете использовать полученное значение paymentCode
-                             paymentType(paymentCode);
+                             paymentType(paymentCode, requireContext());
                         }
 
                         @Override
@@ -177,7 +178,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         }
                     });
                 } else {
-                    paymentType(arrayCode [pos]);
+                    paymentType(arrayCode [pos], requireContext());
                 }
 
             }
@@ -186,7 +187,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         return view;
     }
 
-    private void cityMaxPay(String $city) {
+    private void cityMaxPay(String $city, Context context) {
         CityService cityService = CityApiClient.getClient().create(CityService.class);
 
         // Замените "your_city" на фактическое название города
@@ -194,7 +195,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         call.enqueue(new Callback<CityResponse>() {
             @Override
-            public void onResponse(Call<CityResponse> call, Response<CityResponse> response) {
+            public void onResponse(@NonNull Call<CityResponse> call, @NonNull Response<CityResponse> response) {
                 if (response.isSuccessful()) {
                     CityResponse cityResponse = response.body();
                     if (cityResponse != null) {
@@ -204,13 +205,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         ContentValues cv = new ContentValues();
                         cv.put("card_max_pay", cardMaxPay);
                         cv.put("bonus_max_pay", bonusMaxPay);
-                        if (isAdded()) {
-                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//                        if (isAdded()) {
+                            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                             database.update(MainActivity.CITY_INFO, cv, "id = ?",
                                     new String[]{"1"});
 
                             database.close();
-                        }
+//                        }
 
 
                         // Добавьте здесь код для обработки полученных значений
@@ -226,7 +227,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             }
         });
     }
-    private void merchantFondy(String city) {
+    private void merchantFondy(String city, Context context) {
         CityService cityService = CityApiClient.getClient().create(CityService.class);
 
         // Замените "your_city" на фактическое название города
@@ -246,13 +247,13 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         cv.put("merchant_fondy", merchant_fondy);
                         cv.put("fondy_key_storage", fondy_key_storage);
 
-                        if (isAdded()) {
-                            SQLiteDatabase database = requireContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//                        if (isAdded()) {
+                            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                             database.update(MainActivity.CITY_INFO, cv, "id = ?",
                                     new String[]{"1"});
 
                             database.close();
-                        }
+//                        }
 
 
                         Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
@@ -261,10 +262,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         if(merchant_fondy == null) {
                             adapter.setItemEnabled(2, false);
                             listView.setItemChecked(0, true);
-                            paymentType(arrayCode [0]);
+                            paymentType(arrayCode [0], requireContext());
                         } else {
                             adapter.setItemEnabled(2, true);
-                            cityMaxPay(city);
+                            cityMaxPay(city, context);
                         }
 
                         // Добавьте здесь код для обработки полученных значений
@@ -283,18 +284,18 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         });
     }
 
-    private void paymentType(String paymentCode) {
+    private void paymentType(String paymentCode, Context context) {
         ContentValues cv = new ContentValues();
         Log.d(TAG, "paymentType: paymentCode 1111" + paymentCode);
 
         cv.put("payment_type", paymentCode);
         // обновляем по id
-        if(isAdded()){
-            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//        if(isAdded()){
+            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                     new String[] { "1" });
             database.close();
-        }
+//        }
         reCount();
     }
 
@@ -308,12 +309,12 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             case "nal_payment":
                 listView.setItemChecked(0, true);
                 pos = 0;
-                paymentType(arrayCode [pos]);
+                paymentType(arrayCode [pos], requireContext());
                 break;
             case "bonus_payment":
                 listView.setItemChecked(1, true);
                 pos = 1;
-                paymentType(arrayCode [pos]);
+                paymentType(arrayCode [pos], requireContext());
                 break;
             case "card_payment":
             case "fondy_payment":
@@ -325,7 +326,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                     public void onPaySystemResult(String paymentCode) {
                         Log.d(TAG, "onPaySystemResult: paymentCode" + paymentCode);
                         // Здесь вы можете использовать полученное значение paymentCode
-                        paymentType(paymentCode);
+                        paymentType(paymentCode, requireContext());
 
                     }
 
