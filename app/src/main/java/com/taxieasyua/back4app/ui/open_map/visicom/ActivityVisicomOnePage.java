@@ -524,9 +524,12 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
                         }
                         updateMyPosition(latitude, longitude, FromAdressString, getApplicationContext());
                         fromEditAddress.setText(FromAdressString);
-                        assert FromAdressString != null;
+                    assert FromAdressString != null;
+                    if (FromAdressString != null) {
                         fromEditAddress.setSelection(FromAdressString.length());
-                        btn_clear_from.setVisibility(View.VISIBLE);
+                    }
+
+                    btn_clear_from.setVisibility(View.VISIBLE);
                         VisicomFragment.geoText.setText(FromAdressString);
 
                         List<String> settings = new ArrayList<>();

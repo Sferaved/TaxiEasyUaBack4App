@@ -262,7 +262,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         if(merchant_fondy == null) {
                             adapter.setItemEnabled(2, false);
                             listView.setItemChecked(0, true);
-                            paymentType(arrayCode [0], requireContext());
+                            paymentType(arrayCode [0], context);
                         } else {
                             adapter.setItemEnabled(2, true);
                             cityMaxPay(city, context);
