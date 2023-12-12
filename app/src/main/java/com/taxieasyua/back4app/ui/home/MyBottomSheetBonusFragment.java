@@ -113,7 +113,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         String city = stringList.get(1);
         //
-        if(Long.parseLong(bonus) >= cost * 100 ) {
+        if(Long.parseLong(bonus) <= cost * 100 ) {
             switch (city) {
                 case "Kyiv City":
                 case "Dnipropetrovsk Oblast":
@@ -128,9 +128,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                     break;
             }
         } else {
-            listView.setItemChecked(0, true);
-            paymentType(arrayCode [0], requireContext());
-            adapter.setItemEnabled(1, false);
+//            listView.setItemChecked(0, true);
+//            paymentType(arrayCode [0], requireContext());
+//            adapter.setItemEnabled(1, false);
 //            adapter.setItemEnabled(2, false);
         }
         merchantFondy(city, getContext());

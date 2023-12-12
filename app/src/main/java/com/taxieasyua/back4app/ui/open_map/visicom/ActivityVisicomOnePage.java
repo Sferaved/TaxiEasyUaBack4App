@@ -152,7 +152,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
         textGeoError = findViewById(R.id.textGeoError);
         text_toError = findViewById(R.id.text_toError);
 
-        apiKey = getString(R.string.visicom_key_storage);
+        apiKey = visicomKey();
         addressListView = findViewById(R.id.listAddress);
         progressBar = findViewById(R.id.progress_bar_visicom);
 
@@ -365,6 +365,11 @@ public class ActivityVisicomOnePage extends AppCompatActivity {
         });
 
     }
+
+    private String visicomKey() {
+        return getString(R.string.visicom_key_storage);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("Range")
     public String getTaxiUrlSearchMarkers(String urlAPI, Context context) {

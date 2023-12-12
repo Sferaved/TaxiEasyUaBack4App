@@ -41,6 +41,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -132,6 +133,7 @@ public class HomeFragment extends Fragment {
 
     public static int routeIdToCheck = 123;
     private boolean finiched;
+    private AlertDialog alertDialog;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -165,7 +167,18 @@ public class HomeFragment extends Fragment {
         finiched = true;
 
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-       
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (alertDialog != null && alertDialog.isShowing()) {
+                    alertDialog.dismiss();
+                } else {
+                    // Действия, которые нужно выполнить при нажатии кнопки "назад", если диалог не открыт
+                    // Например, вызов стандартного обработчика кнопки "назад"
+                    requireActivity().onBackPressed();
+                }
+            }
+        });
         progressBar = binding.progressBar;
         buttonBonus = binding.btnBonus;
 
@@ -671,13 +684,22 @@ public class HomeFragment extends Fragment {
         }
     }
     @Override
+    public void onPause() {
+        super.onPause();
+        if(alertDialog != null && alertDialog.isShowing()) {
+            alertDialog.dismiss();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+
         progressBar.setVisibility(View.INVISIBLE);
         pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-        if(!text_view_cost.getText().equals("")){
-            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
-        }
+//        if(!text_view_cost.getText().equals("")){
+//            changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+//        }
 
 
         if(bottomSheetDialogFragment != null) {
@@ -1526,7 +1548,7 @@ public class HomeFragment extends Fragment {
         LayoutInflater inflater = LayoutInflater.from(requireActivity());
         View dialogView = inflater.inflate(R.layout.custom_dialog_layout, null);
 
-        AlertDialog alertDialog = new AlertDialog.Builder(requireActivity()).create();
+        alertDialog = new AlertDialog.Builder(requireActivity()).create();
         alertDialog.setView(dialogView);
         alertDialog.setCancelable(false);
         // Настраиваем элементы макета

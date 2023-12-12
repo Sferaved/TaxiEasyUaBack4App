@@ -123,6 +123,7 @@ public class VisicomFragment extends Fragment {
 
     public static ImageButton btn_clear_from, btn_clear_to;
     public static TextView textwhere, num2;
+    private AlertDialog alertDialog;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -384,7 +385,13 @@ public class VisicomFragment extends Fragment {
         }
         return root;
     }
-
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(alertDialog != null && alertDialog.isShowing()) {
+            alertDialog.dismiss();
+        }
+    }
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(requireActivity(), permission) == PackageManager.PERMISSION_DENIED) {
@@ -852,7 +859,7 @@ public class VisicomFragment extends Fragment {
         LayoutInflater inflater = LayoutInflater.from(requireActivity());
         View dialogView = inflater.inflate(R.layout.custom_dialog_layout, null);
 
-        AlertDialog alertDialog = new AlertDialog.Builder(requireActivity()).create();
+        alertDialog = new AlertDialog.Builder(requireActivity()).create();
         alertDialog.setView(dialogView);
         alertDialog.setCancelable(false);
         // Настраиваем элементы макета
