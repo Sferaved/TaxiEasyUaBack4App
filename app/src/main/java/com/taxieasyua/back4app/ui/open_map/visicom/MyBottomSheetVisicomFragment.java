@@ -1376,6 +1376,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
             }
         }
         database.close();
+        assert c != null;
+        c.close();
         return list;
     }
     private void visicomKey(final ApiCallback callback) {

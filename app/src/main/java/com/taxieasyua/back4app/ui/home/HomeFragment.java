@@ -1608,7 +1608,7 @@ public class HomeFragment extends Fragment {
     @SuppressLint("Range")
     private List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -1625,6 +1625,8 @@ public class HomeFragment extends Fragment {
             }
         }
         database.close();
+        assert c != null;
+        c.close();
         return list;
     }
     private void getPhoneNumber () {

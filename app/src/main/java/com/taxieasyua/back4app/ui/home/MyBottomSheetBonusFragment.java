@@ -428,7 +428,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             Map<String, String> sendUrlMapCost = null;
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getContext());
+                    urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getActivity());
                 }
 
                 sendUrlMapCost = CostJSONParser.sendURL(urlCost);
@@ -673,7 +673,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                 } while (c.moveToNext());
             }
         }
-
+        database.close();
+        assert c != null;
+        c.close();
         return list;
     }
    }

@@ -1239,6 +1239,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
             }
         }
         database.close();
+        assert c != null;
+        c.close();
         return list;
     }
 

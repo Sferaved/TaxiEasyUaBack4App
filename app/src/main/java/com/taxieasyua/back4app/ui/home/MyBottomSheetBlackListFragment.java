@@ -84,6 +84,8 @@ public class MyBottomSheetBlackListFragment extends BottomSheetDialogFragment {
             }
         }
         database.close();
+        assert c != null;
+        c.close();
         return list;
     }
    }
