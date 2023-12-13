@@ -206,8 +206,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         ContentValues cv = new ContentValues();
                         cv.put("card_max_pay", cardMaxPay);
                         cv.put("bonus_max_pay", bonusMaxPay);
+                        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                              database.update(MainActivity.CITY_INFO, cv, "id = ?",
                                     new String[]{"1"});
+                             database.close();
                     }
                 } else {
                     Log.e("Request", "Failed. Error code: " + response.code());
@@ -626,9 +628,17 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        database.close();
+        if (database != null && database.isOpen()) {
+            database.close();
+        }
     }
-
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (database != null && database.isOpen()) {
+            database.close();
+        }
+    }
     public static String[] arrayServiceCode() {
         return new String[]{
                 "BAGGAGE",

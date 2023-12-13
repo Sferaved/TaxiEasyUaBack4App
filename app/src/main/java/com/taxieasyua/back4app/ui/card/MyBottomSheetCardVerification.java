@@ -69,7 +69,9 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
     private AppCompatButton btnOk;
     String email;
     String pay_method;
+    static SQLiteDatabase database;
     private final String baseUrl = "https://m.easy-order-taxi.site";
+    Context context;
 
     public MyBottomSheetCardVerification(String checkoutUrl, String amount) {
         this.checkoutUrl = checkoutUrl;
@@ -82,10 +84,12 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_fondy_payment, container, false);
         webView = view.findViewById(R.id.webView);
-        email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
+        email = logCursor(MainActivity.TABLE_USER_INFO).get(3);
         Log.d(TAG, "onCreateView: "  );
+        context = getActivity();
+        database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 //        getCardTokenFondy();
-        pay_system(getContext());
+        pay_system();
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -126,7 +130,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                 .build();
 
         FondyApiService apiService = retrofit.create(FondyApiService.class);
-        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO);
         String MERCHANT_ID = arrayList.get(6);
         String merchantPassword = arrayList.get(7);
 
@@ -157,7 +161,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         String orderStatus = responseData.getOrderStatus();
                         if(orderStatus.equals("approved")){
                             getCardTokenFondy();
-                            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount, getContext());
+                            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount);
                         };
                     }
                 } else {
@@ -202,7 +206,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                         List<CardInfo> cards = callbackResponse.getCards();
                         Log.d(TAG, "onResponse: cards" + cards);
                         if (cards != null && !cards.isEmpty()) {
-                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
                             for (CardInfo cardInfo : cards) {
                                 String masked_card = cardInfo.getMasked_card(); // Маска карты
@@ -240,7 +244,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
 
                             }
 
-                            database.close();
+
                         }
                     }
 
@@ -256,7 +260,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
             }
         });
     }
-    private void getReversFondy(String orderId, String comment, String amount, Context context) {
+    private void getReversFondy(String orderId, String comment, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pay.fondy.eu/api/")
@@ -264,7 +268,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                 .build();
 
         ReversApi apiService = retrofit.create(ReversApi.class);
-        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        List<String>  arrayList = logCursor(MainActivity.CITY_INFO);
         String MERCHANT_ID = arrayList.get(6);
         String merchantPassword = arrayList.get(7);
 
@@ -296,7 +300,10 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                             Log.d("TAG1", "onResponse: " + responseData.toString());
 //                            if (isAdded()) { // Проверяем, что фрагмент присоединен к активности
                                 if (response.isSuccessful()) {
-                                    Toast.makeText(requireActivity(), getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
+                                    if(isAdded()) {
+                                        Toast.makeText(context, getString(R.string.link_card_succesfuly), Toast.LENGTH_SHORT).show();
+                                    }
+
 
                                     ArrayList<Map<String, String>> cardMaps = getCardMapsFromDatabase();
                                     Log.d("TAG", "onResume: cardMaps" + cardMaps);
@@ -310,8 +317,8 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                                         updateCardFragment();
                                     }
                                     dismiss();
-                                }
-//                            }
+//                                }
+                            }
                         }
                     }
                 } else {
@@ -362,7 +369,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
     @SuppressLint("Range")
     private ArrayList<Map<String, String>> getCardMapsFromDatabase() {
         ArrayList<Map<String, String>> cardMaps = new ArrayList<>();
-        SQLiteDatabase database = getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         // Выполните запрос к таблице TABLE_FONDY_CARDS и получите данные
         Cursor cursor = database.query(MainActivity.TABLE_FONDY_CARDS, null, null, null, null, null, null);
         Log.d("TAG", "getCardMapsFromDatabase: card count: " + cursor.getCount());
@@ -519,11 +526,11 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         super.onDismiss(dialog);
         CardFragment.progressBar.setVisibility(View.GONE);
         if(MainActivity.order_id !=null) {
-            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount, getContext());
+            getReversFondy(MainActivity.order_id,getString(R.string.return_pay), amount);
         }
     }
 
-    private void pay_system(Context context) {
+    private void pay_system() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -549,7 +556,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                             pay_method = "mono_payment";
                             break;
                     }
-//                    if(isAdded()){
+                    if(isAdded()){
                         ContentValues cv = new ContentValues();
                         cv.put("payment_type", pay_method);
                         // обновляем по id
@@ -558,7 +565,7 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
                                 new String[] { "1" });
                         database.close();
 
-//                    }
+                    }
 
 
                 } else {
@@ -578,9 +585,9 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         });
     }
     @SuppressLint("Range")
-    public static List<String> logCursor(String table, Context context) {
+    public List<String> logCursor(String table) {
         List<String> list = new ArrayList<>();
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
         if (c != null) {
             if (c.moveToFirst()) {
@@ -598,6 +605,20 @@ public class MyBottomSheetCardVerification extends BottomSheetDialogFragment {
         }
         database.close();
         return list;
+    }
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (database != null && database.isOpen()) {
+            database.close();
+        }
+    }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (database != null && database.isOpen()) {
+            database.close();
+        }
     }
 }
 
