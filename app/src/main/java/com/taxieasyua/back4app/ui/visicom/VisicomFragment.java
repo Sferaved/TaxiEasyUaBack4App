@@ -523,9 +523,12 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         String finish = cursor.getString(cursor.getColumnIndex("finish"));
         Log.d(TAG, "getTaxiUrlSearchMarkers: start " + start);
         // Заменяем символ '/' в строках
-        start = start.replace("/", "|");
-        finish = finish.replace("/", "|");
-
+        if(start != null) {
+            start = start.replace("/", "|");
+        }
+        if(finish != null) {
+            finish = finish.replace("/", "|");
+        }
         // Origin of route
         String str_origin = originLatitude + "/" + originLongitude;
 
