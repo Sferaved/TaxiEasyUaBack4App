@@ -1555,7 +1555,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     private void visicomKey(final ApiCallback callback) {
         ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
                 if (response.isSuccessful()) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse != null) {
@@ -1578,7 +1578,9 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                 Log.e("ApiResponse", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
-        });
+        },
+        getString(R.string.application)
+        );
     }
     @Override
     public void onVisicomKeyReceived(String key) {

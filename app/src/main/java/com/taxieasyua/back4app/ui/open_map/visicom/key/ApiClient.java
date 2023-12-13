@@ -17,8 +17,8 @@ public class ApiClient {
 
     private static ApiService apiService = retrofit.create(ApiService.class);
 
-    public static void getVisicomKeyInfo(Callback<ApiResponse> callback) {
-        Call<ApiResponse> call = apiService.getVisicomKeyInfo();
+    public static void getVisicomKeyInfo(Callback<ApiResponse> callback, String appName) {
+        Call<ApiResponse> call = apiService.getVisicomKeyInfo(appName);
         call.enqueue(callback);
     }
 }

@@ -1404,7 +1404,9 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
                 Log.e("ApiResponse", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
-        });
+                                    },
+                getString(R.string.application)
+        );
     }
     @Override
     public void onVisicomKeyReceived(String key) {

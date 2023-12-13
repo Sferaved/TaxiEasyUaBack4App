@@ -1012,12 +1012,14 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки
                 Log.e("ApiResponse", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
-        });
+        },
+                getString(R.string.application)
+        );
     }
     @Override
     public void onVisicomKeyReceived(String key) {
