@@ -206,16 +206,8 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         ContentValues cv = new ContentValues();
                         cv.put("card_max_pay", cardMaxPay);
                         cv.put("bonus_max_pay", bonusMaxPay);
-//                        if (isAdded()) {
-                            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                            database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                             database.update(MainActivity.CITY_INFO, cv, "id = ?",
                                     new String[]{"1"});
-
-                            database.close();
-//                        }
-
-
-                        // Добавьте здесь код для обработки полученных значений
                     }
                 } else {
                     Log.e("Request", "Failed. Error code: " + response.code());
@@ -248,13 +240,9 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                         cv.put("merchant_fondy", merchant_fondy);
                         cv.put("fondy_key_storage", fondy_key_storage);
 
-//                        if (isAdded()) {
-                            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
                             database.update(MainActivity.CITY_INFO, cv, "id = ?",
                                     new String[]{"1"});
-
-                            database.close();
-//                        }
 
 
                         Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
@@ -292,10 +280,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         cv.put("payment_type", paymentCode);
         // обновляем по id
 //        if(isAdded()){
-            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
             database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                     new String[] { "1" });
-            database.close();
+
 //        }
         reCount();
     }
@@ -465,10 +453,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         cv.put("addCost", addCost);
 
         // обновляем по id
-        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
         database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
                 new String[] { "1" });
-        database.close();
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -494,7 +482,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         // Destination of route
         String str_dest = to + "/" + to_number;
 
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringList.get(2);
@@ -573,8 +561,6 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
         // Destination of route
         String str_dest = toLatitude + "/" + toLongitude;
 
-        //        Cursor cursorDb = MainActivity.database.query(MainActivity.TABLE_SETTINGS_INFO, null, null, null, null, null, null);
-        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
         List<String> stringList = logCursor(MainActivity.TABLE_SETTINGS_INFO);
         String tarif =  stringList.get(2);
@@ -632,7 +618,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
         String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
                 + parameters + "/" + result + "/" + city  + "/" + context.getString(R.string.application);
-        database.close();
+
         return url;
     }
 
