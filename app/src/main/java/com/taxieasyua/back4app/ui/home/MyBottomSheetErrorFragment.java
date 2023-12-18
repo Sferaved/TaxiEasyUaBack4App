@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,8 +58,12 @@ public class MyBottomSheetErrorFragment extends BottomSheetDialogFragment {
             }
         });
         textViewInfo = view.findViewById(R.id.textViewInfo);
-        textViewInfo.setText(errorMessage);
 
+        if(!errorMessage.equals("null")) {
+            textViewInfo.setText(errorMessage);
+        } else {
+            textViewInfo.setText(getString(R.string.error_message));
+        }
         return view;
     }
 

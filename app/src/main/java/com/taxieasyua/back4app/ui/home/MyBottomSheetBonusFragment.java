@@ -32,6 +32,7 @@ import com.taxieasyua.back4app.cities.api.CityResponse;
 import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.ui.card.CardFragment;
+import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.payment_system.PayApi;
@@ -427,6 +428,42 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
                             updateAddCost(String.valueOf(discount));
 
                             VisicomFragment.firstCostForMin = firstCost;
+                            costUpdate = String.valueOf(firstCost);
+                            textView.setText(costUpdate);
+                        }
+                    }
+                }
+
+
+            } catch (MalformedURLException ignored) {
+
+            }
+
+        }
+        if(rout.equals("marker")) {
+            String urlCost = null;
+            Map<String, String> sendUrlMapCost = null;
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (isAdded() && getActivity() != null) {
+                        urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", getActivity());
+                        sendUrlMapCost = CostJSONParser.sendURL(urlCost);
+                        assert sendUrlMapCost != null;
+                        String orderCost = (String) sendUrlMapCost.get("order_cost");
+                        Log.d(TAG, "onDismiss: orderCost " + orderCost);
+                        assert orderCost != null;
+                        if (!orderCost.equals("0")) {
+                            String costUpdate;
+                            String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO).get(3);
+                            long discountInt = Long.parseLong(discountText);
+                            long discount;
+                            long firstCost = Long.parseLong(orderCost);
+                            discount = firstCost * discountInt / 100;
+
+                            firstCost = firstCost + discount;
+                            updateAddCost(String.valueOf(discount));
+
+                            GalleryFragment.costFirstForMin = firstCost;
                             costUpdate = String.valueOf(firstCost);
                             textView.setText(costUpdate);
                         }
