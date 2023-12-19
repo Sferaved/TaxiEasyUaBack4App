@@ -761,6 +761,14 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                         + ",poi_bus_station"
                         + ",poi_airport_terminal"
                         + ",poi_airport"
+                        + ",poi_shopping_centre"
+                        + ",poi_night_club"
+                        + ",poi_hotel_and_motel"
+                        + ",poi_cafe_bar"
+                        + ",poi_restaurant"
+                        + ",poi_entertaining_complex"
+                        + ",poi_supermarket"
+                        + ",poi_grocery"
                         + ",adr_street"
                         + "&text=" + inputText + "&key=" + apiKey;
 
@@ -1003,6 +1011,27 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                                 // Проверка по Киевской области
 
                             default:
+                                settlement = properties.optString("address", "").toLowerCase();
+                                city = citySearch.toLowerCase();
+
+                                if (settlement.contains(city)) {
+                                    Log.d(TAG, "poi_railway_station" + properties);
+                                    address = String.format("%s %s\t",
+                                            properties.getString("vitrine"),
+                                            properties.getString("address"));
+                                    addresses.add(new String[]{
+                                            address,
+                                            "",
+                                            "",
+                                            "",
+                                    });
+
+                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                    Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+
+                                    coordinatesList.add(new double[]{longitude, latitude});
+                                }
                                 break;
                         }
                     }
@@ -1160,12 +1189,20 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                 }
                 }
             }
-            addresses.add(new String[]{
-                    getString(R.string.address_on_map),
-                    "",
-                    "",
-                    "",
-            });
+            String newAddress = getString(R.string.address_on_map);
+
+
+            boolean isAddressExists = false;
+            for (String[] address : addresses) {
+                if (address.length > 0 && address[0].equals(newAddress)) {
+                    isAddressExists = true;
+                    break;
+                }
+            }
+
+            if (!isAddressExists) {
+                addresses.add(new String[]{newAddress, "", "", ""});
+            }
 
             if (addresses.size() != 0) {
                 new Handler(Looper.getMainLooper()).post(() -> {

@@ -31,7 +31,6 @@ public class AboutFragment extends Fragment {
 
         binding = FragmentAboutBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        TextView textSite = binding.textSite;
 
         // Текст, который вы хотите отображать
         String displayText = getString(R.string.my_site);
@@ -49,8 +48,6 @@ public class AboutFragment extends Fragment {
         };
         spannableString.setSpan(clickableSpan, 0, displayText.length(), SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        textSite.setText(spannableString);
-        textSite.setMovementMethod(LinkMovementMethod.getInstance());
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("IntentReset")
             @Override
@@ -77,13 +74,10 @@ public class AboutFragment extends Fragment {
         });
 
 
-        final TextView textViewAuthor = binding.textAuthor;
-        final TextView textViewEmail = binding.textEmail;
         final TextView textViewBuild = binding.textBuild;
-
-        aboutViewModel.getTextAuthor().observe(getViewLifecycleOwner(), textViewAuthor::setText);
-        aboutViewModel.getTextEmail().observe(getViewLifecycleOwner(), textViewEmail::setText);
+        final TextView textViewEmail = binding.textEmail;
         aboutViewModel.getTextBuild().observe(getViewLifecycleOwner(), textViewBuild::setText);
+        aboutViewModel.getTextEmail().observe(getViewLifecycleOwner(), textViewEmail::setText);
 
         return root;
     }
