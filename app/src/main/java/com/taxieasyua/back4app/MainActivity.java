@@ -1359,14 +1359,25 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(String phone) {
                 // Обработка успешного ответа
                 Log.d("UserPhone", "Phone: " + phone);
-                String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
-                boolean val = Pattern.compile(PHONE_PATTERN).matcher(phone).matches();
 
-                if (val) {
-                    MainActivity.verifyPhone = true;
-                    updateRecordsUser(phone);
+                // Check if phone is not null
+                if (phone != null) {
+                    String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
+                    boolean val = Pattern.compile(PHONE_PATTERN).matcher(phone).matches();
+
+                    if (val) {
+                        MainActivity.verifyPhone = true;
+                        updateRecordsUser(phone);
+                    } else {
+                        // Handle case where phone doesn't match the pattern
+                        Log.e("UserPhone", "Phone does not match pattern");
+                    }
+                } else {
+                    // Handle case where phone is null
+                    Log.e("UserPhone", "Phone is null");
                 }
             }
+
 
             @Override
             public void onError(String error) {
