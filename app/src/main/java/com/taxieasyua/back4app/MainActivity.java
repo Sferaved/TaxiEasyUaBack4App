@@ -65,6 +65,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
+import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
 
 import org.json.JSONException;
 
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_16122023_1";
+    public static final String DB_NAME = "data_20122023_1";
 
     /**
      * Table section
@@ -937,7 +938,7 @@ public class MainActivity extends AppCompatActivity {
                 updateRecordsUserInfo("username", user.getDisplayName());
 
                 addUser(user.getDisplayName(), user.getEmail()) ;
-
+                userPhoneFromServer (user.getEmail());
 
 
 //                fetchBonus(user.getEmail());
@@ -1350,4 +1351,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void userPhoneFromServer (String email) {
+        ApiClientPhone apiClient = new ApiClientPhone();
+
+        apiClient.getUserPhone(email, new ApiClientPhone.OnUserPhoneResponseListener() {
+            @Override
+            public void onSuccess(String phone) {
+                // Обработка успешного ответа
+                Log.d("UserPhone", "Phone: " + phone);
+                String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
+                boolean val = Pattern.compile(PHONE_PATTERN).matcher(phone).matches();
+
+                if (val) {
+                    MainActivity.verifyPhone = true;
+                    updateRecordsUser(phone);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                // Обработка ошибки
+                Log.e("UserPhone", "Error: " + error);
+            }
+        });
+    }
 }
