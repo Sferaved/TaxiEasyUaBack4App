@@ -26,7 +26,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -39,7 +38,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -112,6 +110,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
+    private String urlBase;
+    private String api;
 
     public MyBottomSheetVisicomFragment(String fragmentInput) {
         this.fragmentInput = fragmentInput;
@@ -146,6 +146,10 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
                 kyivRegionArr = KyivRegion.city();
                 break;
         }
+        api =  stringList.get(2);
+
+        urlBase = "https://m.easy-order-taxi.site/" + api;
+
         textGeoError = view.findViewById(R.id.textGeoError);
         text_toError = view.findViewById(R.id.text_toError);
 
@@ -369,10 +373,10 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
                     double longitude = firstLocation.getLongitude();
 
 
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, getContext());
                     String api =  stringList.get(2);
 
-                    String urlFrom = "https://m.easy-order-taxi.site/" + api + "/android/fromSearchGeo/" + latitude + "/" + longitude;
+                    String urlFrom = urlBase + "/android/fromSearchGeo/" + latitude + "/" + longitude;
                     Map sendUrlFrom = null;
                     try {
                         sendUrlFrom = FromJSONParser.sendURL(urlFrom);
@@ -1329,8 +1333,8 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
         }
         List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
         String city = listCity.get(1);
-        String api = listCity.get(2);
-        String url = "https://m.easy-order-taxi.site/" + api + "/android/" + urlAPI + "/"
+
+        String url = urlBase + "/android/" + urlAPI + "/"
                 + parameters + "/" + result + "/" + city + "/" + context.getString(R.string.application);
 
         database.close();
