@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_20122023_1";
+    public static final String DB_NAME = "data_26122023_0";
 
     /**
      * Table section
