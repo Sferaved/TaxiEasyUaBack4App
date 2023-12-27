@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_26122023_0";
+    public static final String DB_NAME = "data_27122023_4";
 
     /**
      * Table section
@@ -1357,7 +1357,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void userPhoneFromServer (String email) {
         ApiClientPhone apiClient = new ApiClientPhone();
-
+        MainActivity.verifyPhone = false;
         apiClient.getUserPhone(email, new ApiClientPhone.OnUserPhoneResponseListener() {
             @Override
             public void onSuccess(String phone) {
@@ -1370,7 +1370,6 @@ public class MainActivity extends AppCompatActivity {
                     boolean val = Pattern.compile(PHONE_PATTERN).matcher(phone).matches();
 
                     if (val) {
-                        MainActivity.verifyPhone = true;
                         updateRecordsUser(phone);
                     } else {
                         // Handle case where phone doesn't match the pattern
