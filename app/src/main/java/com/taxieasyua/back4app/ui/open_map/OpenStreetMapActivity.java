@@ -227,7 +227,8 @@ public class OpenStreetMapActivity extends AppCompatActivity {
         double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, getApplicationContext()).get(4));
         mapController.setZoom(newZoomLevel);
         map.setClickable(true);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+//        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.OpenTopo);
         switch (city){
             case "Dnipropetrovsk Oblast":
                 // Днепр
