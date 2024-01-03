@@ -59,6 +59,7 @@ import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
 import com.taxieasyua.back4app.utils.LocaleHelper;
+import com.taxieasyua.back4app.utils.connect.ConnectionSpeedTester;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -126,6 +127,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visicom_address_layout);
+
+
 
         start = getIntent().getStringExtra("start");
         end = getIntent().getStringExtra("end");
@@ -767,81 +770,94 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     }
 
     private void performAddressSearch(String inputText, String point) {
-        try {
-            String apiUrl = "https://api.visicom.ua/data-api/5.0/";
-            String url = apiUrl  + LocaleHelper.getLocale() + "/geocode.json";
+
+        boolean isConnectionFast = testConnectionTime(
+                "https://api.visicom.ua/data-api/5.0/uk/",
+                apiKey,
+                1000); // Устанавливаем ограничение в 1000 миллисекунд
+
+        if (isConnectionFast) {
+            Log.d(TAG, "Скорость подключения удовлетворяет ограничению времени");
+            try {
+                String apiUrl = "https://api.visicom.ua/data-api/5.0/";
+                String url = apiUrl  + LocaleHelper.getLocale() + "/geocode.json";
 
 
-            if (point.equals("start")) {
-                verifyBuildingStart = false;
-            } else {
-                verifyBuildingFinish = false;
-            }
+                if (point.equals("start")) {
+                    verifyBuildingStart = false;
+                } else {
+                    verifyBuildingFinish = false;
+                }
 
-            if (!inputText.substring(3).contains("\f")) {
+                if (!inputText.substring(3).contains("\f")) {
 
-                url = url
-                        + "?"
-                        + "categories=poi_railway_station"
-                        + ",poi_bus_station"
-                        + ",poi_airport_terminal"
-                        + ",poi_airport"
-                        + ",poi_shopping_centre"
-                        + ",poi_night_club"
-                        + ",poi_hotel_and_motel"
-                        + ",poi_cafe_bar"
-                        + ",poi_restaurant"
-                        + ",poi_entertaining_complex"
-                        + ",poi_supermarket"
-                        + ",poi_grocery"
-                        + ",poi_swimming_pool"
-                        + ",poi_sports_complexe"
-                        + ",poi_underground_railway_station"
-                        + ",adr_street"
-                        + "&"
-                        + "text=" + inputText + "&key=" + apiKey;
+                    url = url
+                            + "?"
+                            + "categories=poi_railway_station"
+                            + ",poi_bus_station"
+                            + ",poi_airport_terminal"
+                            + ",poi_airport"
+                            + ",poi_shopping_centre"
+                            + ",poi_night_club"
+                            + ",poi_hotel_and_motel"
+                            + ",poi_cafe_bar"
+                            + ",poi_restaurant"
+                            + ",poi_entertaining_complex"
+                            + ",poi_supermarket"
+                            + ",poi_grocery"
+                            + ",poi_swimming_pool"
+                            + ",poi_sports_complexe"
+                            + ",poi_underground_railway_station"
+                            + ",adr_street"
+                            + "&"
+                            + "text=" + inputText + "&key=" + apiKey;
 
-            } else {
-                Log.d(TAG, "performAddressSearch:positionChecked  " + positionChecked);
-                String number = numbers(inputText);
+                } else {
+                    Log.d(TAG, "performAddressSearch:positionChecked  " + positionChecked);
+                    String number = numbers(inputText);
 //                if(number == null) {
 //                    number = "1";
 //                }
-                if (positionChecked != 0) {
-                    inputText = inputTextBuild() + ", " + number;
-                }
+                    if (positionChecked != 0) {
+                        inputText = inputTextBuild() + ", " + number;
+                    }
 //                else {
 //                    inputText = fromEditAddress.getText().toString() + ", " + "1";
 //                }
 
-                url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
+                    url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
 
-            }
+                }
 
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-            Log.d(TAG, "performAddressSearch: " + url);
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override
-                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) {
-                    try {
-                        String responseData = response.body().string();
-                        Log.d(TAG, "onResponse: " + responseData);
-                        processAddressData(responseData, point);
-                    } catch (Exception e) {
+                Request request = new Request.Builder()
+                        .url(url)
+                        .build();
+                Log.d(TAG, "performAddressSearch: " + url);
+                client.newCall(request).enqueue(new okhttp3.Callback() {
+                    @Override
+                    public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) {
+                        try {
+                            String responseData = response.body().string();
+                            Log.d(TAG, "onResponse: " + responseData);
+                            processAddressData(responseData, point);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
                         e.printStackTrace();
                     }
-                }
-
-                @Override
-                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Log the exception or display an error message
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Log the exception or display an error message
+            }
+        } else {
+            Log.d(TAG, "Скорость подключения превышает ограничение времени или произошла ошибка");
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
 
@@ -1734,5 +1750,37 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
             coordinatesList.add(new double[]{longitude, latitude});
         }
     }
+
+    private boolean testConnectionTime(String baseUrl, String apiKey,  long timeLimitMillis) {
+        final long[] connectionTime = {0};  // Переменная для хранения времени подключения
+
+        long startTime = System.currentTimeMillis();
+
+        // Убедимся, что baseUrl заканчивается символом /
+        if (!baseUrl.endsWith("/")) {
+            baseUrl = baseUrl + "/";
+        }
+
+        ConnectionSpeedTester.testConnectionSpeed(baseUrl, apiKey, new ConnectionSpeedTester.SpeedTestListener() {
+            @Override
+            public void onSpeedTestCompleted(double speed) {
+                long endTime = System.currentTimeMillis();
+                connectionTime[0] = endTime - startTime;
+
+                Log.d("SpeedTest", "Скорость подключения: " + speed + " байт/мс");
+                // Здесь вы можете обновить ваш интерфейс или выполнить другие действия
+            }
+
+            @Override
+            public void onSpeedTestFailed(String errorMessage) {
+                Log.e("SpeedTest", errorMessage);
+                // Обработка ошибок, например, вывод сообщения пользователю
+                connectionTime[0] = -1;  // Помечаем время подключения как ошибочное
+            }
+        });
+
+        return connectionTime[0] >= 0 && connectionTime[0] <= timeLimitMillis;
+    }
+
 }
 

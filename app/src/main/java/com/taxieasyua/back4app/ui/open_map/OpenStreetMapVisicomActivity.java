@@ -53,6 +53,7 @@ import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.open_map.api.ApiResponse;
 import com.taxieasyua.back4app.ui.open_map.api.ApiService;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
+import com.taxieasyua.back4app.utils.connect.ConnectionSpeedTester;
 
 import org.json.JSONException;
 import org.osmdroid.api.IMapController;
@@ -155,6 +156,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.open_street_map_layout);
+
         startPointNoText = getString(R.string.startPoint);
         endPointNoText = getString(R.string.end_point_marker);
 
@@ -293,9 +295,6 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
             }
         });
 
-
-
-        Log.d(TAG, "switchToRegion: FromAdressString" + FromAdressString);
     }
 
     private static void updateMyPosition(Double startLat, Double startLan, String position, Context context) {
@@ -1117,5 +1116,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
 
         return result;
     }
+
+
 
 }
