@@ -130,6 +130,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
 
 
 
+
         start = getIntent().getStringExtra("start");
         end = getIntent().getStringExtra("end");
 
@@ -771,94 +772,98 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
 
     private void performAddressSearch(String inputText, String point) {
 
-        boolean isConnectionFast = testConnectionTime(
-                "https://api.visicom.ua/data-api/5.0/uk/",
-                apiKey,
-                1000); // Устанавливаем ограничение в 1000 миллисекунд
-
-        if (isConnectionFast) {
-            Log.d(TAG, "Скорость подключения удовлетворяет ограничению времени");
-            try {
-                String apiUrl = "https://api.visicom.ua/data-api/5.0/";
-                String url = apiUrl  + LocaleHelper.getLocale() + "/geocode.json";
-
-
-                if (point.equals("start")) {
-                    verifyBuildingStart = false;
-                } else {
-                    verifyBuildingFinish = false;
-                }
-
-                if (!inputText.substring(3).contains("\f")) {
-
-                    url = url
-                            + "?"
-                            + "categories=poi_railway_station"
-                            + ",poi_bus_station"
-                            + ",poi_airport_terminal"
-                            + ",poi_airport"
-                            + ",poi_shopping_centre"
-                            + ",poi_night_club"
-                            + ",poi_hotel_and_motel"
-                            + ",poi_cafe_bar"
-                            + ",poi_restaurant"
-                            + ",poi_entertaining_complex"
-                            + ",poi_supermarket"
-                            + ",poi_grocery"
-                            + ",poi_swimming_pool"
-                            + ",poi_sports_complexe"
-                            + ",poi_underground_railway_station"
-                            + ",adr_street"
-                            + "&"
-                            + "text=" + inputText + "&key=" + apiKey;
-
-                } else {
-                    Log.d(TAG, "performAddressSearch:positionChecked  " + positionChecked);
-                    String number = numbers(inputText);
-//                if(number == null) {
-//                    number = "1";
-//                }
-                    if (positionChecked != 0) {
-                        inputText = inputTextBuild() + ", " + number;
-                    }
-//                else {
-//                    inputText = fromEditAddress.getText().toString() + ", " + "1";
-//                }
-
-                    url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
-
-                }
-
-                Request request = new Request.Builder()
-                        .url(url)
-                        .build();
-                Log.d(TAG, "performAddressSearch: " + url);
-                client.newCall(request).enqueue(new okhttp3.Callback() {
-                    @Override
-                    public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) {
-                        try {
-                            String responseData = response.body().string();
-                            Log.d(TAG, "onResponse: " + responseData);
-                            processAddressData(responseData, point);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+        testConnectionTime("https://api.visicom.ua/data-api/5.0/uk/", apiKey, 500, new ConnectionSpeedTestCallback() {
+            @Override
+            public void onConnectionTestResult(boolean isConnectionFast, long duration) {
+                Log.d("SpeedTest", "connectionTime: " + duration);
+                Log.d("SpeedTest", "testConnectionTime: timeLimitMillis: 1000");
+                Log.d("SpeedTest", "testConnectionTime: res: " + isConnectionFast);
+                if (!isConnectionFast) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d(TAG, "Скорость подключения превышает ограничение времени или произошла ошибка");
+                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+//                            finish();
                         }
-                    }
+                    });
+                }
+            }
+        });
+        try {
+            String apiUrl = "https://api.visicom.ua/data-api/5.0/";
+            String url = apiUrl  + LocaleHelper.getLocale() + "/geocode.json";
 
-                    @Override
-                    public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+
+            if (point.equals("start")) {
+                verifyBuildingStart = false;
+            } else {
+                verifyBuildingFinish = false;
+            }
+
+            if (!inputText.substring(3).contains("\f")) {
+                url = url
+                        + "?"
+                        + "categories=poi_railway_station"
+                        + ",poi_bus_station"
+                        + ",poi_airport_terminal"
+                        + ",poi_airport"
+                        + ",poi_shopping_centre"
+                        + ",poi_night_club"
+                        + ",poi_hotel_and_motel"
+                        + ",poi_cafe_bar"
+                        + ",poi_restaurant"
+                        + ",poi_entertaining_complex"
+                        + ",poi_supermarket"
+                        + ",poi_grocery"
+                        + ",poi_swimming_pool"
+                        + ",poi_sports_complexe"
+                        + ",poi_underground_railway_station"
+                        + ",adr_street"
+                        + "&"
+                        + "text=" + inputText + "&key=" + apiKey;
+
+            } else {
+                Log.d(TAG, "performAddressSearch:positionChecked  " + positionChecked);
+                String number = numbers(inputText);
+
+                if (positionChecked != 0) {
+                    inputText = inputTextBuild() + ", " + number;
+                }
+
+                url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
+
+            }
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            Log.d(TAG, "performAddressSearch: " + url);
+            client.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) {
+                    try {
+                        String responseData = response.body().string();
+                        Log.d(TAG, "onResponse: " + responseData);
+                        processAddressData(responseData, point);
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Log the exception or display an error message
-            }
-        } else {
-            Log.d(TAG, "Скорость подключения превышает ограничение времени или произошла ошибка");
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+
+                @Override
+                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Log the exception or display an error message
         }
+
+
+
     }
 
     private String inputTextBuild() {
@@ -1751,7 +1756,11 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
         }
     }
 
-    private boolean testConnectionTime(String baseUrl, String apiKey,  long timeLimitMillis) {
+    public interface ConnectionSpeedTestCallback {
+        void onConnectionTestResult(boolean isConnectionFast, long duration);
+    }
+
+    public void testConnectionTime(String baseUrl, String apiKey, long timeLimitMillis, ConnectionSpeedTestCallback callback) {
         final long[] connectionTime = {0};  // Переменная для хранения времени подключения
 
         long startTime = System.currentTimeMillis();
@@ -1768,7 +1777,13 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                 connectionTime[0] = endTime - startTime;
 
                 Log.d("SpeedTest", "Скорость подключения: " + speed + " байт/мс");
+                Log.d("SpeedTest", "Скорость подключения: " + connectionTime[0]);
+
                 // Здесь вы можете обновить ваш интерфейс или выполнить другие действия
+
+                // Передаем результаты обратно через callback
+                boolean isConnectionFast = connectionTime[0] >= 0 && connectionTime[0] <= timeLimitMillis;
+                callback.onConnectionTestResult(isConnectionFast, connectionTime[0]);
             }
 
             @Override
@@ -1776,11 +1791,13 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                 Log.e("SpeedTest", errorMessage);
                 // Обработка ошибок, например, вывод сообщения пользователю
                 connectionTime[0] = -1;  // Помечаем время подключения как ошибочное
+
+                // Передаем результаты обратно через callback
+                callback.onConnectionTestResult(false, connectionTime[0]);
             }
         });
-
-        return connectionTime[0] >= 0 && connectionTime[0] <= timeLimitMillis;
     }
+
 
 }
 

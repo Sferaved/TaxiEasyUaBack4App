@@ -1,5 +1,7 @@
 package com.taxieasyua.back4app.utils.connect;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import retrofit2.Call;
@@ -19,7 +21,7 @@ public class ConnectionSpeedTester {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(absoluteUrl)  // Важно использовать абсолютный URL
                 .build();
-
+        long startTime = System.currentTimeMillis();
         ApiServiceConnect apiService = retrofit.create(ApiServiceConnect.class);
 
         Call<Void> call = apiService.testConnection("adr_street", "Київ, заплавна", apiKey);
@@ -27,13 +29,14 @@ public class ConnectionSpeedTester {
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                Log.d("TAG_VIS_ADDR", "onResponse: "+ response.toString());
                 if (response.isSuccessful()) {
-                    long startTime = System.currentTimeMillis();
+
                     long endTime = System.currentTimeMillis();
                     long duration = endTime - startTime;
 
-                    double speed = calculateSpeed(duration);
-                    listener.onSpeedTestCompleted(speed);
+                    listener.onSpeedTestCompleted(duration);
+                    Log.d("TAG_VIS_ADDR", "onResponse: " + duration) ;
                 } else {
                     listener.onSpeedTestFailed("Ошибка подключения. Код ответа: " + response.code());
                 }
@@ -46,7 +49,4 @@ public class ConnectionSpeedTester {
         });
     }
 
-    private static double calculateSpeed(long duration) {
-        return (double) duration / 1024;
-    }
 }
