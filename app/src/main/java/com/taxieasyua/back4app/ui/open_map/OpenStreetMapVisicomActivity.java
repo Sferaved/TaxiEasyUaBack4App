@@ -119,6 +119,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     private static String finishMarker;
     private static Drawable originalDrawable;
     private static Drawable scaledDrawable;
+    private static String startPointNoText;
+    private static String endPointNoText;
 
     public static String[] arrayServiceCode() {
         return new String[]{
@@ -153,6 +155,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.open_street_map_layout);
+        startPointNoText = getString(R.string.startPoint);
+        endPointNoText = getString(R.string.end_point_marker);
 
         startMarker = getIntent().getStringExtra("startMarker");
         finishMarker = getIntent().getStringExtra("finishMarker");
@@ -471,6 +475,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
                             if (startMarker.equals("ok")) {
                                 if (!result.equals("404")) {
                                     FromAdressString = result;
+                                } else {
+                                    FromAdressString = startPointNoText;
                                 }
 
                                 if (map != null && map.getRepository() != null) {
@@ -537,6 +543,8 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
                             if (finishMarker.equals("ok")) {
                                 if (!result.equals("404")) {
                                     ToAdressString = result;
+                                } else {
+                                    FromAdressString = endPointNoText;
                                 }
                                 assert map != null;
                                 marker = new Marker(map);
