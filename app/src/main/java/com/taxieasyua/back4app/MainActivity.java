@@ -67,6 +67,10 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
+import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
+import com.taxieasyua.back4app.utils.ip.CountryResponse;
+import com.taxieasyua.back4app.utils.ip.IPUtil;
+import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
 
 import org.json.JSONException;
@@ -140,6 +144,8 @@ public class MainActivity extends AppCompatActivity {
     public static SQLiteDatabase database;
     public static Menu navMenu;
     public static MenuItem navVisicomMenuItem;
+    public static String countryState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -180,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         File dbFile = new File(dbPath);
         // Проверяем существование файла базы данных
         if (dbFile.exists()) {
+            new GetPublicIPAddressTask().execute();
             SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
             Cursor c = database.query(CITY_INFO, null, null, null, null, null, null);
@@ -1389,4 +1396,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            return IPUtil.getPublicIPAddress();
+        }
+
+        @Override
+        protected void onPostExecute(String ipAddress) {
+            if (ipAddress != null) {
+                Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
+                getCountryByIP(ipAddress);
+            } else {
+
+            }
+        }
+    }
+    public static void getCountryByIP(String ipAddress) {
+        ApiServiceCountry apiService = RetrofitClient.getClient().create(ApiServiceCountry.class);
+        Call<CountryResponse> call = apiService.getCountryByIP(ipAddress);
+
+        call.enqueue(new Callback<CountryResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CountryResponse> call, @NonNull Response<CountryResponse> response) {
+                if (response.isSuccessful()) {
+                    CountryResponse countryResponse = response.body();
+                    if (countryResponse != null) {
+                        String country = countryResponse.getCountry();
+                        countryState = country;
+
+                    } else {
+                        countryState = "UA";
+                    }
+                } else {
+                    countryState = "UA";
+                }
+                Log.d(TAG, "countryState  " + countryState);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CountryResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Error: " + t.getMessage());
+            }
+        });
+    }
+
 }

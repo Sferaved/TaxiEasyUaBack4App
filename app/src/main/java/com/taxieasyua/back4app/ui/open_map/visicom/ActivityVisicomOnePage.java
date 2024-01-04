@@ -13,6 +13,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +53,7 @@ import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
 import com.taxieasyua.back4app.ui.open_map.mapbox.Feature;
+import com.taxieasyua.back4app.ui.open_map.mapbox.Geometry;
 import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxApiClient;
 import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxResponse;
 import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxService;
@@ -65,7 +67,11 @@ import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
 import com.taxieasyua.back4app.utils.LocaleHelper;
 import com.taxieasyua.back4app.utils.connect.ConnectionSpeedTester;
-import com.taxieasyua.back4app.ui.open_map.mapbox.Geometry;
+import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
+import com.taxieasyua.back4app.utils.ip.CountryResponse;
+import com.taxieasyua.back4app.utils.ip.IPUtil;
+import com.taxieasyua.back4app.utils.ip.OnIPAddressReceivedListener;
+import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,7 +95,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCallback{
+public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCallback, OnIPAddressReceivedListener {
 
     private static final String TAG = "TAG_VIS_ADDR";
 
@@ -132,14 +138,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visicom_address_layout);
 
-//        performGeocoding();
-//                try {
-////            geoSearch();
-//            geoSearch2();
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+
 
 
         start = getIntent().getStringExtra("start");
@@ -236,12 +235,17 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                     Log.d(TAG, "onTextChanged:startPoint " + startPoint);
                     Log.d(TAG, "onTextChanged:fromEditAddress.getText().toString() " + fromEditAddress.getText().toString());
                     if (startPoint == null) {
-//                        performAddressSearch(inputString, "start");
-                        mapBoxSearch(inputString, "start");
-
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "start");
+                        } else {
+                            mapBoxSearch(inputString, "start");
+                        }
                     } else if (!startPoint.equals(inputString)) {
-//                        performAddressSearch(inputString, "start");
-                        mapBoxSearch(inputString, "start");
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "start");
+                        } else {
+                            mapBoxSearch(inputString, "start");
+                        }
                     }
                     textGeoError.setVisibility(View.GONE);
                 }
@@ -276,11 +280,17 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                 if (charCount > 2) {
 //                    performAddressSearch(inputString, "finish");
                     if (finishPoint == null) {
-//                        performAddressSearch(inputString, "finish");
-                        mapBoxSearch(inputString, "finish");
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "finish");
+                        } else {
+                            mapBoxSearch(inputString, "finish");
+                        }
                     } else if (!finishPoint.equals(inputString)) {
-//                        performAddressSearch(inputString, "finish");
-                        mapBoxSearch(inputString, "finish");
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "finish");
+                        } else {
+                            mapBoxSearch(inputString, "finish");
+                        }
                     }
                 }
 
@@ -1753,6 +1763,19 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
         }
     }
 
+    @Override
+    public void onIPAddressReceived(String ipAddress) {
+        if (ipAddress != null) {
+            Log.d(TAG, "Global IP Address: " + ipAddress);
+            // Вызываем AsyncTask для определения страны по IP-адресу
+
+        } else {
+            Log.e(TAG, "Failed to retrieve global IP Address");
+        }
+    }
+
+
+
     public interface ConnectionSpeedTestCallback {
         void onConnectionTestResult(boolean isConnectionFast, long duration);
     }
@@ -2112,5 +2135,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
             });
         }
     }
+
+
 }
+
 
