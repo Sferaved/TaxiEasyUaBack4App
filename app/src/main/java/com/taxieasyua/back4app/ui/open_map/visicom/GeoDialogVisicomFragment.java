@@ -492,7 +492,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment implemen
         Log.d("TAG", "startCost: orderCost " + orderCost);
 
         if (orderCost.equals("0")) {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
         if (!orderCost.equals("0")) {
@@ -553,7 +553,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment implemen
         Log.d("TAG", "startCost: orderCost " + orderCost);
 
         if (orderCost.equals("0")) {
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         }
         if (!orderCost.equals("0")) {
@@ -965,7 +965,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment implemen
                     Log.d("TAG", "onClick urlAddress: " + urlAddress);
 
                     if (orderCost.equals("0")) {
-                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_message));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
                     if (!orderCost.equals("0")) {
@@ -1159,7 +1159,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment implemen
             startActivity(intent);
         } else {
 
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.error_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }

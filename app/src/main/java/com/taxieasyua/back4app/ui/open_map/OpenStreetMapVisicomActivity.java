@@ -259,7 +259,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
         double newZoomLevel = Double.parseDouble(logCursor(MainActivity.TABLE_POSITION_INFO, getApplicationContext()).get(4));
         mapController.setZoom(newZoomLevel);
         map.setClickable(true);
-//        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.MAPNIK);
 //        map.setTileSource(TileSourceFactory.WIKIMEDIA);
 //        map.setTileSource(TileSourceFactory.PUBLIC_TRANSPORT);
 //        map.setTileSource(TileSourceFactory.CLOUDMADESTANDARDTILES);
@@ -273,7 +273,7 @@ public class OpenStreetMapVisicomActivity extends AppCompatActivity {
 //        map.setTileSource(TileSourceFactory.ChartbundleWAC);
 //        map.setTileSource(TileSourceFactory.ChartbundleENRH);
 //        map.setTileSource(TileSourceFactory.ChartbundleENRL);
-        map.setTileSource(TileSourceFactory.OpenTopo);
+//        map.setTileSource(TileSourceFactory.OpenTopo);
         map.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
             @Override
