@@ -48,16 +48,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.Kyiv.KyivRegion;
-import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapVisicomActivity;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiClient;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiResponse;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
 
@@ -71,10 +69,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1395,14 +1391,14 @@ public class MyBottomSheetVisicomOnePageFragment extends BottomSheetDialogFragme
                     ApiResponse apiResponse = response.body();
                     if (apiResponse != null) {
                         String keyVisicom = apiResponse.getKeyVisicom();
-                        Log.d("ApiResponse", "keyVisicom: " + keyVisicom);
+                        Log.d("ApiResponseMapbox", "keyVisicom: " + keyVisicom);
 
                         // Теперь у вас есть ключ Visicom для дальнейшего использования
                         callback.onVisicomKeyReceived(keyVisicom);
                     }
                 } else {
                     // Обработка ошибки
-                    Log.e("ApiResponse", "Error: " + response.code());
+                    Log.e("ApiResponseMapbox", "Error: " + response.code());
                     callback.onApiError(response.code());
                 }
             }
@@ -1410,7 +1406,7 @@ public class MyBottomSheetVisicomOnePageFragment extends BottomSheetDialogFragme
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 // Обработка ошибки
-                Log.e("ApiResponse", "Failed to make API call", t);
+                Log.e("ApiResponseMapbox", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
                                     },

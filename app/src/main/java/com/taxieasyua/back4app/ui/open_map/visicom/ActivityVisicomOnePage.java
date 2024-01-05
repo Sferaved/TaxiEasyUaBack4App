@@ -13,7 +13,6 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -60,18 +59,17 @@ import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxService;
 import com.taxieasyua.back4app.ui.open_map.nominatim.NominatimApiClient;
 import com.taxieasyua.back4app.ui.open_map.nominatim.NominatimApiService;
 import com.taxieasyua.back4app.ui.open_map.nominatim.NominatimPlace;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_mapbox.ApiCallbackMapbox;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_mapbox.ApiClientMapbox;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_mapbox.ApiResponseMapbox;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiClient;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiResponse;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
 import com.taxieasyua.back4app.utils.LocaleHelper;
 import com.taxieasyua.back4app.utils.connect.ConnectionSpeedTester;
-import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
-import com.taxieasyua.back4app.utils.ip.CountryResponse;
-import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.ip.OnIPAddressReceivedListener;
-import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -95,7 +93,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCallback, OnIPAddressReceivedListener {
+public class ActivityVisicomOnePage extends AppCompatActivity
+        implements ApiCallback, ApiCallbackMapbox, OnIPAddressReceivedListener {
 
     private static final String TAG = "TAG_VIS_ADDR";
 
@@ -129,6 +128,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     private String start;
     private String end;
     ArrayAdapter<String> addressAdapter;
+    private static String apiKeyMapBox;
 
     @SuppressLint("MissingInflatedId")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -137,9 +137,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_visicom_address_layout);
-
-
-
 
         start = getIntent().getStringExtra("start");
         end = getIntent().getStringExtra("end");
@@ -193,7 +190,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
         textGeoError = findViewById(R.id.textGeoError);
         text_toError = findViewById(R.id.text_toError);
 
-        visicomKey(this);
+
         addressListView = findViewById(R.id.listAddress);
         progressBar = findViewById(R.id.progress_bar_visicom);
 
@@ -235,17 +232,17 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                     Log.d(TAG, "onTextChanged:startPoint " + startPoint);
                     Log.d(TAG, "onTextChanged:fromEditAddress.getText().toString() " + fromEditAddress.getText().toString());
                     if (startPoint == null) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "start");
-                        } else {
+//                        if(MainActivity.countryState.equals("UA")) {
+//                            performAddressSearch(inputString, "start");
+//                        } else {
                             mapBoxSearch(inputString, "start");
-                        }
+//                        }
                     } else if (!startPoint.equals(inputString)) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "start");
-                        } else {
+//                        if(MainActivity.countryState.equals("UA")) {
+//                            performAddressSearch(inputString, "start");
+//                        } else {
                             mapBoxSearch(inputString, "start");
-                        }
+//                        }
                     }
                     textGeoError.setVisibility(View.GONE);
                 }
@@ -278,19 +275,19 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                 int charCount = inputString.length();
 
                 if (charCount > 2) {
-//                    performAddressSearch(inputString, "finish");
+
                     if (finishPoint == null) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "finish");
-                        } else {
+//                        if(MainActivity.countryState.equals("UA")) {
+//                            performAddressSearch(inputString, "finish");
+//                        } else {
                             mapBoxSearch(inputString, "finish");
-                        }
+//                        }
                     } else if (!finishPoint.equals(inputString)) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "finish");
-                        } else {
+//                        if(MainActivity.countryState.equals("UA")) {
+//                            performAddressSearch(inputString, "finish");
+//                        } else {
                             mapBoxSearch(inputString, "finish");
-                        }
+//                        }
                     }
                 }
 
@@ -752,6 +749,15 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     @Override
     public void onResume() {
         super.onResume();
+        //Получение ключей
+//
+//        if(MainActivity.countryState.equals("UA")) {
+//            visicomKey(this);
+//        } else {
+            mapboxKey(this);
+//        }
+
+
         if (fromEditAddress.getText().toString().equals("")) {
 
             btn_clear_from.setVisibility(View.INVISIBLE);
@@ -1696,6 +1702,41 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
             addressListView.setVisibility(View.INVISIBLE);
         });
     }
+    private void mapboxKey(final ApiCallbackMapbox callback) {
+        ApiClientMapbox.getMapboxKeyInfo(new Callback<ApiResponseMapbox>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponseMapbox> call, @NonNull Response<ApiResponseMapbox> response) {
+                if (response.isSuccessful()) {
+                    ApiResponseMapbox apiResponse = response.body();
+                    if (apiResponse != null) {
+                        String keyMaxbox = apiResponse.getKeyMapbox();
+                        Log.d("ApiResponseMapbox", "keyMapbox: " + keyMaxbox);
+
+                        // Теперь у вас есть ключ Visicom для дальнейшего использования
+                        callback.onMapboxKeyReceived(keyMaxbox);
+                    }
+                } else {
+                    // Обработка ошибки
+                    Log.e("ApiResponseMapbox", "Error: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponseMapbox> call, @NonNull Throwable t) {
+                // Обработка ошибки
+                Log.e("ApiResponseMapbox", "Failed to make API call", t);
+            }
+        },
+        getString(R.string.application)
+        );
+    }
+    @Override
+    public void onMapboxKeyReceived(String key) {
+        Log.d(TAG, "onMapboxKeyReceived: " + key);
+        apiKeyMapBox = key;
+    }
+
+
     private void visicomKey(final ApiCallback callback) {
         ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
             @Override
@@ -1711,7 +1752,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
                     }
                 } else {
                     // Обработка ошибки
-                    Log.e("ApiResponse", "Error: " + response.code());
+                    Log.e("ApiResponseMapbox", "Error: " + response.code());
                     callback.onApiError(response.code());
                 }
             }
@@ -1719,11 +1760,11 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 // Обработка ошибки
-                Log.e("ApiResponse", "Failed to make API call", t);
+                Log.e("ApiResponseMapbox", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
         },
-        getString(R.string.application)
+            getString(R.string.application)
         );
     }
     @Override
@@ -1741,6 +1782,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
     public void onApiFailure(Throwable t) {
 
     }
+
+
     private void addAddressOne (
             String newAddress1,
             String newAddress2,
@@ -1905,7 +1948,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
             }
         });
     }
-    private static final String MAPBOX_API_KEY = "pk.eyJ1IjoiYW5kcmlpMTgwNTEiLCJhIjoiY2xxejMxYm83MDExZzJwdGFrbHZwanY2NCJ9.c2pmXpFZeIzG9AIe7dAv5w";
     private void mapBoxSearch(String address, String point) {
         // Создаем Retrofit-клиент
         MapboxService mapboxService = MapboxApiClient.create();
@@ -1916,7 +1958,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity implements ApiCall
 
                 // Выполняем асинхронный запрос
 //        Call<MapboxResponse> call = mapboxService.getLocation(address, "pl", MAPBOX_API_KEY);
-        Call<MapboxResponse> call = mapboxService.getLocation(address, MAPBOX_API_KEY);
+        Call<MapboxResponse> call = mapboxService.getLocation(address, apiKeyMapBox);
         call.enqueue(new Callback<MapboxResponse>() {
             @Override
             public void onResponse(Call<MapboxResponse> call, Response<MapboxResponse> response) {

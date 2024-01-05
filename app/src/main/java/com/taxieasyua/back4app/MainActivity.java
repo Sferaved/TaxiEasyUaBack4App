@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_28122023_0";
+    public static final String DB_NAME = "data_05012024_2";
 
     /**
      * Table section
@@ -889,31 +889,67 @@ public class MainActivity extends AppCompatActivity {
     private void startFireBase() {
         startSignInInBackground();
     }
+//    private void startSignInInBackground() {
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // Инициализация FirebaseApp
+//                FirebaseApp.initializeApp(MainActivity.this);
+//                Log.d(TAG, "run: ");
+//                // Choose authentication providers
+//                List<AuthUI.IdpConfig> providers = Arrays.asList(
+//                        new AuthUI.IdpConfig.GoogleBuilder().build());
+//
+//                // Create and launch sign-in intent
+//                Intent signInIntent = AuthUI.getInstance()
+//                        .createSignInIntentBuilder()
+//                        .setAvailableProviders(providers)
+//                        .build();
+//                try {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            signInLauncher.launch(signInIntent);
+//                        }
+//                    });
+//                } catch (NullPointerException e) {
+//                    Log.e(TAG, "NullPointerException during sign-in launch", e);
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        });
+//        thread.start();
+//    }
+
     private void startSignInInBackground() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                // Инициализация FirebaseApp
-                FirebaseApp.initializeApp(MainActivity.this);
-                Log.d(TAG, "run: ");
-                // Choose authentication providers
-                List<AuthUI.IdpConfig> providers = Arrays.asList(
-                        new AuthUI.IdpConfig.GoogleBuilder().build());
-
-                // Create and launch sign-in intent
-                Intent signInIntent = AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(providers)
-                        .build();
                 try {
+                    // Инициализация FirebaseApp
+                    FirebaseApp.initializeApp(MainActivity.this);
+                    Log.d(TAG, "FirebaseApp initialized");
+
+                    // Choose authentication providers
+                    List<AuthUI.IdpConfig> providers = Arrays.asList(
+                            new AuthUI.IdpConfig.GoogleBuilder().build());
+
+                    // Create and launch sign-in intent
+                    Intent signInIntent = AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setAvailableProviders(providers)
+                            .build();
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             signInLauncher.launch(signInIntent);
                         }
                     });
-                } catch (NullPointerException ignored) {
-
+                } catch (Exception e) {
+                    Log.e(TAG, "Error during Firebase initialization or sign-in", e);
+                    e.printStackTrace();
                 }
             }
         });
@@ -922,6 +958,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
+            
             new FirebaseAuthUIActivityResultContract(),
             new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
                 @Override
@@ -938,7 +975,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void onSignInResult(FirebaseAuthUIAuthenticationResult result) throws MalformedURLException, JSONException, InterruptedException {
         ContentValues cv = new ContentValues();
+        Log.d(TAG, "onSignInResult: ");
         try {
+            Log.d(TAG, "onSignInResult: result.getResultCode() " + result.getResultCode());
             if (result.getResultCode() == RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -1425,7 +1464,6 @@ public class MainActivity extends AppCompatActivity {
                     if (countryResponse != null) {
                         String country = countryResponse.getCountry();
                         countryState = country;
-
                     } else {
                         countryState = "UA";
                     }

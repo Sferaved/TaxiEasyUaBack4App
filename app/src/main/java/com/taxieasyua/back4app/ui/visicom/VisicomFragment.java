@@ -57,8 +57,8 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.ActivityVisicomOnePage;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiResponse;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -995,21 +995,21 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
     }
 
     private void visicomKey(final ApiCallback callback) {
-        com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
+        com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful()) {
                     ApiResponse apiResponse = response.body();
                     if (apiResponse != null) {
                         String keyVisicom = apiResponse.getKeyVisicom();
-                        Log.d("ApiResponse", "keyVisicom: " + keyVisicom);
+                        Log.d("ApiResponseMapbox", "keyVisicom: " + keyVisicom);
 
                         // Теперь у вас есть ключ Visicom для дальнейшего использования
                         callback.onVisicomKeyReceived(keyVisicom);
                     }
                 } else {
                     // Обработка ошибки
-                    Log.e("ApiResponse", "Error: " + response.code());
+                    Log.e("ApiResponseMapbox", "Error: " + response.code());
                     callback.onApiError(response.code());
                 }
             }
@@ -1017,7 +1017,7 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
             @Override
             public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки
-                Log.e("ApiResponse", "Failed to make API call", t);
+                Log.e("ApiResponseMapbox", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
         },

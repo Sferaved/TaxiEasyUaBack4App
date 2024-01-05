@@ -1,4 +1,4 @@
-package com.taxieasyua.back4app.ui.open_map.visicom.key;
+package com.taxieasyua.back4app.ui.open_map.visicom.key_visicom;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

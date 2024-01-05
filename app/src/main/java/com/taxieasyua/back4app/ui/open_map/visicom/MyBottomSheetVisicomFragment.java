@@ -53,9 +53,9 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiClient;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiResponse;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.KeyboardUtils;
 
@@ -1392,14 +1392,14 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
                     ApiResponse apiResponse = response.body();
                     if (apiResponse != null) {
                         String keyVisicom = apiResponse.getKeyVisicom();
-                        Log.d("ApiResponse", "keyVisicom: " + keyVisicom);
+                        Log.d("ApiResponseMapbox", "keyVisicom: " + keyVisicom);
 
                         // Теперь у вас есть ключ Visicom для дальнейшего использования
                         callback.onVisicomKeyReceived(keyVisicom);
                     }
                 } else {
                     // Обработка ошибки
-                    Log.e("ApiResponse", "Error: " + response.code());
+                    Log.e("ApiResponseMapbox", "Error: " + response.code());
                     callback.onApiError(response.code());
                 }
             }
@@ -1407,7 +1407,7 @@ public class MyBottomSheetVisicomFragment extends BottomSheetDialogFragment impl
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 // Обработка ошибки
-                Log.e("ApiResponse", "Failed to make API call", t);
+                Log.e("ApiResponseMapbox", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
                                     },

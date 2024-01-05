@@ -64,9 +64,9 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiCallback;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiClient;
-import com.taxieasyua.back4app.ui.open_map.visicom.key.ApiResponse;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiCallback;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiClient;
+import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiResponse;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
 
 import org.json.JSONException;
@@ -82,7 +82,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -1443,14 +1442,14 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment implemen
                     ApiResponse apiResponse = response.body();
                     if (apiResponse != null) {
                         String keyVisicom = apiResponse.getKeyVisicom();
-                        Log.d("ApiResponse", "keyVisicom: " + keyVisicom);
+                        Log.d("ApiResponseMapbox", "keyVisicom: " + keyVisicom);
 
                         // Теперь у вас есть ключ Visicom для дальнейшего использования
                         callback.onVisicomKeyReceived(keyVisicom);
                     }
                 } else {
                     // Обработка ошибки
-                    Log.e("ApiResponse", "Error: " + response.code());
+                    Log.e("ApiResponseMapbox", "Error: " + response.code());
                     callback.onApiError(response.code());
                 }
             }
@@ -1458,7 +1457,7 @@ public class GeoDialogVisicomFragment extends BottomSheetDialogFragment implemen
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 // Обработка ошибки
-                Log.e("ApiResponse", "Failed to make API call", t);
+                Log.e("ApiResponseMapbox", "Failed to make API call", t);
                 callback.onApiFailure(t);
             }
         },

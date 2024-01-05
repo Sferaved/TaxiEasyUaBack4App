@@ -1,8 +1,7 @@
-package com.taxieasyua.back4app.ui.open_map.visicom.key;
+package com.taxieasyua.back4app.ui.open_map.visicom.key_visicom;
 
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
