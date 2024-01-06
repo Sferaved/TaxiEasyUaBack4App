@@ -232,17 +232,17 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                     Log.d(TAG, "onTextChanged:startPoint " + startPoint);
                     Log.d(TAG, "onTextChanged:fromEditAddress.getText().toString() " + fromEditAddress.getText().toString());
                     if (startPoint == null) {
-//                        if(MainActivity.countryState.equals("UA")) {
-//                            performAddressSearch(inputString, "start");
-//                        } else {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "start");
+                        } else {
                             mapBoxSearch(inputString, "start");
-//                        }
+                        }
                     } else if (!startPoint.equals(inputString)) {
-//                        if(MainActivity.countryState.equals("UA")) {
-//                            performAddressSearch(inputString, "start");
-//                        } else {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "start");
+                        } else {
                             mapBoxSearch(inputString, "start");
-//                        }
+                        }
                     }
                     textGeoError.setVisibility(View.GONE);
                 }
@@ -277,17 +277,17 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                 if (charCount > 2) {
 
                     if (finishPoint == null) {
-//                        if(MainActivity.countryState.equals("UA")) {
-//                            performAddressSearch(inputString, "finish");
-//                        } else {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "finish");
+                        } else {
                             mapBoxSearch(inputString, "finish");
-//                        }
+                        }
                     } else if (!finishPoint.equals(inputString)) {
-//                        if(MainActivity.countryState.equals("UA")) {
-//                            performAddressSearch(inputString, "finish");
-//                        } else {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "finish");
+                        } else {
                             mapBoxSearch(inputString, "finish");
-//                        }
+                        }
                     }
                 }
 
@@ -749,13 +749,23 @@ public class ActivityVisicomOnePage extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-        //Получение ключей
-//
-//        if(MainActivity.countryState.equals("UA")) {
-//            visicomKey(this);
-//        } else {
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO);
+        String city = listCity.get(1);
+
+        switch (city){
+            case "foreign countries":
+                MainActivity.countryState = "FC";
+                break;
+            default:
+                MainActivity.countryState = "UA";
+                break;
+        }
+        if(MainActivity.countryState.equals("UA")) {
+            visicomKey(this);
+        } else {
             mapboxKey(this);
-//        }
+        }
 
 
         if (fromEditAddress.getText().toString().equals("")) {

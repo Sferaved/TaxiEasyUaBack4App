@@ -6,14 +6,10 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,8 +27,6 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.cities.api.CityApiClient;
@@ -41,26 +35,8 @@ import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
-
-import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
-
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
-import org.osmdroid.util.BoundingBox;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.util.MapTileIndex;
-import org.osmdroid.views.MapView;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -73,7 +49,6 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     private static final String TAG = "TAG_CITY";
     ListView listView;
     String city;
-    AppCompatButton btn_ok;
     private String cityMenu;
     private String message;
 
@@ -84,15 +59,6 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
     public MyBottomSheetCityFragment(String city) {
         this.city = city;
     }
-
-    private final String[] cityList = new String[]{
-            "Київ",
-            "Дніпро",
-            "Одеса",
-            "Запоріжжя",
-            "Черкаси",
-            "Тест"
-    };
     private final String[] cityCode = new String[]{
             "Kyiv City",
             "Dnipropetrovsk Oblast",
@@ -100,6 +66,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             "Zaporizhzhia",
             "Cherkasy Oblast",
             "OdessaTest",
+            "foreign countries"
     };
 
     int positionFirst;
@@ -121,6 +88,17 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         View view = inflater.inflate(R.layout.cities_list_layout, container, false);
         listView = view.findViewById(R.id.listViewBonus);
         VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+
+        String[] cityList = new String[]{
+                getString(R.string.Kyiv_city),
+                getString(R.string.Dnipro_city),
+                getString(R.string.Odessa),
+                getString(R.string.Zaporizhzhia),
+                getString(R.string.Cherkasy),
+                "Тест",
+                getString(R.string.foreign_countries),
+        };
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.services_adapter_layout, cityList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -132,48 +110,29 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         switch (city) {
             case "Dnipropetrovsk Oblast":
                 positionFirst = 1;
-                phoneNumber = Dnipropetrovsk_Oblast_phone;
-                cityMenu = getString(R.string.city_dnipro);
                 break;
             case "Odessa":
                 positionFirst = 2;
-                phoneNumber = Odessa_phone;
-                cityMenu = getString(R.string.city_odessa);
                 break;
             case "Zaporizhzhia":
                 positionFirst = 3;
-                phoneNumber = Zaporizhzhia_phone;
-                cityMenu = getString(R.string.city_zaporizhzhia);
                 break;
             case "Cherkasy Oblast":
                 positionFirst = 4;
-                phoneNumber = Cherkasy_Oblast_phone;
-                cityMenu = getString(R.string.city_cherkasy);
                 break;
             case "OdessaTest":
                 positionFirst = 5;
-                phoneNumber = Kyiv_City_phone;
-                cityMenu = "Test";
+                break;
+            case "foreign countries":
+                positionFirst = 6;
                 break;
             default:
-                phoneNumber = Kyiv_City_phone;
                 positionFirst = 0;
-                cityMenu = getString(R.string.city_kyiv);
                 break;
         }
-        ContentValues cv = new ContentValues();
-        SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-        cv.put("city", cityCode[positionFirst]);
-        cv.put("phone", phoneNumber);
-        database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                new String[]{"1"});
-        database.close();
-
-        cityMaxPay(cityCode[positionFirst], getContext());
-        merchantFondy(cityCode[positionFirst], getContext());
+        Log.d(TAG, "onCreateView: city" + city);
         listView.setItemChecked(positionFirst, true);
         int positionFirstOld = positionFirst;
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -183,65 +142,83 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         positionFirst = 1;
                         phoneNumber = Dnipropetrovsk_Oblast_phone;
                         cityMenu = getString(R.string.city_dnipro);
+                        MainActivity.countryState = "UA";
                         break;
                     case "Odessa":
                         positionFirst = 2;
                         phoneNumber = Odessa_phone;
                         cityMenu = getString(R.string.city_odessa);
+                        MainActivity.countryState = "UA";
                         break;
                     case "Zaporizhzhia":
                         positionFirst = 3;
                         phoneNumber = Zaporizhzhia_phone;
                         cityMenu = getString(R.string.city_zaporizhzhia);
+                        MainActivity.countryState = "UA";
                         break;
                     case "Cherkasy Oblast":
                         positionFirst = 4;
                         phoneNumber = Cherkasy_Oblast_phone;
                         cityMenu = getString(R.string.city_cherkasy);
+                        MainActivity.countryState = "UA";
                         break;
                     case "OdessaTest":
                         positionFirst = 5;
                         phoneNumber = Kyiv_City_phone;
                         cityMenu = "Test";
+                        MainActivity.countryState = "UA";
+                        break;
+                    case "foreign countries":
+                        positionFirst = 6;
+                        phoneNumber = Kyiv_City_phone;
+                        cityMenu = getString(R.string.foreign_countries);
+                        MainActivity.countryState = "FC";
                         break;
                     default:
                         phoneNumber = Kyiv_City_phone;
                         positionFirst = 0;
                         cityMenu = getString(R.string.city_kyiv);
+                        MainActivity.countryState = "UA";
                         break;
                 }
                 if (positionFirstOld != positionFirst) {
-                    ContentValues cv = new ContentValues();
-                    SQLiteDatabase database = view.getContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
-                    cv.put("city", cityCode[positionFirst]);
-                    cv.put("phone", phoneNumber);
-                    database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                            new String[]{"1"});
-                    database.close();
+                    if (positionFirst == 6) {
+                        cityMaxPay(cityCode[0], getContext());
+                        merchantFondy(cityCode[0], getContext());
+                    } else {
+                        cityMaxPay(cityCode[positionFirst], getContext());
+                        merchantFondy(cityCode[positionFirst], getContext());
+                    }
 
-                    cityMaxPay(cityCode[positionFirst], getContext());
-                    merchantFondy(cityCode[positionFirst], getContext());
 
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
                     resetRoutHome();
                     resetRoutMarker();
 
                     updateMyPosition(cityCode[positionFirst]);
+
+
+
+                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
                     navController.navigate(R.id.nav_visicom);
-
-                    message = getString(R.string.change_message) + getString(R.string.hi_mes) + " "+ getString(R.string.menu_city) + " " + cityMenu + ".";
-
-                    if (MainActivity.navVisicomMenuItem != null) {
-                        // Новый текст элемента меню
-                        String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
-                        // Изменяем текст элемента меню
-                        MainActivity.navVisicomMenuItem.setTitle(newTitle);
+                    if (positionFirst != 6) {
+                        message = getString(R.string.change_message) + getString(R.string.hi_mes) + " " + getString(R.string.order_in) + cityMenu + ".";
+                    } else {
+                        message = getString(R.string.change_message);
                     }
-
-                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
+
+
+                if (MainActivity.navVisicomMenuItem != null) {
+                    // Новый текст элемента меню
+                    String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
+                    // Изменяем текст элемента меню
+                    MainActivity.navVisicomMenuItem.setTitle(newTitle);
+                    if (positionFirstOld != positionFirst) {
+                        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+                    }
+                }
+
                 dismiss();
             }
         });
@@ -281,6 +258,12 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                 startLat = 49.44469;
                 startLan = 32.05728;
                 break;
+           case "foreign countries":
+                // за границей
+                position = "DW631 47, 00-514 Warszawa, Poland\t";
+                startLat = 52.13472;
+                startLan = 21.00424;
+                break;
             default:
                 position = "вул.Хрещатик, буд.22, місто Київ\t";
                 startLat = 50.4501;
@@ -291,8 +274,14 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
 
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+
         ContentValues cv = new ContentValues();
 
+        cv.put("city", city);
+        cv.put("phone", phoneNumber);
+        database.update(MainActivity.CITY_INFO, cv, "id = ?", new String[]{"1"});
+
+        cv = new ContentValues();
         cv.put("startLat", startLat);
         database.update(MainActivity.TABLE_POSITION_INFO, cv, "id = ?",
                 new String[] { "1" });
@@ -350,7 +339,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
         call.enqueue(new Callback<CityResponse>() {
             @Override
-            public void onResponse(Call<CityResponse> call, Response<CityResponse> response) {
+            public void onResponse(@NonNull Call<CityResponse> call, @NonNull Response<CityResponse> response) {
                 if (response.isSuccessful()) {
                     CityResponse cityResponse = response.body();
                     if (cityResponse != null) {
@@ -361,11 +350,11 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         cv.put("card_max_pay", cardMaxPay);
                         cv.put("bonus_max_pay", bonusMaxPay);
 
-                            SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                            database.update(MainActivity.CITY_INFO, cv, "id = ?",
-                                    new String[]{"1"});
+                        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                        database.update(MainActivity.CITY_INFO, cv, "id = ?",
+                                new String[]{"1"});
 
-                            database.close();
+                        database.close();
 
 
                         // Добавьте здесь код для обработки полученных значений

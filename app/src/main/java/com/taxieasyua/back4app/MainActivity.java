@@ -6,6 +6,7 @@ import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.FragmentManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,6 +59,9 @@ import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.databinding.ActivityMainBinding;
 import com.taxieasyua.back4app.ui.card.CardInfo;
+import com.taxieasyua.back4app.ui.finish.ApiClient;
+import com.taxieasyua.back4app.ui.finish.ApiService;
+import com.taxieasyua.back4app.ui.finish.City;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
 import com.taxieasyua.back4app.ui.home.HomeFragment;
@@ -108,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_05012024_2";
+    public static final String DB_NAME = "data_06012024_19";
 
     /**
      * Table section
@@ -145,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
     public static Menu navMenu;
     public static MenuItem navVisicomMenuItem;
     public static String countryState;
+    private static String verifyInternet;
+    private static androidx.fragment.app.FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,58 +181,16 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         networkChangeReceiver = new NetworkChangeReceiver();
+        verifyInternet = getString(R.string.verify_internet);
 
+        fragmentManager = getSupportFragmentManager();
 
     }
     @Override
     protected void onResume() {
         super.onResume();
-         // Получаем путь к базе данных
-        String dbPath = getDatabasePath(MainActivity.DB_NAME).getAbsolutePath();
-        File dbFile = new File(dbPath);
-        // Проверяем существование файла базы данных
-        if (dbFile.exists()) {
-            new GetPublicIPAddressTask().execute();
-            SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        // Получаем путь к базе данных
 
-            Cursor c = database.query(CITY_INFO, null, null, null, null, null, null);
-            if(c.getCount() != 0) {
-                List<String> listCity = logCursor(CITY_INFO);
-                String city = listCity.get(1);
-
-                String cityMenu;
-                switch (city) {
-                    case "Dnipropetrovsk Oblast":
-                        cityMenu = getString(R.string.city_dnipro);
-                        break;
-                    case "Odessa":
-                        cityMenu = getString(R.string.city_odessa);
-                        break;
-                    case "Zaporizhzhia":
-                        cityMenu = getString(R.string.city_zaporizhzhia);
-                        break;
-                    case "Cherkasy Oblast":
-                        cityMenu = getString(R.string.city_cherkasy);
-                        break;
-                    case "OdessaTest":
-                        cityMenu = "Test";
-                        break;
-                    default:
-                        cityMenu = getString(R.string.city_kyiv);
-                }
-
-
-                if (MainActivity.navVisicomMenuItem != null) {
-                    // Новый текст элемента меню
-                    String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
-
-                    // Изменяем текст элемента меню
-                    MainActivity.navVisicomMenuItem.setTitle(newTitle);
-                }
-            }
-
-            database.close();
-        }
 
     }
     @Override
@@ -874,6 +838,7 @@ public class MainActivity extends AppCompatActivity {
         db.close();
         return list;
     }
+
     public void newUser() {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         Log.d(TAG, "newUser: " + userEmail);
@@ -881,7 +846,6 @@ public class MainActivity extends AppCompatActivity {
             startFireBase();
         } else {
             new VerifyUserTask().execute();
-
         }
 
     }
@@ -995,9 +959,51 @@ public class MainActivity extends AppCompatActivity {
                 getCardToken("mono", TABLE_MONO_CARDS, user.getEmail());
 
                 cv.put("verifyOrder", "1");
+
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                 database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                database.close();
+
+                Cursor c = database.query(CITY_INFO, null, null, null, null, null, null);
+                if(c.getCount() != 0) {
+                    List<String> listCity = logCursor(CITY_INFO);
+                    String city = listCity.get(1);
+                    Log.d(TAG, "onResume:city www " + city +"/");
+                    if(city.equals("")) {
+                        new GetPublicIPAddressTask().execute();
+                    } else {
+                        String cityMenu;
+                        switch (city) {
+                            case "Dnipropetrovsk Oblast":
+                                cityMenu = " " + getString(R.string.city_dnipro);
+                                break;
+                            case "Odessa":
+                                cityMenu = " " + getString(R.string.city_odessa);
+                                break;
+                            case "Zaporizhzhia":
+                                cityMenu = " " + getString(R.string.city_zaporizhzhia);
+                                break;
+                            case "Cherkasy Oblast":
+                                cityMenu = " " + getString(R.string.city_cherkasy);
+                                break;
+                            case "foreign countries":
+                                cityMenu = "";
+                                break;
+                            case "OdessaTest":
+                                cityMenu = " " + "Test";
+                                break;
+                            default:
+                                cityMenu = " " + getString(R.string.city_kyiv);
+                        }
+                        if (MainActivity.navVisicomMenuItem != null) {
+                            // Новый текст элемента меню
+                            String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
+
+                            // Изменяем текст элемента меню
+                            MainActivity.navVisicomMenuItem.setTitle(newTitle);
+                        }
+                    }
+                    database.close();
+                }
 
             } else {
 
@@ -1270,6 +1276,49 @@ public class MainActivity extends AppCompatActivity {
                     }
                     cv.put("verifyOrder", "1");
                     database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+
+                    Cursor c = database.query(CITY_INFO, null, null, null, null, null, null);
+                    if(c.getCount() != 0) {
+                        List<String> listCity = logCursor(CITY_INFO);
+                        String city = listCity.get(1);
+                        Log.d(TAG, "onResume:city www " + city +"/");
+                        if(city.equals("")) {
+                            new GetPublicIPAddressTask().execute();
+                        } else {
+                            String cityMenu;
+                            switch (city) {
+                                case "Dnipropetrovsk Oblast":
+                                    cityMenu = " " + getString(R.string.city_dnipro);
+                                    break;
+                                case "Odessa":
+                                    cityMenu = " " + getString(R.string.city_odessa);
+                                    break;
+                                case "Zaporizhzhia":
+                                    cityMenu = " " + getString(R.string.city_zaporizhzhia);
+                                    break;
+                                case "Cherkasy Oblast":
+                                    cityMenu = " " + getString(R.string.city_cherkasy);
+                                    break;
+                                case "foreign countries":
+                                    cityMenu = "";
+                                    break;
+                                case "OdessaTest":
+                                    cityMenu = " " + "Test";
+                                    break;
+                                default:
+                                    cityMenu = " " + getString(R.string.city_kyiv);
+                            }
+                            if (MainActivity.navVisicomMenuItem != null) {
+                                // Новый текст элемента меню
+                                String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
+
+                                // Изменяем текст элемента меню
+                                MainActivity.navVisicomMenuItem.setTitle(newTitle);
+                            }
+                        }
+
+                    }
+
                 }
             }
             database.close();
@@ -1447,8 +1496,10 @@ public class MainActivity extends AppCompatActivity {
             if (ipAddress != null) {
                 Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
                 getCountryByIP(ipAddress);
+                getCityByIP(ipAddress);
             } else {
-
+                getCountryByIP("31.202.139.47");
+                getCityByIP("31.202.139.47");
             }
         }
     }
@@ -1462,8 +1513,7 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     CountryResponse countryResponse = response.body();
                     if (countryResponse != null) {
-                        String country = countryResponse.getCountry();
-                        countryState = country;
+                        countryState = countryResponse.getCountry();
                     } else {
                         countryState = "UA";
                     }
@@ -1478,6 +1528,47 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Error: " + t.getMessage());
             }
         });
+    }
+
+    private static void getCityByIP(String ip) {
+
+//        List<String> city = logCursor(MainActivity.CITY_INFO);
+//        Log.d(TAG, "getLocalIpAddress: city.get(1)" + city.get(1));
+//        if(city.equals("")) {
+            VisicomFragment.progressBar.setVisibility(View.VISIBLE);
+        ApiService apiService = ApiClient.getApiService();
+
+        Call<City> call = apiService.cityByIp(ip);
+
+        call.enqueue(new Callback<City>() {
+            @Override
+            public void onResponse(@NonNull Call<City> call, @NonNull Response<City> response) {
+                if (response.isSuccessful()) {
+                    City status = response.body();
+                    if (status != null) {
+                        String result = status.getResponse();
+                        Log.d("TAG", "onResponse:result " + result);
+
+                        MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
+                        bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
+
+                    }
+                } else {
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(verifyInternet);
+                    bottomSheetDialogFragment.show(bottomSheetDialogFragment.getParentFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<City> call, @NonNull Throwable t) {
+                // Обработка ошибок сети или других ошибок
+                String errorMessage = t.getMessage();
+                t.printStackTrace();
+                Log.d("TAG", "onFailure: " + errorMessage);
+
+            }
+        });
+//        }
     }
 
 }
