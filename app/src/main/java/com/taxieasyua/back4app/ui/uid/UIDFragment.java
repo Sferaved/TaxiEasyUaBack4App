@@ -5,7 +5,6 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -31,19 +30,13 @@ import com.taxieasyua.back4app.NetworkChangeReceiver;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentUidBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
-import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.TimeZone;
 
 import retrofit2.Call;
 import retrofit2.Callback;

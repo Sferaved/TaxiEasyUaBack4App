@@ -33,7 +33,6 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentBonusBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
-import com.taxieasyua.back4app.ui.finish.RouteResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 
 import java.util.ArrayList;

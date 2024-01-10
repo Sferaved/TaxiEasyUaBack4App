@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 
 import org.json.JSONException;
 import org.osmdroid.util.GeoPoint;

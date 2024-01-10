@@ -32,51 +32,24 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentGalleryBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
-import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
-import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
-import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
-import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
-import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
-import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
-import com.taxieasyua.back4app.ui.fondy.token_pay.ApiResponseToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
-import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
-import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGalleryFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
-import com.taxieasyua.back4app.ui.mono.MonoApi;
-import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
-import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
-import com.taxieasyua.back4app.ui.payment_system.PayApi;
-import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import org.json.JSONException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class GalleryFragment extends Fragment {
 

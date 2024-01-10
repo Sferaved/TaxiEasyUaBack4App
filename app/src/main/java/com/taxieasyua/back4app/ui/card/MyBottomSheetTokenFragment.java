@@ -3,7 +3,6 @@ package com.taxieasyua.back4app.ui.card;
 import static android.content.Context.MODE_PRIVATE;
 
 import android.annotation.SuppressLint;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,19 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.appcompat.widget.AppCompatDrawableManager;
-import androidx.fragment.app.FragmentActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.gson.Gson;
@@ -40,7 +32,6 @@ import com.taxieasyua.back4app.ui.fondy.token_pay.PaymentApiToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.RequestDataToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.StatusRequestToken;
 import com.taxieasyua.back4app.ui.fondy.token_pay.SuccessResponseDataToken;
-import com.taxieasyua.back4app.ui.home.HomeFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;

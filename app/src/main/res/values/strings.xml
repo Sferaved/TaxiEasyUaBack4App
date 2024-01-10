@@ -1,8 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.981</string>
-    <string name="version">Версия: 2.981</string>
+    <string name="version_code">2.982</string>
+    <string name="version">Версия: 2.982</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -97,7 +97,7 @@
     <string name="address_error_message">Ошибка ввода адреса</string>
 
     <string name="BAGGAGE">Загрузка салона</string>
-    <string name="ANIMAL">Животное</string>,
+    <string name="ANIMAL">Животное</string>
     <string name="CONDIT">Кондиционер</string>
     <string name="MEET">Встреча с табличкой</string>
     <string name="COURIER">Курьер. доставка</string>
@@ -310,6 +310,7 @@
     <string name="my_name">Андрей Коржов</string>
     <string name="conf">Конфеденциальность</string>
     <string name="author_about">Об авторе</string>
-    <string name="foreign_countries">не в Украине</string>
+    <string name="foreign_countries">другое</string>
     <string name="order_in">"заказ в "</string>
+    <string name="checking">Ожидайте, идет проверка данных ...</string>
 </resources>

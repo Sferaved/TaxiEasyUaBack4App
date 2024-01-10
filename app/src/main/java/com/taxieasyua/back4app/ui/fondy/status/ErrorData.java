@@ -2,8 +2,6 @@ package com.taxieasyua.back4app.ui.fondy.status;
 
 import com.google.gson.annotations.SerializedName;
 
-import com.google.gson.annotations.SerializedName;
-
 public class ErrorData {
     @SerializedName("error_message")
     private String error_message;

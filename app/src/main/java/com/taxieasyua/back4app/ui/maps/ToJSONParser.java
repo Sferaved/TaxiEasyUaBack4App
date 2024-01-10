@@ -1,9 +1,6 @@
 package com.taxieasyua.back4app.ui.maps;
 
-import android.os.AsyncTask;
 import android.util.Log;
-
-import com.taxieasyua.back4app.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,9 +15,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Exchanger;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;

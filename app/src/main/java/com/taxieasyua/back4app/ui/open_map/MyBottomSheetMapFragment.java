@@ -1,15 +1,9 @@
 package com.taxieasyua.back4app.ui.open_map;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,11 +16,6 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.home.HomeFragment;
-import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class MyBottomSheetMapFragment extends BottomSheetDialogFragment {

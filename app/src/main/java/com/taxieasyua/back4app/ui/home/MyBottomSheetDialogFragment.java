@@ -40,11 +40,9 @@ import com.taxieasyua.back4app.ui.home.room.AppDatabase;
 import com.taxieasyua.back4app.ui.home.room.RouteCost;
 import com.taxieasyua.back4app.ui.home.room.RouteCostDao;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
-import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

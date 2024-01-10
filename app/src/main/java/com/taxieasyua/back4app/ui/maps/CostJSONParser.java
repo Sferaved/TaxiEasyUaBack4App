@@ -3,8 +3,6 @@ package com.taxieasyua.back4app.ui.maps;
 
 import android.util.Log;
 
-import com.taxieasyua.back4app.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

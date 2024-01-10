@@ -31,24 +31,14 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
-import com.taxieasyua.back4app.ui.fondy.payment.ApiResponsePay;
-import com.taxieasyua.back4app.ui.fondy.payment.MyBottomSheetCardPayment;
-import com.taxieasyua.back4app.ui.fondy.payment.PaymentApi;
-import com.taxieasyua.back4app.ui.fondy.payment.RequestData;
-import com.taxieasyua.back4app.ui.fondy.payment.StatusRequestPay;
-import com.taxieasyua.back4app.ui.fondy.payment.SuccessResponseDataPay;
-import com.taxieasyua.back4app.ui.fondy.payment.UniqueNumberGenerator;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.GeoDialogVisicomFragment;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,12 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
@@ -187,7 +171,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         if(connected()) {
             try {
                 String urlOrder = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     urlOrder = getTaxiUrlSearchMarkersVisicom("orderSearchMarkersVisicom", requireActivity());
                 }
                 Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
@@ -378,7 +362,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
         if (connected()) {
             try {
                 String urlOrder = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     urlOrder = getTaxiUrlSearch("orderSearch");
                 }
                 Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);

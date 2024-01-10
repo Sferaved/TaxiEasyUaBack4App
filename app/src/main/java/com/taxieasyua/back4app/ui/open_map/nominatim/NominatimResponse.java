@@ -2,8 +2,6 @@ package com.taxieasyua.back4app.ui.open_map.nominatim;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
 public class NominatimResponse {
 
     @SerializedName("place_id")

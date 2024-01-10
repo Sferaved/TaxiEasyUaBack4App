@@ -17,6 +17,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -37,6 +38,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.taxieasyua.back4app.MainActivity;
@@ -53,8 +55,10 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.ActivityVisicomOnePage;
-import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiCallback;
-import com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiResponse;
+import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
+import com.taxieasyua.back4app.utils.ip.CountryResponse;
+import com.taxieasyua.back4app.utils.ip.IPUtil;
+import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -64,12 +68,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class VisicomFragment extends Fragment  implements ApiCallback{
+public class VisicomFragment extends Fragment{
 
     public static ProgressBar progressBar;
     private FragmentVisicomBinding binding;
@@ -100,10 +103,6 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
     public static String urlOrder;
     public static long MIN_COST_VALUE;
     public static long firstCostForMin;
-    private static long discount;
-    private String apiKey; // Впишіть апі ключ
-    private final OkHttpClient client = new OkHttpClient();
-
     private static List<String> addresses;
 
     public static AppCompatButton btnAdd, btn_clear_from_text;
@@ -111,6 +110,8 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
     public static ImageButton btn_clear_from, btn_clear_to;
     public static TextView textwhere, num2;
     private AlertDialog alertDialog;
+    public static TextView textfrom;
+    public static TextView num1;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -120,8 +121,6 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         binding = FragmentVisicomBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         progressBar = binding.progressBar;
-
-        visicomKey(this);
 
         fab_call = binding.fabCall;
         fab_call.setOnClickListener(new View.OnClickListener() {
@@ -136,9 +135,12 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         });
 
 
-
         buttonBonus = binding.btnBonus;
+        textfrom = binding.textfrom;
+        num1 = binding.num1;
 
+        textfrom.setVisibility(View.INVISIBLE);
+        num1.setVisibility(View.INVISIBLE);
 
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         api =  stringList.get(2);
@@ -153,6 +155,7 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         geoText = binding.textGeo;
 
         btn_clear_from_text = binding.btnClearFromText;
+
         btn_clear_from_text.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -309,6 +312,7 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
             }
         });
         btn_clear_from = binding.btnClearFrom;
+        btn_clear_from.setVisibility(View.INVISIBLE);
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -320,6 +324,7 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
             }
         });
         btn_clear_to = binding.btnClearTo;
+        btn_clear_to.setVisibility(View.INVISIBLE);
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -369,6 +374,17 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         });
 
 
+            binding.textfrom.setVisibility(View.INVISIBLE);
+
+            btn_clear_from_text.setVisibility(View.INVISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            btn_clear_to.setVisibility(View.INVISIBLE);
+
+
+
         return root;
     }
     @Override
@@ -392,7 +408,7 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         binding = null;
     }
     @SuppressLint("Range")
-    private List<String> logCursor(String table, Context context) {
+    private static List<String> logCursor(String table, Context context) {
         List<String> list = new ArrayList<>();
         SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor c = database.query(table, null, null, null, null, null, null);
@@ -415,63 +431,7 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         c.close();
         return list;
     }
-//    private class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(Void... voids) {
-//            return IPUtil.getPublicIPAddress();
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String ipAddress) {
-//            if (ipAddress != null) {
-//                Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
-//                getLocalIpAddress(ipAddress);
-//            } else {
-//
-//            }
-//        }
-//    }
-//    private void getLocalIpAddress(String ip) {
-//
-////        List<String> city = logCursor(MainActivity.CITY_INFO, requireActivity());
-////        Log.d(TAG, "getLocalIpAddress: city.get(1)" + city.get(1));
-////        if(city.size() != 0 && city.get(1).equals("")) {
-////            VisicomFragment.progressBar.setVisibility(View.VISIBLE);
-//            ApiService apiService = ApiClient.getApiService();
-//
-//            Call<City> call = apiService.cityByIp(ip);
-//
-//            call.enqueue(new Callback<City>() {
-//                @Override
-//                public void onResponse(@NonNull Call<City> call, @NonNull Response<City> response) {
-//                    if (response.isSuccessful()) {
-//                        City status = response.body();
-//                        if (status != null) {
-//                            String result = status.getResponse();
-//                            Log.d("TAG", "onResponse:result " + result);
-//                            if(isAdded()) {
-//                                MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
-//                                bottomSheetDialogFragment.show(getParentFragmentManager(), bottomSheetDialogFragment.getTag());
-//                            }
-//                        }
-//                    } else {
-//                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-//                        bottomSheetDialogFragment.show(getParentFragmentManager(), bottomSheetDialogFragment.getTag());
-//                    }
-//                }
-//
-//                @Override
-//                public void onFailure(Call<City> call, Throwable t) {
-//                    // Обработка ошибок сети или других ошибок
-//                    String errorMessage = t.getMessage();
-//                    t.printStackTrace();
-//                    Log.d("TAG", "onFailure: " + errorMessage);
-//
-//                }
-//            });
-////        }
-//    }
+
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
         Log.d(TAG, "updateAddCost: addCost" + addCost);
@@ -938,7 +898,35 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume: " + MainActivity.countryState);
+        if (MainActivity.countryState == null) {
+            binding.textfrom.setVisibility(View.INVISIBLE);
+
+            btn_clear_from_text.setVisibility(View.INVISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            btn_clear_to.setVisibility(View.INVISIBLE);
+            FragmentManager fragmentManager = getChildFragmentManager();
+            List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+            String city = listCity.get(1);
+
+            new GetPublicIPAddressTask(fragmentManager, city).execute();
+        } else {
+            btn_clear_from_text.setVisibility(View.VISIBLE);
+            textfrom.setVisibility(View.VISIBLE);
+            num1.setVisibility(View.VISIBLE);
+            btn_clear_from_text.setVisibility(View.VISIBLE);
+//            btn_clear_from.setVisibility(View.VISIBLE);
+//            btn_clear_to.setVisibility(View.VISIBLE);
+        }
+
         if(!newRout()) {
+            btn_clear_from_text.setVisibility(View.INVISIBLE);
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.VISIBLE);
+//            btn_clear_to.setVisibility(View.VISIBLE);
             visicomCost();
         }
     }
@@ -991,11 +979,18 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
 
 
                     VisicomFragment.geoText.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
+
+                    if(MainActivity.countryState != null) {
+                        VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
+                        VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
+                    }
+
+
+                    textfrom.setVisibility(View.VISIBLE);
                     VisicomFragment.textwhere.setVisibility(View.VISIBLE);
                     VisicomFragment.num2.setVisibility(View.VISIBLE);
                     VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
+
                     VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
                     VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
                     VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
@@ -1007,49 +1002,75 @@ public class VisicomFragment extends Fragment  implements ApiCallback{
         }
     }
 
-    private void visicomKey(final ApiCallback callback) {
-        com.taxieasyua.back4app.ui.open_map.visicom.key_visicom.ApiClient.getVisicomKeyInfo(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful()) {
-                    ApiResponse apiResponse = response.body();
-                    if (apiResponse != null) {
-                        String keyVisicom = apiResponse.getKeyVisicom();
-                        Log.d("ApiResponseMapbox", "keyVisicom: " + keyVisicom);
+    private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
+        FragmentManager fragmentManager;
+        String city;
 
-                        // Теперь у вас есть ключ Visicom для дальнейшего использования
-                        callback.onVisicomKeyReceived(keyVisicom);
+        public GetPublicIPAddressTask(FragmentManager fragmentManager, String city) {
+            this.fragmentManager = fragmentManager;
+            this.city = city;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            return IPUtil.getPublicIPAddress();
+        }
+
+        @Override
+        protected void onPostExecute(String ipAddress) {
+            if (ipAddress != null) {
+                Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
+                getCountryByIP(ipAddress, city);
+             } else {
+                MainActivity.countryState = "UA";
+
+                textfrom.setVisibility(View.VISIBLE);
+                num1.setVisibility(View.VISIBLE);
+
+            }
+        }
+    }
+    private static void getCountryByIP(String ipAddress, String city) {
+        ApiServiceCountry apiService = RetrofitClient.getClient().create(ApiServiceCountry.class);
+        Call<CountryResponse> call = apiService.getCountryByIP(ipAddress);
+
+        call.enqueue(new Callback<CountryResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CountryResponse> call, @NonNull Response<CountryResponse> response) {
+                if (response.isSuccessful()) {
+                    CountryResponse countryResponse = response.body();
+                    Log.d(TAG, "onResponse:countryResponse.getCountry(); " + countryResponse.getCountry());
+                    if (countryResponse != null) {
+                        MainActivity.countryState = countryResponse.getCountry();
+                    } else {
+                        MainActivity.countryState = "UA";
                     }
                 } else {
-                    // Обработка ошибки
-                    Log.e("ApiResponseMapbox", "Error: " + response.code());
-                    callback.onApiError(response.code());
+                    MainActivity.countryState = "UA";
                 }
+                Log.d(TAG, "countryState  " + MainActivity.countryState);
+
+
+                if (!city.equals("")) {
+                    textfrom.setVisibility(View.VISIBLE);
+
+                    num1.setVisibility(View.VISIBLE);
+                    btn_clear_from.setVisibility(View.VISIBLE);
+                    if(!textViewTo.equals("")) {
+                        btn_clear_to.setVisibility(View.VISIBLE);
+                    } else {
+                        btn_clear_to.setVisibility(View.INVISIBLE);
+                    }
+                }
+
+
             }
 
             @Override
-            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-                // Обработка ошибки
-                Log.e("ApiResponseMapbox", "Failed to make API call", t);
-                callback.onApiFailure(t);
+            public void onFailure(@NonNull Call<CountryResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Error: " + t.getMessage());
             }
-        },
-                getString(R.string.application)
-        );
-    }
-    @Override
-    public void onVisicomKeyReceived(String key) {
-        Log.d(TAG, "onVisicomKeyReceived: " + key);
-        apiKey = key;
+        });
     }
 
-    @Override
-    public void onApiError(int errorCode) {
-
-    }
-
-    @Override
-    public void onApiFailure(Throwable t) {
-
-    }
 }

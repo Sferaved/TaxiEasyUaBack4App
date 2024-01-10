@@ -1,9 +1,6 @@
 package com.taxieasyua.back4app.ui.start;
 
-import android.os.AsyncTask;
 import android.util.Log;
-
-import com.taxieasyua.back4app.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;

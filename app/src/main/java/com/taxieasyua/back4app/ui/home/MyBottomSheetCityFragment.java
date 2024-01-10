@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +23,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -34,6 +34,10 @@ import com.taxieasyua.back4app.cities.api.CityResponse;
 import com.taxieasyua.back4app.cities.api.CityResponseMerchantFondy;
 import com.taxieasyua.back4app.cities.api.CityService;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
+import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
+import com.taxieasyua.back4app.utils.ip.CountryResponse;
+import com.taxieasyua.back4app.utils.ip.IPUtil;
+import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,41 +107,65 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        if (city == null) {
-            List<String> listCity = logCursor(MainActivity.CITY_INFO);
-            city = listCity.get(1);
-        }
-        switch (city) {
+
+        switch (city){
+            case "Kyiv City":positionFirst = 0;
+                phoneNumber = Kyiv_City_phone;
+                cityMenu = getString(R.string.city_kyiv);
+                MainActivity.countryState = "UA";
+                break;
+
             case "Dnipropetrovsk Oblast":
                 positionFirst = 1;
+                phoneNumber = Dnipropetrovsk_Oblast_phone;
+                cityMenu = getString(R.string.city_dnipro);
                 break;
             case "Odessa":
                 positionFirst = 2;
+                phoneNumber = Odessa_phone;
+                cityMenu = getString(R.string.city_odessa);
+                MainActivity.countryState = "UA";
                 break;
             case "Zaporizhzhia":
                 positionFirst = 3;
+                phoneNumber = Zaporizhzhia_phone;
+                cityMenu = getString(R.string.city_zaporizhzhia);
+                MainActivity.countryState = "UA";
                 break;
             case "Cherkasy Oblast":
                 positionFirst = 4;
+                phoneNumber = Cherkasy_Oblast_phone;
+                cityMenu = getString(R.string.city_cherkasy);
+                MainActivity.countryState = "UA";
                 break;
             case "OdessaTest":
                 positionFirst = 5;
-                break;
-            case "foreign countries":
-                positionFirst = 6;
+                phoneNumber = Kyiv_City_phone;
+                cityMenu = "Test";
+                MainActivity.countryState = "UA";
                 break;
             default:
-                positionFirst = 0;
+                positionFirst = 6;
+                phoneNumber = Kyiv_City_phone;
+                cityMenu = getString(R.string.foreign_countries);
+                new GetPublicIPAddressTask().execute();
                 break;
         }
         Log.d(TAG, "onCreateView: city" + city);
+        updateMyPosition(city);
         listView.setItemChecked(positionFirst, true);
+
         int positionFirstOld = positionFirst;
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 positionFirst = position;
                 switch (cityCode[positionFirst]){
+                    case "Kyiv City":positionFirst = 0;
+                        phoneNumber = Kyiv_City_phone;
+                        cityMenu = getString(R.string.city_kyiv);
+                        MainActivity.countryState = "UA";
+                        break;
                     case "Dnipropetrovsk Oblast":
                         positionFirst = 1;
                         phoneNumber = Dnipropetrovsk_Oblast_phone;
@@ -172,7 +200,6 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         positionFirst = 6;
                         phoneNumber = Kyiv_City_phone;
                         cityMenu = getString(R.string.foreign_countries);
-                        MainActivity.countryState = "FC";
                         break;
                     default:
                         phoneNumber = Kyiv_City_phone;
@@ -181,43 +208,17 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         MainActivity.countryState = "UA";
                         break;
                 }
-                if (positionFirstOld != positionFirst) {
-
                     if (positionFirst == 6) {
+                        new GetPublicIPAddressTask().execute();
                         cityMaxPay(cityCode[0], getContext());
                         merchantFondy(cityCode[0], getContext());
                     } else {
                         cityMaxPay(cityCode[positionFirst], getContext());
                         merchantFondy(cityCode[positionFirst], getContext());
                     }
-
-
                     resetRoutHome();
                     resetRoutMarker();
-
                     updateMyPosition(cityCode[positionFirst]);
-
-
-
-                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-                    navController.navigate(R.id.nav_visicom);
-                    if (positionFirst != 6) {
-                        message = getString(R.string.change_message) + getString(R.string.hi_mes) + " " + getString(R.string.order_in) + cityMenu + ".";
-                    } else {
-                        message = getString(R.string.change_message);
-                    }
-                }
-
-
-                if (MainActivity.navVisicomMenuItem != null) {
-                    // Новый текст элемента меню
-                    String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
-                    // Изменяем текст элемента меню
-                    MainActivity.navVisicomMenuItem.setTitle(newTitle);
-                    if (positionFirstOld != positionFirst) {
-                        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-                    }
-                }
 
                 dismiss();
             }
@@ -231,8 +232,26 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         double startLat;
         double startLan;
         String position;
+        Log.d(TAG, "updateMyPosition:city "+ city);
+        switch (city){
+            case "Dnipropetrovsk Oblast":
+            case "Odessa":
+            case "Zaporizhzhia":
+            case "Cherkasy Oblast":
+            case "OdessaTest":
+            case "Kyiv City":
+                break;
+            default:
+                city = "foreign countries";
+                break;
+        }
 
         switch (city){
+            case "Kyiv City":positionFirst = 0;
+                position = "вул. Хрещатик 16 місто Київ\t";
+                startLat = 50.451107;
+                startLan = 30.524907;
+                break;
             case "Dnipropetrovsk Oblast":
                 // Днепр
                 position = "просп.Дмитра Яворницького (Карла Маркса), буд.52, місто Дніпро\t";
@@ -240,38 +259,36 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                 startLan = 35.0462;
                 break;
             case "Odessa":
-            case "OdessaTest":
-                // Одесса
+                phoneNumber = Odessa_phone;
                 position = "вул.Пантелеймонівська, буд. 64, місто Одеса\t";
                 startLat = 46.4694;
                 startLan = 30.7404;
                 break;
             case "Zaporizhzhia":
-                // Запорожье
+                phoneNumber = Zaporizhzhia_phone;
                 position = "просп. Соборний, буд. 139, місто Запоріжжя\t";
                 startLat = 47.84015;
                 startLan = 35.13634;
                 break;
             case "Cherkasy Oblast":
-                // Черкассы
+                phoneNumber = Cherkasy_Oblast_phone;
                 position = "вул.Байди Вишневецького, буд.36, місто Черкаси\t";
                 startLat = 49.44469;
                 startLan = 32.05728;
                 break;
-           case "foreign countries":
-                // за границей
+            case "OdessaTest":
+                phoneNumber = Kyiv_City_phone;
+                position = "вул.Пантелеймонівська, буд. 64, місто Одеса\t";
+                startLat = 46.4694;
+                startLan = 30.7404;
+                break;
+            default:
+                phoneNumber = Kyiv_City_phone;
                 position = "DW631 47, 00-514 Warszawa, Poland\t";
                 startLat = 52.13472;
                 startLan = 21.00424;
                 break;
-            default:
-                position = "вул.Хрещатик, буд.22, місто Київ\t";
-                startLat = 50.4501;
-                startLan = 30.5234;
-                break;
         }
-
-
 
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
 
@@ -328,7 +345,26 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
+
         super.onDismiss(dialog);
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        navController.navigate(R.id.nav_visicom);
+        if (positionFirst != 6) {
+            message = getString(R.string.change_message) + getString(R.string.hi_mes) + " " + getString(R.string.order_in) + cityMenu + ".";
+        } else {
+            message = getString(R.string.change_message);
+        }
+        if (MainActivity.navVisicomMenuItem != null) {
+            // Новый текст элемента меню
+            String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
+            // Изменяем текст элемента меню
+            MainActivity.navVisicomMenuItem.setTitle(newTitle);
+
+            Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+
+            VisicomFragment.textfrom.setVisibility(View.VISIBLE);
+            VisicomFragment.num1.setVisibility(View.VISIBLE);
+        }
     }
 
     private void cityMaxPay(String city, Context context) {
@@ -480,6 +516,50 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         }
         db.close();
         return list;
+    }
+
+    private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            return IPUtil.getPublicIPAddress();
+        }
+
+        @Override
+        protected void onPostExecute(String ipAddress) {
+            if (ipAddress != null) {
+                Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
+                getCountryByIP(ipAddress);
+            } else {
+                MainActivity.countryState = "UA";
+            }
+        }
+    }
+    private static void getCountryByIP(String ipAddress) {
+        ApiServiceCountry apiService = RetrofitClient.getClient().create(ApiServiceCountry.class);
+        Call<CountryResponse> call = apiService.getCountryByIP(ipAddress);
+
+        call.enqueue(new Callback<CountryResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CountryResponse> call, @NonNull Response<CountryResponse> response) {
+                if (response.isSuccessful()) {
+                    CountryResponse countryResponse = response.body();
+                    if (countryResponse != null) {
+                        MainActivity.countryState = countryResponse.getCountry();
+                    } else {
+                        MainActivity.countryState = "UA";
+                    }
+                } else {
+                    MainActivity.countryState = "UA";
+                }
+                Log.d(TAG, "countryState  " + MainActivity.countryState);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CountryResponse> call, @NonNull Throwable t) {
+                Log.e(TAG, "Error: " + t.getMessage());
+            }
+        });
     }
 }
 

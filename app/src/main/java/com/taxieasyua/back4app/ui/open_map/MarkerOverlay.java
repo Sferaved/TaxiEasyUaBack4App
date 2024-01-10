@@ -2,7 +2,6 @@ package com.taxieasyua.back4app.ui.open_map;
 
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;

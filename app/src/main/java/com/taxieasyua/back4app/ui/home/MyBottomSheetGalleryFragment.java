@@ -36,7 +36,6 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.gallery.GalleryFragment;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
-import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;

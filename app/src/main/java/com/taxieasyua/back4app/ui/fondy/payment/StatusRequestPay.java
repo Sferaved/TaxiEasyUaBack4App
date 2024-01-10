@@ -1,7 +1,6 @@
 package com.taxieasyua.back4app.ui.fondy.payment;
 
 import com.google.gson.annotations.SerializedName;
-import com.taxieasyua.back4app.ui.fondy.status.StatusRequestBody;
 
 public class StatusRequestPay {
     @SerializedName("request")

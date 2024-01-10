@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -56,9 +54,6 @@ import com.taxieasyua.back4app.ui.open_map.mapbox.Geometry;
 import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxApiClient;
 import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxResponse;
 import com.taxieasyua.back4app.ui.open_map.mapbox.MapboxService;
-import com.taxieasyua.back4app.ui.open_map.nominatim.NominatimApiClient;
-import com.taxieasyua.back4app.ui.open_map.nominatim.NominatimApiService;
-import com.taxieasyua.back4app.ui.open_map.nominatim.NominatimPlace;
 import com.taxieasyua.back4app.ui.open_map.visicom.key_mapbox.ApiCallbackMapbox;
 import com.taxieasyua.back4app.ui.open_map.visicom.key_mapbox.ApiClientMapbox;
 import com.taxieasyua.back4app.ui.open_map.visicom.key_mapbox.ApiResponseMapbox;
@@ -146,6 +141,10 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         switch (LocaleHelper.getLocale()) {
             case "ru":
                 switch (stringList.get(1)) {
+                    case "Kyiv City":
+                        citySearch = "Киев";
+                        kyivRegionArr = KyivRegionRu.city();
+                        break;
                     case "Dnipropetrovsk Oblast":
                         citySearch = "Днепр";
                         break;
@@ -160,13 +159,16 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                         citySearch = "Черкассы";
                         break;
                     default:
-                        citySearch = "Киев";
-                        kyivRegionArr = KyivRegionRu.city();
+                        citySearch = "FC";
                         break;
                 }
                 break;
             default:
                 switch (stringList.get(1)) {
+                    case "Kyiv City":
+                        citySearch = "Київ";
+                        kyivRegionArr = KyivRegion.city();
+                        break;
                     case "Dnipropetrovsk Oblast":
                         citySearch = "Дніпр";
                         break;
@@ -181,8 +183,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                         citySearch = "Черкас";
                         break;
                     default:
-                        citySearch = "Київ";
-                        kyivRegionArr = KyivRegion.city();
+                        citySearch = "FC";
                         break;
                 }
         }
@@ -208,102 +209,30 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         });
 
         fromEditAddress = findViewById(R.id.textGeo);
-        fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
+        if(VisicomFragment.geoText.getText().toString() != null) {
+            fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
+        }
+
         int inputType = fromEditAddress.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         fromEditAddress.setInputType(inputType);
-        fromEditAddress.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int before, int after) {
-                // Пользователь удаляет символы, если before > 0
-                String inputString = s.toString();
 
-                int charCount = inputString.length();
-                if (before > 0 && charCount > 2) {
-                   positionChecked = 0;
-                }
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                String inputString = charSequence.toString();
-                int charCount = inputString.length();
-                Log.d(TAG, "onTextChanged: " + inputString);
-                if (charCount > 2) {
-                    Log.d(TAG, "onTextChanged:startPoint " + startPoint);
-                    Log.d(TAG, "onTextChanged:fromEditAddress.getText().toString() " + fromEditAddress.getText().toString());
-                    if (startPoint == null) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "start");
-                        } else {
-                            mapBoxSearch(inputString, "start");
-                        }
-                    } else if (!startPoint.equals(inputString)) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "start");
-                        } else {
-                            mapBoxSearch(inputString, "start");
-                        }
-                    }
-                    textGeoError.setVisibility(View.GONE);
-                }
-                btn_clear_from.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
 
         toEditAddress = findViewById(R.id.text_to);
         toEditAddress.setText(VisicomFragment.textViewTo.getText().toString());
         inputType = toEditAddress.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         toEditAddress.setInputType(inputType);
-        toEditAddress.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int before, int after) {
-                String inputString = s.toString();
-                int charCount = inputString.length();
-                if (before > 0 && charCount > 2) {
-                    positionChecked = 0;
-                }
-            }
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                // Вызывается при изменении текста
-                String inputString = charSequence.toString();
-                int charCount = inputString.length();
 
-                if (charCount > 2) {
-
-                    if (finishPoint == null) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "finish");
-                        } else {
-                            mapBoxSearch(inputString, "finish");
-                        }
-                    } else if (!finishPoint.equals(inputString)) {
-                        if(MainActivity.countryState.equals("UA")) {
-                            performAddressSearch(inputString, "finish");
-                        } else {
-                            mapBoxSearch(inputString, "finish");
-                        }
-                    }
-                }
-
-                btn_clear_to.setVisibility(View.VISIBLE);
-                text_toError.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                // Вызывается после изменения текста
-            }
-        });
         btn_clear_from = findViewById(R.id.btn_clear_from);
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                addresses = new ArrayList<>();
+                coordinatesList = new ArrayList<>();
+
+                List<String> addressesList = new ArrayList<>();
+                addressAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.custom_list_item, addressesList);
+                addressListView.setAdapter(addressAdapter);
+
                 fromEditAddress.setText("");
                 btn_clear_from.setVisibility(View.INVISIBLE);
                 textGeoError.setVisibility(View.GONE);
@@ -316,13 +245,19 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                addresses = new ArrayList<>();
+                coordinatesList = new ArrayList<>();
+                List<String> addressesList = new ArrayList<>();
+                addressAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.custom_list_item, addressesList);
+
+                addressListView.setAdapter(addressAdapter);
+
                 toEditAddress.setText("");
                 btn_clear_to.setVisibility(View.INVISIBLE);
                 text_toError.setVisibility(View.GONE);
                 toEditAddress.requestFocus();
                 KeyboardUtils.showKeyboard(getApplicationContext(), toEditAddress);
-//                addresses = new ArrayList<>();
-//                coordinatesList = new ArrayList<>(); // Список для хранения координат
+
             }
         });
 
@@ -422,7 +357,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                         KeyboardUtils.showKeyboard(getApplicationContext(), fromEditAddress);
                     }
                     if (verifyRoutStart && verifyBuildingStart) {
-                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        finish();
                     }
                 }
                 if(end.equals("ok")) {
@@ -749,24 +684,99 @@ public class ActivityVisicomOnePage extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-
-        List<String> listCity = logCursor(MainActivity.CITY_INFO);
-        String city = listCity.get(1);
-
-        switch (city){
-            case "foreign countries":
-                MainActivity.countryState = "FC";
-                break;
-            default:
-                MainActivity.countryState = "UA";
-                break;
-        }
-        if(MainActivity.countryState.equals("UA")) {
-            visicomKey(this);
-        } else {
-            mapboxKey(this);
+        if (MainActivity.countryState != null) {
+            if (!MainActivity.countryState.equals("UA")) {
+                mapboxKey(this);
+            } else {
+                visicomKey(this);
+            }
         }
 
+        fromEditAddress.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int before, int after) {
+                // Пользователь удаляет символы, если before > 0
+                String inputString = s.toString();
+
+                int charCount = inputString.length();
+                if (before > 0 && charCount > 2) {
+                    positionChecked = 0;
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                String inputString = charSequence.toString();
+                int charCount = inputString.length();
+                Log.d(TAG, "onTextChanged: " + inputString);
+                if (charCount > 2) {
+                    Log.d(TAG, "onTextChanged:startPoint " + startPoint);
+                    Log.d(TAG, "onTextChanged:fromEditAddress.getText().toString() " + fromEditAddress.getText().toString());
+                    Log.d(TAG, "onTextChanged:MainActivity.countryState " + MainActivity.countryState);
+                    if (startPoint == null) {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "start");
+                        } else {
+                            mapBoxSearch(inputString, "start");
+                        }
+                    } else if (!startPoint.equals(inputString)) {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "start");
+                        } else {
+                            mapBoxSearch(inputString, "start");
+                        }
+                    }
+                    textGeoError.setVisibility(View.GONE);
+                }
+                btn_clear_from.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        toEditAddress.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int before, int after) {
+                String inputString = s.toString();
+                int charCount = inputString.length();
+                if (before > 0 && charCount > 2) {
+                    positionChecked = 0;
+                }
+            }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                // Вызывается при изменении текста
+                String inputString = charSequence.toString();
+                int charCount = inputString.length();
+
+                if (charCount > 2) {
+
+                    if (finishPoint == null) {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "finish");
+                        } else {
+                            mapBoxSearch(inputString, "finish");
+                        }
+                    } else if (!finishPoint.equals(inputString)) {
+                        if(MainActivity.countryState.equals("UA")) {
+                            performAddressSearch(inputString, "finish");
+                        } else {
+                            mapBoxSearch(inputString, "finish");
+                        }
+                    }
+                }
+
+                btn_clear_to.setVisibility(View.VISIBLE);
+                text_toError.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Вызывается после изменения текста
+            }
+        });
 
         if (fromEditAddress.getText().toString().equals("")) {
 
@@ -795,25 +805,24 @@ public class ActivityVisicomOnePage extends AppCompatActivity
 
     private void performAddressSearch(String inputText, String point) {
 
-        testConnectionTime("https://api.visicom.ua/data-api/5.0/uk/", apiKey, 500, new ConnectionSpeedTestCallback() {
-            @Override
-            public void onConnectionTestResult(boolean isConnectionFast, long duration) {
-                Log.d("SpeedTest", "connectionTime: " + duration);
-                Log.d("SpeedTest", "testConnectionTime: timeLimitMillis: 1000");
-                Log.d("SpeedTest", "testConnectionTime: res: " + isConnectionFast);
-                if (!isConnectionFast) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d(TAG, "Скорость подключения превышает ограничение времени или произошла ошибка");
-                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-//                            finish();
-                        }
-                    });
-                }
-            }
-        });
+//        testConnectionTime("https://api.visicom.ua/data-api/5.0/uk/", apiKey, 1000, new ConnectionSpeedTestCallback() {
+//            @Override
+//            public void onConnectionTestResult(boolean isConnectionFast, long duration) {
+//                Log.d("SpeedTest", "connectionTime: " + duration);
+//                Log.d("SpeedTest", "testConnectionTime: timeLimitMillis: 1000");
+//                Log.d("SpeedTest", "testConnectionTime: res: " + isConnectionFast);
+//                if (!isConnectionFast) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Log.d(TAG, "Скорость подключения превышает ограничение времени или произошла ошибка");
+//                            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+//                            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+//                        }
+//                    });
+//                }
+//            }
+//        });
         try {
             String apiUrl = "https://api.visicom.ua/data-api/5.0/";
             String url = apiUrl  + LocaleHelper.getLocale() + "/geocode.json";
@@ -844,8 +853,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                         + ",poi_sports_complexe"
                         + ",poi_underground_railway_station"
                         + ",adr_street"
-                        + "&"
-                        + "text=" + inputText + "&key=" + apiKey;
+                        + "&l=20"
+                        + "&text=" + inputText + "&key=" + apiKey;
 
             } else {
                 Log.d(TAG, "performAddressSearch:positionChecked  " + positionChecked);
@@ -855,7 +864,9 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                     inputText = inputTextBuild() + ", " + number;
                 }
 
-                url = url + "?categories=adr_address&text=" + inputText + "&key=" + apiKey;
+                url = url + "?categories=adr_address&text=" + inputText
+                        + "&l=20"+ "&text=" + inputText + "&key=" + apiKey;
+
 
             }
 
@@ -872,17 +883,21 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                         processAddressData(responseData, point);
                     } catch (Exception e) {
                         e.printStackTrace();
+                        MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                        bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                     }
                 }
 
                 @Override
                 public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                    e.printStackTrace();
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            // Log the exception or display an error message
+            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         }
 
 
@@ -961,7 +976,34 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                                                 longitude,
                                                 latitude);
                                     }
+                                } else if (citySearch.equals("FC")) {
+                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                    if (properties.has("zone")) {
+                                        address = String.format("%s %s (%s)\f",
+                                                properties.getString("type"),
+                                                properties.getString("name"),
+                                                properties.getString("zone"));
 
+                                        addAddressOne(
+                                                address,
+                                                properties.getString("name"),
+                                                "",
+                                                properties.getString("settlement"),
+                                                longitude,
+                                                latitude);
+                                    } else {
+                                        address = String.format("%s %s\f ",
+                                                properties.getString("type"),
+                                                properties.getString("name"));
+                                        addAddressOne(
+                                                address,
+                                                properties.getString("name"),
+                                                "",
+                                                properties.getString("settlement"),
+                                                longitude,
+                                                latitude);
+                                    }
                                 }
                                 // Проверка по Киевской области
                                 if (citySearch.equals("Київ") || citySearch.equals("Киев")) {
@@ -997,7 +1039,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
 
                                         Log.d(TAG, "processAddressData: zone" + zone);
 
-                                        if (properties.getString("zone").equals(zone)) {
+
                                             address = String.format("%s %s %s %s %s %s \t",
 
                                                     properties.getString("street_type"),
@@ -1013,7 +1055,50 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                                                     "",
                                                     longitude,
                                                     latitude);
-                                        }
+
+
+                                    } else {
+                                        address = String.format("%s %s %s %s %s \t",
+
+                                                properties.getString("street_type"),
+                                                properties.getString("street"),
+                                                properties.getString("name"),
+                                                properties.getString("settlement_type"),
+                                                properties.getString("settlement"));
+                                        addAddressOne(
+                                                address,
+                                                "",
+                                                "",
+                                                "",
+                                                longitude,
+                                                latitude);
+                                    }
+
+                                } else if (citySearch.equals("FC")) {
+                                    Log.d(TAG, "processAddressData: properties ййй 222" + properties);
+                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                    if (properties.has("zone")) {
+                                        // Получение элементов отдельно
+
+                                        Log.d(TAG, "processAddressData: zone" + zone);
+
+                                        address = String.format("%s %s %s %s %s %s \t",
+                                                properties.getString("street_type"),
+                                                properties.getString("street"),
+                                                properties.getString("name"),
+                                                properties.getString("zone"),
+                                                properties.getString("settlement_type"),
+                                                properties.getString("settlement"));
+                                        addAddressOne(
+                                                address,
+                                                "",
+                                                "",
+                                                "",
+                                                longitude,
+                                                latitude);
+
+
 
                                     } else {
                                         address = String.format("%s %s %s %s %s \t",
@@ -1084,6 +1169,23 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                                             "",
                                             longitude,
                                             latitude);
+                                } else if (citySearch.equals("FC")) {
+                                    Log.d(TAG, "poi_railway_station" + properties);
+                                    address = String.format("%s %s\t",
+                                            properties.getString("vitrine"),
+                                            properties.getString("address"));
+
+                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                    Log.d(TAG, "processAddressData: latitude longitude" + latitude + " " + longitude);
+
+                                    addAddressOne(
+                                            address,
+                                            "",
+                                            "",
+                                            "",
+                                            longitude,
+                                            latitude);
                                 }
 
                             default:
@@ -1091,6 +1193,20 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                                 city = citySearch.toLowerCase();
 
                                 if (settlement.contains(city)) {
+                                    address = String.format("%s %s\t",
+                                            properties.getString("vitrine"),
+                                            properties.getString("address"));
+
+                                    double longitude = geoCentroid.getJSONArray("coordinates").getDouble(0);
+                                    double latitude = geoCentroid.getJSONArray("coordinates").getDouble(1);
+                                    addAddressOne(
+                                            address,
+                                            "",
+                                            "",
+                                            "",
+                                            longitude,
+                                            latitude);
+                                } else if (citySearch.equals("FC")) {
                                     address = String.format("%s %s\t",
                                             properties.getString("vitrine"),
                                             properties.getString("address"));
@@ -1871,109 +1987,14 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         });
     }
 
-     private void geoSearch() throws IOException {
-         Geocoder geocoder = new Geocoder(this);
-         String address = "Дер Одесса";
-         List<Address> addresses = geocoder.getFromLocationName(address, 100);
-         if (addresses != null && addresses.size() > 0) {
-             for (int i = 0; i < addresses.size(); i++) {
-                 Address currentAddress = addresses.get(i);
-                 Log.d(TAG, "Address #" + i + ": " + currentAddress.getAddressLine(0));
-                 Log.d(TAG, "Latitude: " + currentAddress.getLatitude());
-                 Log.d(TAG, "Longitude: " + currentAddress.getLongitude());
-                 // Дополнительные свойства Address могут быть доступны
-             }
-         } else {
-             Log.d(TAG, "No matching addresses found.");
-         }
-
-     }
-     private void geoSearch2() throws IOException {
-         String locationName = "Nowy Swiat";
-         int maxResults = 20;
-         double lowerLeftLatitude = 44.38;
-         double lowerLeftLongitude = 22.13;
-         double upperRightLatitude = 52.38;
-         double upperRightLongitude = 40.18;
-
-
-
-         try {
-             Geocoder geocoder = new Geocoder(this);
-             List<Address> addresses = geocoder.getFromLocationName(
-                     locationName, maxResults, lowerLeftLatitude, lowerLeftLongitude, upperRightLatitude, upperRightLongitude);
-
-             if (addresses != null && addresses.size() > 0) {
-                 for (int i = 0; i < addresses.size(); i++) {
-                     Address currentAddress = addresses.get(i);
-                     Log.d(TAG, "Address #" + i + ": " + currentAddress.getAddressLine(0));
-                     Log.d(TAG, "Latitude: " + currentAddress.getLatitude());
-                     Log.d(TAG, "Longitude: " + currentAddress.getLongitude());
-                     // Дополнительные свойства Address могут быть доступны
-                 }
-             } else {
-                 Log.d(TAG, "No matching addresses found.");
-             }
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-
-     }
-
-    private void performGeocoding() {
-        String location = "Ришельевская 1";
-        String format = "geojson";
-
-        NominatimApiService apiService = NominatimApiClient.getApiService();
-
-//        String query = "Your Query";
-//        String format = "geojson";
-//        int addressDetails = 1;
-//        int limit = 10;
-//        String street = "Дерибасовска 1";
-//        String city = "Одеса";
-//        String country = "Украина";
-//
-//        Call<List<NominatimPlace>> call = apiService.search(format, addressDetails, limit, street, city, country);
-        Call<List<NominatimPlace>> call = apiService.search(location, format);
-
-
-        call.enqueue(new Callback<List<NominatimPlace>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<NominatimPlace>> call, @NonNull Response<List<NominatimPlace>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<NominatimPlace> places = response.body();
-                    for (NominatimPlace place : places) {
-                        Log.d("NominatimPlace", place.toString());
-                        // Делайте что-то с результатами
-                    }
-                } else {
-                    // Обработка ошибки
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<NominatimPlace>> call, Throwable t) {
-                // Обработка ошибки
-            }
-        });
-    }
     private void mapBoxSearch(String address, String point) {
         // Создаем Retrofit-клиент
         MapboxService mapboxService = MapboxApiClient.create();
 
-        // Указываем адрес, который хотим найти
-//        String address = "Nowy Swiat 15";
-//        String address = "Науки проспект 45";
-
-                // Выполняем асинхронный запрос
-//        Call<MapboxResponse> call = mapboxService.getLocation(address, "pl", MAPBOX_API_KEY);
         Call<MapboxResponse> call = mapboxService.getLocation(address, apiKeyMapBox);
         call.enqueue(new Callback<MapboxResponse>() {
             @Override
             public void onResponse(Call<MapboxResponse> call, Response<MapboxResponse> response) {
-
-
                 if (response.isSuccessful()) {
                     // Обработка успешного ответа
                     MapboxResponse mapboxResponse = response.body();
@@ -1982,6 +2003,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                 } else {
                     // Обработка ошибки
                     Log.d(TAG, "Error: " + response.code() + " " + response.message());
+                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
             }
 
@@ -1989,6 +2012,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity
             public void onFailure(@NonNull Call<MapboxResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки при выполнении запроса
                 t.printStackTrace();
+                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         });
 
@@ -2187,6 +2212,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
             });
         }
     }
+
 
 
 }
