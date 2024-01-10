@@ -207,14 +207,16 @@ public class VisicomFragment extends Fragment{
             }
         });
 
+
+
         btn_minus.setOnClickListener(v -> {
-            if (cost >= MIN_COST_VALUE) {
+
                 List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
                 addCost = Long.parseLong(stringListInfo.get(5));
                 cost = Long.parseLong(text_view_cost.getText().toString());
                 cost -= 5;
                 addCost -= 5;
-
+            if (cost >= MIN_COST_VALUE) {
                 updateAddCost(String.valueOf(addCost));
                 text_view_cost.setText(String.valueOf(cost));
             }

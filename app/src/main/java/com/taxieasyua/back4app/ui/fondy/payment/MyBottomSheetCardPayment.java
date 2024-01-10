@@ -5,6 +5,7 @@ import static android.content.Context.MODE_PRIVATE;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -71,6 +72,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     private String pay_method;
     private final String baseUrl = "https://m.easy-order-taxi.site";
     private boolean hold;
+    private boolean timeout;
+    private String timeoutText;
 
     public MyBottomSheetCardPayment(
             String checkoutUrl,
@@ -83,6 +86,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         this.uid_Double = uid_Double;
         this.hold = false;
     }
+
+
 
     @SuppressLint("MissingInflatedId")
     @Nullable
@@ -145,7 +150,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
         StatusRequestBody requestBody = new StatusRequestBody(
                 MainActivity.order_id,
-               MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword
         );
         StatusRequest statusRequest = new StatusRequest(requestBody);
@@ -302,13 +307,13 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
         call.enqueue(new Callback<Status>() {
             @Override
-            public void onResponse(Call<Status> call, Response<Status> response) {
+            public void onResponse(@NonNull Call<Status> call, @NonNull Response<Status> response) {
                 Status status = response.body();
                 if (status != null) {
 
                     String result =  String.valueOf(status.getResponse());
                     Log.d(TAG, "onResponse: result" + result);
-                    FinishActivity.text_status.setText(result);
+                    FinishActivity.text_status.setText(result + " " +  timeoutText);
 
                 } else {
                     FinishActivity.text_status.setText(R.string.verify_internet);
@@ -316,7 +321,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<Status> call, Throwable t) {
+            public void onFailure(@NonNull Call<Status> call, Throwable t) {
                 // Обработка ошибок сети или других ошибок
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
@@ -354,7 +359,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         call.enqueue(new Callback<ApiResponseRev<SuccessResponseDataRevers>>() {
             @Override
             public void onResponse(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Response<ApiResponseRev<SuccessResponseDataRevers>> response) {
-                stopPaymentTimer();
+
                 if (response.isSuccessful()) {
                     ApiResponseRev<SuccessResponseDataRevers> apiResponse = response.body();
                     Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
@@ -383,8 +388,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             public void onFailure(@NonNull Call<ApiResponseRev<SuccessResponseDataRevers>> call, @NonNull Throwable t) {
                 // Обработка ошибки сети или другие ошибки
                 Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
-                stopPaymentTimer();
-            }
+             }
         });
 
     }
@@ -507,18 +511,40 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
             @Override
             public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
-//                if (isAdded()) {
+                if (isAdded()) {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                }
+                }
             }
         });
         return logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
     }
-
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if(!timeout) {
+            stopPaymentTimer();
+            timeoutText = getString(R.string.time_out_text);
+            cancelOrderDismiss(uid);
+            cancelOrderDismiss(uid_Double);
+            FinishActivity.btn_cancel_order.setVisibility(View.GONE);
+            FinishActivity.btn_reset_status.setVisibility(View.GONE);
+            if (hold) {
+                String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+                switch (pay_method) {
+                    case "fondy_payment":
+                        getReversFondy(MainActivity.order_id, comment, amount);
+                        break;
+                    case "mono_payment":
+                        getReversMono(MainActivity.invoiceId, comment, Integer.parseInt(amount));
+                        break;
+                }}
+        }
+    }
     @Override
     public void onPause() {
         super.onPause();
+
         if(!hold) {
             FinishActivity.btn_cancel_order.setVisibility(View.GONE);
             FinishActivity.btn_reset_status.setVisibility(View.GONE);
@@ -636,20 +662,20 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
     private static final int TIMEOUT_SECONDS = 60;
     private CountDownTimer paymentTimer;
-    private Call<ApiResponsePay<SuccessResponseDataPay>> call;
+
 
     private void startPaymentTimer() {
         paymentTimer = new CountDownTimer(TIMEOUT_SECONDS * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 // Таймер идет, ничего не делаем
+                timeout = true;
             }
 
             @Override
             public void onFinish() {
                 // Таймер завершился, обрабатываем таймаут
-                Log.d(TAG, "onFinish: Таймаут оплаты  ");
-                dismiss();
+               timeout = false;
             }
         }.start();
     }
@@ -658,6 +684,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         if (paymentTimer != null) {
             paymentTimer.cancel();
         }
+        Log.d(TAG, "onFinish: Таймаут оплаты  ");
     }
+
 }
 
