@@ -8,12 +8,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -123,6 +125,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             }
         });
         webView.loadUrl(Objects.requireNonNull(checkoutUrl));
+        // Таймер оплаты
+        startPaymentTimer();
         return view;
     }
 
@@ -145,14 +149,14 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 merchantPassword
         );
         StatusRequest statusRequest = new StatusRequest(requestBody);
-        Log.d("TAG1", "getUrlToPayment: " + statusRequest.toString());
+        Log.d(TAG, "getUrlToPayment: " + statusRequest.toString());
 
         Call<ApiResponse<SuccessfulResponseData>> call = apiService.checkOrderStatus(statusRequest);
 
         call.enqueue(new Callback<ApiResponse<SuccessfulResponseData>>() {
             @SuppressLint("NewApi")
             @Override
-            public void onResponse(Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<SuccessfulResponseData>> call, Response<ApiResponse<SuccessfulResponseData>> response) {
                 if (response.isSuccessful()) {
                     ApiResponse<SuccessfulResponseData> apiResponse = response.body();
                     Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
@@ -170,7 +174,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     }
                 } else {
                     // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
 
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -180,7 +184,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             @Override
             public void onFailure(Call<ApiResponse<SuccessfulResponseData>> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+                Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
 
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -225,7 +229,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     }
                 } else {
                     // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
                     cancelOrder(uid);
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -235,7 +239,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             @Override
             public void onFailure(@NonNull Call<ResponseStatusMono> call, @NonNull Throwable t) {
                 // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+                Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
                 cancelOrder(uid);
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
@@ -245,9 +249,9 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     }
 
     private void cancelOrder(String value) {
-        String url = baseUrl + "/" + FinishActivity.api + "/android/webordersCancel/" + value;
+        String url = baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
 
 
@@ -259,7 +263,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     if (status != null) {
 
                         String result =  String.valueOf(status.getResponse());
-                        Log.d("TAG", "onResponse: result" + result);
+                        Log.d(TAG, "onResponse: result" + result);
                         FinishActivity.text_status.setText(result);
 
                         String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
@@ -286,15 +290,15 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 // Обработка ошибок сети или других ошибок
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
+                Log.d(TAG, "onFailure: " + errorMessage);
                 FinishActivity.text_status.setText(R.string.verify_internet);
             }
         });
     }
     private void cancelOrderDismiss(String value) {
-        String url = baseUrl + "/" + FinishActivity.api + "/android/webordersCancel/" + value;
+        String url = baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
         call.enqueue(new Callback<Status>() {
             @Override
@@ -303,7 +307,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 if (status != null) {
 
                     String result =  String.valueOf(status.getResponse());
-                    Log.d("TAG", "onResponse: result" + result);
+                    Log.d(TAG, "onResponse: result" + result);
                     FinishActivity.text_status.setText(result);
 
                 } else {
@@ -316,7 +320,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 // Обработка ошибок сети или других ошибок
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
+                Log.d(TAG, "onFailure: " + errorMessage);
 
             }
         });
@@ -341,7 +345,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 MERCHANT_ID,
                 merchantPassword
         );
-        Log.d("TAG1", "getRevers: " + reversRequestData.toString());
+        Log.d(TAG, "getRevers: " + reversRequestData.toString());
         ReversRequestSent reversRequestSent = new ReversRequestSent(reversRequestData);
 
 
@@ -350,25 +354,25 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         call.enqueue(new Callback<ApiResponseRev<SuccessResponseDataRevers>>() {
             @Override
             public void onResponse(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Response<ApiResponseRev<SuccessResponseDataRevers>> response) {
-
+                stopPaymentTimer();
                 if (response.isSuccessful()) {
                     ApiResponseRev<SuccessResponseDataRevers> apiResponse = response.body();
-                    Log.d("TAG1", "JSON Response: " + new Gson().toJson(apiResponse));
+                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
                     if (apiResponse != null) {
                         SuccessResponseDataRevers responseData = apiResponse.getResponse();
-                        Log.d("TAG1", "onResponse: " + responseData.toString());
+                        Log.d(TAG, "onResponse: " + responseData.toString());
                         if (responseData != null) {
                             // Обработка успешного ответа
-                            Log.d("TAG1", "onResponse: " + responseData.toString());
+                            Log.d(TAG, "onResponse: " + responseData.toString());
 
                         }
                     }
                 } else {
                     // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
                     try {
                         String errorBody = response.errorBody().string();
-                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                        Log.d(TAG, "onResponse: Тело ошибки: " + errorBody);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -376,9 +380,10 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponseRev<SuccessResponseDataRevers>> call, @NonNull Throwable t) {
                 // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+                Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
+                stopPaymentTimer();
             }
         });
 
@@ -401,7 +406,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 extRef,
                 amount
         );
-        Log.d("TAG1", "getRevers: " + paymentRequest.toString());
+        Log.d(TAG, "getRevers: " + paymentRequest.toString());
 
         String token = getResources().getString(R.string.mono_key_storage); // Получение токена из ресурсов
         Call<ResponseCancelMono> call = monoApi.invoiceCancel(token, paymentRequest);
@@ -627,6 +632,32 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         }
         database.close();
         return list;
+    }
+
+    private static final int TIMEOUT_SECONDS = 60;
+    private CountDownTimer paymentTimer;
+    private Call<ApiResponsePay<SuccessResponseDataPay>> call;
+
+    private void startPaymentTimer() {
+        paymentTimer = new CountDownTimer(TIMEOUT_SECONDS * 1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                // Таймер идет, ничего не делаем
+            }
+
+            @Override
+            public void onFinish() {
+                // Таймер завершился, обрабатываем таймаут
+                Log.d(TAG, "onFinish: Таймаут оплаты  ");
+                dismiss();
+            }
+        }.start();
+    }
+
+    private void stopPaymentTimer() {
+        if (paymentTimer != null) {
+            paymentTimer.cancel();
+        }
     }
 }
 

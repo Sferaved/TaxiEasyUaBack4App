@@ -173,7 +173,7 @@ public class MyBottomSheetTokenFragment extends BottomSheetDialogFragment {
     }
 
     private void cancelOrderDismiss(String value) {
-        String url = FinishActivity.baseUrl + "/" + FinishActivity.api + "/android/webordersCancel/" + value;
+        String url = FinishActivity.baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
