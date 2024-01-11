@@ -106,7 +106,7 @@ public class FinishActivity extends AppCompatActivity {
         receivedMap = (HashMap<String, String>) getIntent().getSerializableExtra("sendUrlMap");
         amount = receivedMap.get("order_cost") + "00";
 
-        Log.d("TAG", "onCreate: receivedMap" + receivedMap.toString());
+        Log.d(TAG, "onCreate: receivedMap" + receivedMap.toString());
         text_full_message = findViewById(R.id.text_full_message);
         text_full_message.setText(messageResult);
 
@@ -390,7 +390,7 @@ public class FinishActivity extends AppCompatActivity {
             if (cursor.moveToFirst()) {
                 do {
                     result = cursor.getString(cursor.getColumnIndex("rectoken"));
-                    Log.d("TAG", "Found rectoken with rectoken_check = 1: " + result);
+                    Log.d(TAG, "Found rectoken with rectoken_check = 1: " + result);
                 } while (cursor.moveToNext());
             }
             cursor.close();
@@ -501,9 +501,15 @@ public class FinishActivity extends AppCompatActivity {
     }
 
     private void cancelOrderDismiss(String value) {
-        String url = baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
+        List<String> listCity = logCursor(MainActivity.CITY_INFO);
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + getString(R.string.application);
+
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
         call.enqueue(new Callback<Status>() {
             @Override
@@ -512,7 +518,7 @@ public class FinishActivity extends AppCompatActivity {
                 if (status != null) {
 
                     String result =  String.valueOf(status.getResponse());
-                    Log.d("TAG", "onResponse: result" + result);
+                    Log.d(TAG, "onResponse: result" + result);
                     FinishActivity.text_status.setText(result + getString(R.string.pay_failure));
 
                 } else {
@@ -525,7 +531,7 @@ public class FinishActivity extends AppCompatActivity {
                 // Обработка ошибок сети или других ошибок
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
+                Log.d(TAG, "onFailure: " + errorMessage);
 
             }
         });
@@ -608,7 +614,7 @@ public class FinishActivity extends AppCompatActivity {
     }
     private void updateAddCost(String addCost) {
         ContentValues cv = new ContentValues();
-        Log.d("TAG", "updateAddCost: addCost" + addCost);
+        Log.d(TAG, "updateAddCost: addCost" + addCost);
         cv.put("addCost", addCost);
 
         // обновляем по id
@@ -644,7 +650,7 @@ public class FinishActivity extends AppCompatActivity {
     private void fetchBonus(String url) {
 
         Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
-        Log.d("TAG", "fetchBonus: " + url);
+        Log.d(TAG, "fetchBonus: " + url);
         call.enqueue(new Callback<BonusResponse>() {
             @Override
             public void onResponse(Call<BonusResponse> call, Response<BonusResponse> response) {
@@ -687,7 +693,7 @@ public class FinishActivity extends AppCompatActivity {
                 receivedMap.get("doubleOrder")
         );
         String url = call.request().url().toString();
-        Log.d("TAG", "URL запроса: " + url);
+        Log.d(TAG, "URL запроса: " + url);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
@@ -787,9 +793,14 @@ public class FinishActivity extends AppCompatActivity {
         return list;
     }
     private void cancelOrder(String value) {
-        String url = baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
+        List<String> listCity = logCursor(MainActivity.CITY_INFO);
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + getString(R.string.application);
+
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
         call.enqueue(new Callback<Status>() {
             @Override
@@ -798,7 +809,7 @@ public class FinishActivity extends AppCompatActivity {
                     Status status = response.body();
                     if (status != null) {
                         String result =  String.valueOf(status.getResponse());
-                        Log.d("TAG", "onResponse: result" + result);
+                        Log.d(TAG, "onResponse: result" + result);
                         text_status.setText(result);
                         String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
 
@@ -824,7 +835,7 @@ public class FinishActivity extends AppCompatActivity {
                 // Обработка ошибок сети или других ошибок
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
-                Log.d("TAG", "onFailure: " + errorMessage);
+                Log.d(TAG, "onFailure: " + errorMessage);
                 text_status.setText(R.string.verify_internet);
             }
         });
@@ -926,10 +937,10 @@ public class FinishActivity extends AppCompatActivity {
                     }
                 } else {
                     // Обработка ошибки запроса
-                    Log.d("TAG", "onResponse: Ошибка запроса, код " + response.code());
+                    Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
                     try {
                         String errorBody = response.errorBody().string();
-                        Log.d("TAG", "onResponse: Тело ошибки: " + errorBody);
+                        Log.d(TAG, "onResponse: Тело ошибки: " + errorBody);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -939,7 +950,7 @@ public class FinishActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponseRev<SuccessResponseDataRevers>> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
-                Log.d("TAG", "onFailure: Ошибка сети: " + t.getMessage());
+                Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
             }
         });
 
@@ -1017,10 +1028,15 @@ public class FinishActivity extends AppCompatActivity {
     }
 
     private void statusOrderWithDifferentValue(String value) {
-        String url = baseUrl + "/" + MainActivity.api + "/android/historyUIDStatus/" + value;
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO);
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value + "/" + city  + "/" + getString(R.string.application);
 
         Call<OrderResponse> call = ApiClient.getApiService().statusOrder(url);
-        Log.d("TAG", "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d(TAG, "/android/historyUIDStatus/: " + url);
 
         // Выполняем запрос асинхронно
         call.enqueue(new Callback<OrderResponse>() {
@@ -1097,7 +1113,7 @@ public class FinishActivity extends AppCompatActivity {
         try {
             date = inputFormat.parse(requiredTime);
         } catch (ParseException e) {
-            Log.d("TAG", "onCreate:" + new RuntimeException(e));
+            Log.d(TAG, "onCreate:" + new RuntimeException(e));
         }
 
         // Форматируем дату и время в украинском формате

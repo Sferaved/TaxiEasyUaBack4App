@@ -1,8 +1,8 @@
 <resources>
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.984</string>
-    <string name="version">Версія: 2.984</string>
+    <string name="version_code">2.985</string>
+    <string name="version">Версія: 2.985</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -313,5 +313,6 @@
     <string name="foreign_countries">інше</string>
     <string name="order_in">"заказ в "</string>
     <string name="checking">Чекайте, йде перевірка даних.</string>
-    <string name="time_out_text">Таймаут оплати. Спробуйте ще раз.</string>
+    <string name="time_out_text">Скасування поїздки по таймауту оплати. Спробуйте ще.</string>
+    <string name="pay_cancel">Поїздку скасовано через відсутність оплати. Спробуйте ще.</string>
 </resources>

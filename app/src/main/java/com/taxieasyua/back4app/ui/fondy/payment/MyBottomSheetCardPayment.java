@@ -97,7 +97,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         webView = view.findViewById(R.id.webView);
         email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
         pay_method =  pay_system(getContext());
-
+        timeoutText = requireContext().getString(R.string.time_out_text);
+        Log.d(TAG, "onCreateView:timeoutText " + timeoutText);
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
 
@@ -136,7 +137,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     }
 
     private void getStatusFondy() {
-
+        hold = false;
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pay.fondy.eu/api/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -200,7 +201,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     }
 
     private void getStatusMono() {
-
+        hold = false;
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.monobank.ua/api/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -225,7 +226,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
                         if(!status.equals("hold")){
                             hold = false;
-                            cancelOrder(uid);
+                            cancelOrderRevers(uid);
                         } else {
                             hold = true;
                             dismiss();
@@ -235,7 +236,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 } else {
                     // Обработка ошибки запроса
                     Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
-                    cancelOrder(uid);
+                    cancelOrderRevers(uid);
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
@@ -245,7 +246,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             public void onFailure(@NonNull Call<ResponseStatusMono> call, @NonNull Throwable t) {
                 // Обработка ошибки сети или другие ошибки
                 Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
-                cancelOrder(uid);
+                cancelOrderRevers(uid);
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
@@ -253,23 +254,26 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
     }
 
-    private void cancelOrder(String value) {
-        String url = baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
+    private void cancelOrderRevers(String value) {
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + requireActivity().getString(R.string.application);
+
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
 
-
-
         call.enqueue(new Callback<Status>() {
             @Override
-            public void onResponse(Call<Status> call, Response<Status> response) {
+            public void onResponse(@NonNull Call<Status> call, @NonNull Response<Status> response) {
                 if (response.isSuccessful()) {
                     Status status = response.body();
                     if (status != null) {
 
                         String result =  String.valueOf(status.getResponse());
                         Log.d(TAG, "onResponse: result" + result);
-                        FinishActivity.text_status.setText(result);
+                        timeoutText = result;
 
                         String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
                         switch (pay_method) {
@@ -285,7 +289,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 } else {
                     // Обработка неуспешного ответа
                     if (pay_method.equals("nal_payment")) {
-                        FinishActivity.text_status.setText(R.string.verify_internet);
+                        timeoutText = getString(R.string.verify_internet);
                     }
                 }
             }
@@ -296,14 +300,19 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
                 Log.d(TAG, "onFailure: " + errorMessage);
-                FinishActivity.text_status.setText(R.string.verify_internet);
+                timeoutText = getString(R.string.verify_internet);
             }
         });
     }
     private void cancelOrderDismiss(String value) {
-        String url = baseUrl + "/" + MainActivity.api + "/android/webordersCancel/" + value;
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + requireActivity().getString(R.string.application);
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
+        Log.d(TAG, "/android/webordersCancel/: " + url);
 
         call.enqueue(new Callback<Status>() {
             @Override
@@ -313,10 +322,10 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
                     String result =  String.valueOf(status.getResponse());
                     Log.d(TAG, "onResponse: result" + result);
-                    FinishActivity.text_status.setText(result + " " +  timeoutText);
-
-                } else {
-                    FinishActivity.text_status.setText(R.string.verify_internet);
+                    if(!timeout) {
+                        result = timeoutText;
+                    }
+                    timeoutText = result;
                 }
             }
 
@@ -326,7 +335,6 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
                 Log.d(TAG, "onFailure: " + errorMessage);
-
             }
         });
     }
@@ -522,35 +530,37 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        if(!timeout) {
-            stopPaymentTimer();
-            timeoutText = getString(R.string.time_out_text);
-            cancelOrderDismiss(uid);
-            cancelOrderDismiss(uid_Double);
+        stopPaymentTimer();
+        if(!timeout && hold) {
+
             FinishActivity.btn_cancel_order.setVisibility(View.GONE);
             FinishActivity.btn_reset_status.setVisibility(View.GONE);
-            if (hold) {
-                String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
-                switch (pay_method) {
-                    case "fondy_payment":
-                        getReversFondy(MainActivity.order_id, comment, amount);
-                        break;
-                    case "mono_payment":
-                        getReversMono(MainActivity.invoiceId, comment, Integer.parseInt(amount));
-                        break;
-                }}
+
+            String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+            switch (pay_method) {
+                case "fondy_payment":
+                    getReversFondy(MainActivity.order_id, comment, amount);
+                    break;
+                case "mono_payment":
+                    getReversMono(MainActivity.invoiceId, comment, Integer.parseInt(amount));
+                    break;
+            }
+            FinishActivity.text_status.setText(timeoutText);
         }
     }
     @Override
     public void onPause() {
         super.onPause();
-
+        stopPaymentTimer();
         if(!hold) {
             FinishActivity.btn_cancel_order.setVisibility(View.GONE);
             FinishActivity.btn_reset_status.setVisibility(View.GONE);
             cancelOrderDismiss(uid);
             cancelOrderDismiss(uid_Double);
+            timeoutText = requireActivity().getString(R.string.pay_cancel);
+            FinishActivity.text_status.setText(timeoutText);
         }
+
     }
 
     private void getCardToken(String pay_system) {
@@ -675,7 +685,9 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             @Override
             public void onFinish() {
                 // Таймер завершился, обрабатываем таймаут
-               timeout = false;
+                timeout = false;
+                cancelOrderDismiss(uid);
+                cancelOrderDismiss(uid_Double);
             }
         }.start();
     }

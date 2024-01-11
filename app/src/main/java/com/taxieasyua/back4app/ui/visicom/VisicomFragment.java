@@ -46,6 +46,7 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.databinding.FragmentVisicomBinding;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetBonusFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGeoFragment;
@@ -112,6 +113,7 @@ public class VisicomFragment extends Fragment{
     private AlertDialog alertDialog;
     public static TextView textfrom;
     public static TextView num1;
+    private String cityMenu;
 
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -901,6 +903,10 @@ public class VisicomFragment extends Fragment{
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume: " + MainActivity.countryState);
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+
+
         if (MainActivity.countryState == null) {
             binding.textfrom.setVisibility(View.INVISIBLE);
 
@@ -911,8 +917,6 @@ public class VisicomFragment extends Fragment{
             btn_clear_from.setVisibility(View.INVISIBLE);
             btn_clear_to.setVisibility(View.INVISIBLE);
             FragmentManager fragmentManager = getChildFragmentManager();
-            List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-            String city = listCity.get(1);
 
             new GetPublicIPAddressTask(fragmentManager, city).execute();
         } else {
@@ -923,7 +927,38 @@ public class VisicomFragment extends Fragment{
 //            btn_clear_from.setVisibility(View.VISIBLE);
 //            btn_clear_to.setVisibility(View.VISIBLE);
         }
+        switch (city){
+            case "Kyiv City":
+                cityMenu = getString(R.string.city_kyiv);
+                MainActivity.countryState = "UA";
+                break;
 
+            case "Dnipropetrovsk Oblast":
+                cityMenu = getString(R.string.city_dnipro);
+                break;
+            case "Odessa":
+                cityMenu = getString(R.string.city_odessa);
+                MainActivity.countryState = "UA";
+                break;
+            case "Zaporizhzhia":
+                cityMenu = getString(R.string.city_zaporizhzhia);
+                MainActivity.countryState = "UA";
+                break;
+            case "Cherkasy Oblast":
+                cityMenu = getString(R.string.city_cherkasy);
+                MainActivity.countryState = "UA";
+                break;
+            case "OdessaTest":
+                cityMenu = "Test";
+                MainActivity.countryState = "UA";
+                break;
+            default:
+                cityMenu = getString(R.string.foreign_countries);
+                break;
+        }
+        String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
+        // Изменяем текст элемента меню
+        MainActivity.navVisicomMenuItem.setTitle(newTitle);
         if(!newRout()) {
             btn_clear_from_text.setVisibility(View.INVISIBLE);
             btn_clear_from.setVisibility(View.INVISIBLE);
