@@ -1,6 +1,7 @@
 <resources>
     <string name="application">PAS2</string>
 
+
     <string name="version_code">2.985</string>
     <string name="version">Версія: 2.985</string>
 
