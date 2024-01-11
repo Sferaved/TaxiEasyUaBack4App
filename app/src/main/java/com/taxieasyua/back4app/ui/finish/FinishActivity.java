@@ -1067,6 +1067,9 @@ public class FinishActivity extends AppCompatActivity {
                         case "SearchesForCar":
                             message = getString(R.string.ex_st_0);
                             break;
+                        case "Canceled":
+                            message = getString(R.string.ex_st_canceled);
+                            break;
                         case "CarFound":
                             // Формируем сообщение с учетом возможных пустых значений переменных
                             StringBuilder messageBuilder = new StringBuilder(getString(R.string.ex_st_2));

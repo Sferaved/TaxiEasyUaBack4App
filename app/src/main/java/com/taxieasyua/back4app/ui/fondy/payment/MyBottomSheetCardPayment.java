@@ -29,6 +29,7 @@ import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.card.CardInfo;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.FinishActivity;
+import com.taxieasyua.back4app.ui.finish.OrderResponse;
 import com.taxieasyua.back4app.ui.finish.Status;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackResponse;
 import com.taxieasyua.back4app.ui.fondy.callback.CallbackService;
@@ -51,8 +52,12 @@ import com.taxieasyua.back4app.ui.payment_system.PayApi;
 import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -98,6 +103,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         email = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(3);
         pay_method =  pay_system(getContext());
         timeoutText = requireContext().getString(R.string.time_out_text);
+
         Log.d(TAG, "onCreateView:timeoutText " + timeoutText);
         // Настройка WebView
         webView.getSettings().setJavaScriptEnabled(true);
@@ -547,6 +553,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             }
             FinishActivity.text_status.setText(timeoutText);
         }
+//        statusOrderWithDifferentValue(uid);
     }
     @Override
     public void onPause() {
@@ -558,11 +565,111 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
             cancelOrderDismiss(uid);
             cancelOrderDismiss(uid_Double);
             timeoutText = requireActivity().getString(R.string.pay_cancel);
-            FinishActivity.text_status.setText(timeoutText);
+//            FinishActivity.text_status.setText(timeoutText);
         }
-
+        statusOrderWithDifferentValue(uid);
     }
 
+    private void statusOrderWithDifferentValue(String value) {
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        String city = listCity.get(1);
+        String api = listCity.get(2);
+
+        String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value + "/" + city  + "/" + getString(R.string.application);
+
+        Call<OrderResponse> call = ApiClient.getApiService().statusOrder(url);
+        Log.d(TAG, "/android/historyUIDStatus/: " + url);
+
+        // Выполняем запрос асинхронно
+        call.enqueue(new Callback<OrderResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<OrderResponse> call, @NonNull Response<OrderResponse> response) {
+                if (response.isSuccessful()) {
+                    // Получаем объект OrderResponse из успешного ответа
+                    OrderResponse orderResponse = response.body();
+
+                    // Далее вы можете использовать полученные данные из orderResponse
+                    // например:
+                    assert orderResponse != null;
+                    String executionStatus = orderResponse.getExecutionStatus();
+                    String orderCarInfo = orderResponse.getOrderCarInfo();
+                    String driverPhone = orderResponse.getDriverPhone();
+                    String requiredTime = orderResponse.getRequiredTime();
+                    if (requiredTime != null && !requiredTime.isEmpty()) {
+                        requiredTime = formatDate (orderResponse.getRequiredTime());
+                    }
+
+
+                    String message;
+                    // Обработка различных вариантов executionStatus
+                    switch (executionStatus) {
+                        case "WaitingCarSearch":
+                            message = requireActivity().getString(R.string.ex_st_1);
+                            break;
+                        case "SearchesForCar":
+                            message = requireActivity().getString(R.string.ex_st_0);
+                            break;
+                        case "Canceled":
+                            message = requireActivity().getString(R.string.ex_st_canceled);
+                            break;
+                        case "CarFound":
+                            // Формируем сообщение с учетом возможных пустых значений переменных
+                            StringBuilder messageBuilder = new StringBuilder(getString(R.string.ex_st_2));
+
+                            if (orderCarInfo != null && !orderCarInfo.isEmpty()) {
+                                messageBuilder.append(getString(R.string.ex_st_3)).append(orderCarInfo);
+                            }
+
+                            if (driverPhone != null && !driverPhone.isEmpty()) {
+                                messageBuilder.append(getString(R.string.ex_st_4)).append(driverPhone);
+                            }
+
+                            if (requiredTime != null && !requiredTime.isEmpty()) {
+                                messageBuilder.append(getString(R.string.ex_st_5)).append(requiredTime);
+                            }
+
+                            message = messageBuilder.toString();
+                            break;
+                        default:
+                            message = getString(R.string.def_status);
+                            break;
+                    }
+
+                    if(!timeout) {
+                        message = timeoutText;
+                    }
+
+                    FinishActivity.text_status.setText(message);
+
+                } else {
+                    FinishActivity.text_status.setText(getString(R.string.def_status));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrderResponse> call, Throwable t) {
+                FinishActivity.text_status.setText(getString(R.string.def_status));
+            }
+        });
+    }
+
+    private String formatDate (String requiredTime) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+        // Формат для вывода в украинской локализации
+        SimpleDateFormat outputFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", new Locale("uk", "UA"));
+        // Преобразуем строку в объект Date
+        Date date = null;
+        try {
+            date = inputFormat.parse(requiredTime);
+        } catch (ParseException e) {
+            Log.d(TAG, "onCreate:" + new RuntimeException(e));
+        }
+
+        // Форматируем дату и время в украинском формате
+        return outputFormat.format(date);
+
+    }
     private void getCardToken(String pay_system) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
@@ -575,7 +682,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         // Выполните запрос
         Call<CallbackResponse> call = service.handleCallback(email, pay_system);
 
-        String tableCard = new String();
+        String tableCard = "";
         switch (pay_system) {
             case "fondy":
                 tableCard = MainActivity.TABLE_FONDY_CARDS;
