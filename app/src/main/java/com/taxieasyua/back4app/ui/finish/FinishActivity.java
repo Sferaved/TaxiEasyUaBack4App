@@ -90,6 +90,8 @@ public class FinishActivity extends AppCompatActivity {
     public static Button btn_reset_status;
     public static Button btn_cancel_order;
     private long delayMillis;
+    public static Runnable myRunnable;
+    public static Handler handler;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -133,7 +135,7 @@ public class FinishActivity extends AppCompatActivity {
         btn_cancel_order = findViewById(R.id.btn_cancel_order);
         delayMillis = 5 * 60 * 1000;
 
-        Handler handler = new Handler();
+        handler = new Handler();
 
         if (pay_method.equals("bonus_payment")) {
 
@@ -168,8 +170,7 @@ public class FinishActivity extends AppCompatActivity {
              */
             MainActivity.order_id = UniqueNumberGenerator.generateUniqueNumber(FinishActivity.this);
             callOrderIdMemory(MainActivity.order_id, uid, pay_method);
-
-            handler.postDelayed(new Runnable() {
+            myRunnable = new Runnable() {
                 @Override
                 public void run() {
                     MainActivity.order_id = null;
@@ -188,7 +189,8 @@ public class FinishActivity extends AppCompatActivity {
                         }
                     });
                 }
-            }, delayMillis);
+            };
+            handler.postDelayed(myRunnable, delayMillis);
         }
 
 
@@ -208,6 +210,7 @@ public class FinishActivity extends AppCompatActivity {
                 }
                 btn_reset_status.setVisibility(View.GONE);
                 btn_cancel_order.setVisibility(View.GONE);
+                handler.removeCallbacks(myRunnable);
             }
         });
 
@@ -840,60 +843,6 @@ public class FinishActivity extends AppCompatActivity {
             }
         });
     }
-
-    private String pay_system() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PayApi apiService = retrofit.create(PayApi.class);
-        Call<ResponsePaySystem> call = apiService.getPaySystem();
-        call.enqueue(new Callback<ResponsePaySystem>() {
-            @Override
-            public void onResponse(@NonNull Call<ResponsePaySystem> call, @NonNull Response<ResponsePaySystem> response) {
-                if (response.isSuccessful()) {
-                    // Обработка успешного ответа
-                    ResponsePaySystem responsePaySystem = response.body();
-                    assert responsePaySystem != null;
-                    String paymentCode = responsePaySystem.getPay_system();
-                    String paymentCodeNew = "fondy";
-
-                    switch (paymentCode) {
-                        case "fondy":
-                            paymentCodeNew = "fondy_payment";
-                            break;
-                        case "mono":
-                            paymentCodeNew = "mono_payment";
-                            break;
-                    }
-
-                        ContentValues cv = new ContentValues();
-                        cv.put("payment_type", paymentCodeNew);
-                        // обновляем по id
-                        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                        database.update(MainActivity.TABLE_SETTINGS_INFO, cv, "id = ?",
-                                new String[] { "1" });
-                        database.close();
-
-
-
-                } else {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponsePaySystem> call, Throwable t) {
-                    MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-            }
-        });
-        return logCursor(MainActivity.TABLE_SETTINGS_INFO).get(4);
-    }
-
     private void getRevers(String orderId, String comment, String amount) {
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -984,34 +933,34 @@ public class FinishActivity extends AppCompatActivity {
 
                 if (response.isSuccessful()) {
                     ResponseCancelMono apiResponse = response.body();
-                    Log.d("TAG2", "JSON Response: " + new Gson().toJson(apiResponse));
+                    Log.d(TAG, "JSON Response: " + new Gson().toJson(apiResponse));
                     if (apiResponse != null) {
                         String responseData = apiResponse.getStatus();
-                        Log.d("TAG2", "onResponse: " + responseData.toString());
+                        Log.d(TAG, "onResponse: " + responseData.toString());
                         // Обработка успешного ответа
 
                         switch (responseData) {
                             case "processing":
-                                Log.d("TAG2", "onResponse: " + "заява на скасування знаходиться в обробці");
+                                Log.d(TAG, "onResponse: " + "заява на скасування знаходиться в обробці");
                                 break;
                             case "success":
-                                Log.d("TAG2", "onResponse: " + "заяву на скасування виконано успішно");
+                                Log.d(TAG, "onResponse: " + "заяву на скасування виконано успішно");
                                 break;
                             case "failure":
-                                Log.d("TAG2", "onResponse: " + "неуспішне скасування");
-                                Log.d("TAG2", "onResponse: ErrCode: " + apiResponse.getErrCode());
-                                Log.d("TAG2", "onResponse: ErrText: " + apiResponse.getErrText());
+                                Log.d(TAG, "onResponse: " + "неуспішне скасування");
+                                Log.d(TAG, "onResponse: ErrCode: " + apiResponse.getErrCode());
+                                Log.d(TAG, "onResponse: ErrText: " + apiResponse.getErrText());
                                 break;
                         }
 
                     }
                 } else {
                     // Обработка ошибки запроса
-                    Log.d("TAG2", "onResponse: Ошибка запроса, код " + response.code());
+                    Log.d(TAG, "onResponse: Ошибка запроса, код " + response.code());
                     try {
                         assert response.errorBody() != null;
                         String errorBody = response.errorBody().string();
-                        Log.d("TAG2", "onResponse: Тело ошибки: " + errorBody);
+                        Log.d(TAG, "onResponse: Тело ошибки: " + errorBody);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -1021,7 +970,7 @@ public class FinishActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call<ResponseCancelMono> call, Throwable t) {
                 // Обработка ошибки сети или другие ошибки
-                Log.d("TAG2", "onFailure: Ошибка сети: " + t.getMessage());
+                Log.d(TAG, "onFailure: Ошибка сети: " + t.getMessage());
             }
         });
 

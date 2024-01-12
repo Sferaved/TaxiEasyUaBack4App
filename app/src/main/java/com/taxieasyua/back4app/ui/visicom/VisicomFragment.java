@@ -122,270 +122,8 @@ public class VisicomFragment extends Fragment{
 
         binding = FragmentVisicomBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        progressBar = binding.progressBar;
-
-        fab_call = binding.fabCall;
-        fab_call.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-                String phone = stringList.get(3);
-                intent.setData(Uri.parse(phone));
-                startActivity(intent);
-            }
-        });
 
 
-        buttonBonus = binding.btnBonus;
-        textfrom = binding.textfrom;
-        num1 = binding.num1;
-
-        textfrom.setVisibility(View.INVISIBLE);
-        num1.setVisibility(View.INVISIBLE);
-
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        api =  stringList.get(2);
-
-
-        addCost = 0;
-        updateAddCost(String.valueOf(addCost));
-
-        numberFlagTo = "2";
-        progressBar = binding.progressBar;
-
-        geoText = binding.textGeo;
-
-        btn_clear_from_text = binding.btnClearFromText;
-
-        btn_clear_from_text.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
-                intent.putExtra("start", "ok");
-                intent.putExtra("end", "no");
-                startActivity(intent);
-
-            }
-        });
-
-        if(geoText.getText().toString().equals("")) {
-            btn_clear_from_text.setVisibility(View.VISIBLE);
-            String unuString = new String(Character.toChars(0x1F449));
-            unuString += " " + getString(R.string.search_text);
-            btn_clear_from_text.setText(unuString);
-        }
-
-        text_view_cost = binding.textViewCost;
-
-        geo_marker = "visicom";
-
-        Log.d(TAG, "onCreateView: geo_marker " + geo_marker);
-
-        buttonBonus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updateAddCost("0");
-                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            }
-        });
-
-        textViewTo = binding.textTo;
-        textViewTo.setText(getString(R.string.on_city_tv));
-
-        addresses = new ArrayList<>();
-
-        btn_minus = binding.btnMinus;
-        btn_plus = binding.btnPlus;
-        btnOrder = binding.btnOrder;
-
-        btnAdd = binding.btnAdd;
-        btnAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                MyBottomSheetGeoFragment bottomSheetDialogFragment = new MyBottomSheetGeoFragment(text_view_cost);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            }
-        });
-
-
-
-        btn_minus.setOnClickListener(v -> {
-
-                List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-                addCost = Long.parseLong(stringListInfo.get(5));
-                cost = Long.parseLong(text_view_cost.getText().toString());
-                cost -= 5;
-                addCost -= 5;
-            if (cost >= MIN_COST_VALUE) {
-                updateAddCost(String.valueOf(addCost));
-                text_view_cost.setText(String.valueOf(cost));
-            }
-        });
-
-        btn_plus.setOnClickListener(v -> {
-            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
-            addCost = Long.parseLong(stringListInfo.get(5));
-            cost = Long.parseLong(text_view_cost.getText().toString());
-            cost += 5;
-            addCost += 5;
-            updateAddCost(String.valueOf(addCost));
-            text_view_cost.setText(String.valueOf(cost));
-        });
-        btnOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    progressBar.setVisibility(View.VISIBLE);
-                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-
-                    pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
-
-                    switch (stringList.get(1)) {
-                        case "Kyiv City":
-                        case "Dnipropetrovsk Oblast":
-                        case "Odessa":
-                        case "Zaporizhzhia":
-                        case "Cherkasy Oblast":
-                            break;
-                        case "OdessaTest":
-                            if(pay_method.equals("bonus_payment")) {
-                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
-                                if(Long.parseLong(bonus) < cost * 100 ) {
-                                    paymentType("nal_payment");
-                                }
-                            }
-                            break;
-                    }
-
-                    Log.d(TAG, "onClick: pay_method " + pay_method );
-                    List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-                    String card_max_pay = stringListCity.get(4);
-                    Log.d(TAG, "onClick:card_max_pay " + card_max_pay);
-
-                    String bonus_max_pay = stringListCity.get(5);
-                    switch (pay_method) {
-                        case "bonus_payment":
-                            if (Long.parseLong(bonus_max_pay) <= Long.parseLong(text_view_cost.getText().toString()) * 100) {
-                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
-                            } else {
-                                orderRout();
-
-                                try {
-                                    if (verifyPhone(requireContext())) {
-                                        orderFinished();
-                                    }
-                                } catch (MalformedURLException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                            break;
-                        case "card_payment":
-                        case "fondy_payment":
-                        case "mono_payment":
-                            if (Long.parseLong(card_max_pay) <= Long.parseLong(text_view_cost.getText().toString())) {
-                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
-                            } else {
-                                orderRout();
-
-                                try {
-                                    if (verifyPhone(requireContext())) {
-                                        orderFinished();
-                                    }
-                                } catch (MalformedURLException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                            break;
-                        default:
-                            orderRout();
-                            if (verifyPhone(requireContext())) {
-                                try {
-                                    if (verifyPhone(requireContext())) {
-                                        orderFinished();
-                                    }
-                                } catch (MalformedURLException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                            break;
-
-                    }
-                }
-            }
-        });
-        btn_clear_from = binding.btnClearFrom;
-        btn_clear_from.setVisibility(View.INVISIBLE);
-        btn_clear_from.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                geoText.setText("");
-                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
-                intent.putExtra("start", "ok");
-                intent.putExtra("end", "no");
-                startActivity(intent);
-            }
-        });
-        btn_clear_to = binding.btnClearTo;
-        btn_clear_to.setVisibility(View.INVISIBLE);
-        btn_clear_to.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                textViewTo.setText("");
-                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
-                intent.putExtra("start", "no");
-                intent.putExtra("end", "ok");
-                startActivity(intent);
-            }
-        });
-        textwhere = binding.textwhere;
-        num2 = binding.num2;
-
-
-        gpsbut = binding.gpsbut;
-        gpsbut.setOnClickListener(v -> {
-            LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
-            boolean gps_enabled = false;
-            boolean network_enabled = false;
-
-            try {
-                gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            } catch(Exception ignored) {
-            }
-
-            try {
-                network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-            } catch(Exception ignored) {
-            }
-
-            if(!gps_enabled || !network_enabled) {
-                MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            }  else  {
-                // Разрешения уже предоставлены, выполнить ваш код
-                if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                        && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                }  else {
-                    String message = getString(R.string.gps_ok);
-                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                }
-            }
-
-        });
-
-
-            binding.textfrom.setVisibility(View.INVISIBLE);
-
-            btn_clear_from_text.setVisibility(View.INVISIBLE);
-            textfrom.setVisibility(View.INVISIBLE);
-            num1.setVisibility(View.INVISIBLE);
-
-            btn_clear_from.setVisibility(View.INVISIBLE);
-            btn_clear_to.setVisibility(View.INVISIBLE);
 
 
 
@@ -902,6 +640,271 @@ public class VisicomFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
+        progressBar = binding.progressBar;
+
+        fab_call = binding.fabCall;
+        fab_call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+                String phone = stringList.get(3);
+                intent.setData(Uri.parse(phone));
+                startActivity(intent);
+            }
+        });
+
+
+        buttonBonus = binding.btnBonus;
+        textfrom = binding.textfrom;
+        num1 = binding.num1;
+
+        textfrom.setVisibility(View.INVISIBLE);
+        num1.setVisibility(View.INVISIBLE);
+
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        api =  stringList.get(2);
+
+
+        addCost = 0;
+        updateAddCost(String.valueOf(addCost));
+
+        numberFlagTo = "2";
+        progressBar = binding.progressBar;
+
+        geoText = binding.textGeo;
+
+        btn_clear_from_text = binding.btnClearFromText;
+
+        btn_clear_from_text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
+                intent.putExtra("start", "ok");
+                intent.putExtra("end", "no");
+                startActivity(intent);
+
+            }
+        });
+
+        if(geoText.getText().toString().equals("")) {
+            btn_clear_from_text.setVisibility(View.VISIBLE);
+            String unuString = new String(Character.toChars(0x1F449));
+            unuString += " " + getString(R.string.search_text);
+            btn_clear_from_text.setText(unuString);
+        }
+
+        text_view_cost = binding.textViewCost;
+
+        geo_marker = "visicom";
+
+        Log.d(TAG, "onCreateView: geo_marker " + geo_marker);
+
+        buttonBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateAddCost("0");
+                MyBottomSheetBonusFragment bottomSheetDialogFragment = new MyBottomSheetBonusFragment(Long.parseLong(text_view_cost.getText().toString()), geo_marker, api, text_view_cost);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
+        textViewTo = binding.textTo;
+        textViewTo.setText(getString(R.string.on_city_tv));
+
+        addresses = new ArrayList<>();
+
+        btn_minus = binding.btnMinus;
+        btn_plus = binding.btnPlus;
+        btnOrder = binding.btnOrder;
+
+        btnAdd = binding.btnAdd;
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyBottomSheetGeoFragment bottomSheetDialogFragment = new MyBottomSheetGeoFragment(text_view_cost);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+        });
+
+
+
+        btn_minus.setOnClickListener(v -> {
+
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+            addCost = Long.parseLong(stringListInfo.get(5));
+            cost = Long.parseLong(text_view_cost.getText().toString());
+            cost -= 5;
+            addCost -= 5;
+            if (cost >= MIN_COST_VALUE) {
+                updateAddCost(String.valueOf(addCost));
+                text_view_cost.setText(String.valueOf(cost));
+            }
+        });
+
+        btn_plus.setOnClickListener(v -> {
+            List<String> stringListInfo = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity());
+            addCost = Long.parseLong(stringListInfo.get(5));
+            cost = Long.parseLong(text_view_cost.getText().toString());
+            cost += 5;
+            addCost += 5;
+            updateAddCost(String.valueOf(addCost));
+            text_view_cost.setText(String.valueOf(cost));
+        });
+        btnOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+
+                    pay_method =  logCursor(MainActivity.TABLE_SETTINGS_INFO, requireActivity()).get(4);
+
+                    switch (stringList.get(1)) {
+                        case "Kyiv City":
+                        case "Dnipropetrovsk Oblast":
+                        case "Odessa":
+                        case "Zaporizhzhia":
+                        case "Cherkasy Oblast":
+                            break;
+                        case "OdessaTest":
+                            if(pay_method.equals("bonus_payment")) {
+                                String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
+                                if(Long.parseLong(bonus) < cost * 100 ) {
+                                    paymentType("nal_payment");
+                                }
+                            }
+                            break;
+                    }
+
+                    Log.d(TAG, "onClick: pay_method " + pay_method );
+                    List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+                    String card_max_pay = stringListCity.get(4);
+                    Log.d(TAG, "onClick:card_max_pay " + card_max_pay);
+
+                    String bonus_max_pay = stringListCity.get(5);
+                    switch (pay_method) {
+                        case "bonus_payment":
+                            if (Long.parseLong(bonus_max_pay) <= Long.parseLong(text_view_cost.getText().toString()) * 100) {
+                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                            } else {
+                                orderRout();
+
+                                try {
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            break;
+                        case "card_payment":
+                        case "fondy_payment":
+                        case "mono_payment":
+                            if (Long.parseLong(card_max_pay) <= Long.parseLong(text_view_cost.getText().toString())) {
+                                changePayMethodMax(text_view_cost.getText().toString(), pay_method);
+                            } else {
+                                orderRout();
+
+                                try {
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            break;
+                        default:
+                            orderRout();
+                            if (verifyPhone(requireContext())) {
+                                try {
+                                    if (verifyPhone(requireContext())) {
+                                        orderFinished();
+                                    }
+                                } catch (MalformedURLException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            break;
+
+                    }
+                }
+            }
+        });
+        btn_clear_from = binding.btnClearFrom;
+        btn_clear_from.setVisibility(View.INVISIBLE);
+        btn_clear_from.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                geoText.setText("");
+                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
+                intent.putExtra("start", "ok");
+                intent.putExtra("end", "no");
+                startActivity(intent);
+            }
+        });
+        btn_clear_to = binding.btnClearTo;
+        btn_clear_to.setVisibility(View.INVISIBLE);
+        btn_clear_to.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textViewTo.setText("");
+                Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
+                intent.putExtra("start", "no");
+                intent.putExtra("end", "ok");
+                startActivity(intent);
+            }
+        });
+        textwhere = binding.textwhere;
+        num2 = binding.num2;
+
+
+        gpsbut = binding.gpsbut;
+        gpsbut.setOnClickListener(v -> {
+            LocationManager lm = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
+            boolean gps_enabled = false;
+            boolean network_enabled = false;
+
+            try {
+                gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            } catch(Exception ignored) {
+            }
+
+            try {
+                network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            } catch(Exception ignored) {
+            }
+
+            if(!gps_enabled || !network_enabled) {
+                MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            }  else  {
+                // Разрешения уже предоставлены, выполнить ваш код
+                if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                }  else {
+                    String message = getString(R.string.gps_ok);
+                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
+        });
+
+        binding.textfrom.setVisibility(View.INVISIBLE);
+
+        btn_clear_from_text.setVisibility(View.INVISIBLE);
+        textfrom.setVisibility(View.INVISIBLE);
+        num1.setVisibility(View.INVISIBLE);
+
+        btn_clear_from.setVisibility(View.INVISIBLE);
+        btn_clear_to.setVisibility(View.INVISIBLE);
+
+
         Log.d(TAG, "onResume: " + MainActivity.countryState);
         List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
         String city = listCity.get(1);
@@ -924,8 +927,7 @@ public class VisicomFragment extends Fragment{
             textfrom.setVisibility(View.VISIBLE);
             num1.setVisibility(View.VISIBLE);
             btn_clear_from_text.setVisibility(View.VISIBLE);
-//            btn_clear_from.setVisibility(View.VISIBLE);
-//            btn_clear_to.setVisibility(View.VISIBLE);
+
         }
         switch (city){
             case "Kyiv City":
@@ -1050,23 +1052,37 @@ public class VisicomFragment extends Fragment{
 
         @Override
         protected String doInBackground(Void... voids) {
-            return IPUtil.getPublicIPAddress();
+            try {
+                return IPUtil.getPublicIPAddress();
+            } catch (Exception e) {
+                // Log the exception
+                Log.e(TAG, "Exception in doInBackground: " + e.getMessage());
+                // Return null or handle the exception as needed
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(String ipAddress) {
-            if (ipAddress != null) {
-                Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
-                getCountryByIP(ipAddress, city);
-             } else {
-                MainActivity.countryState = "UA";
+            try {
+                if (ipAddress != null) {
+                    Log.d(TAG, "onPostExecute: Local IP Address: " + ipAddress);
+                    getCountryByIP(ipAddress, city);
+                } else {
+                    MainActivity.countryState = "UA";
 
-                textfrom.setVisibility(View.VISIBLE);
-                num1.setVisibility(View.VISIBLE);
-
+                    // Assuming textfrom and num1 are UI elements
+                    textfrom.setVisibility(View.VISIBLE);
+                    num1.setVisibility(View.VISIBLE);
+                }
+            } catch (Exception e) {
+                // Log the exception
+                Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
+                // Handle the exception as needed
             }
         }
     }
+
     private static void getCountryByIP(String ipAddress, String city) {
         ApiServiceCountry apiService = RetrofitClient.getClient().create(ApiServiceCountry.class);
         Call<CountryResponse> call = apiService.getCountryByIP(ipAddress);

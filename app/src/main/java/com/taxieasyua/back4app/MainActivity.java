@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static final String DB_NAME = "data_09012024_58";
+    public static final String DB_NAME = "data_12012024_0";
 
     /**
      * Table section
@@ -1409,7 +1409,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
+    private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
         FragmentManager fragmentManager;
 
         public GetPublicIPAddressTask(FragmentManager fragmentManager) {
@@ -1418,19 +1418,33 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            return IPUtil.getPublicIPAddress();
+            try {
+                return IPUtil.getPublicIPAddress();
+            } catch (Exception e) {
+                // Log the exception
+                Log.e(TAG, "Exception in doInBackground: " + e.getMessage());
+                // Return null or handle the exception as needed
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(String ipAddress) {
-            if (ipAddress != null) {
-                Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
+            try {
+                if (ipAddress != null) {
+                    Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
 //                getCountryByIP(ipAddress);
-                getCityByIP(ipAddress, fragmentManager);
-            } else {
+                    getCityByIP(ipAddress, fragmentManager);
+                } else {
 //                getCountryByIP("31.202.139.47");
-                getCityByIP("31.202.139.47",fragmentManager);
+                    getCityByIP("31.202.139.47",fragmentManager);
+                }
+            } catch (Exception e) {
+                // Log the exception
+                Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
+                // Handle the exception as needed
             }
+
         }
     }
     public static void getCountryByIP(String ipAddress) {
