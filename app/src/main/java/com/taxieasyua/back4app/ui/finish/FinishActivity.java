@@ -859,7 +859,7 @@ public class FinishActivity extends AppCompatActivity {
                 orderId,
                 comment,
                 amount,
-               MERCHANT_ID,
+                MERCHANT_ID,
                 merchantPassword
         );
         Log.d(TAG, "getRevers: " + reversRequestData.toString());

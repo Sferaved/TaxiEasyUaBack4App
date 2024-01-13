@@ -85,8 +85,12 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     private static String messageCarFoundOrderCarInfo;
     private static String messageCarFoundOrderdriverPhone;
     private static String messageCarFoundRequiredTime;
+    private static String def_status;
     private String order_id;
     private String invoiceId;
+    private static String city;
+    private static String api;
+    private static String application;
 
     public MyBottomSheetCardPayment(
             String checkoutUrl,
@@ -118,6 +122,13 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         messageCarFoundOrderCarInfo = requireContext().getString(R.string.ex_st_3);
         messageCarFoundOrderdriverPhone = requireContext().getString(R.string.ex_st_4);
         messageCarFoundRequiredTime = requireContext().getString(R.string.ex_st_5);
+        def_status = getString(R.string.def_status);
+        application = getString(R.string.application);
+
+        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
+        city = listCity.get(1);
+        api = listCity.get(2);
+
         order_id = MainActivity.order_id;
         invoiceId = MainActivity.invoiceId;
 
@@ -280,11 +291,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     }
 
     private void cancelOrderRevers(String value) {
-        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String city = listCity.get(1);
-        String api = listCity.get(2);
 
-        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + requireActivity().getString(R.string.application);
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + application;
 
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d(TAG, "cancelOrderWithDifferentValue cancelOrderUrl: " + url);
@@ -330,12 +338,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         });
     }
     private void cancelOrderDismiss(String value) {
-        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String city = listCity.get(1);
-        String api = listCity.get(2);
 
-
-        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + requireActivity().getString(R.string.application);
+        String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + application;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
         Log.d(TAG, "/android/webordersCancel/: " + url);
 
@@ -350,8 +354,11 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     if(!timeout) {
                         result = timeoutText;
                     }
-                    timeoutText = result;
-                    FinishActivity.text_status.setText(timeoutText);
+
+                    if(timeout) {
+                        FinishActivity.text_status.setText(result);
+                    }
+
                 }
             }
 
@@ -416,6 +423,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                         e.printStackTrace();
                     }
                 }
+                statusOrderWithDifferentValue(uid, true);
+                statusOrderWithDifferentValue(uid_Double, false);
             }
 
             @Override
@@ -558,12 +567,13 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         super.onDismiss(dialog);
         Log.d(TAG, "onDismiss: timeout " + timeout);
         Log.d(TAG, "onDismiss: hold " + hold);
+        stopPaymentTimer();
         if(!timeout && hold) {
-
             FinishActivity.btn_cancel_order.setVisibility(View.GONE);
             FinishActivity.btn_reset_status.setVisibility(View.GONE);
             FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
             String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+
             switch (pay_method) {
                 case "fondy_payment":
                     getReversFondy(order_id, comment, amount);
@@ -572,35 +582,24 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     getReversMono(invoiceId, comment, Integer.parseInt(amount));
                     break;
             }
-            FinishActivity.text_status.setText(timeoutText);
-        } else {
-            stopPaymentTimer();
+
+
         }
 
     }
     @Override
     public void onPause() {
         super.onPause();
-
-
-        if(!hold) {
-            FinishActivity.btn_cancel_order.setVisibility(View.GONE);
-            FinishActivity.btn_reset_status.setVisibility(View.GONE);
-            FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
-            cancelOrderDismiss(uid);
-            cancelOrderDismiss(uid_Double);
+        statusOrderWithDifferentValue(uid, true);
+        statusOrderWithDifferentValue(uid_Double, false);
+        if(!timeout) {
+            FinishActivity.text_status.setText(timeoutText);
         }
-//        statusOrderWithDifferentValue(uid);
-//        stopPaymentTimer();
     }
 
-    private void statusOrderWithDifferentValue(String value) {
+    private void statusOrderWithDifferentValue(String value, boolean info) {
 
-        List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String city = listCity.get(1);
-        String api = listCity.get(2);
-
-        String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value + "/" + city  + "/" + getString(R.string.application);
+        String url = baseUrl + "/" + api + "/android/historyUIDStatus/" + value + "/" + city  + "/" + application;
 
         Call<OrderResponse> call = ApiClient.getApiService().statusOrder(url);
         Log.d(TAG, "/android/historyUIDStatus/: " + url);
@@ -630,12 +629,29 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     switch (executionStatus) {
                         case "WaitingCarSearch":
                             message = messageWaitingCarSearch;
+                            if(!hold) {
+                                FinishActivity.btn_cancel_order.setVisibility(View.GONE);
+                                FinishActivity.btn_reset_status.setVisibility(View.GONE);
+                                FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
+                                cancelOrderDismiss(uid);
+                                cancelOrderDismiss(uid_Double);
+                            }
                             break;
                         case "SearchesForCar":
                             message = messageSearchesForCar;
+                            if(!hold) {
+                                FinishActivity.btn_cancel_order.setVisibility(View.GONE);
+                                FinishActivity.btn_reset_status.setVisibility(View.GONE);
+                                FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
+                                cancelOrderDismiss(uid);
+                                cancelOrderDismiss(uid_Double);
+                            }
                             break;
                         case "Canceled":
                             message = messageCanceled;
+                            FinishActivity.btn_cancel_order.setVisibility(View.GONE);
+                            FinishActivity.btn_reset_status.setVisibility(View.GONE);
+                            FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
                             break;
                         case "CarFound":
                             // Формируем сообщение с учетом возможных пустых значений переменных
@@ -654,9 +670,16 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                             }
 
                             message = messageBuilder.toString();
+                            if(!hold) {
+                                FinishActivity.btn_cancel_order.setVisibility(View.GONE);
+                                FinishActivity.btn_reset_status.setVisibility(View.GONE);
+                                FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
+                                cancelOrderDismiss(uid);
+                                cancelOrderDismiss(uid_Double);
+                            }
                             break;
                         default:
-                            message = getString(R.string.def_status);
+                            message = def_status;
                             break;
                     }
 
@@ -664,16 +687,19 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                         message = timeoutText;
                     }
 
-                    FinishActivity.text_status.setText(message);
+                    if(timeout && info) {
+                        FinishActivity.text_status.setText(message);
+                    }
+
 
                 } else {
-                    FinishActivity.text_status.setText(getString(R.string.def_status));
+                    FinishActivity.text_status.setText(def_status);
                 }
             }
 
             @Override
-            public void onFailure(Call<OrderResponse> call, Throwable t) {
-                FinishActivity.text_status.setText(getString(R.string.def_status));
+            public void onFailure(@NonNull Call<OrderResponse> call, @NonNull Throwable t) {
+                FinishActivity.text_status.setText(def_status);
             }
         });
     }
@@ -827,7 +853,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         if (paymentTimer != null) {
             paymentTimer.cancel();
         }
-        statusOrderWithDifferentValue(uid);
+        timeout = true;
     }
 
 }
