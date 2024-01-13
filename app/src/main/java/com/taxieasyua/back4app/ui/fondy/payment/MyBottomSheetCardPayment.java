@@ -91,6 +91,9 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
     private static String city;
     private static String api;
     private static String application;
+    private static String comment;
+    private static String MERCHANT_ID;
+    private static String merchantPassword;
 
     public MyBottomSheetCardPayment(
             String checkoutUrl,
@@ -124,11 +127,16 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         messageCarFoundRequiredTime = requireContext().getString(R.string.ex_st_5);
         def_status = getString(R.string.def_status);
         application = getString(R.string.application);
-
+        comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
+        
         List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
         city = listCity.get(1);
         api = listCity.get(2);
 
+      
+        MERCHANT_ID = listCity.get(6);
+        merchantPassword = listCity.get(7);
+        
         order_id = MainActivity.order_id;
         invoiceId = MainActivity.invoiceId;
 
@@ -341,7 +349,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
 
         String url = baseUrl + "/" + api + "/android/webordersCancel/" + value + "/" + city  + "/" + application;
         Call<Status> call = ApiClient.getApiService().cancelOrder(url);
-        Log.d(TAG, "/android/webordersCancel/: " + url);
+        Log.d(TAG, "cancelOrderDismiss: " + url);
 
         call.enqueue(new Callback<Status>() {
             @Override
@@ -379,10 +387,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                 .build();
 
         ReversApi apiService = retrofit.create(ReversApi.class);
+ 
 
-        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        String MERCHANT_ID = arrayList.get(6);
-        String merchantPassword = arrayList.get(7);
 
         ReversRequestData reversRequestData = new ReversRequestData(
                 orderId,
@@ -423,8 +429,8 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                         e.printStackTrace();
                     }
                 }
-                statusOrderWithDifferentValue(uid, true);
-                statusOrderWithDifferentValue(uid_Double, false);
+//                statusOrderWithDifferentValue(uid, true);
+//                statusOrderWithDifferentValue(uid_Double, false);
             }
 
             @Override
@@ -567,34 +573,18 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         super.onDismiss(dialog);
         Log.d(TAG, "onDismiss: timeout " + timeout);
         Log.d(TAG, "onDismiss: hold " + hold);
-        stopPaymentTimer();
-        if(!timeout && hold) {
+
+
+        if(!timeout) {
             FinishActivity.btn_cancel_order.setVisibility(View.GONE);
             FinishActivity.btn_reset_status.setVisibility(View.GONE);
             FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
-            String comment = getString(R.string.fondy_revers_message) + getString(R.string.fondy_message);;
-
-            switch (pay_method) {
-                case "fondy_payment":
-                    getReversFondy(order_id, comment, amount);
-                    break;
-                case "mono_payment":
-                    getReversMono(invoiceId, comment, Integer.parseInt(amount));
-                    break;
-            }
-
-
+            FinishActivity.text_status.setText(timeoutText);
+        } else  {
+            stopPaymentTimer();
         }
-
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
         statusOrderWithDifferentValue(uid, true);
         statusOrderWithDifferentValue(uid_Double, false);
-        if(!timeout) {
-            FinishActivity.text_status.setText(timeoutText);
-        }
     }
 
     private void statusOrderWithDifferentValue(String value, boolean info) {
@@ -629,7 +619,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                     switch (executionStatus) {
                         case "WaitingCarSearch":
                             message = messageWaitingCarSearch;
-                            if(!hold) {
+                            if(!hold && info) {
                                 FinishActivity.btn_cancel_order.setVisibility(View.GONE);
                                 FinishActivity.btn_reset_status.setVisibility(View.GONE);
                                 FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
@@ -639,7 +629,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                             break;
                         case "SearchesForCar":
                             message = messageSearchesForCar;
-                            if(!hold) {
+                            if(!hold && info) {
                                 FinishActivity.btn_cancel_order.setVisibility(View.GONE);
                                 FinishActivity.btn_reset_status.setVisibility(View.GONE);
                                 FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
@@ -652,6 +642,16 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                             FinishActivity.btn_cancel_order.setVisibility(View.GONE);
                             FinishActivity.btn_reset_status.setVisibility(View.GONE);
                             FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
+                            
+
+                            switch (pay_method) {
+                                case "fondy_payment":
+                                    getReversFondy(order_id, comment, amount);
+                                    break;
+                                case "mono_payment":
+                                    getReversMono(invoiceId, comment, Integer.parseInt(amount));
+                                    break;
+                            }
                             break;
                         case "CarFound":
                             // Формируем сообщение с учетом возможных пустых значений переменных
@@ -670,7 +670,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                             }
 
                             message = messageBuilder.toString();
-                            if(!hold) {
+                            if(!hold && info) {
                                 FinishActivity.btn_cancel_order.setVisibility(View.GONE);
                                 FinishActivity.btn_reset_status.setVisibility(View.GONE);
                                 FinishActivity.handler.removeCallbacks(FinishActivity.myRunnable);
@@ -853,7 +853,6 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
         if (paymentTimer != null) {
             paymentTimer.cancel();
         }
-        timeout = true;
     }
 
 }

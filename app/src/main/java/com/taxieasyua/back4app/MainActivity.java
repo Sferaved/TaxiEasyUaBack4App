@@ -76,6 +76,8 @@ import com.taxieasyua.back4app.utils.ip.CountryResponse;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
+import com.taxieasyua.back4app.utils.user.ApiServiceUser;
+import com.taxieasyua.back4app.utils.user.UserResponse;
 
 import org.json.JSONException;
 
@@ -730,11 +732,13 @@ public class MainActivity extends AppCompatActivity {
 
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         EditText phoneNumber = view.findViewById(R.id.phoneNumber);
+        EditText userName = view.findViewById(R.id.userName);
 
         List<String> stringList =  logCursor(MainActivity.TABLE_USER_INFO);
 
         if(stringList.size() != 0) {
             phoneNumber.setText(stringList.get(2));
+            userName.setText(stringList.get(4));
 
 
 //        String result = phoneNumber.getText().toString();
@@ -752,7 +756,8 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
 
                             } else {
-                               updateRecordsUser(phoneNumber.getText().toString());
+                               updateRecordsUser("phone_number", phoneNumber.getText().toString());
+                               updateRecordsUser("username", userName.getText().toString());
                             }
                         }
                     }
@@ -760,10 +765,10 @@ public class MainActivity extends AppCompatActivity {
                 .show();
         }
     }
-    private void updateRecordsUser(String result) {
+    private void updateRecordsUser(String field, String result) {
         ContentValues cv = new ContentValues();
 
-        cv.put("phone_number", result);
+        cv.put(field, result);
 
         // обновляем по id
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -912,10 +917,10 @@ public class MainActivity extends AppCompatActivity {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                updateRecordsUserInfo("email", user.getEmail());
-                updateRecordsUserInfo("username", user.getDisplayName());
+                updateRecordsUserInfo("email", user.getEmail(), getApplicationContext());
 
-                addUser(user.getDisplayName(), user.getEmail()) ;
+//                addUser(user.getDisplayName(), user.getEmail()) ;
+                addUserNoName(user.getEmail(), getApplicationContext());
                 userPhoneFromServer (user.getEmail());
 
                 getCardToken("fondy", TABLE_FONDY_CARDS, user.getEmail());
@@ -989,8 +994,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateRecordsUserInfo(String userInfo, String result) {
-        SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+    public static void addUserNoName(String email, Context context) {
+        // Создание объекта Retrofit
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://m.easy-order-taxi.site/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        // Создание экземпляра ApiService
+        ApiServiceUser apiService = retrofit.create(ApiServiceUser.class);
+
+        // Вызов метода addUserNoName
+        Call<UserResponse> call = apiService.addUserNoName(email);
+
+        // Асинхронный вызов
+        call.enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if (response.isSuccessful()) {
+                    UserResponse userResponse = response.body();
+                    if (userResponse != null) {
+                        updateRecordsUserInfo("username", userResponse.getUserName(), context);
+
+                    }
+                } else {
+                    updateRecordsUserInfo("username", "no_name", context);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                System.out.println("Network Error: " + t.getMessage());
+            }
+        });
+    }
+    private static void updateRecordsUserInfo(String userInfo, String result, Context context) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         ContentValues cv = new ContentValues();
 
         cv.put(userInfo, result);
@@ -1390,7 +1429,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean val = Pattern.compile(PHONE_PATTERN).matcher(phone).matches();
 
                     if (val) {
-                        updateRecordsUser(phone);
+                        updateRecordsUser("phone_number", phone);
                     } else {
                         // Handle case where phone doesn't match the pattern
                         Log.e("UserPhone", "Phone does not match pattern");
