@@ -429,8 +429,7 @@ public class MyBottomSheetCardPayment extends BottomSheetDialogFragment {
                         e.printStackTrace();
                     }
                 }
-//                statusOrderWithDifferentValue(uid, true);
-//                statusOrderWithDifferentValue(uid_Double, false);
+
             }
 
             @Override

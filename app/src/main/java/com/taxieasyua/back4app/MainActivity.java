@@ -757,7 +757,11 @@ public class MainActivity extends AppCompatActivity {
 
                             } else {
                                updateRecordsUser("phone_number", phoneNumber.getText().toString());
-                               updateRecordsUser("username", userName.getText().toString());
+                               String newName = userName.getText().toString();
+                               if(newName.equals("")) {
+                                   newName = "no_name";
+                               }
+                               updateRecordsUser("username", newName);
                             }
                         }
                     }
@@ -1240,48 +1244,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     cv.put("verifyOrder", "1");
                     database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-//
-//                    Cursor c = database.query(CITY_INFO, null, null, null, null, null, null);
-//                    if(c.getCount() != 0) {
-//                        List<String> listCity = logCursor(CITY_INFO);
-//                        String city = listCity.get(1);
-//                        Log.d(TAG, "onResume:city www " + city +"/");
-////                        if(city.equals("")) {
-////                            new GetPublicIPAddressTask().execute();
-////                        } else {
-//                            String cityMenu;
-//                            switch (city) {
-//                                case "Dnipropetrovsk Oblast":
-//                                    cityMenu = " " + getString(R.string.city_dnipro);
-//                                    break;
-//                                case "Odessa":
-//                                    cityMenu = " " + getString(R.string.city_odessa);
-//                                    break;
-//                                case "Zaporizhzhia":
-//                                    cityMenu = " " + getString(R.string.city_zaporizhzhia);
-//                                    break;
-//                                case "Cherkasy Oblast":
-//                                    cityMenu = " " + getString(R.string.city_cherkasy);
-//                                    break;
-//                                case "foreign countries":
-//                                    cityMenu = "";
-//                                    break;
-//                                case "OdessaTest":
-//                                    cityMenu = " " + "Test";
-//                                    break;
-//                                default:
-//                                    cityMenu = " " + getString(R.string.city_kyiv);
-//                            }
-//                            if (MainActivity.navVisicomMenuItem != null) {
-//                                // Новый текст элемента меню
-//                                String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
-//
-//                                // Изменяем текст элемента меню
-//                                MainActivity.navVisicomMenuItem.setTitle(newTitle);
-//                            }
-////                        }
-//
-//                    }
 
                 }
             }
