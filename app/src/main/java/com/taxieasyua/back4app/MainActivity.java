@@ -758,8 +758,8 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                updateRecordsUser("phone_number", phoneNumber.getText().toString());
                                String newName = userName.getText().toString();
-                               if(newName.equals("")) {
-                                   newName = "no_name";
+                               if (newName.trim().isEmpty()) {
+                                   newName = "No_name";
                                }
                                updateRecordsUser("username", newName);
                             }
