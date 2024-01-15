@@ -1,8 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.990</string>
-    <string name="version">Версия: 2.990</string>
+    <string name="version_code">2.991</string>
+    <string name="version">Версия: 2.991</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
