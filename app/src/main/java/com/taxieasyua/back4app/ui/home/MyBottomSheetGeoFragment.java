@@ -439,7 +439,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             updateAddCost(String.valueOf(discount));
 
             newCost = String.valueOf(firstCost + discount);
-            texViewCost.setText(newCost);
+            if (texViewCost != null) {
+                texViewCost.setText(newCost);
+            }
 
         }
     }
