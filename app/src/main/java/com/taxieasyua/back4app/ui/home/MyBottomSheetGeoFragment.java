@@ -69,6 +69,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         this.texViewCost = texViewCost;
     }
 
+    public MyBottomSheetGeoFragment() {
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Nullable
     @Override
