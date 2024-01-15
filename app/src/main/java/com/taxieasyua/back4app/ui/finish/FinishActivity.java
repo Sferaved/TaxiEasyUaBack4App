@@ -254,7 +254,7 @@ public class FinishActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
+        infoPaymentType();
         switch (pay_method) {
             case "fondy_payment":
                 payFondy();
@@ -629,19 +629,20 @@ public class FinishActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+    }
+    private void infoPaymentType() {
         if (pay_method.equals("bonus_payment")
                 || pay_method.equals("card_payment")
                 || pay_method.equals("fondy_payment")
                 || pay_method.equals("mono_payment")) {
-           thread = new Thread(new Runnable() {
+            thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     // Здесь вызывайте вашу функцию fetchCarFound()
                     fetchCarFound();
                 }
             });
-           thread.start();
+            thread.start();
         } else {
             String message = getString(R.string.nal_pay_message);
 
@@ -649,7 +650,6 @@ public class FinishActivity extends AppCompatActivity {
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         }
     }
-
     private void fetchBonus(String url) {
 
         Call<BonusResponse> call = ApiClient.getApiService().getBonus(url);
