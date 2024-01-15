@@ -115,7 +115,7 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
         }
 
         String[] tariffArr = new String[]{
-                " ",
+                "Старт",
                 "Базовий онлайн",
                 "Базовый",
                 "Универсал",
@@ -146,6 +146,9 @@ public class MyBottomSheetGalleryFragment extends BottomSheetDialogFragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 tariff = tariffArr[position];
+                if(tariff.equals("Старт")) {
+                    tariff = " ";
+                }
                 ContentValues cv = new ContentValues();
                 cv.put("tarif", tariff);
 

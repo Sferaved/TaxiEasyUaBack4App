@@ -124,7 +124,7 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
         }
 
         String[] tariffArr = new String[]{
-                " ",
+                "Старт",
                 "Базовий онлайн",
                 "Базовый",
                 "Универсал",
@@ -155,6 +155,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 tariff = tariffArr[position];
+                if(tariff.equals("Старт")) {
+                    tariff = " ";
+                }
                 ContentValues cv = new ContentValues();
                 cv.put("tarif", tariff);
 
@@ -404,14 +407,14 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             database.close();
         }
         try {
-            texViewCost.setText(changeCost());
+            changeCost();
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
 
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private String changeCost() throws MalformedURLException {
+    private void changeCost() throws MalformedURLException {
         String newCost = "0";
 
         String  url = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
@@ -436,9 +439,9 @@ public class MyBottomSheetGeoFragment extends BottomSheetDialogFragment {
             updateAddCost(String.valueOf(discount));
 
             newCost = String.valueOf(firstCost + discount);
+            texViewCost.setText(newCost);
 
         }
-        return newCost;
     }
 
     private void updateRoutMarker(List<String> settings) {
