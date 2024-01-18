@@ -860,7 +860,7 @@ public class VisicomFragment extends Fragment{
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                geoText.setText("");
+//                geoText.setText("");
                 Intent intent = new Intent(getContext(), ActivityVisicomOnePage.class);
                 intent.putExtra("start", "ok");
                 intent.putExtra("end", "no");
@@ -1081,6 +1081,8 @@ public class VisicomFragment extends Fragment{
                     btn_clear_from.setVisibility(View.VISIBLE);
                     geoText.setText(FromAdressString);
                     progressBar.setVisibility(View.GONE);
+
+
                     List<String> settings = new ArrayList<>();
 
 

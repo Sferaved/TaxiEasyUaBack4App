@@ -67,6 +67,10 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
     ProgressBar progressBar;
     CustomArrayAdapter adapter;
     private static SQLiteDatabase database;
+
+    public MyBottomSheetBonusFragment() {
+    }
+
     private String baseUrl = "https://m.easy-order-taxi.site";
 
     public MyBottomSheetBonusFragment(long cost, String rout, String api, TextView textView) {
