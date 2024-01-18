@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,6 +41,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -130,11 +134,8 @@ public class VisicomFragment extends Fragment{
 
         binding = FragmentVisicomBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
-
-
-
-
+        progressBar = binding.progressBar;
+        progressBar.setVisibility(View.VISIBLE);
         return root;
     }
     @Override
@@ -648,7 +649,7 @@ public class VisicomFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-        progressBar = binding.progressBar;
+
 
         fab_call = binding.fabCall;
         fab_call.setOnClickListener(new View.OnClickListener() {
@@ -678,7 +679,6 @@ public class VisicomFragment extends Fragment{
         updateAddCost(String.valueOf(addCost));
 
         numberFlagTo = "2";
-        progressBar = binding.progressBar;
 
         geoText = binding.textGeo;
 
@@ -718,7 +718,21 @@ public class VisicomFragment extends Fragment{
         });
 
         textViewTo = binding.textTo;
-        textViewTo.setText(getString(R.string.on_city_tv));
+
+//        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+//        Cursor cursor = database.rawQuery(query, null);
+//
+//        cursor.moveToFirst();
+//
+//        @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
+//        Log.d(TAG, "autoClickButton:ToAdressString " + ToAdressString);
+//        cursor.close();
+//        database.close();
+//
+//        if(ToAdressString.equals()) {
+//            textViewTo.setText(getString(R.string.on_city_tv));
+//        }
+
 
         addresses = new ArrayList<>();
 
@@ -842,7 +856,7 @@ public class VisicomFragment extends Fragment{
             }
         });
         btn_clear_from = binding.btnClearFrom;
-        btn_clear_from.setVisibility(View.INVISIBLE);
+//        btn_clear_from.setVisibility(View.INVISIBLE);
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -854,7 +868,7 @@ public class VisicomFragment extends Fragment{
             }
         });
         btn_clear_to = binding.btnClearTo;
-        btn_clear_to.setVisibility(View.INVISIBLE);
+//        btn_clear_to.setVisibility(View.INVISIBLE);
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -894,13 +908,7 @@ public class VisicomFragment extends Fragment{
                         && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                }
-//                else {
-//                    String message = getString(R.string.gps_ok);
-//                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-//                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-//                }
-                else {
+                } else {
                     firstLocation();
                 }
             }
@@ -912,9 +920,6 @@ public class VisicomFragment extends Fragment{
         btn_clear_from_text.setVisibility(View.INVISIBLE);
         textfrom.setVisibility(View.INVISIBLE);
         num1.setVisibility(View.INVISIBLE);
-
-        btn_clear_from.setVisibility(View.INVISIBLE);
-        btn_clear_to.setVisibility(View.INVISIBLE);
 
 
         Log.d(TAG, "onResume: " + MainActivity.countryState);
@@ -973,17 +978,36 @@ public class VisicomFragment extends Fragment{
         String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
         // Изменяем текст элемента меню
         MainActivity.navVisicomMenuItem.setTitle(newTitle);
+
+
+
+
+
         if(!newRout()) {
             btn_clear_from_text.setVisibility(View.INVISIBLE);
-            btn_clear_from.setVisibility(View.INVISIBLE);
-            num1.setVisibility(View.VISIBLE);
-//            btn_clear_to.setVisibility(View.VISIBLE);
+//            btn_clear_from.setVisibility(View.INVISIBLE);
+
+//            textfrom.setVisibility(View.INVISIBLE);
+//            num1.setVisibility(View.VISIBLE);
             visicomCost();
+//            new Handler().postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    if (isAdded()) {
+//                        geoText.setText(R.string.search);
+//                        geoText.setVisibility(View.VISIBLE);
+//
+//                    }
+//                }
+//            }, 100);
+
         }
+
     }
 
     private void firstLocation() {
         progressBar.setVisibility(View.VISIBLE);
+        geoText.setText(R.string.search);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         locationCallback = new LocationCallback() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -1028,7 +1052,25 @@ public class VisicomFragment extends Fragment{
                     geoText.setText(FromAdressString);
                     progressBar.setVisibility(View.GONE);
                     List<String> settings = new ArrayList<>();
-                    String ToAdressString = textViewTo.getText().toString();
+
+
+                    String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                    SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                    Cursor cursor = database.rawQuery(query, null);
+
+                    cursor.moveToFirst();
+
+                    // Получите значения полей из первой записи
+
+                    @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                    @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                    @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
+
+                    textViewTo.setText(ToAdressString);
+
+
+
+                    Log.d(TAG, "onLocationResult:ToAdressString " + ToAdressString);
                     if(ToAdressString.equals(getString(R.string.on_city_tv)) ||
                             ToAdressString.equals("") ) {
                         settings.add(Double.toString(latitude));
@@ -1039,20 +1081,8 @@ public class VisicomFragment extends Fragment{
                         settings.add(getString(R.string.on_city_tv));
                     } else {
 
-                        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+
                         if(isAdded()) {
-                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                            Cursor cursor = database.rawQuery(query, null);
-
-                            cursor.moveToFirst();
-
-                            // Получите значения полей из первой записи
-
-
-                            @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
-                            @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
-                            cursor.close();
-                            database.close();
 
                             settings.add(Double.toString(latitude));
                             settings.add(Double.toString(longitude));
@@ -1063,7 +1093,20 @@ public class VisicomFragment extends Fragment{
                         }
 
                     }
-                    updateRoutMarker(settings);
+//                    if(settings.size() != 0) {
+                        updateRoutMarker(settings);
+                        visicomCost();
+//                    }
+
+//                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+//                    FragmentManager fragmentManager = getChildFragmentManager();
+//                    VisicomFragment visicomFragment = (VisicomFragment) fragmentManager.findFragmentByTag("VisicomFragment");
+//
+//                    if (visicomFragment != null) {
+//                        // Если фрагмент существует, просто перейдите к нему
+//                        navController.navigate(R.id.nav_visicom);
+//
+//                    }
                 }
 
 
@@ -1147,7 +1190,6 @@ public class VisicomFragment extends Fragment{
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void visicomCost() {
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
@@ -1163,7 +1205,10 @@ public class VisicomFragment extends Fragment{
         geoText.setText(start);
         textViewTo.setText(finish);
 
-        String urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+        String urlCost = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
+        }
         Log.d(TAG, "visicomCost: " + urlCost);
         Map<String, String> sendUrlMapCost = null;
         try {
@@ -1182,39 +1227,48 @@ public class VisicomFragment extends Fragment{
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
-            long discountInt = Integer.parseInt(discountText);
-            long discount;
+            Log.d(TAG, "visicomCost: " + discountText);
+            if (discountText.matches("[+-]?\\d+") || discountText.equals("0")) {
+                long discountInt = Integer.parseInt(discountText);
+                long discount;
 
-                    VisicomFragment.firstCost = Long.parseLong(orderCost);
-                    discount = VisicomFragment.firstCost * discountInt / 100;
-                    VisicomFragment.firstCost = VisicomFragment.firstCost + discount;
-                    updateAddCost(String.valueOf(discount));
-                    VisicomFragment.text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
-                    VisicomFragment.MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
-                    VisicomFragment.firstCostForMin = VisicomFragment.firstCost;
-
-
-                    VisicomFragment.geoText.setVisibility(View.VISIBLE);
-
-                    if(MainActivity.countryState != null) {
-                        VisicomFragment.btn_clear_from.setVisibility(View.VISIBLE);
-                        VisicomFragment.btn_clear_to.setVisibility(View.VISIBLE);
-                    }
+                firstCost = Long.parseLong(orderCost);
+                discount = firstCost * discountInt / 100;
+                firstCost = VisicomFragment.firstCost + discount;
+                updateAddCost(String.valueOf(discount));
+                text_view_cost.setText(String.valueOf(VisicomFragment.firstCost));
+                MIN_COST_VALUE = (long) (VisicomFragment.firstCost * 0.6);
+                firstCostForMin = VisicomFragment.firstCost;
 
 
-                    textfrom.setVisibility(View.VISIBLE);
-                    VisicomFragment.textwhere.setVisibility(View.VISIBLE);
-                    VisicomFragment.num2.setVisibility(View.VISIBLE);
-                    VisicomFragment.textViewTo.setVisibility(View.VISIBLE);
+                geoText.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+//                if (MainActivity.countryState != null) {
+//                    Log.d(TAG, "visicomCost: MainActivity.countryState " + MainActivity.countryState);
+//                    btn_clear_from.setVisibility(View.VISIBLE);
+//                    btn_clear_to.setVisibility(View.VISIBLE);
+//                } else {
+//                    Log.d(TAG, "visicomCost: MainActivity.countryState is null");
+//                }
+                btn_clear_from.setVisibility(View.VISIBLE);
+                btn_clear_to.setVisibility(View.VISIBLE);
 
-                    VisicomFragment.btnAdd.setVisibility(View.VISIBLE);
-                    VisicomFragment.buttonBonus.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_minus.setVisibility(View.VISIBLE);
-                    VisicomFragment.text_view_cost.setVisibility(View.VISIBLE);
-                    VisicomFragment.btn_plus.setVisibility(View.VISIBLE);
-                    VisicomFragment.btnOrder.setVisibility(View.VISIBLE);
+                textfrom.setVisibility(View.VISIBLE);
+                num1.setVisibility(View.VISIBLE);
+                textwhere.setVisibility(View.VISIBLE);
+                num2.setVisibility(View.VISIBLE);
+                textViewTo.setVisibility(View.VISIBLE);
 
-                    VisicomFragment.btn_clear_from_text.setVisibility(View.GONE);
+                btnAdd.setVisibility(View.VISIBLE);
+                buttonBonus.setVisibility(View.VISIBLE);
+                btn_minus.setVisibility(View.VISIBLE);
+                text_view_cost.setVisibility(View.VISIBLE);
+                btn_plus.setVisibility(View.VISIBLE);
+                btnOrder.setVisibility(View.VISIBLE);
+
+                btn_clear_from_text.setVisibility(View.GONE);
+
+            }
         }
     }
 
@@ -1301,6 +1355,51 @@ public class VisicomFragment extends Fragment{
                 Log.e(TAG, "Error: " + t.getMessage());
             }
         });
+    }
+
+    public interface AutoClickListener {
+        void onAutoClick();
+    }
+
+    private AutoClickListener autoClickListener;
+
+    public void setAutoClickListener(AutoClickListener listener) {
+        this.autoClickListener = listener;
+    }
+
+    public void autoClickButton() {
+        // Check if the fragment is attached and the view is visible
+        if (isAdded() && isVisible()) {
+            List<String> settings = new ArrayList<>();
+
+            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+            if(isAdded()) {
+                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                Cursor cursor = database.rawQuery(query, null);
+
+                cursor.moveToFirst();
+
+                // Получите значения полей из первой записи
+
+
+                @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
+                Log.d(TAG, "autoClickButton:ToAdressString " + ToAdressString);
+                cursor.close();
+                database.close();
+
+                settings.add(Double.toString(0));
+                settings.add(Double.toString(0));
+                settings.add(Double.toString(toLatitude));
+                settings.add(Double.toString(toLongitude));
+                settings.add(getString(R.string.search));
+                settings.add(ToAdressString);
+            }
+            updateRoutMarker(settings);
+            geoText.setText(R.string.search);
+            gpsbut.performClick();
+        }
     }
 
 }

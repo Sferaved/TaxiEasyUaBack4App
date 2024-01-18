@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -40,6 +41,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -106,12 +108,10 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements VisicomFragment.AutoClickListener{
     private static final String TAG = "TAG_MAIN";
     public static String order_id;
     public static String invoiceId;
-
-
 
     public static final String DB_NAME = "data_12012024_0";
 
@@ -184,16 +184,15 @@ public class MainActivity extends AppCompatActivity {
         networkChangeReceiver = new NetworkChangeReceiver();
         verifyInternet = getString(R.string.verify_internet);
 
-
+// Initialize VisicomFragment and set AutoClickListener
+        VisicomFragment visicomFragment = new VisicomFragment();
+        visicomFragment.setAutoClickListener(this); // "this" refers to the MainActivity
 
     }
     @Override
     protected void onResume() {
         super.onResume();
-        // Получаем путь к базе данных
-
-
-    }
+   }
     @Override
     protected void onRestart() {
         super.onRestart();
@@ -584,6 +583,7 @@ public class MainActivity extends AppCompatActivity {
             finishAffinity();
         }
         if (item.getItemId() == R.id.gps) {
+
             eventGps();
         }
 
@@ -715,9 +715,7 @@ public class MainActivity extends AppCompatActivity {
             MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
-            String message = getString(R.string.gps_ok);
-            MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            onAutoClick();
         }
     }
     public void phoneNumberChange() {
@@ -1206,6 +1204,39 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{permission}, requestCode);
         }
     }
+
+    @Override
+    public void onAutoClick() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        VisicomFragment visicomFragment = (VisicomFragment) fragmentManager.findFragmentByTag("VisicomFragment");
+
+        if (visicomFragment != null) {
+            // Если фрагмент существует, просто перейдите к нему
+            navController.navigate(R.id.nav_visicom);
+            visicomFragment.autoClickButton();
+        } else {
+            // Фрагмент не существует, создаем и добавляем его
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            VisicomFragment newFragment = new VisicomFragment();
+            transaction.replace(R.id.nav_host_fragment_content_main, newFragment, "VisicomFragment");
+            transaction.commit();
+
+            // Ждем, чтобы убедиться, что фрагмент добавлен перед вызовом autoClickButton
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    VisicomFragment addedFragment = (VisicomFragment) getSupportFragmentManager().findFragmentByTag("VisicomFragment");
+                    if (addedFragment != null) {
+                        navController.navigate(R.id.nav_visicom);
+                        addedFragment.autoClickButton();
+                    }
+                }
+            }, 100);
+        }
+    }
+
+
 
     @SuppressLint("StaticFieldLeak")
     public class VerifyUserTask extends AsyncTask<Void, Void, Map<String, String>> {

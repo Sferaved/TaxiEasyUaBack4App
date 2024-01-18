@@ -316,4 +316,5 @@
     <string name="time_out_text">Отмена поездки по таймауту оплаты. Попробуйте еще.</string>
     <string name="pay_cancel">Поездка отменена  через отсутствие оплаты. Попробуйте еще.</string>
     <string name="ex_st_canceled">Заказ снят. Поробуйте еще.</string>
+    <string name="search">Поиск адреса ...</string>
 </resources>
