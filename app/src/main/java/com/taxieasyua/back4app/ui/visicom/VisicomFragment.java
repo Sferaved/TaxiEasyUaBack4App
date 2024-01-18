@@ -442,8 +442,8 @@ public class VisicomFragment extends Fragment{
             startActivity(intent);
         } else {
 
-            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//            MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+//            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
     }
@@ -909,8 +909,39 @@ public class VisicomFragment extends Fragment{
                     checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                 } else {
-                    firstLocation();
-                }
+                    if (isAdded() && isVisible()) {
+                        List<String> settings = new ArrayList<>();
+
+                        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                        if(isAdded()) {
+                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                            Cursor cursor = database.rawQuery(query, null);
+
+                            cursor.moveToFirst();
+
+                            // Получите значения полей из первой записи
+
+
+                            @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                            @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                            @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
+                            Log.d(TAG, "autoClickButton:ToAdressString " + ToAdressString);
+                            cursor.close();
+                            database.close();
+
+                            settings.add(Double.toString(0));
+                            settings.add(Double.toString(0));
+                            settings.add(Double.toString(toLatitude));
+                            settings.add(Double.toString(toLongitude));
+                            settings.add(getString(R.string.search));
+                            settings.add(ToAdressString);
+                        }
+                        updateRoutMarker(settings);
+                        geoText.setText(R.string.search);
+                        firstLocation();
+                    }
+                    }
+
             }
 
         });
@@ -989,20 +1020,19 @@ public class VisicomFragment extends Fragment{
 
 //            textfrom.setVisibility(View.INVISIBLE);
 //            num1.setVisibility(View.VISIBLE);
-            visicomCost();
+
+
+                visicomCost();
+
 //            new Handler().postDelayed(new Runnable() {
 //                @Override
 //                public void run() {
-//                    if (isAdded()) {
-//                        geoText.setText(R.string.search);
-//                        geoText.setVisibility(View.VISIBLE);
 //
-//                    }
 //                }
 //            }, 100);
 
-        }
 
+    }
     }
 
     private void firstLocation() {
@@ -1098,19 +1128,7 @@ public class VisicomFragment extends Fragment{
                         visicomCost();
 //                    }
 
-//                    NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-//                    FragmentManager fragmentManager = getChildFragmentManager();
-//                    VisicomFragment visicomFragment = (VisicomFragment) fragmentManager.findFragmentByTag("VisicomFragment");
-//
-//                    if (visicomFragment != null) {
-//                        // Если фрагмент существует, просто перейдите к нему
-//                        navController.navigate(R.id.nav_visicom);
-//
-//                    }
                 }
-
-
-
             }
         };
         if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
@@ -1226,6 +1244,7 @@ public class VisicomFragment extends Fragment{
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
+            Log.d(TAG, "visicomCost: ++++");
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
             Log.d(TAG, "visicomCost: " + discountText);
             if (discountText.matches("[+-]?\\d+") || discountText.equals("0")) {
@@ -1398,7 +1417,7 @@ public class VisicomFragment extends Fragment{
             }
             updateRoutMarker(settings);
             geoText.setText(R.string.search);
-            gpsbut.performClick();
+            firstLocation();
         }
     }
 

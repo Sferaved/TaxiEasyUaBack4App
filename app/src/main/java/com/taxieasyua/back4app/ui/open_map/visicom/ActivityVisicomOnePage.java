@@ -209,9 +209,9 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         });
 
         fromEditAddress = findViewById(R.id.textGeo);
-        if(VisicomFragment.geoText.getText().toString() != null) {
-            fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
-        }
+//        if(VisicomFragment.geoText.getText().toString() != null) {
+//            fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
+//        }
 
         int inputType = fromEditAddress.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         fromEditAddress.setInputType(inputType);
