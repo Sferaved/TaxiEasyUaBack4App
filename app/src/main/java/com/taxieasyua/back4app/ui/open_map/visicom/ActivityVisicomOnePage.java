@@ -328,7 +328,15 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(start.equals("ok")){
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(fromEditAddress.getWindowToken(), 0);
 
+                }
+                if(end.equals("ok")) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(toEditAddress.getWindowToken(), 0);
+                }
                 if(start.equals("ok")) {
                     verifyRoutStart = false;
                     verifyBuildingStart = false;
@@ -391,21 +399,13 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                     }
 
                     if (verifyRoutFinish && verifyBuildingFinish) {
-                        if(start.equals("ok")){
-                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(fromEditAddress.getWindowToken(), 0);
-
-                        }
-                        if(end.equals("ok")) {
-                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(toEditAddress.getWindowToken(), 0);
-                        }
                         new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                finish();
-                            }
-                        }, 100);
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                        }, 200);
+
                     }
                 }
 

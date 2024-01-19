@@ -719,20 +719,6 @@ public class VisicomFragment extends Fragment{
 
         textViewTo = binding.textTo;
 
-//        SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-//        Cursor cursor = database.rawQuery(query, null);
-//
-//        cursor.moveToFirst();
-//
-//        @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
-//        Log.d(TAG, "autoClickButton:ToAdressString " + ToAdressString);
-//        cursor.close();
-//        database.close();
-//
-//        if(ToAdressString.equals()) {
-//            textViewTo.setText(getString(R.string.on_city_tv));
-//        }
-
 
         addresses = new ArrayList<>();
 
@@ -856,7 +842,7 @@ public class VisicomFragment extends Fragment{
             }
         });
         btn_clear_from = binding.btnClearFrom;
-//        btn_clear_from.setVisibility(View.INVISIBLE);
+
         btn_clear_from.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -868,7 +854,6 @@ public class VisicomFragment extends Fragment{
             }
         });
         btn_clear_to = binding.btnClearTo;
-//        btn_clear_to.setVisibility(View.INVISIBLE);
         btn_clear_to.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1010,23 +995,21 @@ public class VisicomFragment extends Fragment{
         // Изменяем текст элемента меню
         MainActivity.navVisicomMenuItem.setTitle(newTitle);
 
-
-
-
-
         if(!newRout()) {
+
             btn_clear_from_text.setVisibility(View.INVISIBLE);
-            btn_clear_from.setVisibility(View.INVISIBLE);
-
-            textfrom.setVisibility(View.INVISIBLE);
-            num1.setVisibility(View.INVISIBLE);
-
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     visicomCost();
                 }
             }, 100);
+        } else {
+
+            btn_clear_from.setVisibility(View.INVISIBLE);
+
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
         }
     }
 
