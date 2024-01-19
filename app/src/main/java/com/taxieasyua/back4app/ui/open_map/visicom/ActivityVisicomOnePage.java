@@ -20,6 +20,7 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -209,9 +210,6 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         });
 
         fromEditAddress = findViewById(R.id.textGeo);
-//        if(VisicomFragment.geoText.getText().toString() != null) {
-//            fromEditAddress.setText(VisicomFragment.geoText.getText().toString());
-//        }
 
         int inputType = fromEditAddress.getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         fromEditAddress.setInputType(inputType);
@@ -393,13 +391,36 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                     }
 
                     if (verifyRoutFinish && verifyBuildingFinish) {
-                       finish();
-//                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        if(start.equals("ok")){
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(fromEditAddress.getWindowToken(), 0);
+
+                        }
+                        if(end.equals("ok")) {
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(toEditAddress.getWindowToken(), 0);
+                        }
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                finish();
+                            }
+                        }, 100);
                     }
                 }
 
             }
         });
+        if(start.equals("ok")){
+            fromEditAddress.requestFocus();
+            fromEditAddress.setSelection(fromEditAddress.getText().toString().length());
+            KeyboardUtils.showKeyboard(getApplicationContext(), fromEditAddress);
+        }
+        if(end.equals("ok")) {
+            toEditAddress.requestFocus();
+            toEditAddress.setSelection(toEditAddress.getText().toString().length());
+            KeyboardUtils.showKeyboard(getApplicationContext(), toEditAddress);
+        }
     }
 
 
