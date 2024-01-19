@@ -352,7 +352,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
     public void reCount() {
         Log.d(TAG, "onDismiss: rout " + rout);
-        if(rout.equals("home")) {
+        if (rout != null && rout.equals("home")) {
             String urlCost = null;
             Map<String, String> sendUrlMapCost = null;
             try {
@@ -385,7 +385,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
 
             }
         }
-        if(rout.equals("visicom")) {
+        if (rout != null && rout.equals("visicom")) {
             String urlCost = null;
             Map<String, String> sendUrlMapCost = null;
             try {
@@ -421,7 +421,7 @@ public class MyBottomSheetBonusFragment extends BottomSheetDialogFragment {
             }
 
         }
-        if(rout.equals("marker")) {
+        if (rout != null && rout.equals("marker")) {
             String urlCost = null;
             Map<String, String> sendUrlMapCost = null;
             try {

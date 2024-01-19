@@ -1016,23 +1016,18 @@ public class VisicomFragment extends Fragment{
 
         if(!newRout()) {
             btn_clear_from_text.setVisibility(View.INVISIBLE);
-//            btn_clear_from.setVisibility(View.INVISIBLE);
+            btn_clear_from.setVisibility(View.INVISIBLE);
 
-//            textfrom.setVisibility(View.INVISIBLE);
-//            num1.setVisibility(View.VISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
 
-
-                visicomCost();
-
-//            new Handler().postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//
-//                }
-//            }, 100);
-
-
-    }
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    visicomCost();
+                }
+            }, 100);
+        }
     }
 
     private void firstLocation() {

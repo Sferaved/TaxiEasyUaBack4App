@@ -1523,7 +1523,8 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                                                 settings.add(Double.toString(coordinates[1]));
                                                 settings.add(Double.toString(coordinates[0]));
                                                 Log.d(TAG, "processAddressData:fromEditAddress.getText().toString() " + fromEditAddress.getText().toString());
-                                                settings.add(fromEditAddress.getText().toString());
+
+                                                settings.add(VisicomFragment.geoText.getText().toString());
                                                 settings.add(addressesList.get(position));
                                                 updateRoutMarker(settings);
 //                                            }
