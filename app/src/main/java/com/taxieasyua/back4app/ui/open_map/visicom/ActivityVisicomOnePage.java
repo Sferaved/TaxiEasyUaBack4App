@@ -887,8 +887,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                 }
 
                 url = url + "?categories=adr_address&text=" + inputText
-                        + "&l=20"+ "&text=" + inputText + "&key=" + apiKey;
-
+                        + "&l=20" + "&key=" + apiKey;
 
             }
 
@@ -1251,6 +1250,18 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                 addresses = new ArrayList<>();
                 coordinatesList = new ArrayList<>(); // Список для хранения координат
                 Log.d(TAG, "processAddressData:jsonResponse 2222" + jsonResponse);
+                if(jsonResponse.length() ==0) {
+
+                    if (!point.equals("finish")) {
+                        String startPoint = fromEditAddress.getText().toString();
+                        VisicomFragment.geoText.setText(startPoint);
+                    } else  {
+                        String toPoint = toEditAddress.getText().toString();
+                        VisicomFragment.geoText.setText(toPoint);
+                    }
+                    finish();
+
+                }
                 JSONObject properties = jsonResponse.getJSONObject("properties");
                 JSONObject geoCentroid = jsonResponse.getJSONObject("geo_centroid");
 
@@ -1432,7 +1443,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                     addressListView.setItemChecked(0, true);
 
                     addressListView.setOnItemClickListener((parent, viewC, position, id) -> {
-
+                        Log.d(TAG, "processAddressData:position3333 " + position);
                         positionChecked = position;
                         startMarker = "ok";
                         finishMarker = "no";
@@ -1454,7 +1465,7 @@ public class ActivityVisicomOnePage extends AppCompatActivity
 
                         if (position == addressesList.size() - 1) {
                             Intent intent = new Intent(getApplicationContext(), OpenStreetMapVisicomActivity.class);
-                           
+
                             intent.putExtra("startMarker", startMarker);
                             intent.putExtra("finishMarker", finishMarker);
 
@@ -1464,23 +1475,16 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                             double[] coordinates = coordinatesList.get(position);
 
                             if (point.equals("start")) {
+                                Log.d(TAG, "processAddressData:coordinates " + coordinates.toString());
                                 startPoint = addressesList.get(position);
                                 fromEditAddress.setText(startPoint);
                                 fromEditAddress.setSelection(startPoint.length());
-                                if (fromEditAddress.getText().toString().contains("\t")) {
-                                    verifyRoutStart = true;
-                                    verifyBuildingStart = false;
-                                }
-                                if (fromEditAddress.getText().toString().contains("\f")) {
-                                    verifyRoutStart = false;
-                                    verifyBuildingStart = true;
-                                }
-                                if (!verifyBuildingStart) {
-                                    verifyRoutStart = true;
+//
                                     List<String> settings = new ArrayList<>();
 
                                     settings.add(Double.toString(coordinates[1]));
                                     settings.add(Double.toString(coordinates[0]));
+                                     Log.d(TAG, "processAddressData:settings ddd " + settings.toString());
                                     if (toEditAddress.getText().toString().equals(getString(R.string.on_city_tv))) {
                                         settings.add(Double.toString(coordinates[1]));
                                         settings.add(Double.toString(coordinates[0]));
@@ -1506,13 +1510,14 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                                         settings.add(addressesList.get(position));
                                         settings.add(toEditAddress.getText().toString());
                                     }
+                                        Log.d(TAG, "processAddressData:settings " + settings);
                                     updateRoutMarker(settings);
                                     updateMyPosition(coordinates[1], coordinates[0], startPoint, getApplicationContext());
                                     VisicomFragment.geoText.setText(startPoint);
                                     Log.d(TAG, "processAddressData: startPoint " + startPoint);
 
                                 }
-                            } else if (point.equals("finish")) {
+                             else if (point.equals("finish")) {
                                 finishPoint = addressesList.get(position);
                                 toEditAddress.setText(finishPoint);
                                 toEditAddress.setSelection(finishPoint.length());
