@@ -11,7 +11,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -53,8 +52,6 @@ import com.taxieasyua.back4app.ui.mono.cancel.RequestCancelMono;
 import com.taxieasyua.back4app.ui.mono.cancel.ResponseCancelMono;
 import com.taxieasyua.back4app.ui.mono.payment.RequestPayMono;
 import com.taxieasyua.back4app.ui.mono.payment.ResponsePayMono;
-import com.taxieasyua.back4app.ui.payment_system.PayApi;
-import com.taxieasyua.back4app.ui.payment_system.ResponsePaySystem;
 
 import java.io.IOException;
 import java.text.ParseException;

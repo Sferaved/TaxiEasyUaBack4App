@@ -32,7 +32,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -70,37 +69,23 @@ import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
-import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
-import com.taxieasyua.back4app.utils.ip.CountryResponse;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
-import com.taxieasyua.back4app.utils.ip.RetrofitClient;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
 import com.taxieasyua.back4app.utils.user.ApiServiceUser;
 import com.taxieasyua.back4app.utils.user.UserResponse;
 
 import org.json.JSONException;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -113,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static String order_id;
     public static String invoiceId;
 
-    public static final String DB_NAME = "data_12012024_2";
+    public static final String DB_NAME = "data_21012024_26";
 
     /**
      * Table section
@@ -151,11 +136,12 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static MenuItem navVisicomMenuItem;
     public static String countryState;
     private static String verifyInternet;
-
+    public static final long MAX_TASK_EXECUTION_TIME_SECONDS = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         try {
             initDB();
         } catch (MalformedURLException | JSONException | InterruptedException ignored) {
@@ -856,6 +842,12 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         Log.d(TAG, "newUser: " + userEmail);
         if(userEmail.equals("email")) {
+            try {
+                FirebaseApp.initializeApp(MainActivity.this);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception during authentication", e);
+                e.printStackTrace();
+            }
             Toast.makeText(this, R.string.checking, Toast.LENGTH_SHORT).show();
             startFireBase();
         } else {
@@ -865,17 +857,17 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     }
 
     private void startFireBase() {
+        Toast.makeText(this, R.string.account_verify, Toast.LENGTH_SHORT).show();
         startSignInInBackground();
     }
     private void startSignInInBackground() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                // Инициализация FirebaseApp
-                FirebaseApp.initializeApp(MainActivity.this);
+                try {
                 Log.d(TAG, "run: ");
                 // Choose authentication providers
-                List<AuthUI.IdpConfig> providers = Arrays.asList(
+                List<AuthUI.IdpConfig> providers = Collections.singletonList(
                         new AuthUI.IdpConfig.GoogleBuilder().build());
 
                 // Create and launch sign-in intent
@@ -883,18 +875,12 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
                         .build();
-                try {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            signInLauncher.launch(signInIntent);
-                        }
-                    });
-                } catch (NullPointerException e) {
-                    Log.e(TAG, "NullPointerException during sign-in launch", e);
+
+                    runOnUiThread(() -> signInLauncher.launch(signInIntent));
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception during sign-in launch", e);
                     e.printStackTrace();
                 }
-
             }
         });
         thread.start();
@@ -903,14 +889,11 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
             
             new FirebaseAuthUIActivityResultContract(),
-            new ActivityResultCallback<FirebaseAuthUIAuthenticationResult>() {
-                @Override
-                public void onActivityResult(FirebaseAuthUIAuthenticationResult result) {
-                    try {
-                        onSignInResult(result, getSupportFragmentManager());
-                    } catch (MalformedURLException | JSONException | InterruptedException e) {
-                        Log.d(TAG, "onCreate:" + new RuntimeException(e));
-                    }
+            result -> {
+                try {
+                    onSignInResult(result, getSupportFragmentManager());
+                } catch (MalformedURLException | JSONException | InterruptedException e) {
+                    Log.d(TAG, "onCreate:" + new RuntimeException(e));
                 }
             }
     );
@@ -925,23 +908,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                updateRecordsUserInfo("email", user.getEmail(), getApplicationContext());
-
-//                addUser(user.getDisplayName(), user.getEmail()) ;
-                addUserNoName(user.getEmail(), getApplicationContext());
-                userPhoneFromServer (user.getEmail());
-
-                getCardToken("fondy", TABLE_FONDY_CARDS, user.getEmail());
-                getCardToken("mono", TABLE_MONO_CARDS, user.getEmail());
-
-                cv.put("verifyOrder", "1");
-
-                SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
-                database.close();
-                new GetPublicIPAddressTask(fm).execute();
-
-
+                assert user != null;
+                settingsNewUser(user.getEmail());
+                Toast.makeText(this, R.string.city_search, Toast.LENGTH_SHORT).show();
+                startGetPublicIPAddressTask(fm);
             } else {
 
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.firebase_error));
@@ -950,56 +920,88 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                 database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                 database.close();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
-        } catch (NullPointerException e) {
-
+        } catch (Exception e) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.firebase_error));
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
             cv.put("verifyOrder", "0");
             SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
             database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
             database.close();
+            VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
         }
-//        VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+    }
+    private void settingsNewUser (String email) {
+        // Assuming this code is inside a method or a runnable block
+
+// Task 1: Update user info in a separate thread
+        Thread updateUserInfoThread = new Thread(() -> {
+            ContentValues cv = new ContentValues();
+            updateRecordsUserInfo("email", email, getApplicationContext());
+            cv.put("verifyOrder", "1");
+
+            SQLiteDatabase database = getApplicationContext().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+            database.update(MainActivity.TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
+            database.close();
+        });
+        updateUserInfoThread.start();
+
+// Task 2: Add user with no name in a separate thread
+        Thread addUserNoNameThread = new Thread(() -> {
+            addUserNoName(email, getApplicationContext());
+        });
+        addUserNoNameThread.start();
+
+// Task 3: Fetch user phone information from the server in a separate thread
+        Thread userPhoneThread = new Thread(() -> {
+            userPhoneFromServer(email);
+        });
+        userPhoneThread.start();
+
+// Task 4: Get card token for "fondy" in a separate thread
+        Thread fondyCardThread = new Thread(() -> {
+            getCardToken("fondy", TABLE_FONDY_CARDS, email);
+        });
+        fondyCardThread.start();
+
+// Task 5: Get card token for "mono" in a separate thread
+        Thread monoCardThread = new Thread(() -> {
+            getCardToken("mono", TABLE_MONO_CARDS, email);
+        });
+        monoCardThread.start();
+
+// Wait for all threads to finish (optional)
+        try {
+            updateUserInfoThread.join();
+            addUserNoNameThread.join();
+            userPhoneThread.join();
+            fondyCardThread.join();
+            monoCardThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+    // Ограничение времени в секундах
+
+    private void startGetPublicIPAddressTask(FragmentManager fm) {
+        AsyncTask<Void, Void, String> getPublicIPAddressTask = new GetPublicIPAddressTask(fm);
+
+        try {
+
+            getPublicIPAddressTask.execute().get(MAX_TASK_EXECUTION_TIME_SECONDS, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // Обработка исключения, возникающего при превышении времени выполнения задачи
+            e.printStackTrace();
+            // Дополнительные действия...
+            getCityByIP("31.202.139.47", fm);
+        }
     }
 
-    private void addUser(String displayName , String userEmail) {
-        String urlString = "https://m.easy-order-taxi.site/android/addUser/" + displayName  + "/" + userEmail;
-
-        Callable<Void> addUserCallable = () -> {
-            URL url = new URL(urlString);
-            Log.d("TAG", "sendURL: " + urlString);
-
-            HttpsURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpsURLConnection) url.openConnection();
-                urlConnection.setDoInput(true);
-//                urlConnection.getResponseCode();
-                Log.d("TAG", "addUser: urlConnection.getResponseCode(); " + urlConnection.getResponseCode());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-            }
-
-            return null;
-        };
-
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<Void> addUserFuture = executorService.submit(addUserCallable);
-
-        // Дождитесь завершения выполнения задачи с тайм-аутом
-        try {
-            addUserFuture.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            // Обработка ошибок
-            e.printStackTrace();
-        } finally {
-            // Завершите исполнителя
-            executorService.shutdown();
-        }
+    private void handleTaskResult(String result) {
+        // Обработка результата задачи
+        // ...
     }
 
     public static void addUserNoName(String email, Context context) {
@@ -1462,6 +1464,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 // Log the exception
                 Log.e(TAG, "Exception in doInBackground: " + e.getMessage());
                 // Return null or handle the exception as needed
+                getCityByIP("31.202.139.47",fragmentManager);
                 return null;
             }
         }
@@ -1471,45 +1474,18 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             try {
                 if (ipAddress != null) {
                     Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
-//                getCountryByIP(ipAddress);
                     getCityByIP(ipAddress, fragmentManager);
                 } else {
-//                getCountryByIP("31.202.139.47");
                     getCityByIP("31.202.139.47",fragmentManager);
                 }
             } catch (Exception e) {
                 // Log the exception
                 Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
                 // Handle the exception as needed
+                getCityByIP("31.202.139.47",fragmentManager);
             }
 
         }
-    }
-    public static void getCountryByIP(String ipAddress) {
-        ApiServiceCountry apiService = RetrofitClient.getClient().create(ApiServiceCountry.class);
-        Call<CountryResponse> call = apiService.getCountryByIP(ipAddress);
-
-        call.enqueue(new Callback<CountryResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<CountryResponse> call, @NonNull Response<CountryResponse> response) {
-                if (response.isSuccessful()) {
-                    CountryResponse countryResponse = response.body();
-                    if (countryResponse != null) {
-                        countryState = countryResponse.getCountry();
-                    } else {
-                        countryState = "UA";
-                    }
-                } else {
-                    countryState = "UA";
-                }
-                Log.d(TAG, "countryState  " + countryState);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<CountryResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "Error: " + t.getMessage());
-            }
-        });
     }
 
     private static void getCityByIP(String ip, FragmentManager fm) {
@@ -1528,13 +1504,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                         Log.d("TAG", "onResponse:result " + result);
 
                         MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(result);
-//                        bottomSheetDialogFragment.show(fm, bottomSheetDialogFragment.getTag());
-                        // Добавим проверку на состояние фрагмента перед вызовом show()
+
                         if (!fm.isStateSaved()) {
                             bottomSheetDialogFragment.show(fm, bottomSheetDialogFragment.getTag());
                         } else {
-                            // Состояние фрагмента уже было сохранено, невозможно выполнить транзакцию
-                            // Обработайте это событие соответствующим образом (возможно, отложите показ фрагмента)
                             Log.w("TAG", "Fragment state is already saved. Cannot perform transaction.");
                         }
                     }

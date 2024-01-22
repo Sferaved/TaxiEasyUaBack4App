@@ -41,9 +41,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -78,6 +75,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 import retrofit2.Call;
@@ -136,6 +136,7 @@ public class VisicomFragment extends Fragment{
         View root = binding.getRoot();
         progressBar = binding.progressBar;
         progressBar.setVisibility(View.VISIBLE);
+
         return root;
     }
     @Override
@@ -954,14 +955,19 @@ public class VisicomFragment extends Fragment{
             btn_clear_to.setVisibility(View.INVISIBLE);
             FragmentManager fragmentManager = getChildFragmentManager();
 
-            new GetPublicIPAddressTask(fragmentManager, city).execute();
-        } else {
-            btn_clear_from_text.setVisibility(View.VISIBLE);
-            textfrom.setVisibility(View.VISIBLE);
-            num1.setVisibility(View.VISIBLE);
-            btn_clear_from_text.setVisibility(View.VISIBLE);
-
+            try {
+                new GetPublicIPAddressTask(fragmentManager, city).execute().get(MainActivity.MAX_TASK_EXECUTION_TIME_SECONDS, TimeUnit.SECONDS);
+            } catch (ExecutionException | InterruptedException | TimeoutException e) {
+                MainActivity.countryState = "UA";
+            }
         }
+//        else {
+//            btn_clear_from_text.setVisibility(View.VISIBLE);
+//            textfrom.setVisibility(View.VISIBLE);
+//            num1.setVisibility(View.VISIBLE);
+//            btn_clear_from_text.setVisibility(View.VISIBLE);
+//
+//        }
         switch (city){
             case "Kyiv City":
                 cityMenu = getString(R.string.city_kyiv);
@@ -995,7 +1001,11 @@ public class VisicomFragment extends Fragment{
         // Изменяем текст элемента меню
         MainActivity.navVisicomMenuItem.setTitle(newTitle);
 
-        if(!newRout()) {
+        if (newRout()) {
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+        } else {
 
             btn_clear_from_text.setVisibility(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
@@ -1004,12 +1014,6 @@ public class VisicomFragment extends Fragment{
                     visicomCost();
                 }
             }, 100);
-        } else {
-
-            btn_clear_from.setVisibility(View.INVISIBLE);
-
-            textfrom.setVisibility(View.INVISIBLE);
-            num1.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -1204,7 +1208,7 @@ public class VisicomFragment extends Fragment{
         textViewTo.setText(finish);
 
         String urlCost = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             urlCost = getTaxiUrlSearchMarkers("costSearchMarkers", requireActivity());
         }
         Log.d(TAG, "visicomCost: " + urlCost);
@@ -1222,7 +1226,15 @@ public class VisicomFragment extends Fragment{
         assert orderCost != null;
         if (orderCost.equals("0")) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+
+        // Проверяем, что активность не в состоянии сохранения
+            if (!requireActivity().isFinishing() && !requireActivity().isDestroyed()) {
+                // Проверяем, что фрагмент готов к выполнению транзакции
+                if (!getChildFragmentManager().isStateSaved()) {
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                }
+            }
+
         } else {
             Log.d(TAG, "visicomCost: ++++");
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
@@ -1242,13 +1254,7 @@ public class VisicomFragment extends Fragment{
 
                 geoText.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.INVISIBLE);
-//                if (MainActivity.countryState != null) {
-//                    Log.d(TAG, "visicomCost: MainActivity.countryState " + MainActivity.countryState);
-//                    btn_clear_from.setVisibility(View.VISIBLE);
-//                    btn_clear_to.setVisibility(View.VISIBLE);
-//                } else {
-//                    Log.d(TAG, "visicomCost: MainActivity.countryState is null");
-//                }
+
                 btn_clear_from.setVisibility(View.VISIBLE);
                 btn_clear_to.setVisibility(View.VISIBLE);
 
@@ -1308,6 +1314,7 @@ public class VisicomFragment extends Fragment{
             } catch (Exception e) {
                 // Log the exception
                 Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
+                MainActivity.countryState = "UA";
                 // Handle the exception as needed
             }
         }
