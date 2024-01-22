@@ -2,8 +2,8 @@
     <string name="application">PAS2</string>
 
 
-    <string name="version_code">2.1001</string>
-    <string name="version">Версія: 2.1001</string>
+    <string name="version_code">2.1002</string>
+    <string name="version">Версія: 2.1002</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -320,4 +320,5 @@
     <string name="search">Пошук адреси...</string>
     <string name="account_verify">Відбувається перевірка реєстрації...</string>
     <string name="city_search">Визначається Ваше місцезнаходження...</string>
+    <string name="city_loc">місто</string>
 </resources>
