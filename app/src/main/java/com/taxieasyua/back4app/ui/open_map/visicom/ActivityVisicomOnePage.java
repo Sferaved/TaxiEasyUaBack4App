@@ -1312,13 +1312,14 @@ public class ActivityVisicomOnePage extends AppCompatActivity
                     settings.add(String.valueOf(toLongitude));
 
                     if (!point.equals("finish")) {
-                        String startPoint = fromEditAddress.getText().toString()+ ", " + getString(R.string.city_loc) + " " + city;
+                        String startPoint = fromEditAddress.getText().toString().replaceAll("[\\d\\s]+$", "")+ ", " + getString(R.string.city_loc) + " " + city;
                         Log.d(TAG, "processAddressData:startPoint " + startPoint);
                         settings.add(startPoint);
                         settings.add(finish);
                         VisicomFragment.geoText.setText(startPoint);
                     } else  {
-                        String toPoint = toEditAddress.getText().toString() + ", " + getString(R.string.city_loc) + " " + city;
+                        String toPoint = toEditAddress.getText().toString().replaceAll("[\\d\\s]+$", "") + ", " + getString(R.string.city_loc) + " " + city;
+                        Log.d(TAG, "processAddressData:startPoint " + toPoint);
                         settings.add(start);
                         settings.add(toPoint);
                         VisicomFragment.geoText.setText(toPoint);
