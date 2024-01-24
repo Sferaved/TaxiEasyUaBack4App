@@ -686,7 +686,7 @@ public class HomeFragment extends Fragment {
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            bottomSheetDialogFragment = new MyPhoneDialogFragment("home", text_view_cost.getText().toString());
+            bottomSheetDialogFragment = new MyPhoneDialogFragment("home", text_view_cost.getText().toString(), true);
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }

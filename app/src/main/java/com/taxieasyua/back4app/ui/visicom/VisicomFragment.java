@@ -384,7 +384,7 @@ public class VisicomFragment extends Fragment{
             getPhoneNumber();
         }
         if (!verifyPhone(requireActivity())) {
-            bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString());
+            bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString(), true);
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             progressBar.setVisibility(View.INVISIBLE);
         }
@@ -1006,7 +1006,6 @@ public class VisicomFragment extends Fragment{
             textfrom.setVisibility(View.INVISIBLE);
             num1.setVisibility(View.INVISIBLE);
         } else {
-
             btn_clear_from_text.setVisibility(View.INVISIBLE);
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -1014,6 +1013,8 @@ public class VisicomFragment extends Fragment{
                     visicomCost();
                 }
             }, 100);
+
+
         }
     }
 
@@ -1193,6 +1194,7 @@ public class VisicomFragment extends Fragment{
     }
 
     private void visicomCost() {
+
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         Cursor cursor = database.rawQuery(query, null);
@@ -1273,6 +1275,11 @@ public class VisicomFragment extends Fragment{
 
                 btn_clear_from_text.setVisibility(View.GONE);
 
+            }
+            if (!verifyPhone(requireActivity())) {
+                bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString(), false);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                progressBar.setVisibility(View.INVISIBLE);
             }
         }
     }

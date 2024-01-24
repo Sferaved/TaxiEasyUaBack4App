@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static String order_id;
     public static String invoiceId;
 
-    public static final String DB_NAME = "data_21012024_26";
+    public static final String DB_NAME = "data_23012024_8";
 
     /**
      * Table section
