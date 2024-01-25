@@ -66,6 +66,7 @@ import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
 import com.taxieasyua.back4app.utils.ip.CountryResponse;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.ip.RetrofitClient;
+import com.taxieasyua.back4app.utils.permissions.UserPermissions;
 
 import org.json.JSONException;
 
@@ -93,7 +94,7 @@ public class VisicomFragment extends Fragment{
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     FloatingActionButton fab_call;
 
-    public static AppCompatButton button,  btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
+    public static AppCompatButton btn_minus, btn_plus, btnOrder, buttonBonus, gpsbut;
     public static TextView geoText;
     static String api;
 
@@ -127,6 +128,7 @@ public class VisicomFragment extends Fragment{
     private String cityMenu;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback locationCallback;
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -650,6 +652,8 @@ public class VisicomFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
+        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
+        api =  stringList.get(2);
 
 
         fab_call = binding.fabCall;
@@ -672,8 +676,8 @@ public class VisicomFragment extends Fragment{
         textfrom.setVisibility(View.INVISIBLE);
         num1.setVisibility(View.INVISIBLE);
 
-        List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
-        api =  stringList.get(2);
+
+
 
 
         addCost = 0;
@@ -787,6 +791,9 @@ public class VisicomFragment extends Fragment{
                     }
 
                     Log.d(TAG, "onClick: pay_method " + pay_method );
+
+
+
                     List<String> stringListCity = logCursor(MainActivity.CITY_INFO, requireActivity());
                     String card_max_pay = stringListCity.get(4);
                     Log.d(TAG, "onClick:card_max_pay " + card_max_pay);
@@ -1016,6 +1023,7 @@ public class VisicomFragment extends Fragment{
 
 
         }
+
     }
 
     private void firstLocation() {
@@ -1267,6 +1275,7 @@ public class VisicomFragment extends Fragment{
                 textViewTo.setVisibility(View.VISIBLE);
 
                 btnAdd.setVisibility(View.VISIBLE);
+
                 buttonBonus.setVisibility(View.VISIBLE);
                 btn_minus.setVisibility(View.VISIBLE);
                 text_view_cost.setVisibility(View.VISIBLE);

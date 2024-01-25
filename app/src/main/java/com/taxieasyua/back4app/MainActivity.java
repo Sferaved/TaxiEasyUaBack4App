@@ -72,6 +72,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
+import com.taxieasyua.back4app.utils.permissions.UserPermissions;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
 import com.taxieasyua.back4app.utils.user.ApiServiceUser;
 import com.taxieasyua.back4app.utils.user.UserResponse;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static String order_id;
     public static String invoiceId;
 
-    public static final String DB_NAME = "data_23012024_8";
+    public static final String DB_NAME = "data_25012024_0";
 
     /**
      * Table section
@@ -203,7 +204,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 " phone_number text," +
                 " email text," +
                 " username text," +
-                " bonus text);");
+                " bonus text," +
+                " card_pay text," +
+                " bonus_pay text);");
 
         cursorDb = database.query(TABLE_USER_INFO, null, null, null, null, null, null);
         if (cursorDb.getCount() == 0) {
@@ -456,7 +459,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     }
     private void insertUserInfo() {
 
-        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?);";
+        String sql = "INSERT INTO " + TABLE_USER_INFO + " VALUES(?,?,?,?,?,?,?,?);";
         SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
         SQLiteStatement statement = database.compileStatement(sql);
         database.beginTransaction();
@@ -467,6 +470,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             statement.bindString(4, "email");
             statement.bindString(5, "username");
             statement.bindString(6, "0");
+            statement.bindString(7, "1");
+            statement.bindString(8, "1");
 
             statement.execute();
             database.setTransactionSuccessful();
@@ -852,6 +857,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             startFireBase();
         } else {
             new VerifyUserTask().execute();
+            UserPermissions.getPermissions(userEmail, getApplicationContext());
+
         }
 
     }
