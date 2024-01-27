@@ -72,6 +72,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
+import com.taxieasyua.back4app.utils.messages.UsersMessages;
 import com.taxieasyua.back4app.utils.permissions.UserPermissions;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
 import com.taxieasyua.back4app.utils.user.ApiServiceUser;
@@ -858,6 +859,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         } else {
             new VerifyUserTask().execute();
             UserPermissions.getPermissions(userEmail, getApplicationContext());
+
+            new Thread(() -> {
+                new UsersMessages(userEmail, getApplicationContext());
+            }).start();
 
         }
 
