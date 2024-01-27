@@ -62,7 +62,7 @@ public class UsersMessages {
     }
     private void notifyUser (String message) {
 
-        String title = context.getString(R.string.new_message);
+        String title = context.getString(R.string.new_message) + " " + context.getString(R.string.app_name) ;
 
         NotificationHelper.showNotificationMessage(this.context, title, message);
 
