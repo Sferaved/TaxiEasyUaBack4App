@@ -859,11 +859,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         } else {
             new VerifyUserTask().execute();
             UserPermissions.getPermissions(userEmail, getApplicationContext());
-
-            new Thread(() -> {
-                new UsersMessages(userEmail, getApplicationContext());
-            }).start();
-
+            new UsersMessages(userEmail, getApplicationContext());
         }
 
     }

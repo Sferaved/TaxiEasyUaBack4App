@@ -32,11 +32,11 @@ public class UsersMessages {
 
     private void getMessages() {
         MessageApiManager messageApiManager = new MessageApiManager();
-        Call<List<Message>> call = messageApiManager.getMessages(email);
+        Call<List<Message>> call = messageApiManager.getMessages(email, context.getString(R.string.application));
 
         call.enqueue(new Callback<List<Message>>() {
             @Override
-            public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
+            public void onResponse(@NonNull Call<List<Message>> call, @NonNull Response<List<Message>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Message> messages = response.body();
                     String textMessage = "";

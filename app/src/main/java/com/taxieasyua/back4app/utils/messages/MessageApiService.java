@@ -7,7 +7,10 @@ import retrofit2.http.Path;
 
 public interface MessageApiService {
 
-    @GET("showMessage/{email}")
-    Call<List<Message>> getMessages(@Path("email") String email);
+    @GET("showMessage/{email}/{app_name}")
+    Call<List<Message>> getMessages(
+            @Path("email") String email,
+            @Path("app_name") String app_name
+            );
 }
 

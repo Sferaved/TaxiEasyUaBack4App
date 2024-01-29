@@ -11,7 +11,7 @@ public class MessageApiManager {
         messageApiService = ApiClientMessage.getClient().create(MessageApiService.class);
     }
 
-    public Call<List<Message>> getMessages(String email) {
-        return messageApiService.getMessages(email);
+    public Call<List<Message>> getMessages(String email, String app_name) {
+        return messageApiService.getMessages(email, app_name);
     }
 }
