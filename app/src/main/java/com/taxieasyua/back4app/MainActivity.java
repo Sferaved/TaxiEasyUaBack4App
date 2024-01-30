@@ -6,6 +6,8 @@ import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -71,6 +73,8 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
+import com.taxieasyua.back4app.utils.activ_push.MyApplication;
+import com.taxieasyua.back4app.utils.activ_push.YourAlarmReceiver;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.messages.UsersMessages;
 import com.taxieasyua.back4app.utils.permissions.UserPermissions;
@@ -175,12 +179,42 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 // Initialize VisicomFragment and set AutoClickListener
         VisicomFragment visicomFragment = new VisicomFragment();
         visicomFragment.setAutoClickListener(this); // "this" refers to the MainActivity
-
     }
+
+    private void scheduleAlarm() {
+        Intent intent = new Intent(this, YourAlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        boolean isAppInForeground = ((MyApplication) getApplicationContext()).isAppInForeground();
+        Log.d(TAG, "checkUserActivity " + isAppInForeground);
+        // Set the alarm to start at 24-hour intervals
+//        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
+        long intervalMillis = 10 * 1000; // 24 hours
+        long triggerMillis = System.currentTimeMillis() + intervalMillis;
+        Log.d(TAG, "scheduleJobAlarm: ");
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerMillis, intervalMillis, pendingIntent);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+            return;
+        }
+        scheduleAlarm();
+        updateLastActivityTimestamp();
    }
+    private static final String PREFS_NAME_25 = "UserActivityPrefs";
+    private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
+    private void updateLastActivityTimestamp() {
+        // Обновление времени последней активности в SharedPreferences
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_NAME_25, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong(LAST_ACTIVITY_KEY, System.currentTimeMillis());
+        editor.apply();
+    }
+
     @Override
     protected void onRestart() {
         super.onRestart();
@@ -1305,10 +1339,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void version(String versionApi) throws MalformedURLException {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
+
 
         // Получаем SharedPreferences
         SharedPreferences SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
