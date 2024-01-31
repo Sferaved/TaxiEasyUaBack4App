@@ -1,5 +1,6 @@
 package com.taxieasyua.back4app.utils.activ_push;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -13,7 +14,10 @@ import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 
-public class YourAlarmReceiver extends BroadcastReceiver {
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class PushAlarmReceiver extends BroadcastReceiver {
 
     private static final String PREFS_NAME = "UserActivityPrefs";
     private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
@@ -48,11 +52,17 @@ public class YourAlarmReceiver extends BroadcastReceiver {
         long lastActivityTimestamp = prefs.getLong(LAST_ACTIVITY_KEY, 0);
         long currentTime = System.currentTimeMillis();
 
+        Log.d(TAG, "lastActivit: CHECK " + timeFormatter(lastActivityTimestamp));
+        Log.d(TAG, "currentTime: CHECK " + timeFormatter(currentTime));
         // Проверка, прошло ли более 25 дней с последней активности
 //        return (currentTime - lastActivityTimestamp) <= (60 * 1000);
-        return (currentTime - lastActivityTimestamp) <= (60 * 1000);
+        return (currentTime - lastActivityTimestamp) < (2* 60 * 1000);
     }
-
+    private String timeFormatter(long timeMsec) {
+        Date formattedTime = new Date(timeMsec);
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formatter.format(formattedTime);
+    }
     private void sendNotification(Context context) {
         // Ваш текст и заголовок уведомления
         String title = context.getString(R.string.new_message) + " " + context.getString(R.string.app_name);
@@ -67,10 +77,11 @@ public class YourAlarmReceiver extends BroadcastReceiver {
 
         // Используйте ваш класс NotificationHelper для отправки уведомления
         NotificationHelper.showNotificationMessageOpen(context, title, message, pendingIntent);
+        updateLastActivityTimestamp(context);
     }
 
     public static void scheduleAlarm(Context context) {
-        Intent intent = new Intent(context, YourAlarmReceiver.class);
+        Intent intent = new Intent(context, PushAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         // Установка будильника для выполнения каждую минуту
@@ -82,10 +93,20 @@ public class YourAlarmReceiver extends BroadcastReceiver {
     }
 
     public static void cancelAlarm(Context context) {
-        Intent intent = new Intent(context, YourAlarmReceiver.class);
+        Intent intent = new Intent(context, PushAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
+    }
+
+    private void updateLastActivityTimestamp(Context context) {
+
+        // Обновление времени последней активности в SharedPreferences
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        Log.d(TAG, "updateLastActivityTimestamp: " + timeFormatter(System.currentTimeMillis()));
+        editor.putLong(LAST_ACTIVITY_KEY, System.currentTimeMillis());
+        editor.apply();
     }
 }

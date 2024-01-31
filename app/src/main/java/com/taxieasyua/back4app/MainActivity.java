@@ -74,7 +74,7 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.activ_push.MyApplication;
-import com.taxieasyua.back4app.utils.activ_push.YourAlarmReceiver;
+import com.taxieasyua.back4app.utils.activ_push.PushAlarmReceiver;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.messages.UsersMessages;
 import com.taxieasyua.back4app.utils.permissions.UserPermissions;
@@ -85,8 +85,10 @@ import com.taxieasyua.back4app.utils.user.UserResponse;
 import org.json.JSONException;
 
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -104,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static String order_id;
     public static String invoiceId;
 
-    public static final String DB_NAME = "data_25012024_0";
+    public static final String DB_NAME = "data_31012024_3";
 
     /**
      * Table section
@@ -181,19 +183,21 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         visicomFragment.setAutoClickListener(this); // "this" refers to the MainActivity
     }
 
+    private static final int ALARM_REQUEST_CODE = 0; // Use a unique code for your PendingIntent
+
     private void scheduleAlarm() {
-        Intent intent = new Intent(this, YourAlarmReceiver.class);
+        Intent intent = new Intent(this, PushAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-        boolean isAppInForeground = ((MyApplication) getApplicationContext()).isAppInForeground();
-        Log.d(TAG, "checkUserActivity " + isAppInForeground);
+        Log.d(TAG, "scheduleAlarm: ");
         // Set the alarm to start at 24-hour intervals
 //        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
-        long intervalMillis = 10 * 1000; // 24 hours
+        long intervalMillis = 60 * 1000; // 24 hours
         long triggerMillis = System.currentTimeMillis() + intervalMillis;
-        Log.d(TAG, "scheduleJobAlarm: ");
+
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerMillis, intervalMillis, pendingIntent);
     }
+
 
     @Override
     protected void onResume() {
@@ -202,16 +206,22 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
             return;
         }
-        scheduleAlarm();
+       
         updateLastActivityTimestamp();
-   }
+    }
     private static final String PREFS_NAME_25 = "UserActivityPrefs";
     private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
     private void updateLastActivityTimestamp() {
+
         // Обновление времени последней активности в SharedPreferences
         SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_NAME_25, Context.MODE_PRIVATE);
+
+        long lastActivityTimestamp = prefs.getLong(LAST_ACTIVITY_KEY, 0);
+        long currentTime = System.currentTimeMillis();
+        Log.d(TAG, "lastActivity: Main " + timeFormatter(lastActivityTimestamp));
+        Log.d(TAG, "currentTime:  Main " + timeFormatter(currentTime));
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putLong(LAST_ACTIVITY_KEY, System.currentTimeMillis());
+        editor.putLong(LAST_ACTIVITY_KEY, currentTime);
         editor.apply();
     }
 
@@ -226,6 +236,12 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         }
 
     }
+    private String timeFormatter(long timeMsec) {
+        Date formattedTime = new Date(timeMsec);
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formatter.format(formattedTime);
+    }
+
     @SuppressLint("SuspiciousIndentation")
     public void initDB() throws MalformedURLException, JSONException, InterruptedException {
 //        this.deleteDatabase(DB_NAME);
@@ -881,12 +897,16 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public void newUser() {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         Log.d(TAG, "newUser: " + userEmail);
+        scheduleAlarm();
         if(userEmail.equals("email")) {
             try {
                 FirebaseApp.initializeApp(MainActivity.this);
             } catch (Exception e) {
                 Log.e(TAG, "Exception during authentication", e);
                 e.printStackTrace();
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+
             }
             Toast.makeText(this, R.string.checking, Toast.LENGTH_SHORT).show();
             startFireBase();
@@ -922,6 +942,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 } catch (Exception e) {
                     Log.e(TAG, "Exception during sign-in launch", e);
                     e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                    VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -953,7 +975,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 assert user != null;
                 settingsNewUser(user.getEmail());
                 Toast.makeText(this, R.string.city_search, Toast.LENGTH_SHORT).show();
-                startGetPublicIPAddressTask(fm);
+                startGetPublicIPAddressTask(fm, getApplicationContext());
             } else {
 
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.firebase_error));
@@ -1027,8 +1049,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     }
     // Ограничение времени в секундах
 
-    private void startGetPublicIPAddressTask(FragmentManager fm) {
-        AsyncTask<Void, Void, String> getPublicIPAddressTask = new GetPublicIPAddressTask(fm);
+    private void startGetPublicIPAddressTask(FragmentManager fm, Context context) {
+        AsyncTask<Void, Void, String> getPublicIPAddressTask = new GetPublicIPAddressTask(fm, context);
 
         try {
 
@@ -1037,7 +1059,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             // Обработка исключения, возникающего при превышении времени выполнения задачи
             e.printStackTrace();
             // Дополнительные действия...
-            getCityByIP("31.202.139.47", fm);
+            getCityByIP("31.202.139.47", fm, context);
+            Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+            VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -1075,8 +1099,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             }
 
             @Override
-            public void onFailure(Call<UserResponse> call, Throwable t) {
-                System.out.println("Network Error: " + t.getMessage());
+            public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+
             }
         });
     }
@@ -1244,6 +1270,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             public void onFailure(@NonNull Call<CallbackResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки запроса
                 Log.d(TAG, "onResponse: failure " + t.toString());
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -1300,6 +1328,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 return CostJSONParser.sendURL(url);
             } catch (Exception e) {
                 exception = e;
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 return null;
             }
 
@@ -1406,6 +1436,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             @Override
             public void onFailure(Call<CityResponse> call, Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -1450,6 +1482,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             @Override
             public void onFailure(Call<CityResponseMerchantFondy> call, Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -1490,9 +1524,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     }
     private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
         FragmentManager fragmentManager;
-
-        public GetPublicIPAddressTask(FragmentManager fragmentManager) {
+        Context context;
+        public GetPublicIPAddressTask(FragmentManager fragmentManager, Context context) {
             this.fragmentManager = fragmentManager;
+            this.context = context;
         }
 
         @Override
@@ -1503,7 +1538,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 // Log the exception
                 Log.e(TAG, "Exception in doInBackground: " + e.getMessage());
                 // Return null or handle the exception as needed
-                getCityByIP("31.202.139.47",fragmentManager);
+                getCityByIP("31.202.139.47",fragmentManager, context);
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 return null;
             }
         }
@@ -1513,21 +1550,23 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             try {
                 if (ipAddress != null) {
                     Log.d(TAG, "onCreate: Local IP Address: " + ipAddress);
-                    getCityByIP(ipAddress, fragmentManager);
+                    getCityByIP(ipAddress, fragmentManager, context);
                 } else {
-                    getCityByIP("31.202.139.47",fragmentManager);
+                    getCityByIP("31.202.139.47",fragmentManager, context);
                 }
             } catch (Exception e) {
                 // Log the exception
                 Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
                 // Handle the exception as needed
-                getCityByIP("31.202.139.47",fragmentManager);
+                getCityByIP("31.202.139.47",fragmentManager, context);
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
 
         }
     }
 
-    private static void getCityByIP(String ip, FragmentManager fm) {
+    private static void getCityByIP(String ip, FragmentManager fm, Context context) {
 
         ApiService apiService = ApiClient.getApiService();
 
@@ -1560,7 +1599,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
                 Log.d("TAG", "onFailure: " + errorMessage);
-
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
 //        }

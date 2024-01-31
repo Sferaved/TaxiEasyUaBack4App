@@ -1,14 +1,19 @@
 package com.taxieasyua.back4app.utils.messages;
 
+import static com.taxieasyua.back4app.R.string.verify_internet;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.material.tabs.TabLayout;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 
 import java.util.List;
 
@@ -40,10 +45,10 @@ public class UsersMessages {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Message> messages = response.body();
                     String textMessage = "";
-                    int i = 1;
+
                     // Обработка списка сообщений...
                     for (Message message : messages) {
-                        textMessage += i++ + ". " + message.getTextMessage() +"\n";
+                        textMessage += message.getTextMessage() +"\n";
                         Log.d(TAG, "Text: " + message.getTextMessage());
                         Log.d(TAG, "------------------------");
                     }
@@ -51,12 +56,18 @@ public class UsersMessages {
                     notifyUser(textMessage);
                 } else {
                     // Обработка неудачного ответа...
+                    Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                    VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<Message>> call, @NonNull Throwable t) {
                 // Обработка ошибки...
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
+
             }
         });
     }

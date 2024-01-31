@@ -3,6 +3,8 @@ package com.taxieasyua.back4app.ui.visicom;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import static com.taxieasyua.back4app.R.string.verify_internet;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -377,6 +379,7 @@ public class VisicomFragment extends Fragment{
         if(!verifyOrder(requireContext())) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.black_list_message));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            progressBar.setVisibility(View.INVISIBLE);
             return;
         }
 
@@ -963,9 +966,11 @@ public class VisicomFragment extends Fragment{
             FragmentManager fragmentManager = getChildFragmentManager();
 
             try {
-                new GetPublicIPAddressTask(fragmentManager, city).execute().get(MainActivity.MAX_TASK_EXECUTION_TIME_SECONDS, TimeUnit.SECONDS);
+                new GetPublicIPAddressTask(fragmentManager, city, requireActivity()).execute().get(MainActivity.MAX_TASK_EXECUTION_TIME_SECONDS, TimeUnit.SECONDS);
             } catch (ExecutionException | InterruptedException | TimeoutException e) {
                 MainActivity.countryState = "UA";
+                Toast.makeText(requireActivity(), requireActivity().getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         }
 //        else {
@@ -1059,6 +1064,7 @@ public class VisicomFragment extends Fragment{
                              JSONException e) {
                         MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                         bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
                     assert sendUrlFrom != null;
                     String FromAdressString = (String) sendUrlFrom.get("route_address_from");
@@ -1244,7 +1250,11 @@ public class VisicomFragment extends Fragment{
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
             }
-
+            progressBar.setVisibility(View.INVISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            btn_clear_to.setVisibility(View.INVISIBLE);
         } else {
             Log.d(TAG, "visicomCost: ++++");
             String discountText = logCursor(MainActivity.TABLE_SETTINGS_INFO, requireContext()).get(3);
@@ -1296,10 +1306,12 @@ public class VisicomFragment extends Fragment{
     private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
         FragmentManager fragmentManager;
         String city;
+        Context context;
 
-        public GetPublicIPAddressTask(FragmentManager fragmentManager, String city) {
+        public GetPublicIPAddressTask(FragmentManager fragmentManager, String city, Context context) {
             this.fragmentManager = fragmentManager;
             this.city = city;
+            this.context = context;
         }
 
         @Override
@@ -1319,7 +1331,7 @@ public class VisicomFragment extends Fragment{
             try {
                 if (ipAddress != null) {
                     Log.d(TAG, "onPostExecute: Local IP Address: " + ipAddress);
-                    getCountryByIP(ipAddress, city);
+                    getCountryByIP(ipAddress, city, context);
                 } else {
                     MainActivity.countryState = "UA";
 
@@ -1331,12 +1343,13 @@ public class VisicomFragment extends Fragment{
                 // Log the exception
                 Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
                 MainActivity.countryState = "UA";
-                // Handle the exception as needed
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         }
     }
 
-    private static void getCountryByIP(String ipAddress, String city) {
+    private static void getCountryByIP(String ipAddress, String city, Context context) {
         ApiServiceCountry apiService = RetrofitClient.getClient().create(ApiServiceCountry.class);
         Call<CountryResponse> call = apiService.getCountryByIP(ipAddress);
 
@@ -1375,6 +1388,8 @@ public class VisicomFragment extends Fragment{
             @Override
             public void onFailure(@NonNull Call<CountryResponse> call, @NonNull Throwable t) {
                 Log.e(TAG, "Error: " + t.getMessage());
+                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+                VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
     }
