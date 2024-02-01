@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static String order_id;
     public static String invoiceId;
 
-    public static final String DB_NAME = "data_31012024_3";
+    public static final String DB_NAME = "data_01022024_8";
 
     /**
      * Table section
@@ -186,6 +186,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     private static final int ALARM_REQUEST_CODE = 0; // Use a unique code for your PendingIntent
 
     private void scheduleAlarm() {
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+        }
+
         Intent intent = new Intent(this, PushAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         Log.d(TAG, "scheduleAlarm: ");
@@ -202,12 +206,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     @Override
     protected void onResume() {
         super.onResume();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-            return;
-        }
-       
         updateLastActivityTimestamp();
+
     }
     private static final String PREFS_NAME_25 = "UserActivityPrefs";
     private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
@@ -897,7 +897,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public void newUser() {
         String userEmail = logCursor(TABLE_USER_INFO).get(3);
         Log.d(TAG, "newUser: " + userEmail);
-        scheduleAlarm();
+
         if(userEmail.equals("email")) {
             try {
                 FirebaseApp.initializeApp(MainActivity.this);
@@ -910,11 +910,14 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             }
             Toast.makeText(this, R.string.checking, Toast.LENGTH_SHORT).show();
             startFireBase();
+
         } else {
+
             new VerifyUserTask().execute();
             UserPermissions.getPermissions(userEmail, getApplicationContext());
             new UsersMessages(userEmail, getApplicationContext());
         }
+        scheduleAlarm();
 
     }
 
@@ -1045,6 +1048,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
 
     }
     // Ограничение времени в секундах

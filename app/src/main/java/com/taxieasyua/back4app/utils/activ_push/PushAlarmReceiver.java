@@ -56,7 +56,7 @@ public class PushAlarmReceiver extends BroadcastReceiver {
         Log.d(TAG, "currentTime: CHECK " + timeFormatter(currentTime));
         // Проверка, прошло ли более 25 дней с последней активности
 //        return (currentTime - lastActivityTimestamp) <= (60 * 1000);
-        return (currentTime - lastActivityTimestamp) < (2* 60 * 1000);
+        return (currentTime - lastActivityTimestamp) < (1* 60 * 1000);
     }
     private String timeFormatter(long timeMsec) {
         Date formattedTime = new Date(timeMsec);

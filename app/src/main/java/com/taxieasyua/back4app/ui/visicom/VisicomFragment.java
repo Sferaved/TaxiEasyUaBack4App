@@ -1207,6 +1207,7 @@ public class VisicomFragment extends Fragment{
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void visicomCost() {
 
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
@@ -1300,6 +1301,7 @@ public class VisicomFragment extends Fragment{
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 progressBar.setVisibility(View.INVISIBLE);
             }
+
         }
     }
 
