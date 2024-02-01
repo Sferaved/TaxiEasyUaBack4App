@@ -194,8 +194,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         Log.d(TAG, "scheduleAlarm: ");
         // Set the alarm to start at 24-hour intervals
-//        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
-        long intervalMillis = 60 * 1000; // 24 hours
+        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
+//        long intervalMillis = 60 * 1000; // 24 hours
         long triggerMillis = System.currentTimeMillis() + intervalMillis;
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
