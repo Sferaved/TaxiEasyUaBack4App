@@ -56,7 +56,7 @@ public class UsersMessages {
                     notifyUser(textMessage);
                 } else {
                     // Обработка неудачного ответа...
-                    Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
                     VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
 
                 }
@@ -65,7 +65,7 @@ public class UsersMessages {
             @Override
             public void onFailure(@NonNull Call<List<Message>> call, @NonNull Throwable t) {
                 // Обработка ошибки...
-                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
 
             }

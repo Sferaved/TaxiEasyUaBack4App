@@ -321,7 +321,7 @@ public class GalleryFragment extends Fragment {
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            OpenStreetMapActivity.progressBar.setVisibility(View.INVISIBLE);
+            progressbar.setVisibility(View.INVISIBLE);
         }
     }
     private void orderFinished() {
@@ -455,6 +455,7 @@ public class GalleryFragment extends Fragment {
                 costFirstForMin = cost;
                 MIN_COST_VALUE = (long) (cost*0.6);
             } else {
+                message = getString(R.string.error_message);
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
@@ -468,6 +469,7 @@ public class GalleryFragment extends Fragment {
         } else {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+            progressbar.setVisibility(View.INVISIBLE);
         }
     }
     private Map <String, String> routChoice(int i) {
@@ -785,6 +787,8 @@ public class GalleryFragment extends Fragment {
             btn_plus.setVisibility(View.INVISIBLE);
             btnAdd.setVisibility(View.INVISIBLE);
             buttonBonus.setVisibility(View.INVISIBLE);
+            scrollButtonDown.setVisibility(View.INVISIBLE);
+            scrollButtonUp.setVisibility(View.INVISIBLE);
 
         }
         del_but.setVisibility(View.INVISIBLE);

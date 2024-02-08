@@ -1,8 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.1014</string>
-    <string name="version">Версия: 2.1014</string>
+    <string name="version_code">2.1015</string>
+    <string name="version">Версия: 2.1015</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -55,7 +55,7 @@
     <string name="save_button">Сохранить</string>
     <string name="you_this">"Вы сейчас здесь: "</string>
     <string name="make_rout_message">Сформируйте маршрут</string>
-    <string name="error_message">Произошла ошибка.</string>
+    <string name="error_message">Произошла ошибка. Наберите оператора.</string>
     <string name="to_point">"Место назначения: "</string>
     <string name="cost_of_order">" Стоимость поездки: "</string>
     <string name="firebase_false_message">грн. Извините, без проверки Google-аккаунта заказ невозможен.</string>

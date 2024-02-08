@@ -846,7 +846,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         }
 
         if (!hasConnect) {
-            Toast.makeText(this, verify_internet, Toast.LENGTH_LONG).show();
+//            Toast.makeText(this, verify_internet, Toast.LENGTH_LONG).show();
         }
         Log.d("TAG", "connected: " + hasConnect);
         return hasConnect;
@@ -904,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             } catch (Exception e) {
                 Log.e(TAG, "Exception during authentication", e);
                 e.printStackTrace();
-                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
 
             }
@@ -945,7 +945,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 } catch (Exception e) {
                     Log.e(TAG, "Exception during sign-in launch", e);
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
                     VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 }
             }
@@ -1064,15 +1064,11 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             e.printStackTrace();
             // Дополнительные действия...
             getCityByIP("31.202.139.47", fm, context);
-            Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
             VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
         }
     }
 
-    private void handleTaskResult(String result) {
-        // Обработка результата задачи
-        // ...
-    }
 
     public static void addUserNoName(String email, Context context) {
         // Создание объекта Retrofit
@@ -1104,7 +1100,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
             @Override
             public void onFailure(@NonNull Call<UserResponse> call, @NonNull Throwable t) {
-                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
 
             }
@@ -1274,7 +1270,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             public void onFailure(@NonNull Call<CallbackResponse> call, @NonNull Throwable t) {
                 // Обработка ошибки запроса
                 Log.d(TAG, "onResponse: failure " + t.toString());
-                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
@@ -1332,7 +1328,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 return CostJSONParser.sendURL(url);
             } catch (Exception e) {
                 exception = e;
-                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 return null;
             }
@@ -1440,7 +1436,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             @Override
             public void onFailure(Call<CityResponse> call, Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
-                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
@@ -1476,7 +1472,6 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
                         Log.d(TAG, "onResponse: " + logCursor(CITY_INFO).toString());
 
-                        // Добавьте здесь код для обработки полученных значений
                     }
                 } else {
                     Log.e("Request", "Failed. Error code: " + response.code());
@@ -1486,7 +1481,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             @Override
             public void onFailure(Call<CityResponseMerchantFondy> call, Throwable t) {
                 Log.e("Request", "Failed. Error message: " + t.getMessage());
-                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), getApplicationContext().getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });
@@ -1543,7 +1538,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 Log.e(TAG, "Exception in doInBackground: " + e.getMessage());
                 // Return null or handle the exception as needed
                 getCityByIP("31.202.139.47",fragmentManager, context);
-                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
                 return null;
             }
@@ -1563,7 +1558,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 Log.e(TAG, "Exception in onPostExecute: " + e.getMessage());
                 // Handle the exception as needed
                 getCityByIP("31.202.139.47",fragmentManager, context);
-                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
 
@@ -1603,7 +1598,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 String errorMessage = t.getMessage();
                 t.printStackTrace();
                 Log.d("TAG", "onFailure: " + errorMessage);
-                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, context.getString(verify_internet), Toast.LENGTH_SHORT).show();
                 VisicomFragment.progressBar.setVisibility(View.INVISIBLE);
             }
         });

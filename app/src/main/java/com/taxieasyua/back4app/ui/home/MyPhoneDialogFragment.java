@@ -418,6 +418,7 @@ public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
                     HomeFragment.progressBar.setVisibility(View.INVISIBLE);
 
                 } else {
+                    message = getString(R.string.error_message);
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
                 }

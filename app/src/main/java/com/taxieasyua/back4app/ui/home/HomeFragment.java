@@ -581,6 +581,7 @@ public class HomeFragment extends Fragment {
                 progressBar.setVisibility(View.INVISIBLE);
 
             } else {
+                message = getString(R.string.error_message);
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
@@ -773,7 +774,14 @@ public class HomeFragment extends Fragment {
             btn_plus.setVisibility(View.INVISIBLE);
             buttonAddServices.setVisibility(View.INVISIBLE);
             buttonBonus.setVisibility(View.INVISIBLE);
+            textViewFrom.setText("");
+            from_number.setText("");
+            from_number.setVisibility(View.INVISIBLE);
+            textViewTo.setText("");
+            textViewTo.setVisibility(View.INVISIBLE);
             btn_clear.setVisibility(View.INVISIBLE);
+            binding.textTo.setVisibility(View.INVISIBLE);
+            binding.num2.setVisibility(View.INVISIBLE);
 
             btn_order.setVisibility(View.INVISIBLE);
 
@@ -1073,6 +1081,7 @@ public class HomeFragment extends Fragment {
             insertRouteCostToDatabase();
 
         } else {
+            message = getString(R.string.error_message);
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
             bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
@@ -1081,6 +1090,14 @@ public class HomeFragment extends Fragment {
             btn_plus.setVisibility(View.INVISIBLE);
             buttonAddServices.setVisibility(View.INVISIBLE);
             buttonBonus.setVisibility(View.INVISIBLE);
+            textViewFrom.setText("");
+            from_number.setText("");
+            from_number.setVisibility(View.INVISIBLE);
+            textViewTo.setText("");
+            textViewTo.setVisibility(View.INVISIBLE);
+            btn_clear.setVisibility(View.INVISIBLE);
+            binding.textTo.setVisibility(View.INVISIBLE);
+            binding.num2.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -1270,6 +1287,7 @@ public class HomeFragment extends Fragment {
             String message = (String) sendUrlMapCost.get("message");
 
             if (orderCost.equals("0")) {
+                message = getString(R.string.error_message);
                 MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
 
@@ -1278,8 +1296,17 @@ public class HomeFragment extends Fragment {
                 btn_plus.setVisibility(View.INVISIBLE);
                 buttonAddServices.setVisibility(View.INVISIBLE);
                 buttonBonus.setVisibility(View.INVISIBLE);
-                btn_order.setVisibility(View.INVISIBLE);
+                textViewFrom.setText("");
+                from_number.setText("");
+                from_number.setVisibility(View.INVISIBLE);
+                textViewTo.setText("");
+                textViewTo.setVisibility(View.INVISIBLE);
                 btn_clear.setVisibility(View.INVISIBLE);
+                binding.textwhere.setVisibility(View.INVISIBLE);
+                binding.num2.setVisibility(View.INVISIBLE);
+                btn_order.setVisibility(View.INVISIBLE);
+
+
             }
             if (!orderCost.equals("0")) {
                 text_view_cost.setVisibility(View.VISIBLE);
@@ -1303,8 +1330,8 @@ public class HomeFragment extends Fragment {
                 costFirstForMin = cost;
                 MIN_COST_VALUE = (long) (cost * 0.6);
             } else {
-                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+//                MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(message);
+//                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));

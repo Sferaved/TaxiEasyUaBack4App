@@ -89,6 +89,7 @@ public class UIDFragment extends Fragment {
 
         if (!hasConnect) {
             Toast.makeText(requireActivity(), verify_internet, Toast.LENGTH_LONG).show();
+            progressBar.setVisibility(View.INVISIBLE);
         }
         Log.d("TAG", "connected: " + hasConnect);
         return hasConnect;
@@ -132,6 +133,7 @@ public class UIDFragment extends Fragment {
                 } else {
                     MyBottomSheetErrorFragment bottomSheetDialogFragment = new MyBottomSheetErrorFragment(getString(R.string.verify_internet));
                     bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    progressBar.setVisibility(View.INVISIBLE);
                 }
             }
 
