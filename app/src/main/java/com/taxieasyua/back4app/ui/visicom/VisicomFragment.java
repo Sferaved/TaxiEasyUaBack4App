@@ -148,6 +148,43 @@ public class VisicomFragment extends Fragment{
         if(alertDialog != null && alertDialog.isShowing()) {
             alertDialog.dismiss();
         }
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            binding.textfrom.setVisibility(View.INVISIBLE);
+            binding.textwhere.setVisibility(View.INVISIBLE);
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.INVISIBLE);
+
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+            btn_clear_from_text.setText(getString(R.string.try_again));
+            btn_clear_from_text.setVisibility(View.VISIBLE);
+            btn_clear_from_text.setOnClickListener(v -> {
+                startActivity(new Intent(requireActivity(), MainActivity.class));
+            });
+            geoText.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.INVISIBLE);
+
+            btn_clear_from.setVisibility(View.INVISIBLE);
+            btn_clear_to.setVisibility(View.INVISIBLE);
+
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+            textwhere.setVisibility(View.INVISIBLE);
+            num2.setVisibility(View.INVISIBLE);
+            textViewTo.setVisibility(View.INVISIBLE);
+
+            btnAdd.setVisibility(View.INVISIBLE);
+
+            buttonBonus.setVisibility(View.INVISIBLE);
+            btn_minus.setVisibility(View.INVISIBLE);
+            text_view_cost.setVisibility(View.INVISIBLE);
+            btn_plus.setVisibility(View.INVISIBLE);
+            btnOrder.setVisibility(View.INVISIBLE);
+
+
+        }
     }
     public void checkPermission(String permission, int requestCode) {
         // Checking if permission is not granted
@@ -899,38 +936,42 @@ public class VisicomFragment extends Fragment{
                     checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                 } else {
-                    if (isAdded() && isVisible()) {
-                        List<String> settings = new ArrayList<>();
+                    if (NetworkUtils.isNetworkAvailable(requireContext())) {
+                        if (isAdded() && isVisible()) {
+                            List<String> settings = new ArrayList<>();
 
-                        String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
-                        if(isAdded()) {
-                            SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
-                            Cursor cursor = database.rawQuery(query, null);
+                            String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
+                            if (isAdded()) {
+                                SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+                                Cursor cursor = database.rawQuery(query, null);
 
-                            cursor.moveToFirst();
+                                cursor.moveToFirst();
 
-                            // Получите значения полей из первой записи
+                                // Получите значения полей из первой записи
 
 
-                            @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
-                            @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
-                            @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
-                            Log.d(TAG, "autoClickButton:ToAdressString " + ToAdressString);
-                            cursor.close();
-                            database.close();
+                                @SuppressLint("Range") double toLatitude = cursor.getDouble(cursor.getColumnIndex("to_lat"));
+                                @SuppressLint("Range") double toLongitude = cursor.getDouble(cursor.getColumnIndex("to_lng"));
+                                @SuppressLint("Range") String ToAdressString = cursor.getString(cursor.getColumnIndex("finish"));
+                                Log.d(TAG, "autoClickButton:ToAdressString " + ToAdressString);
+                                cursor.close();
+                                database.close();
 
-                            settings.add(Double.toString(0));
-                            settings.add(Double.toString(0));
-                            settings.add(Double.toString(toLatitude));
-                            settings.add(Double.toString(toLongitude));
-                            settings.add(getString(R.string.search));
-                            settings.add(ToAdressString);
+                                settings.add(Double.toString(0));
+                                settings.add(Double.toString(0));
+                                settings.add(Double.toString(toLatitude));
+                                settings.add(Double.toString(toLongitude));
+                                settings.add(getString(R.string.search));
+                                settings.add(ToAdressString);
+                            }
+                            updateRoutMarker(settings);
+                            geoText.setText(R.string.search);
+                            firstLocation();
                         }
-                        updateRoutMarker(settings);
-                        geoText.setText(R.string.search);
-                        firstLocation();
+                    } else {
+                        Toast.makeText(requireContext(), requireContext().getString(R.string.verify_internet), Toast.LENGTH_SHORT).show();
                     }
-                    }
+                }
 
             }
 
@@ -1005,7 +1046,7 @@ public class VisicomFragment extends Fragment{
                     }
                 }, 100);
             }
-            btn_clear_from_text.setVisibility(View.INVISIBLE);
+
         } else {
             binding.textfrom.setVisibility(View.INVISIBLE);
             binding.textwhere.setVisibility(View.INVISIBLE);
@@ -1013,7 +1054,7 @@ public class VisicomFragment extends Fragment{
             textfrom.setVisibility(View.INVISIBLE);
             num1.setVisibility(View.INVISIBLE);
             progressBar.setVisibility(View.INVISIBLE);
-            gpsbut.setVisibility(View.INVISIBLE);
+
             textfrom.setVisibility(View.INVISIBLE);
             num1.setVisibility(View.INVISIBLE);
             btn_clear_from_text.setText(getString(R.string.try_again));
@@ -1021,6 +1062,8 @@ public class VisicomFragment extends Fragment{
             btn_clear_from_text.setOnClickListener(v -> {
                 startActivity(new Intent(requireActivity(), MainActivity.class));
             });
+
+
         }
 
 

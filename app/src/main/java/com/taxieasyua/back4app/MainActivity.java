@@ -618,9 +618,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     @SuppressLint("IntentReset")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_exit) {
-            finishAffinity();
-        } else
+
+
+
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (item.getItemId() == R.id.phone_settings) {
                 phoneNumberChange();
@@ -630,10 +630,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 startActivity(browserIntent);
             }
 
-            if (item.getItemId() == R.id.gps) {
 
-                eventGps();
-            }
 
             if (item.getItemId() == R.id.nav_city) {
                 List<String> listCity = logCursor(MainActivity.CITY_INFO);
@@ -647,7 +644,17 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 startActivity(browserIntent);
             }
 
-            if (item.getItemId() == R.id.send_email) {
+
+
+        } else {
+            if (item.getItemId() == R.id.action_exit) {
+                finishAffinity();
+            } else if (item.getItemId() == R.id.gps) {
+
+                eventGps();
+            } else if (item.getItemId() == R.id.send_email_admin) {
+                sendEmailAdmin();
+            } else if (item.getItemId() == R.id.send_email) {
                 String subject = getString(R.string.android);
                 String body = getString(R.string.good_day);
 
@@ -666,12 +673,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
                 }
 
+            } else {
+                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
             }
-            if (item.getItemId() == R.id.send_email_admin) {
-                sendEmailAdmin();
-            }
-        } else {
-            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+
         }
         return false;
     }
@@ -765,12 +770,16 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+            if (NetworkUtils.isNetworkAvailable(this)) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                } else {
+                    onAutoClick();
+                }
             } else {
-                onAutoClick();
+                Toast.makeText(this, getString(R.string.verify_internet), Toast.LENGTH_SHORT).show();
             }
         }
     }
