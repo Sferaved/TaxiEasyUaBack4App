@@ -1005,6 +1005,7 @@ public class VisicomFragment extends Fragment{
                     }
                 }, 100);
             }
+            btn_clear_from_text.setVisibility(View.INVISIBLE);
         } else {
             binding.textfrom.setVisibility(View.INVISIBLE);
             binding.textwhere.setVisibility(View.INVISIBLE);
