@@ -1,14 +1,17 @@
 package com.taxieasyua.back4app.utils.activ_push;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NotificationHelper;
@@ -16,17 +19,24 @@ import com.taxieasyua.back4app.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
-public class PushAlarmReceiver extends BroadcastReceiver {
+public class MyPeriodicWorker extends Worker {
 
+    private String TAG = "TAG_Per";
     private static final String PREFS_NAME = "UserActivityPrefs";
     private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
-    private String TAG = "TAG_CHECK";
 
+    public MyPeriodicWorker(@NonNull Context context, @NonNull WorkerParameters params) {
+        super(context, params);
+    }
+
+    @NonNull
     @Override
-    public void onReceive(Context context, Intent intent) {
-
-//         Выполните проверку активности пользователя
+    public Result doWork() {
+        // Выполнить необходимую работу здесь
+        // Например, отправить уведомление или выполнить другое задание
+        Context context = getApplicationContext();
         boolean isUserActive = checkUserActivity(context);
         Log.d(TAG, "onReceive: isUserActive " + isUserActive);
 
@@ -35,6 +45,19 @@ public class PushAlarmReceiver extends BroadcastReceiver {
             // Если пользователь не активен, отправьте уведомление
             sendNotification(context);
         }
+        return Result.success(); // Возвращаем Result.success(), если работа выполнена успешно
+    }
+
+    public static void schedulePeriodicWork() {
+        // Создаем периодическую работу с интервалом 24 часа
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(
+                MyPeriodicWorker.class,
+                24, // интервал
+                TimeUnit.HOURS
+        ).build();
+
+        // Запускаем периодическую работу
+        WorkManager.getInstance().enqueue(periodicWorkRequest);
     }
 
     private boolean checkUserActivity(Context context) {
@@ -56,8 +79,8 @@ public class PushAlarmReceiver extends BroadcastReceiver {
         Log.d(TAG, "lastActivit: CHECK " + timeFormatter(lastActivityTimestamp));
         Log.d(TAG, "currentTime: CHECK " + timeFormatter(currentTime));
         // Проверка, прошло ли более 25 дней с последней активности
-        return (currentTime - lastActivityTimestamp) <= (60 * 1000);
-//        return (currentTime - lastActivityTimestamp) < (25 * 24 * 60 * 60 * 1000);
+//        return (currentTime - lastActivityTimestamp) <= (60 * 1000);
+        return (currentTime - lastActivityTimestamp) < (25 * 24 * 60 * 60 * 1000);
     }
     private String timeFormatter(long timeMsec) {
         Date formattedTime = new Date(timeMsec);
@@ -80,27 +103,6 @@ public class PushAlarmReceiver extends BroadcastReceiver {
         NotificationHelper.showNotificationMessageOpen(context, title, message, pendingIntent);
 
     }
-
-    public static void scheduleAlarm(Context context) {
-        Intent intent = new Intent(context, PushAlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
-        // Установка будильника для выполнения каждую минуту
-        long intervalMillis = 60 * 1000;
-        long triggerMillis = SystemClock.elapsedRealtime() + intervalMillis;
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, triggerMillis, intervalMillis, pendingIntent);
-    }
-
-    public static void cancelAlarm(Context context) {
-        Intent intent = new Intent(context, PushAlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
-    }
-
     private void updateLastActivityTimestamp(Context context) {
 
         // Обновление времени последней активности в SharedPreferences

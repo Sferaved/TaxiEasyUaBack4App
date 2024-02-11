@@ -24,6 +24,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NetworkChangeReceiver;
@@ -32,6 +34,7 @@ import com.taxieasyua.back4app.databinding.FragmentUidBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.utils.connect.NetworkUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,9 +53,14 @@ public class UIDFragment extends Fragment {
     private static TextView textView;
     private NetworkChangeReceiver networkChangeReceiver;
     ProgressBar progressBar;
+    NavController navController;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            navController.navigate(R.id.nav_visicom);
+        }
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
@@ -62,37 +70,10 @@ public class UIDFragment extends Fragment {
         progressBar = binding.progressBar;
         networkChangeReceiver = new NetworkChangeReceiver();
 
-        if(connected()) {
-            @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
-            fetchRoutes(email);
-        }
+        @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
+        fetchRoutes(email);
+
         return root;
-    }
-    private boolean connected() {
-
-        Boolean hasConnect = false;
-
-        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
-                CONNECTIVITY_SERVICE);
-        NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiNetwork != null && wifiNetwork.isConnected()) {
-            hasConnect = true;
-        }
-        NetworkInfo mobileNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        if (mobileNetwork != null && mobileNetwork.isConnected()) {
-            hasConnect = true;
-        }
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork != null && activeNetwork.isConnected()) {
-            hasConnect = true;
-        }
-
-        if (!hasConnect) {
-            Toast.makeText(requireActivity(), verify_internet, Toast.LENGTH_LONG).show();
-            progressBar.setVisibility(View.INVISIBLE);
-        }
-        Log.d("TAG", "connected: " + hasConnect);
-        return hasConnect;
     }
 
     String baseUrl = "https://m.easy-order-taxi.site";

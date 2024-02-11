@@ -78,6 +78,7 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.start.ResultSONParser;
+import com.taxieasyua.back4app.utils.connect.NetworkUtils;
 
 import org.json.JSONException;
 
@@ -155,10 +156,13 @@ public class HomeFragment extends Fragment {
     long MIN_COST_VALUE;
     AutoCompleteTextView textViewFrom, textViewTo;
     ArrayAdapter<String> adapter;
-
+    NavController navController;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
+        navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            navController.navigate(R.id.nav_visicom);
+        }
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         finiched = true;
@@ -737,7 +741,6 @@ public class HomeFragment extends Fragment {
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
         btn_clear = binding.btnClear;
-        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
 
         textViewTo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override

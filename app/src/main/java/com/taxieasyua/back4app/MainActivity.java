@@ -2,12 +2,9 @@ package com.taxieasyua.back4app;
 
 import static com.taxieasyua.back4app.R.string.cancel_button;
 import static com.taxieasyua.back4app.R.string.format_phone;
-import static com.taxieasyua.back4app.R.string.verify_internet;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -73,8 +70,8 @@ import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
-import com.taxieasyua.back4app.utils.activ_push.MyApplication;
-import com.taxieasyua.back4app.utils.activ_push.PushAlarmReceiver;
+import com.taxieasyua.back4app.utils.activ_push.MyService;
+import com.taxieasyua.back4app.utils.connect.NetworkUtils;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.messages.UsersMessages;
 import com.taxieasyua.back4app.utils.permissions.UserPermissions;
@@ -185,36 +182,39 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
     private static final int ALARM_REQUEST_CODE = 0; // Use a unique code for your PendingIntent
 
-    private void scheduleAlarm() {
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-        }
-
-        Intent intent = new Intent(this, PushAlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-        Log.d(TAG, "scheduleAlarm: ");
-        // Set the alarm to start at 24-hour intervals
-        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
-//        long intervalMillis = 60 * 1000; // 24 hours
-        long triggerMillis = System.currentTimeMillis() + intervalMillis;
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerMillis, intervalMillis, pendingIntent);
-    }
+//    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+//    private void scheduleAlarm() {
+//        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
+//        }
+//
+//        Intent intent = new Intent(this, PushAlarmReceiver.class);
+//        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+//        Log.d(TAG, "scheduleAlarm: ");
+//        // Set the alarm to start at 24-hour intervals
+////        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
+//        long intervalMillis = 2*60 * 1000; // 24 hours
+//        long triggerMillis = System.currentTimeMillis() + intervalMillis;
+//
+//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerMillis, intervalMillis, pendingIntent);
+//    }
 
 
     @Override
     protected void onResume() {
         super.onResume();
+        startService(new Intent(this, MyService.class));
+
         updateLastActivityTimestamp();
 
     }
-    private static final String PREFS_NAME_25 = "UserActivityPrefs";
+    private static final String PREFS_NAME = "UserActivityPrefs";
     private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
     private void updateLastActivityTimestamp() {
 
         // Обновление времени последней активности в SharedPreferences
-        SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_NAME_25, Context.MODE_PRIVATE);
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
         long lastActivityTimestamp = prefs.getLong(LAST_ACTIVITY_KEY, 0);
         long currentTime = System.currentTimeMillis();
@@ -436,7 +436,11 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 " rectoken_check text);");
 
         database.close();
-        newUser();
+
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            // Действия при наличии интернета
+            newUser();
+        }
     }
 
     private void insertFirstSettings(List<String> settings) {
@@ -614,57 +618,61 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     @SuppressLint("IntentReset")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.phone_settings) {
-                phoneNumberChange();
-        }
-        if (item.getItemId() == R.id.nav_driver) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
-            startActivity(browserIntent);
-        }
         if (item.getItemId() == R.id.action_exit) {
             finishAffinity();
-        }
-        if (item.getItemId() == R.id.gps) {
-
-            eventGps();
-        }
-
-        if (item.getItemId() == R.id.nav_city) {
-            List<String> listCity = logCursor(MainActivity.CITY_INFO);
-            String city = listCity.get(1);
-            MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(city);
-            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-        }
-
-        if (item.getItemId() == R.id.send_like) {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.back4app"));
-            startActivity(browserIntent);
-        }
-
-        if (item.getItemId() == R.id.send_email) {
-            String subject = getString(R.string.android);
-            String body = getString(R.string.good_day);
-
-            String[] CC = {""};
-            Intent emailIntent = new Intent(Intent.ACTION_SEND);
-
-            emailIntent.setData(Uri.parse("mailto:"));
-            emailIntent.setType("text/plain");
-            emailIntent.putExtra(Intent.EXTRA_CC, CC);
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-            emailIntent.putExtra(Intent.EXTRA_TEXT, body);
-
-            try {
-                startActivity(Intent.createChooser(emailIntent, getString(R.string.share)));
-            } catch (android.content.ActivityNotFoundException ignored) {
-
+        } else
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            if (item.getItemId() == R.id.phone_settings) {
+                phoneNumberChange();
+            }
+            if (item.getItemId() == R.id.nav_driver) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
+                startActivity(browserIntent);
             }
 
-        }
-        if (item.getItemId() == R.id.send_email_admin) {
-            sendEmailAdmin();
-        }
+            if (item.getItemId() == R.id.gps) {
 
+                eventGps();
+            }
+
+            if (item.getItemId() == R.id.nav_city) {
+                List<String> listCity = logCursor(MainActivity.CITY_INFO);
+                String city = listCity.get(1);
+                MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(city);
+                bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            }
+
+            if (item.getItemId() == R.id.send_like) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.back4app"));
+                startActivity(browserIntent);
+            }
+
+            if (item.getItemId() == R.id.send_email) {
+                String subject = getString(R.string.android);
+                String body = getString(R.string.good_day);
+
+                String[] CC = {""};
+                Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+                emailIntent.setData(Uri.parse("mailto:"));
+                emailIntent.setType("text/plain");
+                emailIntent.putExtra(Intent.EXTRA_CC, CC);
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+                emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+                try {
+                    startActivity(Intent.createChooser(emailIntent, getString(R.string.share)));
+                } catch (android.content.ActivityNotFoundException ignored) {
+
+                }
+
+            }
+            if (item.getItemId() == R.id.send_email_admin) {
+                sendEmailAdmin();
+            }
+        } else {
+            Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+        }
         return false;
     }
     private String generateRandomString(int length) {
@@ -792,7 +800,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 .setPositiveButton(R.string.cheng, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(connected()) {
+//                        if(connected()) {
                             Log.d("TAG", "onClick befor validate: ");
                             String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
                             boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
@@ -809,7 +817,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                                }
                                updateRecordsUser("username", newName);
                             }
-                        }
+//                        }
                     }
                 }).setNegativeButton(cancel_button, null)
                 .show();
@@ -845,9 +853,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             hasConnect = true;
         }
 
-        if (!hasConnect) {
+//        if (!hasConnect) {
 //            Toast.makeText(this, verify_internet, Toast.LENGTH_LONG).show();
-        }
+//        }
         Log.d("TAG", "connected: " + hasConnect);
         return hasConnect;
     }
@@ -917,7 +925,10 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             UserPermissions.getPermissions(userEmail, getApplicationContext());
             new UsersMessages(userEmail, getApplicationContext());
         }
-        scheduleAlarm();
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            scheduleAlarm();
+//        }
+
 
     }
 
@@ -1362,7 +1373,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         }
     }
 
-    private static final String PREFS_NAME = "MyPrefsFileNew";
+    private static final String PREFS_NAME_VERSION = "MyPrefsFileNew";
     private static final String LAST_NOTIFICATION_TIME_KEY = "lastNotificationTimeNew";
 //    private static final long ONE_DAY_IN_MILLISECONDS = 0; // 24 часа в миллисекундах
     private static final long ONE_DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
@@ -1372,7 +1383,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
 
         // Получаем SharedPreferences
-        SharedPreferences SharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences SharedPreferences = getSharedPreferences(PREFS_NAME_VERSION, Context.MODE_PRIVATE);
 
         // Получаем время последней отправки уведомления
         long lastNotificationTime = SharedPreferences.getLong(LAST_NOTIFICATION_TIME_KEY, 0);

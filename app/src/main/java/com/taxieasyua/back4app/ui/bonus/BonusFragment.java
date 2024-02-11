@@ -34,6 +34,7 @@ import com.taxieasyua.back4app.databinding.FragmentBonusBinding;
 import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.BonusResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
+import com.taxieasyua.back4app.utils.connect.NetworkUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +52,13 @@ public class BonusFragment extends Fragment {
     private NetworkChangeReceiver networkChangeReceiver;
     private ProgressBar progressBar;
     private TextView text0;
-
+    NavController navController;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            navController.navigate(R.id.nav_visicom);
+        }
         binding = FragmentBonusBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -66,6 +71,7 @@ public class BonusFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
         textView = binding.textBonus;
         String bonus = logCursor(MainActivity.TABLE_USER_INFO, requireActivity()).get(5);
         if(bonus == null) {
@@ -77,7 +83,10 @@ public class BonusFragment extends Fragment {
         btnBonus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(connected()) {
+                NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
+                if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                    navController.navigate(R.id.nav_visicom);
+                } else {
                     @SuppressLint("UseRequireInsteadOfGet")
                     String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
                     progressBar.setVisibility(View.VISIBLE);
@@ -91,10 +100,6 @@ public class BonusFragment extends Fragment {
             }
         });
 
-        // Ваш текущий фрагмент или активность
-        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-
-// Переход к фрагменту HomeFragment
 
         btnOrder = binding.btnOrder;
         btnOrder.setOnClickListener(new View.OnClickListener() {
@@ -106,32 +111,6 @@ public class BonusFragment extends Fragment {
 
 
 
-    }
-
-    private boolean connected() {
-
-        boolean hasConnect = false;
-
-        ConnectivityManager cm = (ConnectivityManager) requireActivity().getSystemService(
-                CONNECTIVITY_SERVICE);
-        NetworkInfo wifiNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (wifiNetwork != null && wifiNetwork.isConnected()) {
-            hasConnect = true;
-        }
-        NetworkInfo mobileNetwork = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        if (mobileNetwork != null && mobileNetwork.isConnected()) {
-            hasConnect = true;
-        }
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork != null && activeNetwork.isConnected()) {
-            hasConnect = true;
-        }
-
-        if (!hasConnect) {
-            Toast.makeText(requireActivity(), verify_internet, Toast.LENGTH_LONG).show();
-        }
-        Log.d("TAG", "connected: " + hasConnect);
-        return hasConnect;
     }
 
     String baseUrl = "https://m.easy-order-taxi.site";

@@ -11,8 +11,8 @@ android {
         applicationId "com.taxieasyua.back4app"
         minSdk 24
         targetSdk 33
-        versionCode 21015
-        versionName '2.1015'
+        versionCode 21020
+        versionName '2.1020'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resourceConfigurations += ['en', 'ru', 'uk', 'fr']
@@ -94,4 +94,5 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'androidx.work:work-runtime:2.7.0'
 }

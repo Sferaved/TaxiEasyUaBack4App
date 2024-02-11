@@ -63,6 +63,7 @@ import com.taxieasyua.back4app.ui.maps.FromJSONParser;
 import com.taxieasyua.back4app.ui.maps.ToJSONParser;
 import com.taxieasyua.back4app.ui.open_map.OpenStreetMapActivity;
 import com.taxieasyua.back4app.ui.open_map.visicom.ActivityVisicomOnePage;
+import com.taxieasyua.back4app.utils.connect.NetworkUtils;
 import com.taxieasyua.back4app.utils.ip.ApiServiceCountry;
 import com.taxieasyua.back4app.utils.ip.CountryResponse;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
@@ -138,7 +139,7 @@ public class VisicomFragment extends Fragment{
         View root = binding.getRoot();
         progressBar = binding.progressBar;
         progressBar.setVisibility(View.VISIBLE);
-        networkChangeReceiver = new NetworkChangeReceiver();
+//        networkChangeReceiver = new NetworkChangeReceiver();
         return root;
     }
     @Override
@@ -368,8 +369,7 @@ public class VisicomFragment extends Fragment{
         if (activeNetwork != null && activeNetwork.isConnected()) {
             hasConnect = true;
         }
-
-        return hasConnect;
+      return hasConnect;
     }
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -653,6 +653,7 @@ public class VisicomFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
+
         List<String> stringList = logCursor(MainActivity.CITY_INFO, requireActivity());
         api =  stringList.get(2);
 
@@ -674,13 +675,8 @@ public class VisicomFragment extends Fragment{
         textfrom = binding.textfrom;
         num1 = binding.num1;
 
-        textfrom.setVisibility(View.INVISIBLE);
-        num1.setVisibility(View.INVISIBLE);
-
-
-
-
-
+//        textfrom.setVisibility(View.INVISIBLE);
+//        num1.setVisibility(View.INVISIBLE);
         addCost = 0;
         updateAddCost(String.valueOf(addCost));
 
@@ -942,11 +938,6 @@ public class VisicomFragment extends Fragment{
 
         binding.textfrom.setVisibility(View.INVISIBLE);
 
-//        btn_clear_from_text.setVisibility(View.INVISIBLE);
-//        textfrom.setVisibility(View.INVISIBLE);
-//        num1.setVisibility(View.INVISIBLE);
-
-
         Log.d(TAG, "onResume: " + MainActivity.countryState);
         List<String> listCity = logCursor(MainActivity.CITY_INFO, requireActivity());
         String city = listCity.get(1);
@@ -1004,24 +995,35 @@ public class VisicomFragment extends Fragment{
         String newTitle =  getString(R.string.menu_city) + " " + cityMenu;
         // Изменяем текст элемента меню
         MainActivity.navVisicomMenuItem.setTitle(newTitle);
-
-        if (newRout()) {
+        if (NetworkUtils.isNetworkAvailable(requireContext())) {
+            if (!newRout()) {
+                //            btn_clear_from_text.setVisibility(View.INVISIBLE);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            visicomCost();
+                        }
+                    }
+                }, 100);
+            }
+        } else {
+            binding.textfrom.setVisibility(View.INVISIBLE);
+            binding.textwhere.setVisibility(View.INVISIBLE);
             btn_clear_from.setVisibility(View.INVISIBLE);
             textfrom.setVisibility(View.INVISIBLE);
             num1.setVisibility(View.INVISIBLE);
-        } else {
-//            btn_clear_from_text.setVisibility(View.INVISIBLE);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        visicomCost();
-                    }
-                }
-            }, 100);
-
-
+            progressBar.setVisibility(View.INVISIBLE);
+            gpsbut.setVisibility(View.INVISIBLE);
+            textfrom.setVisibility(View.INVISIBLE);
+            num1.setVisibility(View.INVISIBLE);
+            btn_clear_from_text.setText(getString(R.string.try_again));
+            btn_clear_from_text.setVisibility(View.VISIBLE);
+            btn_clear_from_text.setOnClickListener(v -> {
+                startActivity(new Intent(requireActivity(), MainActivity.class));
+            });
         }
+
 
     }
 
