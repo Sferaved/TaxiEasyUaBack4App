@@ -1,10 +1,15 @@
 package com.taxieasyua.back4app.utils.activ_push;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -16,7 +21,9 @@ import androidx.work.WorkManager;
 import com.taxieasyua.back4app.MainActivity;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
+import com.taxieasyua.back4app.ServerConnection;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +48,7 @@ public class MyPeriodicWorker extends Worker {
         Log.d(TAG, "onReceive: isUserActive " + isUserActive);
 
         if (!isUserActive) {
-            updateLastActivityTimestamp(context);
+
             // Если пользователь не активен, отправьте уведомление
             sendNotification(context);
         }
@@ -65,23 +72,23 @@ public class MyPeriodicWorker extends Worker {
         boolean isAppInForeground = ((MyApplication) context.getApplicationContext()).isAppInForeground();
         Log.d(TAG, "checkUserActivity " + isAppInForeground);
 
+        long lastActivityTimestamp = getLastActivityTimestamp(context);
+        long currentTime = System.currentTimeMillis();
+
+        Log.d(TAG, "lastActivity: " + timeFormatter(lastActivityTimestamp));
+        Log.d(TAG, "currentTime: " + timeFormatter(currentTime));
+
         // Если приложение в переднем плане, считаем его активным
         if (isAppInForeground) {
             return true;
         }
 
-        // Приложение в фоновом режиме, выполняем логику проверки времени активности пользователя
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
-        long lastActivityTimestamp = prefs.getLong(LAST_ACTIVITY_KEY, 0);
-        long currentTime = System.currentTimeMillis();
-
-        Log.d(TAG, "lastActivit: CHECK " + timeFormatter(lastActivityTimestamp));
-        Log.d(TAG, "currentTime: CHECK " + timeFormatter(currentTime));
-        // Проверка, прошло ли более 25 дней с последней активности
-//        return (currentTime - lastActivityTimestamp) <= (60 * 1000);
-        return (currentTime - lastActivityTimestamp) < (25 * 24 * 60 * 60 * 1000);
+        // Проверка, прошло ли менее 60 секунд с последней активности
+        boolean isActive = (currentTime - lastActivityTimestamp) <= (25 *  24 * 60 * 60 * 1000);
+        Log.d(TAG, "checkUserActivity: " + isActive);
+        return isActive;
     }
+
     private String timeFormatter(long timeMsec) {
         Date formattedTime = new Date(timeMsec);
         @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -101,15 +108,73 @@ public class MyPeriodicWorker extends Worker {
 
         // Используйте ваш класс NotificationHelper для отправки уведомления
         NotificationHelper.showNotificationMessageOpen(context, title, message, pendingIntent);
-
+        insertOrUpdatePushDate(context);
     }
     private void updateLastActivityTimestamp(Context context) {
 
         // Обновление времени последней активности в SharedPreferences
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Log.d(TAG, "updateLastActivityTimestamp: " + timeFormatter(System.currentTimeMillis()));
         editor.putLong(LAST_ACTIVITY_KEY, System.currentTimeMillis());
         editor.apply();
     }
+
+    public void insertOrUpdatePushDate(Context context) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        if (database != null) {
+            try {
+                // Получаем текущее время и дату
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String currentDateandTime = sdf.format(new Date());
+                Log.d(TAG, "Current date and time: " + currentDateandTime);
+
+                // Создаем объект ContentValues для передачи данных в базу данных
+                ContentValues values = new ContentValues();
+                values.put("push_date", currentDateandTime);
+
+                // Пытаемся вставить новую запись. Если запись уже существует, выполняется обновление.
+                int rowsAffected = database.update(MainActivity.TABLE_LAST_PUSH, values, "ROWID=1", null);
+                if (rowsAffected > 0) {
+                    Log.d(TAG, "Update successful");
+                } else {
+                    Log.d(TAG, "Error updating");
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                database.close();
+            }
+        }
+    }
+
+
+    @SuppressLint("Range")
+    public long getLastActivityTimestamp(Context context) {
+        long lastActivityTimestamp = 0;
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        // Выполняем запрос к таблице для получения времени последней активности
+        Cursor cursor = database.rawQuery("SELECT push_date FROM " + MainActivity.TABLE_LAST_PUSH, null);
+
+        // Проверяем, есть ли результаты запроса
+        if (cursor != null && cursor.moveToFirst()) {
+            // Получаем значение времени последней активности из результата запроса
+            String dateString = cursor.getString(cursor.getColumnIndex("push_date"));
+            try {
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = sdf.parse(dateString);
+                assert date != null;
+                lastActivityTimestamp = date.getTime();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            cursor.close();
+        }
+        Log.d(TAG, "getLastActivityTimestamp: " + lastActivityTimestamp);
+        database.close();
+        return lastActivityTimestamp;
+    }
+
 }

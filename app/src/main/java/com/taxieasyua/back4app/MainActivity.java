@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static final String TABLE_POSITION_INFO = "myPosition";
     public static final String TABLE_FONDY_CARDS = "tableFondyCards";
     public static final String TABLE_MONO_CARDS = "tableMonoCards";
+
+    public static final String TABLE_LAST_PUSH = "tableLastPush";
     public static Cursor cursorDb;
     public static boolean verifyPhone;
     private AppBarConfiguration mAppBarConfiguration;
@@ -180,33 +182,11 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         visicomFragment.setAutoClickListener(this); // "this" refers to the MainActivity
     }
 
-    private static final int ALARM_REQUEST_CODE = 0; // Use a unique code for your PendingIntent
-
-//    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-//    private void scheduleAlarm() {
-//        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//            checkPermission(Manifest.permission.POST_NOTIFICATIONS, PackageManager.PERMISSION_GRANTED);
-//        }
-//
-//        Intent intent = new Intent(this, PushAlarmReceiver.class);
-//        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-//        Log.d(TAG, "scheduleAlarm: ");
-//        // Set the alarm to start at 24-hour intervals
-////        long intervalMillis = 24 * 60 * 60 * 1000; // 24 hours
-//        long intervalMillis = 2*60 * 1000; // 24 hours
-//        long triggerMillis = System.currentTimeMillis() + intervalMillis;
-//
-//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerMillis, intervalMillis, pendingIntent);
-//    }
-
 
     @Override
     protected void onResume() {
         super.onResume();
         startService(new Intent(this, MyService.class));
-
-        updateLastActivityTimestamp();
 
     }
     private static final String PREFS_NAME = "UserActivityPrefs";
@@ -434,12 +414,73 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 " bank_name text," +
                 " rectoken text," +
                 " rectoken_check text);");
+        database.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LAST_PUSH + "(id integer primary key autoincrement," +
+                " push_date DATETIME);");
+        
 
         database.close();
 
         if (NetworkUtils.isNetworkAvailable(this)) {
             // Действия при наличии интернета
             newUser();
+        }
+    }
+
+    public void insertPushDate(Context context) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        if (database != null) {
+            try {
+                // Получаем текущее время и дату
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String currentDateandTime = sdf.format(new Date());
+                Log.d("InsertOrUpdate", "Current date and time: " + currentDateandTime);
+
+                // Создаем объект ContentValues для передачи данных в базу данных
+                ContentValues values = new ContentValues();
+                values.put("push_date", currentDateandTime);
+
+                // Пытаемся вставить новую запись. Если запись уже существует, выполняется обновление.
+                long rowId = database.insertWithOnConflict(MainActivity.TABLE_LAST_PUSH, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+
+                if (rowId != -1) {
+                    Log.d("InsertOrUpdate", "Insert or update successful");
+                } else {
+                    Log.d("InsertOrUpdate", "Error inserting or updating");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                database.close();
+            }
+        }
+    }
+    public void updatePushDate(Context context) {
+        SQLiteDatabase database = context.openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        if (database != null) {
+            try {
+                // Получаем текущее время и дату
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String currentDateandTime = sdf.format(new Date());
+                Log.d(TAG, "Current date and time: " + currentDateandTime);
+
+                // Создаем объект ContentValues для передачи данных в базу данных
+                ContentValues values = new ContentValues();
+                values.put("push_date", currentDateandTime);
+
+                // Пытаемся вставить новую запись. Если запись уже существует, выполняется обновление.
+                int rowsAffected = database.update(MainActivity.TABLE_LAST_PUSH, values, "ROWID=1", null);
+                if (rowsAffected > 0) {
+                    Log.d(TAG, "Update successful");
+                } else {
+                    Log.d(TAG, "Error updating");
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                database.close();
+            }
         }
     }
 
@@ -619,7 +660,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-
+        if (item.getItemId() == R.id.action_exit) {
+            finishAffinity();
+        }
 
         if (NetworkUtils.isNetworkAvailable(this)) {
             if (item.getItemId() == R.id.phone_settings) {
@@ -647,9 +690,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
 
         } else {
-            if (item.getItemId() == R.id.action_exit) {
-                finishAffinity();
-            } else if (item.getItemId() == R.id.gps) {
+           if (item.getItemId() == R.id.gps) {
 
                 eventGps();
             } else if (item.getItemId() == R.id.send_email_admin) {
@@ -916,6 +957,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         Log.d(TAG, "newUser: " + userEmail);
 
         if(userEmail.equals("email")) {
+
+            new Thread(() -> insertPushDate(getApplicationContext())).start();
+
             try {
                 FirebaseApp.initializeApp(MainActivity.this);
             } catch (Exception e) {
@@ -929,6 +973,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             startFireBase();
 
         } else {
+            new Thread(() -> updatePushDate(getApplicationContext())).start();
 
             new VerifyUserTask().execute();
             UserPermissions.getPermissions(userEmail, getApplicationContext());
