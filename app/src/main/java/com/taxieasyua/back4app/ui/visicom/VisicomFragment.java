@@ -1001,9 +1001,7 @@ public class VisicomFragment extends Fragment{
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             visicomCost();
-                        }
                     }
                 }, 100);
             }
@@ -1205,7 +1203,7 @@ public class VisicomFragment extends Fragment{
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+
     private void visicomCost() {
         String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
         SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);

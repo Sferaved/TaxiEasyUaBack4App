@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'com.google.gms.google-services'
 }
 
@@ -9,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId "com.taxieasyua.back4app"
-        minSdk 24
+        minSdk 26
         targetSdk 33
-        versionCode 21020
-        versionName '2.1020'
+        versionCode 21021
+        versionName '2.1021'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resourceConfigurations += ['en', 'ru', 'uk', 'fr']
