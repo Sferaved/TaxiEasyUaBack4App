@@ -663,17 +663,43 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         if (item.getItemId() == R.id.action_exit) {
             finishAffinity();
         }
+        if (item.getItemId() == R.id.gps) {
+            eventGps();
+        }
+
+        if (item.getItemId() == R.id.send_email_admin) {
+            sendEmailAdmin();
+        }
+
+        if (item.getItemId() == R.id.send_email) {
+            String subject = getString(R.string.android);
+            String body = getString(R.string.good_day);
+
+            String[] CC = {""};
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+            emailIntent.setData(Uri.parse("mailto:"));
+            emailIntent.setType("text/plain");
+            emailIntent.putExtra(Intent.EXTRA_CC, CC);
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+            emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+
+            try {
+                startActivity(Intent.createChooser(emailIntent, getString(R.string.share)));
+            } catch (android.content.ActivityNotFoundException ignored) {
+
+        }
 
         if (NetworkUtils.isNetworkAvailable(this)) {
+
             if (item.getItemId() == R.id.phone_settings) {
                 phoneNumberChange();
             }
+
             if (item.getItemId() == R.id.nav_driver) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
                 startActivity(browserIntent);
             }
-
-
 
             if (item.getItemId() == R.id.nav_city) {
                 List<String> listCity = logCursor(MainActivity.CITY_INFO);
@@ -687,34 +713,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                 startActivity(browserIntent);
             }
 
-
-
         } else {
-           if (item.getItemId() == R.id.gps) {
-
-                eventGps();
-            } else if (item.getItemId() == R.id.send_email_admin) {
-                sendEmailAdmin();
-            } else if (item.getItemId() == R.id.send_email) {
-                String subject = getString(R.string.android);
-                String body = getString(R.string.good_day);
-
-                String[] CC = {""};
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-
-                emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.setType("text/plain");
-                emailIntent.putExtra(Intent.EXTRA_CC, CC);
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-                emailIntent.putExtra(Intent.EXTRA_TEXT, body);
-
-                try {
-                    startActivity(Intent.createChooser(emailIntent, getString(R.string.share)));
-                } catch (android.content.ActivityNotFoundException ignored) {
-
-                }
-
-            } else {
                 Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
             }
 
