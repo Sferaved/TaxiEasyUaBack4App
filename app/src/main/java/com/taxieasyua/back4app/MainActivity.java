@@ -663,6 +663,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         if (item.getItemId() == R.id.action_exit) {
             finishAffinity();
         }
+
         if (item.getItemId() == R.id.gps) {
             eventGps();
         }
@@ -690,30 +691,47 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
         }
 
-        if (NetworkUtils.isNetworkAvailable(this)) {
-
             if (item.getItemId() == R.id.phone_settings) {
-                phoneNumberChange();
-            }
+                if (NetworkUtils.isNetworkAvailable(this)) {
+                    phoneNumberChange();
+                } else {
+                    Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+                }
 
-            if (item.getItemId() == R.id.nav_driver) {
+            }
+        }
+
+        if (item.getItemId() == R.id.nav_driver) {
+            if (NetworkUtils.isNetworkAvailable(this)) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
                 startActivity(browserIntent);
+            } else {
+                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
             }
-
-            if (item.getItemId() == R.id.nav_city) {
+        }
+        if (item.getItemId() == R.id.phone_settings) {
+            if (NetworkUtils.isNetworkAvailable(this)) {
+                phoneNumberChange();
+            } else {
+                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            }
+        }
+        if (item.getItemId() == R.id.nav_city) {
+            if (NetworkUtils.isNetworkAvailable(this)) {
                 List<String> listCity = logCursor(MainActivity.CITY_INFO);
                 String city = listCity.get(1);
                 MyBottomSheetCityFragment bottomSheetDialogFragment = new MyBottomSheetCityFragment(city);
                 bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+            } else {
+                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
             }
+        }
 
-            if (item.getItemId() == R.id.send_like) {
+        if (item.getItemId() == R.id.send_like) {
+            if (NetworkUtils.isNetworkAvailable(this)) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.back4app"));
                 startActivity(browserIntent);
-            }
-
-        } else {
+            } else {
                 Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
             }
 
