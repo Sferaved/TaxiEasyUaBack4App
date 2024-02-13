@@ -1,8 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.1026</string>
-    <string name="version">Версия: 2.1026</string>
+    <string name="version_code">2.1029</string>
+    <string name="version">Версия: 2.1029</string>
 
     <string name="app_name">Такси Украина 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -42,7 +42,7 @@
     <string name="open_maps">Заказать по карте</string>
     <string name="driver">Работа водителем (реклама)</string>
     <string name="send_email">Поделиться</string>
-    <string name="gps_ok">У Вас все хорошо</string>
+    <string name="gps_ok">Определение геопозиции включено</string>
     <string name="cancel_button">Нет, спасибо</string>
     <string name="gps_on">Включить</string>
     <string name="gps_info">Чтобы улучшить работу программы, включите на устройстве геолокацию Google</string>

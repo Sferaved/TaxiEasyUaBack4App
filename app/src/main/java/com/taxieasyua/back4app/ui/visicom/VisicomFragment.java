@@ -142,6 +142,8 @@ public class VisicomFragment extends Fragment{
 //        networkChangeReceiver = new NetworkChangeReceiver();
         return root;
     }
+
+
     @Override
     public void onPause() {
         super.onPause();
@@ -930,18 +932,18 @@ public class VisicomFragment extends Fragment{
                 MyBottomSheetGPSFragment bottomSheetDialogFragment = new MyBottomSheetGPSFragment();
                 bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
             }  else  {
-                // Разрешения уже предоставлены, выполнить ваш код
-                if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                Toast.makeText(requireContext(), getString(R.string.verify_internet), Toast.LENGTH_SHORT).show();
+                } else if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
                     checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, PackageManager.PERMISSION_GRANTED);
                 } else {
-                    if (NetworkUtils.isNetworkAvailable(requireContext())) {
                         if (isAdded() && isVisible()) {
                             List<String> settings = new ArrayList<>();
 
                             String query = "SELECT * FROM " + MainActivity.ROUT_MARKER + " LIMIT 1";
-                            if (isAdded()) {
+
                                 SQLiteDatabase database = requireActivity().openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
                                 Cursor cursor = database.rawQuery(query, null);
 
@@ -963,13 +965,11 @@ public class VisicomFragment extends Fragment{
                                 settings.add(Double.toString(toLongitude));
                                 settings.add(getString(R.string.search));
                                 settings.add(ToAdressString);
-                            }
+
                             updateRoutMarker(settings);
                             geoText.setText(R.string.search);
                             firstLocation();
-                        }
-                    } else {
-                        Toast.makeText(requireContext(), requireContext().getString(R.string.verify_internet), Toast.LENGTH_SHORT).show();
+
                     }
                 }
 

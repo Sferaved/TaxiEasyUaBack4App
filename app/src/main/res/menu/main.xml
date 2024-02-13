@@ -23,7 +23,7 @@
     <item
         android:id="@+id/gps"
         android:orderInCategory="100"
-        android:title="По GPS" />
+        android:title="GPS" />
 
     <item
         android:id="@+id/send_email"
