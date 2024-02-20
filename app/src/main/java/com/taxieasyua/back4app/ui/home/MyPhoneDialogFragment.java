@@ -2,14 +2,12 @@ package com.taxieasyua.back4app.ui.home;
 
 import static android.content.Context.MODE_PRIVATE;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -31,8 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.taxieasyua.back4app.MainActivity;
@@ -53,6 +49,9 @@ import java.util.regex.Pattern;
 
 
 public class MyPhoneDialogFragment extends BottomSheetDialogFragment {
+    public MyPhoneDialogFragment() {
+    }
+
     EditText phoneNumber;
     AppCompatButton button;
     CheckBox checkBox;

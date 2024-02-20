@@ -1,16 +1,11 @@
 package com.taxieasyua.back4app.utils.messages;
 
-import static com.taxieasyua.back4app.R.string.verify_internet;
-
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.material.tabs.TabLayout;
 import com.taxieasyua.back4app.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;

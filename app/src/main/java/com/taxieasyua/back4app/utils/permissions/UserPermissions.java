@@ -8,21 +8,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.taxieasyua.back4app.MainActivity;
-import com.taxieasyua.back4app.R;
-import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 
 import java.util.Arrays;
 
 import retrofit2.Call;
-        import retrofit2.Callback;
-        import retrofit2.Response;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UserPermissions {
     private static String TAG = "TAG_PERM";

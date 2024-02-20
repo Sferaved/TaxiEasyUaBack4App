@@ -3,8 +3,11 @@ package com.taxieasyua.back4app;
 import static com.taxieasyua.back4app.R.string.cancel_button;
 import static com.taxieasyua.back4app.R.string.format_phone;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,6 +26,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -44,6 +48,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.work.WorkManager;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
@@ -183,11 +188,88 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     }
 
 
+
+
+    @SuppressLint("NewApi")
+    private void isServiceRunning() {
+
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        int serviceCount = 0;
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            Log.d(TAG, "isServiceRunning: " + service.service.getClassName());
+            serviceCount++;
+            if (MyService.class.getName().equals(service.service.getClassName())) {
+                Intent intent = new Intent(this, MyService.class);
+                stopService(intent);
+                Log.d(TAG, "isServiceRunning: " + "stopService");
+            }
+        }
+        Log.d(TAG, "Total running services: " + serviceCount);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, MyService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_MUTABLE);
+        alarmManager.cancel(pendingIntent);
+
+        WorkManager.getInstance(this).cancelAllWork();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
+
     protected void onResume() {
         super.onResume();
+        insertOrUpdatePushDate();
+        Log.d(TAG, "onResume: isServiceRunning())  " );
+        isServiceRunning();
         startService(new Intent(this, MyService.class));
 
+    }
+
+    private void checkNotificationPermissionAndRequestIfNeeded() {
+        // Проверяем разрешение на отправку уведомлений
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (!notificationManager.areNotificationsEnabled()) {
+            // Разрешение на отправку уведомлений отключено, показываем диалоговое окно или системный экран для запроса разрешения
+            Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+            startActivity(intent);
+            // После отображения системного экрана для настроек уведомлений, можно предположить, что пользователь примет необходимые действия и вернется в приложение.
+            // Здесь вы можете использовать метод onActivityResult() для обработки результата запроса разрешения.
+        }
+
+    }
+
+
+    public void insertOrUpdatePushDate() {
+
+        SQLiteDatabase database = openOrCreateDatabase(MainActivity.DB_NAME, MODE_PRIVATE, null);
+        if (database != null) {
+            try {
+                // Получаем текущее время и дату
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String currentDateandTime = sdf.format(new Date());
+                Log.d(TAG, "Current date and time: " + currentDateandTime);
+
+                // Создаем объект ContentValues для передачи данных в базу данных
+                ContentValues values = new ContentValues();
+                values.put("push_date", currentDateandTime);
+
+                // Пытаемся вставить новую запись. Если запись уже существует, выполняется обновление.
+                int rowsAffected = database.update(MainActivity.TABLE_LAST_PUSH, values, "ROWID=1", null);
+                if (rowsAffected > 0) {
+                    Log.d(TAG, "Update successful");
+                } else {
+                    Log.d(TAG, "Error updating");
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                database.close();
+            }
+        }
     }
     private static final String PREFS_NAME = "UserActivityPrefs";
     private static final String LAST_ACTIVITY_KEY = "lastActivityTimestamp";
@@ -661,7 +743,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.action_exit) {
+
             finishAffinity();
+
         }
 
         if (item.getItemId() == R.id.gps) {
@@ -869,7 +953,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                             String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
                             boolean val = Pattern.compile(PHONE_PATTERN).matcher(phoneNumber.getText().toString()).matches();
                             Log.d("TAG", "onClick No validate: " + val);
-                            if (val == false) {
+                            if (!val) {
                                 Toast.makeText(MainActivity.this, getString(format_phone) , Toast.LENGTH_SHORT).show();
                                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + phoneNumber.getText().toString());
 
@@ -985,7 +1069,12 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             }
             Toast.makeText(this, R.string.checking, Toast.LENGTH_SHORT).show();
             startFireBase();
-
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    checkNotificationPermissionAndRequestIfNeeded();
+                }
+            }, 15000);
         } else {
             new Thread(() -> updatePushDate(getApplicationContext())).start();
 
@@ -993,9 +1082,6 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
             UserPermissions.getPermissions(userEmail, getApplicationContext());
             new UsersMessages(userEmail, getApplicationContext());
         }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            scheduleAlarm();
-//        }
 
 
     }
@@ -1683,5 +1769,6 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         });
 //        }
     }
+
 
 }

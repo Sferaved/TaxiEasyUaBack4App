@@ -142,8 +142,6 @@ public class VisicomFragment extends Fragment{
 //        networkChangeReceiver = new NetworkChangeReceiver();
         return root;
     }
-
-
     @Override
     public void onPause() {
         super.onPause();
@@ -421,15 +419,20 @@ public class VisicomFragment extends Fragment{
         }
 
         urlOrder = getTaxiUrlSearchMarkers( "orderSearchMarkersVisicom", requireActivity());
-        Log.d(TAG, "order: urlOrder "  + urlOrder);
-        if (!verifyPhone(requireContext())) {
-            getPhoneNumber();
+        Log.d(TAG, "order:  urlOrder "  + urlOrder);
+        if(!phoneFull()) {
+            if (!verifyPhone(requireContext())) {
+                getPhoneNumber();
+            }
+            if (!verifyPhone(requireActivity())) {
+                bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString(), true);
+                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                progressBar.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            MainActivity.verifyPhone = true;
         }
-        if (!verifyPhone(requireActivity())) {
-            bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString(), true);
-            bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-            progressBar.setVisibility(View.INVISIBLE);
-        }
+
     }
     public void orderFinished() throws MalformedURLException {
         Map<String, String> sendUrlMap = ToJSONParser.sendURL(urlOrder);
@@ -537,18 +540,29 @@ public class VisicomFragment extends Fragment{
             String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
             boolean val = Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
             Log.d("TAG", "onClick No validate: " + val);
-            if (val == false) {
+            if (!val) {
                 Toast.makeText(requireActivity(), getString(R.string.format_phone) , Toast.LENGTH_SHORT).show();
                 Log.d("TAG", "onClick:phoneNumber.getText().toString() " + mPhoneNumber);
 //                requireActivity().finish();
 
             } else {
-                updateRecordsUser(mPhoneNumber, getContext());
+                updateRecordsUser(mPhoneNumber, requireContext());
             }
         }
 
     }
+    private boolean phoneFull () {
+        List<String> stringList =  logCursor(MainActivity.TABLE_USER_INFO, requireContext());
+        String mPhoneNumber = "+380";
+        if(stringList.size() != 0) {
+            mPhoneNumber = stringList.get(2);
+        }
 
+        String PHONE_PATTERN = "((\\+?380)(\\d{9}))$";
+
+        return Pattern.compile(PHONE_PATTERN).matcher(mPhoneNumber).matches();
+
+    }
     private void updateRecordsUser(String result, Context context) {
         ContentValues cv = new ContentValues();
 
@@ -1336,10 +1350,14 @@ public class VisicomFragment extends Fragment{
                 btn_clear_from_text.setVisibility(View.GONE);
 
             }
-            if (!verifyPhone(requireActivity())) {
-                bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString(), false);
-                bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
-                progressBar.setVisibility(View.INVISIBLE);
+            if(!phoneFull()) {
+                if (!verifyPhone(requireActivity())) {
+                    bottomSheetDialogFragment = new MyPhoneDialogFragment("visicom", text_view_cost.getText().toString(), false);
+                    bottomSheetDialogFragment.show(getChildFragmentManager(), bottomSheetDialogFragment.getTag());
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+            } else {
+                MainActivity.verifyPhone = true;
             }
         }
    }
@@ -1347,6 +1365,7 @@ public class VisicomFragment extends Fragment{
     private static class GetPublicIPAddressTask extends AsyncTask<Void, Void, String> {
         FragmentManager fragmentManager;
         String city;
+        @SuppressLint("StaticFieldLeak")
         Context context;
 
         public GetPublicIPAddressTask(FragmentManager fragmentManager, String city, Context context) {
