@@ -3,6 +3,7 @@ package com.taxieasyua.back4app;
 import static com.taxieasyua.back4app.R.string.cancel_button;
 import static com.taxieasyua.back4app.R.string.format_phone;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -27,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -81,6 +83,8 @@ import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.messages.UsersMessages;
 import com.taxieasyua.back4app.utils.permissions.UserPermissions;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
+import com.taxieasyua.back4app.utils.phone_state.DeviceUtils;
+import com.taxieasyua.back4app.utils.phone_state.MyBottomSheetPhoneStateFragment;
 import com.taxieasyua.back4app.utils.user.ApiServiceUser;
 import com.taxieasyua.back4app.utils.user.UserResponse;
 
@@ -743,8 +747,11 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.action_exit) {
+          finishAffinity();
+        }
 
-            finishAffinity();
+        if (item.getItemId() == R.id.action_state_phone) {
+            checkPermission();
 
         }
 
@@ -822,6 +829,80 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         }
         return false;
     }
+    private static final int PERMISSION_REQUEST_READ_PHONE_STATE = 1;
+    private void checkPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED) {
+            performPhoneStateOperation();
+        } else {
+            MyBottomSheetPhoneStateFragment bottomSheetDialogFragment = new MyBottomSheetPhoneStateFragment();
+            bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+        }
+    }
+    @SuppressLint({"HardwareIds", "ObsoleteSdkInt"})
+    private void performPhoneStateOperation() {
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        if (telephonyManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Начиная с Android 10, IMEI может быть недоступен без разрешения READ_PHONE_STATE
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "IMEI недоступен без разрешения", Toast.LENGTH_SHORT).show();
+                    // Здесь вы можете запросить разрешение у пользователя
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, PERMISSION_REQUEST_READ_PHONE_STATE);
+                    return;
+                }
+            }
+            String imei = null;
+            String toastMessage = "";
+            try {
+
+                Log.d(TAG, "performPhoneStateOperation: Build.VERSION.SDK_INT" + Build.VERSION.SDK_INT);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // Для Android 8.0 (API уровня 26) и выше
+                    imei = telephonyManager.getImei(); // Получение IMEI первой SIM-карты
+                } else {
+                    // Для Android ниже 8.0 (API уровня меньше 26)
+                    imei = telephonyManager.getDeviceId(); // Получение IMEI устройства
+                }
+                if (imei != null) {
+                    // Делаем что-то с IMEI
+                    Log.d(TAG, "performPhoneStateOperation: IMEI: " + imei);
+                    toastMessage = "IMEI: " + imei;
+                } else {
+                    // IMEI недоступен
+                    Log.d(TAG, "performPhoneStateOperation: IMEI недоступен");
+                    Toast.makeText(this, "IMEI недоступен", Toast.LENGTH_SHORT).show();
+                }
+            } catch (SecurityException e) {
+                Log.d(TAG, "performPhoneStateOperation: IMEI недоступен");
+                Toast.makeText(this, "IMEI недоступен", Toast.LENGTH_SHORT).show();
+
+            }
+            String deviceId = DeviceUtils.getDeviceId(getApplicationContext());
+            toastMessage += " " + "Android ID устройства " + deviceId;
+            try {
+                String deviceIdSerial = DeviceUtils.getDeviceSerialNumber();
+                toastMessage += " " + "Serial ID устройства " + deviceIdSerial;
+                Toast.makeText(this, "Serial ID устройства " + deviceIdSerial, Toast.LENGTH_SHORT).show();
+            }  catch (SecurityException e) {
+               Log.d(TAG, "performPhoneStateOperation: IMEI недоступен");
+               Toast.makeText(this, "Serial ID устройства недоступен", Toast.LENGTH_SHORT).show();
+
+            }
+
+
+            Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show();
+
+
+
+        } else {
+            // Устройство не поддерживает функции телефона
+            Toast.makeText(this, "Функции телефона недоступны", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
     private String generateRandomString(int length) {
         String characters = "012345678901234567890123456789";
         StringBuilder randomString = new StringBuilder();
