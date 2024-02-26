@@ -7,6 +7,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -15,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -26,6 +28,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -35,6 +38,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -43,6 +49,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -75,12 +82,15 @@ import com.taxieasyua.back4app.ui.home.HomeFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetCityFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetGPSFragment;
+import com.taxieasyua.back4app.ui.home.MyBottomSheetMessageFragment;
 import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.activ_push.MyService;
 import com.taxieasyua.back4app.utils.connect.NetworkUtils;
+import com.taxieasyua.back4app.utils.download.FileDownloader;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.messages.UsersMessages;
+import com.taxieasyua.back4app.utils.notify.NotificationHelper;
 import com.taxieasyua.back4app.utils.permissions.UserPermissions;
 import com.taxieasyua.back4app.utils.phone.ApiClientPhone;
 import com.taxieasyua.back4app.utils.phone_state.DeviceUtils;
@@ -90,6 +100,7 @@ import com.taxieasyua.back4app.utils.user.UserResponse;
 
 import org.json.JSONException;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -153,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
     public static String countryState;
     private static String verifyInternet;
     public static final long MAX_TASK_EXECUTION_TIME_SECONDS = 3;
+    private static String versionServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -791,7 +803,27 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
             }
         }
+        if (item.getItemId() == R.id.update) {
+            Log.d(TAG, "onOptionsItemSelected: " +versionServer);
+            if (NetworkUtils.isNetworkAvailable(this)) {
 
+                if(!versionServer.equals(getString(R.string.version_code))) {
+                    try {
+                        updateApp();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    String message = getString(R.string.update_ok);
+                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
+
+                }
+
+            } else {
+                Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
+            }
+        }
         if (item.getItemId() == R.id.nav_driver) {
             if (NetworkUtils.isNetworkAvailable(this)) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.taxieasyua.job"));
@@ -829,6 +861,123 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         }
         return false;
     }
+    private static final int REQUEST_CODE_UNKNOWN_APP_SOURCES = 1234; // Произвольный код запроса разрешения
+
+    @SuppressLint("ObsoleteSdkInt")
+    private void updateApp() throws InterruptedException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!getPackageManager().canRequestPackageInstalls()) {
+                // Пользователь еще не предоставил разрешение на установку пакетов из неизвестных источников.
+                // Здесь можно открыть системное окно настроек для запроса этого разрешения.
+                Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUEST_CODE_UNKNOWN_APP_SOURCES);
+            }
+        }
+
+        String fileName = "app-debug.apk";
+        File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName);
+        String saveFilePath = file.getAbsolutePath();
+        String updateUrl = "https://m.easy-order-taxi.site/last_versions/" + getString(R.string.application);
+        AlertDialog alertDialog = progressBarUpload ();
+        alertDialog.show();
+        update_cancel = false;
+        FileDownloader.downloadFile(updateUrl, saveFilePath, new FileDownloader.DownloadCallback() {
+            @Override
+            public void onDownloadComplete(String filePath) {
+                File downloadedFile = new File(filePath);
+                long fileSizeInBytes = downloadedFile.length();
+                alertDialog.dismiss();
+                if(!update_cancel) {
+                    Log.d(TAG, "File size: " + fileSizeInBytes + " B");
+                    // Загрузка завершена, вызываем установку файла
+                    Log.d(TAG, "onDownloadComplete: " + filePath);
+                    installFile(filePath);
+                }
+
+            }
+
+            @Override
+            public void onDownloadFailed(Exception e) {
+                // Обработка ошибки загрузки файла
+                Log.d("TAG", "onDownloadFailed: " +  e.toString());
+                e.printStackTrace();
+            }
+        });
+    }
+    private static final int INSTALL_REQUEST_CODE = 1;
+    private boolean update_cancel;
+    private void installFile(String filePath) {
+
+        File file = new File(filePath);
+        Log.d(TAG, "installFile: " + isApkFileValid(filePath));
+        if (file.exists() && file.isFile()) {
+
+            try {
+                // Код установки приложения
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+                intent.setDataAndType(uri, "application/vnd.android.package-archive");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivityForResult(intent, INSTALL_REQUEST_CODE);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "Installation failed: " + e.getMessage());
+            }
+
+
+        } else {
+            Log.e(TAG, "File does not exist or is not a regular file");
+            // Дополнительная обработка в случае отсутствия файла
+        }
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public AlertDialog progressBarUpload () throws InterruptedException {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.dialog_layout, null);
+//
+// / Создание диалога с кастомным макетом
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setView(dialogView);
+        alertDialogBuilder.setPositiveButton(getString(cancel_button), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                update_cancel = true;
+            }
+        });
+
+        return alertDialogBuilder.create();
+
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == INSTALL_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Установка приложения успешно завершена
+                Log.d(TAG, "Installation successful");
+            } else {
+                // Установка приложения завершилась с ошибкой
+                Log.e(TAG, "Installation failed with result code: " + resultCode);
+            }
+        }
+    }
+
+    private boolean isApkFileValid(String filePath) {
+        PackageManager pm = getPackageManager();
+        PackageInfo packageInfo = pm.getPackageArchiveInfo(filePath, 0);
+        if (packageInfo != null) {
+            // Проверяем, что пакет содержит версию и название
+            Log.d(TAG, "isApkFileValid: " + packageInfo.packageName);
+            Log.d(TAG, "isApkFileValid: " + packageInfo.versionCode);
+            return packageInfo.packageName != null && packageInfo.versionCode != 0;
+        }
+        return false;
+    }
+
+
     private static final int PERMISSION_REQUEST_READ_PHONE_STATE = 1;
     private void checkPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
@@ -1594,6 +1743,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
                     cv.put("verifyOrder", "0");
                     database.update(TABLE_USER_INFO, cv, "id = ?", new String[]{"1"});
                 } else {
+                    versionServer = message;
                     try {
                         version(message);
                     } catch (MalformedURLException ignored) {
@@ -1629,16 +1779,19 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         // Проверяем, прошло ли уже 24 часа с момента последней отправки
         if (currentTime - lastNotificationTime >= ONE_DAY_IN_MILLISECONDS) {
             if (!versionApi.equals(getString(R.string.version_code))) {
-                NotificationHelper notificationHelper = new NotificationHelper();
+
                 String title = getString(R.string.new_version);
                 String messageNotif = getString(R.string.news_of_version);
+
                 String urlStr = "https://play.google.com/store/apps/details?id=com.taxieasyua.back4app";
-                notificationHelper.showNotification(this, title, messageNotif, urlStr);
+                NotificationHelper.showNotification(this, title, messageNotif, urlStr);
 
                 // Обновляем время последней отправки уведомления
                 SharedPreferences.Editor editor = SharedPreferences.edit();
                 editor.putLong(LAST_NOTIFICATION_TIME_KEY, currentTime);
                 editor.apply();
+
+
             }
         }
     }

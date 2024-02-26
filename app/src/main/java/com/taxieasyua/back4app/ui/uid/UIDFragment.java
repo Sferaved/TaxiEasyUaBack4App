@@ -14,11 +14,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -31,6 +33,7 @@ import com.taxieasyua.back4app.ui.finish.ApiClient;
 import com.taxieasyua.back4app.ui.finish.RouteResponse;
 import com.taxieasyua.back4app.ui.home.MyBottomSheetErrorFragment;
 import com.taxieasyua.back4app.utils.connect.NetworkUtils;
+import com.taxieasyua.back4app.utils.db.DatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +53,12 @@ public class UIDFragment extends Fragment {
     private NetworkChangeReceiver networkChangeReceiver;
     ProgressBar progressBar;
     NavController navController;
+    DatabaseHelper databaseHelper;
+    String baseUrl = "https://m.easy-order-taxi.site";
+    private List<RouteResponse> routeList;
 
+    AppCompatButton upd_but;
+    private ImageButton scrollButtonDown, scrollButtonUp;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
@@ -67,13 +75,65 @@ public class UIDFragment extends Fragment {
         networkChangeReceiver = new NetworkChangeReceiver();
 
         @SuppressLint("UseRequireInsteadOfGet") String email = logCursor(MainActivity.TABLE_USER_INFO, Objects.requireNonNull(requireActivity())).get(3);
-        fetchRoutes(email);
+        routeList = new ArrayList<>();
+        databaseHelper = new DatabaseHelper(getContext());
+        array = databaseHelper.readRouteInfo();
+
+        upd_but = binding.updBut;
+        upd_but.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
+                fetchRoutes(email);
+            }
+        });
+        scrollButtonUp = binding.scrollButtonUp;
+        scrollButtonDown = binding.scrollButtonDown;
+        scrollButtonDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Определяем следующую позицию для прокрутки
+                int nextVisiblePosition = listView.getLastVisiblePosition() + 1;
+
+                // Проверяем, чтобы не прокручивать за пределы списка
+                if (nextVisiblePosition < array.length) {
+                    // Плавно прокручиваем к следующей позиции
+                    listView.smoothScrollToPosition(nextVisiblePosition);
+                }
+            }
+        });
+
+        scrollButtonUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int offset = -1; // или другое значение, чтобы указать направление прокрутки
+                listView.smoothScrollByOffset(offset);
+            }
+        });
+
+        if (array == null || array.length == 0) {
+            // Вызов метода fetchRoutes(email) только если массив пуст
+            progressBar.setVisibility(View.VISIBLE);
+            fetchRoutes(email);
+        } else {
+            progressBar.setVisibility(View.GONE);
+            upd_but.setVisibility(View.VISIBLE);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.drop_down_layout, array);
+            listView.setAdapter(adapter);
+            scrollButtonDown.setVisibility(View.VISIBLE);
+            scrollButtonUp.setVisibility(View.VISIBLE);
+        }
+        scrollButtonUp = binding.scrollButtonUp;
+        scrollButtonDown = binding.scrollButtonDown;
+        int desiredHeight = 1200; // Ваше желаемое значение высоты в пикселях
+        ViewGroup.LayoutParams layoutParams = listView.getLayoutParams();
+        layoutParams.height = desiredHeight;
+        listView.setLayoutParams(layoutParams);
 
         return root;
     }
 
-    String baseUrl = "https://m.easy-order-taxi.site";
-    private List<RouteResponse> routeList = new ArrayList<>();
+
 
     private void fetchRoutes(String value) {
         String url = baseUrl + "/android/UIDStatusShowEmail/" + value;
@@ -129,6 +189,8 @@ public class UIDFragment extends Fragment {
 
         // Создайте массив строк
         array = new String[routeList.size()];
+
+        databaseHelper.clearTable();
 
         String closeReasonText = getString(R.string.close_resone_def);
 
@@ -192,14 +254,17 @@ public class UIDFragment extends Fragment {
                         + getString(R.string.close_resone_cost) + webCost + " " + getString(R.string.UAH)
                         + getString(R.string.close_resone_time)
                         + createdAt + getString(R.string.close_resone_text) + closeReasonText;
-                array[i] = routeInfo;
+//                array[i] = routeInfo;
+                databaseHelper.addRouteInfo(routeInfo);
 
         }
+        array = databaseHelper.readRouteInfo();
         Log.d("TAG", "processRouteList: array " + Arrays.toString(array));
         if(array != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.drop_down_layout, array);
             listView.setAdapter(adapter);
-
+            scrollButtonDown.setVisibility(View.VISIBLE);
+            scrollButtonUp.setVisibility(View.VISIBLE);
         }
     }
 

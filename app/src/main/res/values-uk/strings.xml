@@ -1,8 +1,8 @@
 <resources>
     <string name="application">PAS2</string>
 
-    <string name="version_code">2.1033</string>
-    <string name="version">Версія: 2.1033</string>
+    <string name="version_code">2.1034</string>
+    <string name="version">Версія: 2.1034</string>
 
     <string name="app_name">Таксі Україна 2</string>
     <string name="back4app_server_url">https://parseapi.back4app.com/</string>
@@ -324,4 +324,8 @@
     <string name="new_order_notify">Замовте поїздку за вигідною ціною.</string>
     <string name="id_phone_text">Надайте доступ до вбудованого ідентифікатора пристрою, щоб отримувати персоналізовані рекламні пропозиції та покращений досвід користування партнерськими сервісами. Будь-коли Ви можете запросити видалення цієї інформації.</string>
     <string name="item_state_phone">Персоналізація</string>
+    <string name="update_rout">Оновити історію</string>
+    <string name="update_app">Оновити додаток</string>
+    <string name="upload">Завантаження оновлення...</string>
+    <string name="update_ok">У Вас встановлена актуальна версія. Немає необхідності оновлювати програму.</string>
 </resources>

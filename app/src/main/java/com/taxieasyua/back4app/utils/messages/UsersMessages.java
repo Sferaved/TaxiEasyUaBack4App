@@ -6,7 +6,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.taxieasyua.back4app.NotificationHelper;
+import com.taxieasyua.back4app.utils.notify.NotificationHelper;
 import com.taxieasyua.back4app.R;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 

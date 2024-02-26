@@ -17,7 +17,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.taxieasyua.back4app.MainActivity;
-import com.taxieasyua.back4app.NotificationHelper;
+import com.taxieasyua.back4app.utils.notify.NotificationHelper;
 import com.taxieasyua.back4app.R;
 
 import java.text.ParseException;
