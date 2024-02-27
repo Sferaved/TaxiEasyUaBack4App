@@ -25,10 +25,10 @@
         android:orderInCategory="100"
         android:title="GPS" />
 
-    <item
-        android:id="@+id/action_state_phone"
-        android:orderInCategory="100"
-        android:title="@string/item_state_phone" />
+<!--    <item-->
+<!--        android:id="@+id/action_state_phone"-->
+<!--        android:orderInCategory="100"-->
+<!--        android:title="@string/item_state_phone" />-->
 
     <item
         android:id="@+id/send_email"

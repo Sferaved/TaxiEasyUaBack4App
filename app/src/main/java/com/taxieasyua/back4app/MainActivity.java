@@ -762,10 +762,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
           finishAffinity();
         }
 
-        if (item.getItemId() == R.id.action_state_phone) {
-            checkPermission();
-
-        }
+//        if (item.getItemId() == R.id.action_state_phone) {
+//            checkPermission();
+//        }
 
         if (item.getItemId() == R.id.gps) {
             eventGps();
