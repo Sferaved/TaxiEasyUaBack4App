@@ -62,9 +62,7 @@ public class UIDFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_content_main);
-        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
-            navController.navigate(R.id.nav_visicom);
-        }
+
         binding = FragmentUidBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
@@ -83,8 +81,13 @@ public class UIDFragment extends Fragment {
         upd_but.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                fetchRoutes(email);
+                if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                    navController.navigate(R.id.nav_visicom);
+                } else {
+                    progressBar.setVisibility(View.VISIBLE);
+                    fetchRoutes(email);
+                }
+
             }
         });
         scrollButtonUp = binding.scrollButtonUp;

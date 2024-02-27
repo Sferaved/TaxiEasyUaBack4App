@@ -1025,6 +1025,16 @@ public class FinishActivity extends AppCompatActivity {
                             }
 
                             if (driverPhone != null && !driverPhone.isEmpty()) {
+                                Log.d(TAG, "onResponse:driverPhone " + driverPhone);
+                                btn_reset_status.setText(getString(R.string.phone_driver));
+                                btn_reset_status.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent intent = new Intent(Intent.ACTION_DIAL);
+                                        intent.setData(Uri.parse("tel:" + driverPhone));
+                                        startActivity(intent);
+                                    }
+                                });
                                 messageBuilder.append(getString(R.string.ex_st_4)).append(driverPhone);
                             }
 
