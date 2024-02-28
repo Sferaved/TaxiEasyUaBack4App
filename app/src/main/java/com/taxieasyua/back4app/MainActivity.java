@@ -855,7 +855,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
 
     private AppUpdater appUpdater;
+    private static final int REQUEST_INSTALL_PACKAGES = 123;
     private void updateApp() {
+
         // Создание экземпляра AppUpdater
         appUpdater = new AppUpdater(this);
         Log.d("UpdateApp", "Starting app update process");
@@ -877,6 +879,22 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
 
         // Проверка наличия обновлений
         checkForUpdate();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_INSTALL_PACKAGES) {
+            if (resultCode == RESULT_OK) {
+                // Пользователь разрешил установку пакетов, продолжаем установку
+                // Ваш код для установки пакета
+
+            } else {
+                // Пользователь отказал в установке пакетов или отменил действие
+                // Обработайте это событие соответствующим образом
+            }
+            Log.d(TAG, "onActivityResult:resultCode " + resultCode);
+        }
     }
 
     // Добавляем проверку наличия обновлений
@@ -1021,19 +1039,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         return alertDialogBuilder.create();
 
     }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == INSTALL_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // Установка приложения успешно завершена
-                Log.d(TAG, "Installation successful");
-            } else {
-                // Установка приложения завершилась с ошибкой
-                Log.e(TAG, "Installation failed with result code: " + resultCode);
-            }
-        }
-    }
+
 
     private boolean isApkFileValid(String filePath) {
         PackageManager pm = getPackageManager();
