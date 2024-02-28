@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -28,7 +29,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -38,9 +38,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -64,6 +61,13 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.tasks.OnSuccessListener;
+import com.google.android.play.core.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -87,7 +91,7 @@ import com.taxieasyua.back4app.ui.maps.CostJSONParser;
 import com.taxieasyua.back4app.ui.visicom.VisicomFragment;
 import com.taxieasyua.back4app.utils.activ_push.MyService;
 import com.taxieasyua.back4app.utils.connect.NetworkUtils;
-import com.taxieasyua.back4app.utils.download.FileDownloader;
+import com.taxieasyua.back4app.utils.download.AppUpdater;
 import com.taxieasyua.back4app.utils.ip.IPUtil;
 import com.taxieasyua.back4app.utils.messages.UsersMessages;
 import com.taxieasyua.back4app.utils.notify.NotificationHelper;
@@ -805,19 +809,7 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         if (item.getItemId() == R.id.update) {
             Log.d(TAG, "onOptionsItemSelected: " +versionServer);
             if (NetworkUtils.isNetworkAvailable(this)) {
-
-                if(!versionServer.equals(getString(R.string.version_code))) {
-                    try {
-                        updateApp();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    String message = getString(R.string.update_ok);
-                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
-                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
-
-                }
+                updateApp();
 
             } else {
                 Toast.makeText(this, R.string.verify_internet, Toast.LENGTH_SHORT).show();
@@ -860,50 +852,127 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         }
         return false;
     }
-    private static final int REQUEST_CODE_UNKNOWN_APP_SOURCES = 1234; // Произвольный код запроса разрешения
 
-    @SuppressLint("ObsoleteSdkInt")
-    private void updateApp() throws InterruptedException {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!getPackageManager().canRequestPackageInstalls()) {
-                // Пользователь еще не предоставил разрешение на установку пакетов из неизвестных источников.
-                // Здесь можно открыть системное окно настроек для запроса этого разрешения.
-                Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
-                intent.setData(Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, REQUEST_CODE_UNKNOWN_APP_SOURCES);
-            }
-        }
 
-        String fileName = "app-debug.apk";
-        File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName);
-        String saveFilePath = file.getAbsolutePath();
-        String updateUrl = "https://m.easy-order-taxi.site/last_versions/" + getString(R.string.application);
-        AlertDialog alertDialog = progressBarUpload ();
-        alertDialog.show();
-        update_cancel = false;
-        FileDownloader.downloadFile(updateUrl, saveFilePath, new FileDownloader.DownloadCallback() {
+    private AppUpdater appUpdater;
+    private void updateApp() {
+        // Создание экземпляра AppUpdater
+        appUpdater = new AppUpdater(this);
+        Log.d("UpdateApp", "Starting app update process");
+
+        // Установка слушателя для обновления состояния установки
+        appUpdater.setOnUpdateListener(new AppUpdater.OnUpdateListener() {
             @Override
-            public void onDownloadComplete(String filePath) {
-                File downloadedFile = new File(filePath);
-                long fileSizeInBytes = downloadedFile.length();
-                alertDialog.dismiss();
-                if(!update_cancel) {
-                    Log.d(TAG, "File size: " + fileSizeInBytes + " B");
-                    // Загрузка завершена, вызываем установку файла
-                    Log.d(TAG, "onDownloadComplete: " + filePath);
-                    installFile(filePath);
+            public void onUpdateCompleted() {
+                // Показать пользователю сообщение о завершении обновления
+                Toast.makeText(getApplicationContext(), "Обновление завершено. Приложение будет перезапущено.", Toast.LENGTH_SHORT).show();
+
+                // Перезапуск приложения для применения обновлений
+                restartApplication();
+            }
+        });
+
+        // Регистрация слушателя
+        appUpdater.registerListener();
+
+        // Проверка наличия обновлений
+        checkForUpdate();
+    }
+
+    // Добавляем проверку наличия обновлений
+    private static final int MY_REQUEST_CODE = 1001;
+
+    private void checkForUpdate() {
+        AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(this);
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+        appUpdateInfoTask.addOnSuccessListener(new OnSuccessListener<AppUpdateInfo>() {
+            @Override
+            public void onSuccess(AppUpdateInfo appUpdateInfo) {
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    // Доступны обновления
+                    Log.d("UpdateApp", "Available updates found");
+
+                    // Запускаем процесс обновления
+                    try {
+                        appUpdateManager.startUpdateFlowForResult(
+                                appUpdateInfo,
+                                AppUpdateType.IMMEDIATE, // или AppUpdateType.FLEXIBLE
+                                MainActivity.this, // Используем ссылку на активность
+                                MY_REQUEST_CODE); // Код запроса для обновления
+                    } catch (IntentSender.SendIntentException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    String message = getString(R.string.update_ok);
+                    MyBottomSheetMessageFragment bottomSheetDialogFragment = new MyBottomSheetMessageFragment(message);
+                    bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
                 }
-
-            }
-
-            @Override
-            public void onDownloadFailed(Exception e) {
-                // Обработка ошибки загрузки файла
-                Log.d("TAG", "onDownloadFailed: " +  e.toString());
-                e.printStackTrace();
             }
         });
     }
+
+
+
+
+
+
+    private void restartApplication() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Отмена регистрации слушателя при уничтожении активности
+        appUpdater.unregisterListener();
+    }
+    private static final int REQUEST_CODE_UNKNOWN_APP_SOURCES = 1234; // Произвольный код запроса разрешения
+    @SuppressLint("ObsoleteSdkInt")
+//    private void updateApp() throws InterruptedException {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            if (!getPackageManager().canRequestPackageInstalls()) {
+//                // Пользователь еще не предоставил разрешение на установку пакетов из неизвестных источников.
+//                // Здесь можно открыть системное окно настроек для запроса этого разрешения.
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+//                intent.setData(Uri.parse("package:" + getPackageName()));
+//                startActivityForResult(intent, REQUEST_CODE_UNKNOWN_APP_SOURCES);
+//            }
+//        }
+//
+//        String fileName = "app-debug.apk";
+//        File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName);
+//        String saveFilePath = file.getAbsolutePath();
+//        String updateUrl = "https://m.easy-order-taxi.site/last_versions/" + getString(R.string.application);
+//        AlertDialog alertDialog = progressBarUpload ();
+//        alertDialog.show();
+//        update_cancel = false;
+//        FileDownloader.downloadFile(updateUrl, saveFilePath, new FileDownloader.DownloadCallback() {
+//            @Override
+//            public void onDownloadComplete(String filePath) {
+//                File downloadedFile = new File(filePath);
+//                long fileSizeInBytes = downloadedFile.length();
+//                alertDialog.dismiss();
+//                if(!update_cancel) {
+//                    Log.d(TAG, "File size: " + fileSizeInBytes + " B");
+//                    // Загрузка завершена, вызываем установку файла
+//                    Log.d(TAG, "onDownloadComplete: " + filePath);
+//                    installFile(filePath);
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onDownloadFailed(Exception e) {
+//                // Обработка ошибки загрузки файла
+//                Log.d("TAG", "onDownloadFailed: " +  e.toString());
+//                e.printStackTrace();
+//            }
+//        });
+//    }
+
     private static final int INSTALL_REQUEST_CODE = 1;
     private boolean update_cancel;
     private void installFile(String filePath) {

@@ -118,6 +118,8 @@ public class UIDFragment extends Fragment {
             // Вызов метода fetchRoutes(email) только если массив пуст
             progressBar.setVisibility(View.VISIBLE);
             fetchRoutes(email);
+            scrollButtonDown.setVisibility(View.INVISIBLE);
+            scrollButtonUp.setVisibility(View.INVISIBLE);
         } else {
             progressBar.setVisibility(View.GONE);
             upd_but.setVisibility(View.VISIBLE);
@@ -206,6 +208,7 @@ public class UIDFragment extends Fragment {
             String webCost = route.getWebCost();
             String createdAt = route.getCreatedAt();
             String closeReason = route.getCloseReason();
+            String auto = route.getAuto();
 
             switch (closeReason){
                 case "-1":
@@ -251,12 +254,23 @@ public class UIDFragment extends Fragment {
             if(routeTo.equals("Точка на карте")) {
                 routeTo = getString(R.string.end_point_marker);
             }
+            String routeInfo = "";
 
-                String routeInfo = getString(R.string.close_resone_from) + routeFrom + " " + routefromnumber
+            if(auto != null) {
+                routeInfo = getString(R.string.close_resone_from) + routeFrom + " " + routefromnumber
+                        + getString(R.string.close_resone_to) + routeTo + " " + routeTonumber
+                        + getString(R.string.close_resone_cost) + webCost + " " + getString(R.string.UAH)
+                        + getString(R.string.auto_info) + " " + auto + " "
+                        + getString(R.string.close_resone_time)
+                        + createdAt + getString(R.string.close_resone_text) + closeReasonText;
+            } else {
+                routeInfo = getString(R.string.close_resone_from) + routeFrom + " " + routefromnumber
                         + getString(R.string.close_resone_to) + routeTo + " " + routeTonumber
                         + getString(R.string.close_resone_cost) + webCost + " " + getString(R.string.UAH)
                         + getString(R.string.close_resone_time)
                         + createdAt + getString(R.string.close_resone_text) + closeReasonText;
+            }
+
 //                array[i] = routeInfo;
                 databaseHelper.addRouteInfo(routeInfo);
 
