@@ -927,7 +927,9 @@ public class MainActivity extends AppCompatActivity implements VisicomFragment.A
         super.onDestroy();
 
         // Отмена регистрации слушателя при уничтожении активности
-        appUpdater.unregisterListener();
+        if (appUpdater != null) {
+            appUpdater.unregisterListener();
+        }
     }
     private static final int REQUEST_CODE_UNKNOWN_APP_SOURCES = 1234; // Произвольный код запроса разрешения
     @SuppressLint("ObsoleteSdkInt")
