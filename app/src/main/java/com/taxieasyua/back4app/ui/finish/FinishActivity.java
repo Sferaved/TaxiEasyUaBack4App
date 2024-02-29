@@ -113,9 +113,9 @@ public class FinishActivity extends AppCompatActivity {
         uid_Double = receivedMap.get("dispatching_order_uid_Double");
 
         text_status = findViewById(R.id.text_status);
-        statusOrderWithDifferentValue(uid);
+//        statusOrderWithDifferentValue(uid);
 
-
+        text_status.setText(getString(R.string.ex_st_0));
         btn_reset_status = findViewById(R.id.btn_reset_status);
         btn_reset_status.setOnClickListener(new View.OnClickListener() {
             @Override
