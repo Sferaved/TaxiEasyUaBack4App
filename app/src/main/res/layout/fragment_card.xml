@@ -59,7 +59,7 @@
         android:layout_width="293sp"
         android:layout_height="45sp"
         android:layout_marginTop="12dp"
-        android:visibility="gone"
+
         android:background="@drawable/buttons"
         android:fontFamily="@font/regular"
         android:text="@string/link_card"

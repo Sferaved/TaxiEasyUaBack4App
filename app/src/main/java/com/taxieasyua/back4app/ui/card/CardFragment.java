@@ -58,7 +58,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class CardFragment extends Fragment {
 
     private @NonNull FragmentCardBinding binding;
-    private AppCompatButton btnCardLink;
+    public static AppCompatButton btnCardLink;
 
     private NetworkChangeReceiver networkChangeReceiver;
     private String baseUrl = "https://m.easy-order-taxi.site";
@@ -82,6 +82,7 @@ public class CardFragment extends Fragment {
         binding = FragmentCardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         requireActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        btnCardLink  = binding.btnCardLink;
         return root;
     }
 
@@ -89,7 +90,7 @@ public class CardFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        btnCardLink  = binding.btnCardLink;
+
         List<String>  arrayList = logCursor(MainActivity.CITY_INFO, requireActivity());
         String MERCHANT_ID = arrayList.get(6);
         textCard = binding.textCard;
@@ -156,9 +157,9 @@ public class CardFragment extends Fragment {
                         textCard.setVisibility(View.VISIBLE);
                         listView.setVisibility(View.GONE);
                         textCard.setText(R.string.no_cards);
-                        btnCardLink.setVisibility(View.VISIBLE);
                         progressBar.setVisibility(View.GONE);
                     }
+
                 }
 
                 @Override
