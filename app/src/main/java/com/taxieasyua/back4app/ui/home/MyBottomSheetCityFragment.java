@@ -443,8 +443,10 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
                         Log.d(TAG, "onResponse: merchant_fondy" + merchant_fondy);
                         Log.d(TAG, "onResponse: fondy_key_storage" + fondy_key_storage);
 
+                        if(merchant_fondy != null) {
+                            getCardToken(context, merchant_fondy);
+                        }
 
-                        getCardToken(context);
 
                         // Добавьте здесь код для обработки полученных значений
                     }
@@ -459,7 +461,7 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
             }
         });
     }
-    private void getCardToken(Context context) {
+    private void getCardToken(Context context, String merchant_fondy) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://m.easy-order-taxi.site") // Замените на фактический URL вашего сервера
                 .addConverterFactory(GsonConverterFactory.create())
@@ -471,14 +473,12 @@ public class MyBottomSheetCityFragment extends BottomSheetDialogFragment {
         CallbackService service = retrofit.create(CallbackService.class);
 
         Log.d(TAG, "getCardTokenFondy: ");
-        List<String>  arrayList = logCursor(MainActivity.CITY_INFO, context);
-        String MERCHANT_ID = arrayList.get(6);
 
-        arrayList = logCursor(MainActivity.TABLE_USER_INFO, context);
+        List<String> arrayList = logCursor(MainActivity.TABLE_USER_INFO, context);
         String email = arrayList.get(3);
 
             // Выполните запрос
-            Call<CallbackResponse> call = service.handleCallback(email, "fondy", MERCHANT_ID);
+            Call<CallbackResponse> call = service.handleCallback(email, "fondy", merchant_fondy);
             String requestUrl = call.request().toString();
             Log.d(TAG, "Request URL: " + requestUrl);
 
