@@ -208,6 +208,10 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         btn_no.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Получаем доступ к InputMethodManager
+                InputMethodManager immHide = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                // Пытаемся скрыть клавиатуру
+                immHide.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 if (!NetworkUtils.isNetworkAvailable(getApplicationContext())) {
 
                     VisicomFragment.btn_clear_from.setVisibility(View.INVISIBLE);
@@ -373,6 +377,10 @@ public class ActivityVisicomOnePage extends AppCompatActivity
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Получаем доступ к InputMethodManager
+                InputMethodManager immHide = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                // Пытаемся скрыть клавиатуру
+                immHide.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 if (!NetworkUtils.isNetworkAvailable(getApplicationContext())) {
 
                     VisicomFragment.btn_clear_from.setVisibility(View.INVISIBLE);

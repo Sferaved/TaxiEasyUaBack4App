@@ -41,6 +41,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -182,8 +184,6 @@ public class VisicomFragment extends Fragment{
             text_view_cost.setVisibility(View.INVISIBLE);
             btn_plus.setVisibility(View.INVISIBLE);
             btnOrder.setVisibility(View.INVISIBLE);
-
-
         }
     }
     public void checkPermission(String permission, int requestCode) {
